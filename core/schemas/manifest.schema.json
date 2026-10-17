@@ -5,32 +5,89 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "revision", "parent_revision", "date", "summary", "reason",
-    "change_request", "code_commit", "outputs", "status"
+    "revision",
+    "parent_revision",
+    "date",
+    "summary",
+    "reason",
+    "change_request",
+    "code_commit",
+    "outputs"
   ],
   "properties": {
-    "revision": {"$ref": "#/$defs/revision"},
-    "parent_revision": {"oneOf": [{"$ref": "#/$defs/revision"}, {"type": "null"}]},
-    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
-    "summary": {"type": "string", "minLength": 1},
-    "reason": {"type": "string", "minLength": 1},
-    "change_request": {"oneOf": [{"type": "string", "pattern": "^CR-[0-9]{3}$"}, {"type": "null"}]},
-    "code_commit": {"oneOf": [{"type": "string", "pattern": "^[0-9a-f]{40}$"}, {"type": "null"}]},
+    "revision": {
+      "$ref": "#/$defs/revision"
+    },
+    "parent_revision": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/revision"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "change_request": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^CR-[0-9]{3}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "code_commit": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "outputs": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["file", "sha256"],
+        "required": [
+          "file",
+          "sha256"
+        ],
         "properties": {
-          "file": {"type": "string", "minLength": 1},
-          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          "file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
         }
       }
-    },
-    "status": {"enum": ["active", "superseded"]}
+    }
   },
   "$defs": {
-    "revision": {"type": "string", "pattern": "^rev[0-9]{3}$"}
+    "revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]{3}$"
+    }
   }
 }

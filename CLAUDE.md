@@ -26,11 +26,12 @@ an M0 engine agent coordinating M1-M9 module agents.
 - Each part has exactly one owner module.
 - Agents never edit other modules' files. They raise a change request to M0.
 - User approval is required for every cross-module change.
+- Create, decide and apply change requests only through `core/requests.py`.
 
 ## Records
 - Records are immutable.
 - Revert = switch the active revision; never modify or delete a record.
-- Only exception: manifest `status` (active|superseded) is kept in sync with `ACTIVE` by `core/records.py`.
+- Active revision = `records/ACTIVE` file only; manifests are never rewritten.
 - Create, revert and verify records only through `core/records.py`.
 
 ## Sources and copyright

@@ -51,22 +51,20 @@ def test_create_revision(repo):
         assert (rev_dir(repo, rev) / name).is_file()
     manifest = yaml.safe_load((rev_dir(repo, rev) / "manifest.yaml").read_text(encoding="utf-8"))
     assert manifest["parent_revision"] is None
-    assert manifest["status"] == "active"
+    assert "status" not in manifest
     assert manifest["change_request"] is None
     assert yaml.safe_load(bom_path(repo).read_text(encoding="utf-8"))["revision"] == "rev001"
     assert (rev_dir(repo, rev) / "bom.yaml").read_bytes() == bom_path(repo).read_bytes()
 
 
-def test_second_revision_supersedes_first(repo):
+def test_second_revision_links_parent(repo):
     create_revision("M1", "Initial", "Baseline", root=repo)
     edit_bom(repo, 26)
     rev = create_revision("M1", "More blades", "Test", cr="CR-001", root=repo)
 
     assert rev == "rev002"
-    m1 = yaml.safe_load((rev_dir(repo, "rev001") / "manifest.yaml").read_text(encoding="utf-8"))
+    assert active_revision("M1", root=repo) == "rev002"
     m2 = yaml.safe_load((rev_dir(repo, "rev002") / "manifest.yaml").read_text(encoding="utf-8"))
-    assert m1["status"] == "superseded"
-    assert m2["status"] == "active"
     assert m2["parent_revision"] == "rev001"
     assert m2["change_request"] == "CR-001"
 
@@ -102,8 +100,18 @@ def test_revert_restores_bom(repo):
 
     assert bom_path(repo).read_bytes() == original
     assert active_revision("M1", root=repo) == "rev001"
-    m2 = yaml.safe_load((rev_dir(repo, "rev002") / "manifest.yaml").read_text(encoding="utf-8"))
-    assert m2["status"] == "superseded"
+
+
+def test_records_never_rewritten(repo):
+    create_revision("M1", "Initial", "Baseline", root=repo)
+    snapshot = {p.name: p.read_bytes() for p in rev_dir(repo, "rev001").iterdir()}
+
+    edit_bom(repo, 26)
+    create_revision("M1", "More blades", "Test", root=repo)
+    revert("M1", "rev001", root=repo)
+    revert("M1", "rev002", root=repo)
+
+    assert {p.name: p.read_bytes() for p in rev_dir(repo, "rev001").iterdir()} == snapshot
 
 
 def test_revert_refuses_unrecorded_changes(repo):
@@ -152,3 +160,26 @@ def test_concept_revert(repo):
     assert active_concept(root=repo) == "concept001"
     assert active_revision("M1", root=repo) == "rev001"
     assert bom_path(repo).read_bytes() == original
+
+
+def test_concept_with_unstarted_modules(repo):
+    create_revision("M1", "Initial", "Baseline", root=repo)
+    c1 = create_concept("Fan only", root=repo)
+    manifest = yaml.safe_load(
+        (repo / "engine" / "M0_engine" / "records" / c1 / "manifest.yaml").read_text(encoding="utf-8")
+    )
+    assert manifest["modules"]["M1"] == "rev001"
+    assert manifest["modules"]["M3"] is None
+    assert sum(v is None for v in manifest["modules"].values()) == 9
+
+    edit_bom(repo, 26)
+    create_revision("M1", "More blades", "Test", root=repo)
+    revert_concept(c1, root=repo)
+
+    assert active_revision("M1", root=repo) == "rev001"
+    assert active_revision("M3", root=repo) is None
+
+
+def test_concept_refuses_unrecorded_module_with_parts(repo):
+    with pytest.raises(RecordError, match="no revision"):
+        create_concept("Fan not recorded", root=repo)

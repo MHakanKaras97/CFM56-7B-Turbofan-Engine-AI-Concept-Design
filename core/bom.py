@@ -1,18 +1,17 @@
 """BOM loading and validation.
 
 validate(path) returns error strings; check(path) also returns warnings.
+check_data(data) does the same for an already loaded BOM.
 Run as `python -m core.bom <bom.yaml> ...` to validate files from the shell.
 """
 
-import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
-from jsonschema import Draft202012Validator
 
-SCHEMA_PATH = Path(__file__).parent / "schemas" / "bom.schema.json"
+from core.util import schema_errors
 
 
 @dataclass
@@ -21,25 +20,9 @@ class Report:
     warnings: list[str] = field(default_factory=list)
 
 
-def _schema_validator() -> Draft202012Validator:
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    return Draft202012Validator(schema)
-
-
-def _location(error) -> str:
-    return "/".join(str(p) for p in error.absolute_path) or "<root>"
-
-
-def check(path: str | Path) -> Report:
+def check_data(data) -> Report:
     report = Report()
-    try:
-        data = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError) as exc:
-        report.errors.append(f"cannot load {path}: {exc}")
-        return report
-
-    for err in sorted(_schema_validator().iter_errors(data), key=lambda e: list(e.absolute_path)):
-        report.errors.append(f"schema: {_location(err)}: {err.message}")
+    report.errors.extend(f"schema: {msg}" for msg in schema_errors("bom.schema.json", data))
 
     if not isinstance(data, dict) or not isinstance(data.get("parts"), list):
         return report
@@ -82,6 +65,14 @@ def check(path: str | Path) -> Report:
                 report.warnings.append(f"{pid}: joint target {target} is in another module (not checked)")
 
     return report
+
+
+def check(path: str | Path) -> Report:
+    try:
+        data = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        return Report(errors=[f"cannot load {path}: {exc}"])
+    return check_data(data)
 
 
 def validate(path: str | Path) -> list[str]:
