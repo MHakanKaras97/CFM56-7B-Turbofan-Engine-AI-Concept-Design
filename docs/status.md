@@ -14,7 +14,8 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Çalışma döngüsü (her modül): ders -> araştırma -> rule book -> kod -> kabul testi. Testsiz sonraki modüle geçilmez.
 
 ## Son yapılanlar
-- M0 cycle v2 kalibre edildi (rev002, ADR-006 sürekli entalpi). rev001 geçersiz: records/REVIEW.md.
+- Sürekli entalpi düzeltmesi (ADR-006); rev001 geçersiz, REVIEW.md'de kayıtlı.
+- M0 cycle v2 kalibre edildi (rev002, aktif).
 - M0 cycle v2 ilk deneme (83b6856): h = cp·T hatası nedeniyle çözümsüz; neden bulundu.
 - M0 cycle v1 (rev001): kalibrasyon hedefleri tuttu ama W2=447 kg/s ile W2/A=260.5, fan choke sınırını (241 kg/s/m²) aştı -> fizik dışı. Ders: hedefleri tutturmak sonucu doğrulamaz.
 - ICAO EDB v32: -7B27 OPR 28.63, BPR 5.0, T/O yakıt 1.284 kg/s [K]. SFC = 10.57 g/kNs [H].
@@ -28,14 +29,14 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Hassasiyet: her e_poly +0.01 -> W2 2-7 kg/s azalır, EGT 3-12 K artar. T4'ü yalnız e_hpc (-7 K) ve e_booster (-2 K) etkiler. Soğutma +0.02 -> T4 +19 K, W2 +3 kg/s, EGT -5 K.
 
 ## Açık konular
-- Soğutma oranı 0.26 > 0.22: 44.52 kg/s astar soğutma havasını içeriyor mu? T4 = 1860 K yüksek görünüyor.
+- 44.52 kg/s yanma odası havasına liner soğutması dahil mi? (Soğutma oranı 0.26 > 0.22, T4 = 1860 K yüksek.)
 - FPR 1.83 beklenenden yüksek olabilir (doğrulanmadı).
 - Indriyati HPC havası 39.57 vs Lopez-Pintor yanma odası havası 44.52 kg/s.
 - EGT formülü CFM56-3 katsayılarıyla [T].
 - ICAO test koşulunda müşteri bleed/güç çekişi doğrulanmadı.
 
 ## Sıradaki adımlar
-1. v3: değişken cp(T, FAR), NASA Glenn polinomları (ADR-006); yanma odası havası tanımını netleştir.
+1. v3: NASA Glenn polinomlarıyla değişken cp(T, FAR); 44.52 hedef mi kontrol mü kararı.
 2. M0 kapsamını tamamla: istasyon tablosu -> modül bütçeleri, arayüz sözleşmesi, review_criteria.
 3. Arayüz (Streamlit).
 4. M1 Inlet & Fan: ders + araştırma.
