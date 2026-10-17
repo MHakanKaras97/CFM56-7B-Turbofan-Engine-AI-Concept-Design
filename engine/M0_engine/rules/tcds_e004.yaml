@@ -1,0 +1,15 @@
+source:
+  document: EASA TCDS E.004, CFM International CFM56-7B series engines
+  issue: '07'
+  date: '2023-01-09'
+  section: 6. Ratings
+ratings:
+  CFM56-7B27:
+    takeoff_thrust:
+      value: 121.43
+      unit: kN
+      tag: K
+    max_continuous_thrust:
+      value: 115.21
+      unit: kN
+      tag: K

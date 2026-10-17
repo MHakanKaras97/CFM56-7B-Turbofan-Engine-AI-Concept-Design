@@ -1,0 +1,182 @@
+method: SFC = ICAO T/O fuel flow / TCDS take-off thrust (sea-level static, ICAO test
+  conditions)
+inputs:
+- icao_edb_cfm56_7b27.yaml
+- tcds_e004.yaml
+sanity_range:
+  min: 0.32
+  max: 0.39
+  unit: lb/(lbf*h)
+  source: Kuropatwa 2022
+rows:
+- uid: 3CM034
+  engine: CFM56-7B27
+  fuel_flow_to:
+    value: 1.284
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.574
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3733
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 4CM043
+  engine: CFM56-7B27/2
+  fuel_flow_to:
+    value: 1.265
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.418
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3678
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 8CM066
+  engine: CFM56-7B27/3
+  fuel_flow_to:
+    value: 1.293
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.648
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3759
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 01P11CM121
+  engine: CFM56-7B27E
+  fuel_flow_to:
+    value: 1.293
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.648
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3759
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 01P11CM122
+  engine: CFM56-7B27E/B1
+  fuel_flow_to:
+    value: 1.293
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.648
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3759
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 01P11CM123
+  engine: CFM56-7B27E/B3
+  fuel_flow_to:
+    value: 1.293
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.648
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3759
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 01P11CM124
+  engine: CFM56-7B27AE
+  fuel_flow_to:
+    value: 1.293
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.648
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3759
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 01P11CM125
+  engine: CFM56-7B27E/F
+  fuel_flow_to:
+    value: 1.293
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.648
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3759
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
+- uid: 01P11CM126
+  engine: CFM56-7B27E/B1F
+  fuel_flow_to:
+    value: 1.293
+    unit: kg/s
+    tag: K
+  thrust_to:
+    value: 121.43
+    unit: kN
+    tag: K
+  sfc:
+    value: 10.648
+    unit: g/(kN*s)
+    tag: H
+  sfc_imperial:
+    value: 0.3759
+    unit: lb/(lbf*h)
+    tag: H
+  in_sanity_range: true
