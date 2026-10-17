@@ -1,0 +1,184 @@
+design_point:
+  description: SLS ISA, max take-off, base CFM56-7B27 (SAC, ICAO UID 3CM034); see
+    ADR-005
+  T0:
+    value: 288.15
+    unit: K
+    tag: G
+  P0:
+    value: 101325.0
+    unit: Pa
+    tag: G
+  M0:
+    value: 0.0
+    unit: '-'
+    tag: G
+reference_data:
+  thrust_to:
+    file: engine/M0_engine/rules/tcds_e004.yaml
+    key: ratings.CFM56-7B27.takeoff_thrust
+    tag: K
+  icao_row:
+    file: engine/M0_engine/rules/icao_edb_cfm56_7b27.yaml
+    uid: 3CM034
+    fields:
+    - pressure_ratio
+    - bpr
+    - fuel_flow_to_kg_s
+    tag: K
+  sfc_ref:
+    file: engine/M0_engine/analysis/sfc_takeoff.yaml
+    uid: 3CM034
+    tag: H
+gas:
+  cold_cp:
+    value: 1005.0
+    unit: J/(kg K)
+    tag: G
+  cold_gamma:
+    value: 1.4
+    unit: '-'
+    tag: G
+  hot_cp:
+    value: 1150.0
+    unit: J/(kg K)
+    tag: G
+  hot_gamma:
+    value: 1.33
+    unit: '-'
+    tag: G
+  R:
+    value: 287.0
+    unit: J/(kg K)
+    tag: G
+components:
+  inlet_recovery:
+    value: 0.99
+    unit: '-'
+    tag: G
+  e_fan:
+    value: 0.89
+    unit: '-'
+    tag: G
+  e_booster:
+    value: 0.89
+    unit: '-'
+    tag: G
+  e_hpc:
+    value: 0.9
+    unit: '-'
+    tag: G
+  e_hpt:
+    value: 0.89
+    unit: '-'
+    tag: G
+  e_lpt:
+    value: 0.9
+    unit: '-'
+    tag: G
+  burner_eta:
+    value: 0.995
+    unit: '-'
+    tag: G
+  burner_dp:
+    value: 0.04
+    unit: '-'
+    tag: G
+  bypass_duct_dp:
+    value: 0.02
+    unit: '-'
+    tag: G
+  mech_eff:
+    value: 0.99
+    unit: '-'
+    tag: G
+  nozzle_cv:
+    value: 0.98
+    unit: '-'
+    tag: G
+  LHV:
+    value: 43.0e6
+    unit: J/kg
+    tag: G
+  core_pr_25_2:
+    value: 2.1
+    unit: '-'
+    tag: T
+  cooling_bleed:
+    value: 0.0
+    unit: '-'
+    tag: T
+geometry:
+  fan_diameter:
+    value: 61.0
+    unit: in
+    tag: T
+  fan_hub_tip:
+    value: 0.3
+    unit: '-'
+    tag: T
+calibration:
+  unknowns:
+  - W2
+  - T4
+  - FPR
+  initial:
+    W2:
+      value: 354.7
+      unit: kg/s
+      tag: T
+    T4:
+      value: 1500.0
+      unit: K
+      tag: T
+    FPR:
+      value: 1.6
+      unit: '-'
+      tag: T
+  tolerance:
+    value: 1.0e-09
+    unit: '-'
+    tag: G
+checks:
+  w2a_range:
+    min: 190.0
+    max: 215.0
+    unit: kg/(s m2)
+    tag: G
+  w2_ref:
+    value: 354.7
+    unit: kg/s
+    tag: T
+    tolerance: 0.1
+  sfc_tolerance:
+    value: 0.005
+    unit: '-'
+    tag: G
+  egt_limit:
+    file: engine/M0_engine/rules/tcds_e004.yaml
+    keys:
+    - limits.egt_takeoff_displayed
+    - limits.egt_shunt_sac
+    tag: K
+    note: displayed = measured (T49.5) + 30 K shunt for SAC
+  egt:
+    a: 0.976
+    b: 0.217
+    tag: T
+    form: EGT = a*(T45 - b*(T45 - T5)), CFM56-3 form via Martins 2015, applied in
+      K
+  core_air_refs:
+    indriyati_hpc:
+      value: 39.57
+      unit: kg/s
+      tag: KS
+    lopez_pintor_combustor:
+      value: 44.52
+      unit: kg/s
+      tag: KS
+  T3_ref:
+    value: 832.4
+    unit: K
+    tag: KS
+    note: test cell T0 298 K
+    not ISA; info only: null

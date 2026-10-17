@@ -1,0 +1,9 @@
+revision: rev001
+parent_revision: null
+date: '2026-10-17T21:10:28Z'
+summary: Cycle v1 calibrated (SLS ISA, max T/O)
+reason: 'First calibrated design point: W2, T4, FPR solved to TCDS thrust, ICAO fuel
+  flow and optimum jet velocity ratio'
+change_request: null
+code_commit: 7048023f6147f2a2b2594a472c2247e130223cd8
+outputs: []
