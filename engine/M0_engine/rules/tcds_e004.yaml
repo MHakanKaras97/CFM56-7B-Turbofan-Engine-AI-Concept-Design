@@ -13,3 +13,12 @@ ratings:
       value: 115.21
       unit: kN
       tag: K
+limits:
+  egt_takeoff_displayed:
+    value: 950.0
+    unit: degC
+    tag: K
+  egt_shunt_sac:
+    value: 30.0
+    unit: K
+    tag: K
