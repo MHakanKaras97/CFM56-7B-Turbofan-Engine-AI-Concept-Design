@@ -3,7 +3,14 @@ from dataclasses import replace
 
 import pytest
 
-from engine.M0_engine.analysis.cycle import calibrate, load_inputs, run
+from engine.M0_engine.analysis.cycle import (
+    UNKNOWNS,
+    calibrate,
+    choke_mass_flux,
+    load_inputs,
+    run,
+    thrust_envelope,
+)
 from tools.thermo import COLD, HOT, Gas, burner, compressor, nozzle, turbine_for_work
 
 
@@ -14,8 +21,12 @@ def inputs():
 
 @pytest.fixture(scope="module")
 def calibrated(inputs):
+    """Cooling fixed at 0.05 (a feasible point under the current gas model); W2, T4, FPR solved to
+    thrust, fuel and V18/V8 with the combustor-air target dropped."""
     p, t, initial, raw, _ = inputs
-    r, _ = calibrate(p, t, initial)
+    start = dict(initial, W2=450.0, T4=1350.0, FPR=1.52, cooling_fraction=0.05)
+    r, _ = calibrate(p, t, start, unknowns=UNKNOWNS[:3],
+                     targets=("thrust", "fuel", "velocity_ratio"))
     return p, t, r
 
 
@@ -58,7 +69,7 @@ def ideal_params(p):
     return replace(
         p, cold=gas, hot=gas, inlet_recovery=1.0, e_fan=1.0, e_booster=1.0, e_hpc=1.0, e_hpt=1.0, e_lpt=1.0,
         burner_eta=1.0, burner_dp=0.0, bypass_duct_dp=0.0, mech_eff=1.0, nozzle_cv=1.0,
-        include_fuel_mass=False, opr=10.0, bpr=5.0, core_pr_25_2=2.0,
+        include_fuel_mass=False, opr=10.0, bpr=5.0, core_pr_25_2=2.0, hp_power_offtake=0.0, customer_bleed=0.0,
     )
 
 
@@ -83,17 +94,19 @@ def test_ideal_limit_matches_closed_form(inputs):
 def test_energy_balance_closes(calibrated):
     p, _, r = calibrated
     st = r["stations"]
-    comp_work = r["P_fan"] + r["P_boost"] + r["P_hpc"]
-    mech_loss = comp_work * (1 / p.mech_eff - 1)
+    shaft_load = r["P_fan"] + r["P_boost"] + r["P_hpc"] + p.hp_power_offtake
+    mech_loss = shaft_load * (1 / p.mech_eff - 1)
     heat = p.burner_eta * r["W_fuel"] * p.LHV
+    bleed_out = p.customer_bleed * p.cold.cp * st["3"][0]
     inflow = r["W2"] * p.cold.cp * st["2"][0] + heat
-    outflow = r["W_byp"] * p.cold.cp * st["18"][0] + r["W_hot"] * p.hot.cp * st["8"][0]
-    assert outflow + mech_loss == pytest.approx(inflow, rel=1e-12)
+    outflow = r["W_byp"] * p.cold.cp * st["18"][0] + r["W8"] * p.hot.cp * st["8"][0]
+    assert r["W_cool"] > 0
+    assert outflow + mech_loss + p.hp_power_offtake + bleed_out == pytest.approx(inflow, rel=1e-12)
 
 
 def test_shaft_balance(calibrated):
     p, _, r = calibrated
-    assert r["P_hpt"] * p.mech_eff == pytest.approx(r["P_hpc"])
+    assert r["P_hpt"] * p.mech_eff == pytest.approx(r["P_hpc"] + p.hp_power_offtake)
     assert r["P_lpt"] * p.mech_eff == pytest.approx(r["P_fan"] + r["P_boost"])
 
 
@@ -102,3 +115,23 @@ def test_calibration_hits_targets(calibrated):
     assert r["thrust"] == pytest.approx(t.thrust, rel=1e-3)
     assert r["W_fuel"] == pytest.approx(t.fuel, rel=1e-3)
     assert r["velocity_ratio"] == pytest.approx(r["eta_fan_is"] * r["eta_lpt_is"], rel=1e-3)
+
+
+def test_cooling_flows_and_t41(calibrated):
+    p, _, r = calibrated
+    assert r["W_comb"] + r["W_cool"] + p.customer_bleed == pytest.approx(r["W_core"])
+    assert r["W_ngv"] == pytest.approx(p.ngv_share * r["W_cool"])
+    T3 = r["stations"]["3"][0]
+    assert T3 < r["T41"] < r["T4"]  # NGV cooling air dilutes the gas before the rotor
+
+
+def test_choke_mass_flux_sls():
+    p = load_inputs()[0]
+    assert choke_mass_flux(p.P0, p.T0, p.cold) == pytest.approx(241.3, abs=0.1)
+
+
+def test_envelope_runs_and_matches_its_targets(inputs):
+    p, t, initial, raw, _ = inputs
+    env = thrust_envelope(p, t, initial, raw, tol=1e-9, c_max=0.04, step=0.02)
+    assert [e["cooling_fraction"] for e in env] == [0.0, 0.02, 0.04]
+    assert env[0]["W2_kg_s"] == pytest.approx(t.combustor_air * (1 + p.bpr), rel=1e-3)

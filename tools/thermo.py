@@ -60,6 +60,8 @@ def nozzle(Tt: float, Pt: float, P0: float, cv: float, gas: Gas) -> Nozzle:
 
     cv scales the velocity only; the area comes from the ideal (isentropic) exit state.
     """
+    if Pt <= P0:
+        raise ValueError(f"nozzle total pressure {Pt:.0f} Pa <= ambient {P0:.0f} Pa")
     p_crit = Pt * (2.0 / (gas.gamma + 1.0)) ** (1.0 / gas.k)
     choked = p_crit > P0
     p_exit = p_crit if choked else P0
