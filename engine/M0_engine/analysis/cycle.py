@@ -23,9 +23,13 @@ from pathlib import Path
 from core.util import read_yaml, write_yaml
 from tools.thermo import (
     Gas,
+    T_from_h_hot,
     burner,
     compressor,
     compressor_isentropic_eff,
+    h_cold,
+    h_hot,
+    mix,
     nozzle,
     turbine_for_work,
     turbine_isentropic_eff,
@@ -134,10 +138,10 @@ def load_inputs(params_file: Path = PARAMS_FILE, root: Path = ROOT):
 
 # --- cycle ------------------------------------------------------------------------
 
-def _mix(W_hot: float, T_hot: float, W_cool: float, T_cool: float, cold: Gas, hot: Gas):
-    """Adiabatic mixing of cooling air (cold cp) into hot gas; result treated as hot gas."""
-    W = W_hot + W_cool
-    return W, (W_hot * hot.cp * T_hot + W_cool * cold.cp * T_cool) / (W * hot.cp)
+def _mix(W_hot: float, T_hot: float, W_cool: float, T_cool: float, T_ref: float, cold: Gas, hot: Gas):
+    """Adiabatic mixing of cooling air (cold gas) into hot gas; continuous enthalpy (ADR-006)."""
+    W, h = mix(W_hot, h_hot(T_hot, T_ref, cold, hot), W_cool, h_cold(T_cool, cold))
+    return W, T_from_h_hot(h, T_ref, cold, hot)
 
 
 def run(p: Params, W2: float, T4: float, FPR: float, cooling_fraction: float = 0.0) -> dict:
@@ -166,14 +170,14 @@ def run(p: Params, W2: float, T4: float, FPR: float, cooling_fraction: float = 0
     W4 = W_comb + W_fuel if p.include_fuel_mass else W_comb
     Pt4 = Pt3 * (1.0 - p.burner_dp)
 
-    W41, T41 = _mix(W4, T4, W_ngv, Tt3, cold, hot)
+    W41, T41 = _mix(W4, T4, W_ngv, Tt3, Tt3, cold, hot)
     Pt41 = Pt4
 
     P_fan, P_boost, P_hpc = W_byp * w_fan, W_core * w_boost, W_core * w_hpc
     P_hpt = (P_hpc + p.hp_power_offtake) / p.mech_eff
     P_lpt = (P_fan + P_boost) / p.mech_eff
     Tt44, Pt44, hpt_pr = turbine_for_work(T41, Pt41, P_hpt / W41, p.e_hpt, hot)
-    W45, Tt45 = _mix(W41, Tt44, W_rotor, Tt3, cold, hot)
+    W45, Tt45 = _mix(W41, Tt44, W_rotor, Tt3, Tt3, cold, hot)
     Pt45 = Pt44
     Tt5, Pt5, lpt_pr = turbine_for_work(Tt45, Pt45, P_lpt / W45, p.e_lpt, hot)
     Tt8, Pt8, W8 = Tt5, Pt5, W45
@@ -342,9 +346,9 @@ def sensitivity(p: Params, t: Targets, base: dict, raw: dict, refs: dict, tol: f
     def record(label, r):
         rows.append({
             "case": label,
-            "dW2_kg_s": _r(r["W2"] - base["W2"], 4),
-            "dT4_K": _r(r["T4"] - base["T4"], 4),
-            "dEGT_K": _r(egt_displayed_C(r, raw, refs) - egt0, 4),
+            "dW2_kg_s": _r(round(r["W2"] - base["W2"], 6), 4),
+            "dT4_K": _r(round(r["T4"] - base["T4"], 6), 4),
+            "dEGT_K": _r(round(egt_displayed_C(r, raw, refs) - egt0, 6), 4),
         })
 
     for name in E_POLY:
@@ -417,7 +421,9 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
          "result": verdict(abs(r["W2"] / w2_ref["value"] - 1.0) <= w2_ref["tolerance"])},
         {"name": "Total cooling fraction", "value": _r(r["cooling_fraction"], 4), "reference": [c_lo, c_hi],
          "unit": "- of core flow", "criterion": f"{c_lo:g} <= c <= {c_hi:g}",
-         "result": verdict(c_lo <= r["cooling_fraction"] <= c_hi)},
+         "result": verdict(c_lo <= r["cooling_fraction"] <= c_hi),
+         **({"flag": "above range: check whether the 44.52 kg/s combustor air includes liner cooling air"}
+            if r["cooling_fraction"] > c_hi else {})},
         {"name": "SFC vs ICAO/TCDS", "value": _r(sfc), "reference": refs["sfc_ref"], "unit": "g/(kN s)",
          "criterion": f"within {cfg['sfc_tolerance']['value']:.1%}",
          "result": verdict(abs(sfc / refs["sfc_ref"] - 1.0) <= cfg["sfc_tolerance"]["value"])},
@@ -445,7 +451,7 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
     egt_K = egt_estimate(raw, T45, T5)
     checks = build_checks(r, p, raw, refs)
     results = {
-        "model": "M0 cycle v2, two-spool separate-flow, cooling air from HPC exit",
+        "model": "M0 cycle v2, two-spool separate-flow, cooling air from HPC exit, continuous enthalpy (ADR-006)",
         "design_point": {"condition": "SLS ISA, max take-off", "icao_uid": refs["icao_uid"],
                          "T0": _q(p.T0, "K", "G"), "P0": _q(p.P0, "Pa", "G")},
         "calibration": {

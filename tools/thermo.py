@@ -1,7 +1,9 @@
 """Gas-path component relations (pure Python, SI units).
 
 Two gas regions [G]: cold (air, up to burner inlet) and hot (combustion products).
-Enthalpy uses cp; density uses R. Total quantities: Tt [K], Pt [Pa]; specific work w [J/kg].
+Enthalpy is continuous across the regions (ADR-006): h_cold(T) = cp_c*T and
+h_hot(T) = h_cold(T_ref) + cp_h*(T - T_ref), with T_ref = burner inlet temperature (T3).
+Density uses R. Total quantities: Tt [K], Pt [Pa]; specific work w [J/kg].
 """
 
 import math
@@ -41,9 +43,29 @@ def turbine_for_work(Tt: float, Pt: float, w: float, e_poly: float, gas: Gas = H
     return Tt_out, Pt / pi, pi
 
 
+def h_cold(T: float, cold: Gas = COLD) -> float:
+    return cold.cp * T
+
+
+def h_hot(T: float, T_ref: float, cold: Gas = COLD, hot: Gas = HOT) -> float:
+    """Hot-region enthalpy, equal to h_cold at the region boundary T_ref."""
+    return cold.cp * T_ref + hot.cp * (T - T_ref)
+
+
+def T_from_h_hot(h: float, T_ref: float, cold: Gas = COLD, hot: Gas = HOT) -> float:
+    return T_ref + (h - cold.cp * T_ref) / hot.cp
+
+
+def mix(W_a: float, h_a: float, W_b: float, h_b: float) -> tuple[float, float]:
+    """Adiabatic mixing of two streams. Returns (W, h)."""
+    W = W_a + W_b
+    return W, (W_a * h_a + W_b * h_b) / W
+
+
 def burner(Tt_in: float, T4: float, eta_b: float, LHV: float, cold: Gas = COLD, hot: Gas = HOT) -> float:
-    """Fuel-air ratio f from W*cp_c*Tt_in + eta_b*f*W*LHV = W*(1+f)*cp_h*T4."""
-    return (hot.cp * T4 - cold.cp * Tt_in) / (eta_b * LHV - hot.cp * T4)
+    """Fuel-air ratio f from W*h_cold(Tt_in) + eta_b*f*W*LHV = W*(1+f)*h_hot(T4), with T_ref = Tt_in."""
+    h4 = h_hot(T4, Tt_in, cold, hot)
+    return (h4 - h_cold(Tt_in, cold)) / (eta_b * LHV - h4)
 
 
 @dataclass(frozen=True)

@@ -65,6 +65,7 @@ Hesaplanan kalkış SFC değerleri bu aralıktadır (`sfc_takeoff.yaml`, `in_san
 - **OPR (çözüldü):** Tasarımda ICAO değeri 28.63 kullanılır. Turan'ın 32.8 değeri geçersiz sayıldı. Test istasyonlarından çıkan yaklaşık 26.5 farklı koşullara (T0 = 298 K, test hücresi) ait.
 - **SFC (çözüldü):** Tasarım değeri ICAO ve TCDS verisinden kodla hesaplanır. Turan'ın 10.63 değeri doğrulanamadı; hesaplanan -7B27, /2 ve /3 değerleriyle aynı mertebede olduğu için yalnızca çapraz kontrol olarak tutulur.
 - **Hava debisi (açık):** HPC havası 39.57 kg/s, yanma odası havası 44.52 kg/s'den küçük. Yanma odasına HPC'den fazla hava giremeyeceği için bu fiziksel olarak imkânsız; iki kaynak debiyi farklı tanımlıyor (çekirdek, soğutma havası, ölçüm noktası). Hangisinin kullanılacağı henüz kararlaştırılmadı.
+- **Yanma odası havası tanımı (açık):** 44.52 kg/s değerinin astar (liner) soğutma havasını içerip içermediği belirsiz. M0 v2 bu değeri yanma odasına giren havanın tamamı sayar; türbin soğutması dışarıda kalır. Kalibre edilen toplam soğutma oranı 0.22'yi aşarsa bu tanım farkı şüpheli olarak işaretlenir (rev002: 0.2645, işaretli).
 - **Toplam hava debisi (açık):** 782 lb/s yalnızca başlangıç tahmini; gerçek değer kalibrasyonla çözülecek.
 - **İtki:** TCDS 121.43 kN, ICAO 121.44 kN; fark yuvarlamadan kaynaklanıyor.
 - **BPR:** ICAO 5.0-5.1 (-7B27), Kalkan 6 (CFM56-5A3); farklı motor ailesi.

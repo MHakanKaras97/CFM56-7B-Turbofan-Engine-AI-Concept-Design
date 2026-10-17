@@ -11,7 +11,7 @@ from engine.M0_engine.analysis.cycle import (
     run,
     thrust_envelope,
 )
-from tools.thermo import COLD, HOT, Gas, burner, compressor, nozzle, turbine_for_work
+from tools.thermo import COLD, HOT, Gas, burner, compressor, h_cold, h_hot, mix, nozzle, turbine_for_work
 
 
 @pytest.fixture(scope="module")
@@ -21,12 +21,9 @@ def inputs():
 
 @pytest.fixture(scope="module")
 def calibrated(inputs):
-    """Cooling fixed at 0.05 (a feasible point under the current gas model); W2, T4, FPR solved to
-    thrust, fuel and V18/V8 with the combustor-air target dropped."""
+    """Full v2 calibration: W2, T4, FPR, cooling fraction against all four targets."""
     p, t, initial, raw, _ = inputs
-    start = dict(initial, W2=450.0, T4=1350.0, FPR=1.52, cooling_fraction=0.05)
-    r, _ = calibrate(p, t, start, unknowns=UNKNOWNS[:3],
-                     targets=("thrust", "fuel", "velocity_ratio"))
+    r, _ = calibrate(p, t, initial)
     return p, t, r
 
 
@@ -48,7 +45,29 @@ def test_turbine_inverts_compressor_at_eff1():
 
 def test_burner_energy_balance():
     f = burner(800.0, 1500.0, 0.995, 43e6)
-    assert COLD.cp * 800.0 + 0.995 * f * 43e6 == pytest.approx((1 + f) * HOT.cp * 1500.0)
+    assert h_cold(800.0) + 0.995 * f * 43e6 == pytest.approx((1 + f) * h_hot(1500.0, 800.0))
+
+
+def test_enthalpy_continuous_at_region_boundary():
+    T_ref = 838.0
+    assert h_hot(T_ref, T_ref) == pytest.approx(h_cold(T_ref))
+    # slope changes to hot cp above the boundary, no jump
+    assert h_hot(T_ref + 1.0, T_ref) - h_cold(T_ref) == pytest.approx(HOT.cp)
+
+
+def test_mixing_streams_at_same_temperature_keeps_temperature():
+    from engine.M0_engine.analysis.cycle import _mix
+    T_ref = 838.0
+    W, T = _mix(40.0, T_ref, 10.0, T_ref, T_ref, COLD, HOT)  # cooling air at the boundary temperature
+    assert (W, T) == pytest.approx((50.0, T_ref))
+    W, T = _mix(40.0, 1500.0, 10.0, 1500.0, 1500.0, COLD, HOT)  # boundary at 1500 K
+    assert T == pytest.approx(1500.0)
+    W, h = mix(3.0, 1.2e6, 7.0, 1.2e6)
+    assert (W, h) == pytest.approx((10.0, 1.2e6))
+
+
+def test_burner_with_zero_fuel_keeps_temperature():
+    assert burner(838.0, 838.0, 0.995, 43e6) == pytest.approx(0.0, abs=1e-15)
 
 
 def test_nozzle_choking():
@@ -99,7 +118,7 @@ def test_energy_balance_closes(calibrated):
     heat = p.burner_eta * r["W_fuel"] * p.LHV
     bleed_out = p.customer_bleed * p.cold.cp * st["3"][0]
     inflow = r["W2"] * p.cold.cp * st["2"][0] + heat
-    outflow = r["W_byp"] * p.cold.cp * st["18"][0] + r["W8"] * p.hot.cp * st["8"][0]
+    outflow = r["W_byp"] * h_cold(st["18"][0], p.cold) + r["W8"] * h_hot(st["8"][0], st["3"][0], p.cold, p.hot)
     assert r["W_cool"] > 0
     assert outflow + mech_loss + p.hp_power_offtake + bleed_out == pytest.approx(inflow, rel=1e-12)
 
@@ -115,6 +134,7 @@ def test_calibration_hits_targets(calibrated):
     assert r["thrust"] == pytest.approx(t.thrust, rel=1e-3)
     assert r["W_fuel"] == pytest.approx(t.fuel, rel=1e-3)
     assert r["velocity_ratio"] == pytest.approx(r["eta_fan_is"] * r["eta_lpt_is"], rel=1e-3)
+    assert r["W_comb"] == pytest.approx(t.combustor_air, rel=1e-3)
 
 
 def test_cooling_flows_and_t41(calibrated):

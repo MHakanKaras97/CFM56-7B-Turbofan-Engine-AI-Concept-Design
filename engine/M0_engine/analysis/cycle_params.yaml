@@ -47,9 +47,9 @@ calibration:
     combustor_air: {value: 44.52, unit: kg/s, tag: KS, source: Lopez-Pintor 2026, Table 2}
   initial:
     W2: {value: 354.7, unit: kg/s, tag: T}
-    T4: {value: 1600.0, unit: K, tag: T}
+    T4: {value: 1800.0, unit: K, tag: T}
     FPR: {value: 1.6, unit: '-', tag: T}
-    cooling_fraction: {value: 0.17, unit: '-', tag: T}
+    cooling_fraction: {value: 0.22, unit: '-', tag: T}
   tolerance: {value: 1.0e-9, unit: '-', tag: G}
 checks:
   fan_choke: {hard: true, basis: 'max mass flux at M=1 for SLS ISA total conditions (P0, T0), cold gas', tag: H}
