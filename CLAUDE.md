@@ -42,3 +42,9 @@ an M0 engine agent coordinating M1-M9 module agents.
 ## Restrictions
 - Do not add dependencies without asking.
 - Do not add root-level `.py` files without asking.
+
+## Where things are
+- Architecture: `docs/architecture.md` (read before structural changes)
+- Decisions: `docs/decisions/ADR-*.md`
+- Change requests: `engine/M0_engine/requests/CR-###.yaml`
+- Module rules: `engine/M*/rules/index.md` (read only the relevant module)
