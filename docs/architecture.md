@@ -3,6 +3,7 @@
 ## 1. Amaç ve kapsam
 - Amaç: CFM56-7B27 sınıfı bir turbofan motorun konsept seviyesinde tasarımı; çok agentlı bir sistemle yürütülür.
 - Kapsam dışı: FADEC, sensörler, yakıt sistemi, ateşleme, yangın sistemi, nacelle, thrust reverser.
+- Maliyet alanı kapsam dışı; proje sonrası revizyonda eklenecek.
 
 ## 2. Katmanlar
 - Claude Code = beyin: kararları ve hesap çağrılarını yürütür.

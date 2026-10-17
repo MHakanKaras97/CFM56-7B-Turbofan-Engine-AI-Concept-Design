@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bom.schema.json",
+  "title": "Module bill of materials",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["module_id", "module_name", "revision", "parts"],
+  "properties": {
+    "module_id": {"type": "string", "pattern": "^M[0-9]$"},
+    "module_name": {"type": "string", "minLength": 1},
+    "revision": {"type": "string", "pattern": "^rev[0-9]{3}$"},
+    "parts": {"type": "array", "items": {"$ref": "#/$defs/part"}}
+  },
+  "$defs": {
+    "part_id": {"type": "string", "pattern": "^M[0-9](\\.[0-9]+)+$"},
+    "tag": {"enum": ["K", "KS", "H", "G", "T"]},
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit", "tag"],
+      "properties": {
+        "value": {"type": ["number", "null"]},
+        "unit": {"type": "string"},
+        "tag": {"$ref": "#/$defs/tag"}
+      }
+    },
+    "joint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["to", "type"],
+      "properties": {
+        "to": {"$ref": "#/$defs/part_id"},
+        "type": {
+          "enum": ["dovetail", "fir_tree", "bolted_flange", "weld", "press_fit", "spline", "shrink_fit", "other"]
+        }
+      }
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "parent", "qty", "function", "material", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/part_id"},
+        "name": {"type": "string", "minLength": 1},
+        "parent": {"oneOf": [{"$ref": "#/$defs/part_id"}, {"type": "null"}]},
+        "qty": {
+          "allOf": [
+            {"$ref": "#/$defs/quantity"},
+            {"properties": {"value": {"type": "integer", "minimum": 1}}}
+          ]
+        },
+        "function": {"type": "string", "minLength": 1},
+        "material": {
+          "description": "Material name; null only for assemblies.",
+          "type": ["string", "null"]
+        },
+        "status": {"enum": ["draft", "review", "approved"]},
+        "process": {"type": "string"},
+        "joints": {"type": "array", "items": {"$ref": "#/$defs/joint"}},
+        "loads": {"type": "array", "items": {"type": ["string", "object"]}},
+        "failure_modes": {"type": "array", "items": {"type": ["string", "object"]}},
+        "analyses": {"type": "array", "items": {"type": ["string", "object"]}},
+        "geometry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["script"],
+          "properties": {
+            "script": {"type": "string", "minLength": 1},
+            "params": {"type": "object"}
+          }
+        },
+        "mass": {"$ref": "#/$defs/quantity"}
+      }
+    }
+  }
+}

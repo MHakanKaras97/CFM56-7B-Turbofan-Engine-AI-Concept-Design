@@ -1,0 +1,29 @@
+module_id: M1
+module_name: "Inlet and Fan"
+revision: rev001
+parts:
+  - id: M1.1
+    name: "Fan Stage 1 Rotor"
+    parent: null
+    qty: {value: 1, unit: "ea", tag: G}
+    function: "Fan stage 1 rotating assembly"
+    material: null
+    status: draft
+
+  - id: M1.1.1
+    name: "Fan Stage 1 Rotor Blade"
+    parent: M1.1
+    qty: {value: 24, unit: "ea", tag: KS}
+    function: "Accelerate bypass and core inlet flow"
+    material: "Ti-6Al-4V"
+    status: draft
+    joints:
+      - {to: M1.1.2, type: dovetail}
+
+  - id: M1.1.2
+    name: "Fan Stage 1 Disk"
+    parent: M1.1
+    qty: {value: 1, unit: "ea", tag: G}
+    function: "Carry fan blades and transmit torque from LP shaft"
+    material: "Ti-6Al-4V"
+    status: draft
