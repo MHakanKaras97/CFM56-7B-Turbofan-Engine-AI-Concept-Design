@@ -15,6 +15,7 @@ an M0 engine agent coordinating M1-M9 module agents.
 
 ## Single source of truth
 - `engine/M*/bom/bom.yaml` is the single source of truth for parts.
+- bom.yaml is machine-managed: no comments; use notes. Write it only via `core/bom.py` (`write`/`dump`).
 - Geometry is generated only by code in the module's `geometry/` folder.
 
 ## Part identification

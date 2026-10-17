@@ -15,7 +15,7 @@ import copy
 import re
 from pathlib import Path
 
-from core.bom import check_data
+from core import bom as bom_io
 from core.records import ROOT, create_revision, is_dirty, module_dir, module_dirs
 from core.util import dump_yaml, now_utc, read_yaml, schema_errors, write_yaml
 
@@ -193,7 +193,7 @@ def apply(cr_id: str, root: Path = ROOT) -> dict[str, str]:
         if module not in new_boms:
             if is_dirty(module, root):
                 raise CRError(f"{cr_id}: {module} has no active revision or unrecorded changes")
-            new_boms[module] = read_yaml(module_dir(module, root) / "bom" / "bom.yaml")
+            new_boms[module] = bom_io.load(module_dir(module, root) / "bom" / "bom.yaml")
         container, key = _locate(new_boms[module], change["path"])
         current = _get(container, key)
         if current != change["old"]:
@@ -201,13 +201,13 @@ def apply(cr_id: str, root: Path = ROOT) -> dict[str, str]:
         _put(container, key, copy.deepcopy(change["new"]))
 
     for module, bom in new_boms.items():
-        errors = check_data(bom).errors
+        errors = bom_io.check_data(bom).errors
         if errors:
             raise CRError(f"{cr_id}: {module} would become invalid: " + "; ".join(errors))
 
     revisions = {}
     for module, bom in new_boms.items():
-        write_yaml(module_dir(module, root) / "bom" / "bom.yaml", bom)
+        bom_io.write(module_dir(module, root) / "bom" / "bom.yaml", bom)
         revisions[module] = create_revision(module, f"Apply {cr_id}", cr["reason"], cr=cr_id, root=root)
 
     cr["applied_revisions"] = revisions

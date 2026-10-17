@@ -15,7 +15,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from core.bom import validate as validate_bom
+from core import bom as bom_io
 from core.util import now_utc, read_yaml, schema_errors, write_yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -113,7 +113,7 @@ def create_revision(
     records = mdir / "records"
     bom_path = mdir / "bom" / "bom.yaml"
 
-    errors = validate_bom(bom_path)
+    errors = bom_io.validate(bom_path)
     if errors:
         raise RecordError(f"{bom_path} is invalid: " + "; ".join(errors))
 
@@ -144,17 +144,17 @@ def create_revision(
     }
     _check_schema("manifest.schema.json", manifest)
 
-    bom_text = bom_path.read_bytes().decode("utf-8")
-    bom_text = re.sub(r"(?m)^revision:.*$", f"revision: {rev}", bom_text, count=1)
+    bom = bom_io.load(bom_path)
+    bom["revision"] = rev
 
     rev_dir = records / rev
     rev_dir.mkdir(exist_ok=False)  # never overwrite an existing record
-    (rev_dir / "bom.yaml").write_bytes(bom_text.encode("utf-8"))
+    bom_io.write(rev_dir / "bom.yaml", bom)
     write_yaml(rev_dir / "params.yaml", params or {})
     write_yaml(rev_dir / "results.yaml", results or {})
     write_yaml(rev_dir / "manifest.yaml", manifest)
 
-    bom_path.write_bytes(bom_text.encode("utf-8"))
+    bom_io.write(bom_path, bom)
     _write_pointer(records / "ACTIVE", rev)
     return rev
 

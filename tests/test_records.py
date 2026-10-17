@@ -5,6 +5,7 @@ import pytest
 import yaml
 
 from core import records
+from core.bom import write as write_bom
 from core.records import (
     RecordError,
     active_concept,
@@ -39,7 +40,7 @@ def rev_dir(repo: Path, rev: str) -> Path:
 def edit_bom(repo: Path, blade_count: int) -> None:
     data = yaml.safe_load(bom_path(repo).read_text(encoding="utf-8"))
     data["parts"][1]["qty"]["value"] = blade_count
-    bom_path(repo).write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8", newline="\n")
+    write_bom(bom_path(repo), data)
 
 
 def test_create_revision(repo):
