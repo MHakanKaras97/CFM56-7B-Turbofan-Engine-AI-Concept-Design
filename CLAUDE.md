@@ -30,6 +30,8 @@ an M0 engine agent coordinating M1-M9 module agents.
 ## Records
 - Records are immutable.
 - Revert = switch the active revision; never modify or delete a record.
+- Only exception: manifest `status` (active|superseded) is kept in sync with `ACTIVE` by `core/records.py`.
+- Create, revert and verify records only through `core/records.py`.
 
 ## Sources and copyright
 - No copyrighted text or figures. Summarize in your own words.
@@ -48,3 +50,13 @@ an M0 engine agent coordinating M1-M9 module agents.
 - Decisions: `docs/decisions/ADR-*.md`
 - Change requests: `engine/M0_engine/requests/CR-###.yaml`
 - Module rules: `engine/M*/rules/index.md` (read only the relevant module)
+
+## Final report
+End every task with only this report, max 15 lines, no step narration:
+
+```
+Commit: <hash> <message>
+Done: <bullets>
+Decisions for user: <bullets or "none">
+Tests: <passed/total>
+```

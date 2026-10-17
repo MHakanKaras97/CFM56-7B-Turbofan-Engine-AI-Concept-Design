@@ -58,6 +58,18 @@ def test_missing_parent_fails(tmp_path):
     assert "M1.1.1: parent M1.9 not found" in validate(write(tmp_path, data))
 
 
+def test_null_material_on_assembly_passes():
+    data = load_fixture()
+    assert next(p for p in data["parts"] if p["id"] == "M1.1")["material"] is None
+    assert validate(FIXTURE) == []
+
+
+def test_null_material_on_leaf_part_fails(tmp_path):
+    data = load_fixture()
+    blade(data)["material"] = None
+    assert "M1.1.1: material is null but part has no children" in validate(write(tmp_path, data))
+
+
 def test_missing_joint_target_in_same_module_fails(tmp_path):
     data = load_fixture()
     blade(data)["joints"][0]["to"] = "M1.1.9"

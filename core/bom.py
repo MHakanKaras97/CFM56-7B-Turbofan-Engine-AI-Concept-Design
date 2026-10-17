@@ -58,8 +58,13 @@ def check(path: str | Path) -> Report:
         if isinstance(module_id, str) and pid.split(".")[0] != module_id:
             report.errors.append(f"{pid}: id prefix does not match module_id {module_id}")
 
+    parent_ids = {p.get("parent") for p in parts}
+
     for part in parts:
         pid = part.get("id", "<no id>")
+        if "material" in part and part["material"] is None and pid not in parent_ids:
+            report.errors.append(f"{pid}: material is null but part has no children")
+
         parent = part.get("parent")
         if parent is not None:
             if parent == pid:
