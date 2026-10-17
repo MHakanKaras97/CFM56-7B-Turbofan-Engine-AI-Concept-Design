@@ -47,6 +47,9 @@ an M0 engine agent coordinating M1-M9 module agents.
 - Do not add dependencies without asking.
 - Do not add root-level `.py` files without asking.
 
+## Session status
+- Session start: read docs/status.md. Task end: update it (keep under 70 lines, newest first in 'Son yapılanlar').
+
 ## Where things are
 - Architecture: `docs/architecture.md` (read before structural changes)
 - Decisions: `docs/decisions/ADR-*.md`
