@@ -19,12 +19,13 @@ from core.records import (
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
+NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "CR-*.yaml")
 
 
 @pytest.fixture
 def repo(tmp_path) -> Path:
-    """Temp copy of engine/ so tests never touch the real module folders."""
-    shutil.copytree(ROOT / "engine", tmp_path / "engine")
+    """Temp copy of engine/ without records or CRs; tests never touch the real module folders."""
+    shutil.copytree(ROOT / "engine", tmp_path / "engine", ignore=NO_RECORDS)
     shutil.copyfile(FIXTURE, tmp_path / "engine" / "M1_inlet_fan" / "bom" / "bom.yaml")
     return tmp_path
 

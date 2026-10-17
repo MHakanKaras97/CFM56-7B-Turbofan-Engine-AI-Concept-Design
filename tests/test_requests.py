@@ -9,6 +9,7 @@ from core.requests import CRError, apply, create_cr, decide, load_cr, set_impact
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
+NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "CR-*.yaml")
 
 BLADE_QTY_CHANGE = {
     "module": "M1",
@@ -21,7 +22,7 @@ BLADE_QTY_CHANGE = {
 @pytest.fixture
 def repo(tmp_path) -> Path:
     """Temp copy of engine/ with a recorded M1 baseline; real folders are never touched."""
-    shutil.copytree(ROOT / "engine", tmp_path / "engine")
+    shutil.copytree(ROOT / "engine", tmp_path / "engine", ignore=NO_RECORDS)
     shutil.copyfile(FIXTURE, tmp_path / "engine" / "M1_inlet_fan" / "bom" / "bom.yaml")
     create_revision("M1", "Baseline", "Test setup", root=tmp_path)
     return tmp_path
