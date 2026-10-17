@@ -1,0 +1,387 @@
+model: M0 cycle v2, two-spool separate-flow, cooling air from HPC exit, continuous
+  enthalpy (ADR-006)
+design_point:
+  condition: SLS ISA, max take-off
+  icao_uid: 3CM034
+  T0:
+    value: 288.15
+    unit: K
+    tag: G
+  P0:
+    value: 101325.0
+    unit: Pa
+    tag: G
+calibration:
+  iterations: 6
+  targets:
+    thrust:
+      value: 121.43
+      unit: kN
+      tag: K
+    fuel_flow:
+      value: 1.284
+      unit: kg/s
+      tag: K
+    velocity_ratio: V18/V8 = eta_fan_is * eta_LPT_is
+    combustor_air:
+      value: 44.52
+      unit: kg/s
+      tag: KS
+  W2:
+    value: 363.16
+    unit: kg/s
+    tag: H
+  T4:
+    value: 1860.41
+    unit: K
+    tag: H
+  FPR:
+    value: 1.833
+    unit: '-'
+    tag: H
+  cooling_fraction:
+    value: 0.264457
+    unit: '- of core flow'
+    tag: H
+stations:
+- station: '0'
+  Tt_K: 288.15
+  Pt_kPa: 101.33
+  W_kg_s: 363.16
+- station: '2'
+  Tt_K: 288.15
+  Pt_kPa: 100.31
+  W_kg_s: 363.16
+- station: '13'
+  Tt_K: 350.03
+  Pt_kPa: 183.87
+  W_kg_s: 302.63
+- station: '18'
+  Tt_K: 350.03
+  Pt_kPa: 180.19
+  W_kg_s: 302.63
+- station: '25'
+  Tt_K: 365.65
+  Pt_kPa: 210.65
+  W_kg_s: 60.527
+- station: '3'
+  Tt_K: 838.01
+  Pt_kPa: 2871.9
+  W_kg_s: 60.527
+- station: '4'
+  Tt_K: 1860.4
+  Pt_kPa: 2757.0
+  W_kg_s: 45.804
+- station: '41'
+  Tt_K: 1716.2
+  Pt_kPa: 2757.0
+  W_kg_s: 53.327
+- station: '45'
+  Tt_K: 1185.9
+  Pt_kPa: 635.76
+  W_kg_s: 61.811
+- station: '5'
+  Tt_K: 851.49
+  Pt_kPa: 144.22
+  W_kg_s: 61.811
+- station: '8'
+  Tt_K: 851.49
+  Pt_kPa: 144.22
+  W_kg_s: 61.811
+performance:
+  thrust:
+    value: 121.43
+    unit: kN
+    tag: H
+  thrust_bypass:
+    value: 96.8819
+    unit: kN
+    tag: H
+  thrust_core:
+    value: 24.5481
+    unit: kN
+    tag: H
+  fuel_flow:
+    value: 1.284
+    unit: kg/s
+    tag: H
+  fuel_air_ratio:
+    value: 0.028841
+    unit: '-'
+    tag: H
+  sfc:
+    value: 10.574
+    unit: g/(kN s)
+    tag: H
+  specific_thrust:
+    value: 334.37
+    unit: N/(kg/s)
+    tag: H
+  opr:
+    value: 28.63
+    unit: '-'
+    tag: K
+  bpr:
+    value: 5.0
+    unit: '-'
+    tag: K
+  core_pr_25_2:
+    value: 2.1
+    unit: '-'
+    tag: T
+  hpc_pr:
+    value: 13.6333
+    unit: '-'
+    tag: H
+  hpt_pr:
+    value: 4.33663
+    unit: '-'
+    tag: H
+  lpt_pr:
+    value: 4.40832
+    unit: '-'
+    tag: H
+  T4:
+    value: 1860.41
+    unit: K
+    tag: H
+  T41:
+    value: 1716.18
+    unit: K
+    tag: H
+  Tt44_hpt_exit_before_mixing:
+    value: 1241.26
+    unit: K
+    tag: H
+  W_core:
+    value: 60.5267
+    unit: kg/s
+    tag: H
+  W_bypass:
+    value: 302.633
+    unit: kg/s
+    tag: H
+  W_combustor:
+    value: 44.52
+    unit: kg/s
+    tag: H
+  W_cooling:
+    value: 16.0067
+    unit: kg/s
+    tag: H
+  W_cooling_ngv:
+    value: 7.52314
+    unit: kg/s
+    tag: H
+  W_cooling_rotor_lpt:
+    value: 8.48354
+    unit: kg/s
+    tag: H
+  V18:
+    value: 320.13
+    unit: m/s
+    tag: H
+  V8:
+    value: 397.15
+    unit: m/s
+    tag: H
+  velocity_ratio:
+    value: 0.806068
+    unit: '-'
+    tag: H
+  eta_fan_is:
+    value: 0.88024
+    unit: '-'
+    tag: H
+  eta_lpt_is:
+    value: 0.915736
+    unit: '-'
+    tag: H
+  A18:
+    value: 0.779198
+    unit: m2
+    tag: H
+  A8:
+    value: 0.337011
+    unit: m2
+    tag: H
+  nozzle18_choked: false
+  nozzle8_choked: false
+shaft_power_MW:
+  fan:
+    value: 18.8196
+    unit: MW
+    tag: H
+  booster:
+    value: 4.71398
+    unit: MW
+    tag: H
+  hpc:
+    value: 28.7338
+    unit: MW
+    tag: H
+  hpt:
+    value: 29.1251
+    unit: MW
+    tag: H
+  lpt:
+    value: 23.7713
+    unit: MW
+    tag: H
+  hp_offtake:
+    value: 0.1
+    unit: MW
+    tag: T
+fan:
+  face_area:
+    value: 1.71577
+    unit: m2
+    tag: T
+  specific_flow:
+    value: 211.66
+    unit: kg/(s m2)
+    tag: H
+  choke_mass_flux:
+    value: 241.261
+    unit: kg/(s m2)
+    tag: H
+egt:
+  model_K:
+    value: 1086.62
+    unit: K
+    tag: T
+  model_C:
+    value: 813.473
+    unit: degC
+    tag: T
+  displayed_C:
+    value: 843.473
+    unit: degC
+    tag: T
+  note: CFM56-3 form via Martins 2015, applied in K; displayed = model + SAC shunt
+checks:
+- name: Fan choke (HARD)
+  hard: true
+  value: 211.7
+  reference: 241.3
+  unit: kg/(s m2)
+  criterion: W2/A < choke mass flux at SLS ISA
+  result: pass
+- name: Fan specific flow W2/A
+  value: 211.7
+  reference:
+  - 190.0
+  - 215.0
+  unit: kg/(s m2)
+  criterion: 190 <= W2/A <= 215
+  result: pass
+- name: W2 vs estimate
+  value: 363.16
+  reference: 354.7
+  unit: kg/s
+  deviation: 0.0239
+  criterion: within 10%
+  result: pass
+- name: Total cooling fraction
+  value: 0.2645
+  reference:
+  - 0.12
+  - 0.22
+  unit: '- of core flow'
+  criterion: 0.12 <= c <= 0.22
+  result: fail
+  flag: 'above range: check whether the 44.52 kg/s combustor air includes liner cooling
+    air'
+- name: SFC vs ICAO/TCDS
+  value: 10.574
+  reference: 10.574
+  unit: g/(kN s)
+  criterion: within 0.5%
+  result: pass
+- name: EGT displayed vs TCDS limit
+  value: 843.5
+  reference: 950.0
+  unit: degC
+  margin: 106.5
+  criterion: model + 30 K shunt < 950
+  result: pass
+- name: EGT displayed vs expected band
+  value: 843.5
+  reference:
+  - 800.0
+  - 920.0
+  unit: degC
+  criterion: info only
+  in_band: true
+  result: info
+- name: T4 vs references
+  value: 1860.4
+  reference:
+    estimate: 1450.0
+    indriyati_turbine_in: 1553.0
+  unit: K
+  deviation:
+    estimate: 0.283
+    indriyati_turbine_in: 0.198
+  criterion: info only
+  result: info
+- name: T3 vs test cell
+  value: 838.01
+  reference: 832.4
+  unit: K
+  deviation: 0.00674
+  criterion: info only (test cell T0 298 K, not ISA)
+  result: info
+hard_checks_passed: true
+sensitivity:
+  method: recalibrated per case; cooling cases fix cooling and drop the combustor-air
+    target
+  cases:
+  - case: e_fan +0.01
+    dW2_kg_s: -6.428
+    dT4_K: 0.0
+    dEGT_K: 11.58
+  - case: e_fan -0.01
+    dW2_kg_s: 7.014
+    dT4_K: -0.0
+    dEGT_K: -12.19
+  - case: e_booster +0.01
+    dW2_kg_s: -2.091
+    dT4_K: -2.161
+    dEGT_K: 2.73
+  - case: e_booster -0.01
+    dW2_kg_s: 2.25
+    dT4_K: 2.216
+    dEGT_K: -2.942
+  - case: e_hpc +0.01
+    dW2_kg_s: -7.249
+    dT4_K: -7.417
+    dEGT_K: 11.85
+  - case: e_hpc -0.01
+    dW2_kg_s: 9.083
+    dT4_K: 7.654
+    dEGT_K: -14.41
+  - case: e_hpt +0.01
+    dW2_kg_s: -6.438
+    dT4_K: 0.0
+    dEGT_K: 11.27
+  - case: e_hpt -0.01
+    dW2_kg_s: 7.762
+    dT4_K: 0.0
+    dEGT_K: -13.12
+  - case: e_lpt +0.01
+    dW2_kg_s: -6.686
+    dT4_K: 0.0
+    dEGT_K: 11.51
+  - case: e_lpt -0.01
+    dW2_kg_s: 7.454
+    dT4_K: 0.0
+    dEGT_K: -12.42
+  - case: cooling_fraction +0.02
+    dW2_kg_s: 3.121
+    dT4_K: 19.06
+    dEGT_K: -5.338
+  - case: cooling_fraction -0.02
+    dW2_kg_s: -2.909
+    dT4_K: -18.5
+    dEGT_K: 5.049

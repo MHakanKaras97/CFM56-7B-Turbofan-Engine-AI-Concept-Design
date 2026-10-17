@@ -1,0 +1,8 @@
+revision: rev002
+parent_revision: rev001
+date: '2026-10-17T21:43:58Z'
+summary: 'Cycle v2 calibrated: cooling air, combustor-air target, continuous enthalpy'
+reason: rev001 invalid (enthalpy reference bug, choke violation); ADR-006
+change_request: null
+code_commit: 3a01308a08e3278687d904be399a173b8de240fd
+outputs: []
