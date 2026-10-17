@@ -1,0 +1,201 @@
+source:
+  file: edb-emissions-databank_v32__web_.xlsx
+  sha256: 57a9ff572458ad3a3141afc1aea932b5faa5796d279f0ac74600b27869302530
+  sheet: Gaseous Emissions and Smoke
+  filter: CFM56-7B27
+rows:
+- uid: 3CM034
+  engine: CFM56-7B27
+  combustor: null
+  rated_thrust_kN: 121.44
+  pressure_ratio: 28.63
+  bpr: 5.0
+  fuel_flow_to_kg_s: 1.284
+  fuel_flow_co_kg_s: 1.043
+  fuel_flow_app_kg_s: 0.349
+  fuel_flow_idle_kg_s: 0.116
+  superseded: null
+  superseded_by: null
+  remark: FAA Certification Report CR-997, Dec 96.
+- uid: 4CM043
+  engine: CFM56-7B27/2
+  combustor: null
+  rated_thrust_kN: 121.44
+  pressure_ratio: 28.84
+  bpr: 5.0
+  fuel_flow_to_kg_s: 1.265
+  fuel_flow_co_kg_s: 1.033
+  fuel_flow_app_kg_s: 0.351
+  fuel_flow_idle_kg_s: 0.115
+  superseded: null
+  superseded_by: null
+  remark: FAA Certification Report CR-997/2, 14 Nov 97
+- uid: 8CM066
+  engine: CFM56-7B27/3
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: null
+  superseded_by: null
+  remark: Ref. GE REPORT CR-2097/3 Rev1
+- uid: 11CM080
+  engine: CFM56-7B27AE
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: 'Yes'
+  superseded_by: 01P11CM124
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 11CM077
+  engine: CFM56-7B27E
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: 'Yes'
+  superseded_by: 01P11CM121
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 11CM078
+  engine: CFM56-7B27E/B1
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: 'Yes'
+  superseded_by: 01P11CM122
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 11CM082
+  engine: CFM56-7B27E/B1F
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: 'Yes'
+  superseded_by: 01P11CM126
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 11CM079
+  engine: CFM56-7B27E/B3
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: 'Yes'
+  superseded_by: 01P11CM123
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 11CM081
+  engine: CFM56-7B27E/F
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: 'Yes'
+  superseded_by: 01P11CM125
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 01P11CM121
+  engine: CFM56-7B27E
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: null
+  superseded_by: null
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 01P11CM122
+  engine: CFM56-7B27E/B1
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: null
+  superseded_by: null
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 01P11CM123
+  engine: CFM56-7B27E/B3
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: null
+  superseded_by: null
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 01P11CM124
+  engine: CFM56-7B27AE
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: null
+  superseded_by: null
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 01P11CM125
+  engine: CFM56-7B27E/F
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: null
+  superseded_by: null
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
+- uid: 01P11CM126
+  engine: CFM56-7B27E/B1F
+  combustor: Tech Insertion
+  rated_thrust_kN: 121.4
+  pressure_ratio: 29.0
+  bpr: 5.1
+  fuel_flow_to_kg_s: 1.293
+  fuel_flow_co_kg_s: 1.031
+  fuel_flow_app_kg_s: 0.343
+  fuel_flow_idle_kg_s: 0.11
+  superseded: null
+  superseded_by: null
+  remark: Ref. GE REPORT CR-2097/3 Rev. 1
