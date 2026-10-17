@@ -1,0 +1,44 @@
+# CLAUDE.md
+
+## Purpose
+Concept-level design of a CFM56-7B27 class turbofan via a multi-agent system:
+an M0 engine agent coordinating M1-M9 module agents.
+
+## Numbers and provenance
+- Numbers come from code, never from LLM text.
+- Tag every value with its provenance:
+  - `[K]` primary source
+  - `[KS]` secondary source
+  - `[H]` computed
+  - `[G]` general engineering knowledge
+  - `[T]` estimate
+
+## Single source of truth
+- `engine/M*/bom/bom.yaml` is the single source of truth for parts.
+- Geometry is generated only by code in the module's `geometry/` folder.
+
+## Part identification
+- Part id: `M<module>.<stage>.<part>`
+- Part name: `"<Module> Stage <n> <Part type>"`
+- Repeated parts: one definition + `qty`.
+
+## Ownership and change control
+- Each part has exactly one owner module.
+- Agents never edit other modules' files. They raise a change request to M0.
+- User approval is required for every cross-module change.
+
+## Records
+- Records are immutable.
+- Revert = switch the active revision; never modify or delete a record.
+
+## Sources and copyright
+- No copyrighted text or figures. Summarize in your own words.
+- List every source with its license in `docs/sources.md`.
+
+## Language
+- Code, identifiers, comments: English.
+- Learning notes (`docs/learning/`, `engine/M*/learning/`): Turkish.
+
+## Restrictions
+- Do not add dependencies without asking.
+- Do not add root-level `.py` files without asking.
