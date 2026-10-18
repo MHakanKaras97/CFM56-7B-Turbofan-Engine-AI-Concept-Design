@@ -25,6 +25,7 @@ isentropic turbomachinery efficiencies, or (fallback) FPR with delta_eta = 0.
 Usage:
     python -m engine.M0_engine.analysis.cycle              # writes analysis/results.yaml
     python -m engine.M0_engine.analysis.cycle --validate   # Girão validation case, prints only
+    python -m engine.M0_engine.analysis.cycle --band       # delta_eta uncertainty band, prints only
 """
 
 import math
@@ -55,6 +56,7 @@ TARGETS = ("thrust", "fuel")
 SIMILARITY_TARGETS = (*TARGETS, "velocity_ratio")
 STEP_FLOOR = {"W2": 1.0, "T4": 100.0, "delta_eta": 0.05, "FPR": 1.0}  # damping scale near zero
 ETA = ("eta_fan_outer", "eta_fan_inner", "eta_booster", "eta_hpc", "eta_hpt", "eta_lpt")
+ETA_GROUPS = {"compressors": ETA[:4], "turbines": ETA[4:], "uniform": ETA}
 COMPONENTS = ("inlet_recovery", "FPR", *ETA, "pr_fan_inner", "pr_booster", "duct_25_24", "burner_eta",
               "burner_pr", "duct_45_44", "duct_6_5", "bypass_duct", "mech_eff", "cfg_18", "cfg_8", "cd_18",
               "cd_8", "LHV")
@@ -280,20 +282,21 @@ def _residual(name: str, r: dict, t: Targets) -> float:
     raise KeyError(name)
 
 
-def _apply(p: Params, s: dict) -> Params:
-    """Params with the optional third unknown (delta_eta or FPR) applied."""
+def _apply(p: Params, s: dict, eta_group: tuple[str, ...] = ETA) -> Params:
+    """Params with the optional third unknown (delta_eta on eta_group, or FPR) applied."""
     if "delta_eta" in s:
-        p = with_delta_eta(p, s["delta_eta"])
+        p = with_delta_eta(p, s["delta_eta"], eta_group)
     if "FPR" in s:
         p = replace(p, FPR=s["FPR"])
     return p
 
 
 def calibrate(p: Params, t: Targets, initial: dict, tol: float = 1e-9, max_iter: int = 50,
-              unknowns: tuple[str, ...] = UNKNOWNS, targets: tuple[str, ...] = TARGETS):
+              unknowns: tuple[str, ...] = UNKNOWNS, targets: tuple[str, ...] = TARGETS,
+              eta_group: tuple[str, ...] = ETA):
     """Newton iteration; default W2, T4 against thrust and fuel flow.
 
-    A third unknown (delta_eta or FPR) is applied to p before each evaluation.
+    A third unknown (delta_eta on eta_group, or FPR) is applied to p before each evaluation.
     Returns (result dict, iterations); the result holds the applied Params under "params".
     """
     if len(unknowns) != len(targets):
@@ -301,7 +304,7 @@ def calibrate(p: Params, t: Targets, initial: dict, tol: float = 1e-9, max_iter:
     state = {k: initial[k] for k in unknowns}
 
     def evaluate(s):
-        pp = _apply(p, s)
+        pp = _apply(p, s, eta_group)
         r = run(pp, s["W2"], s["T4"])
         r["params"] = pp
         return r, [_residual(name, r, t) for name in targets]
@@ -477,9 +480,26 @@ def sensitivity(p: Params, t: Targets, base: dict, raw: dict, tol: float) -> lis
 
 # --- rated case ---------------------------------------------------------------------
 
-def with_delta_eta(p: Params, delta_eta: float) -> Params:
-    """Add delta_eta to every isentropic turbomachinery efficiency."""
-    return replace(p, **{n: getattr(p, n) + delta_eta for n in ETA})
+def with_delta_eta(p: Params, delta_eta: float, names: tuple[str, ...] = ETA) -> Params:
+    """Add delta_eta to the named isentropic turbomachinery efficiencies (default: all)."""
+    return replace(p, **{n: getattr(p, n) + delta_eta for n in names})
+
+
+def uncertainty_band(p: Params, t: Targets, initial: dict, raw: dict, tol: float) -> list[dict]:
+    """Similarity solve (thrust, fuel, ideal V18/V8) with delta_eta on each efficiency group (info only)."""
+    rows = []
+    for group, names in ETA_GROUPS.items():
+        try:
+            r, _ = calibrate(p, t, dict(initial, delta_eta=0.0), tol=tol, unknowns=(*UNKNOWNS, "delta_eta"),
+                             targets=SIMILARITY_TARGETS, eta_group=names)
+        except ArithmeticError as exc:
+            rows.append({"group": group, "solvable": False, "message": str(exc)})
+            continue
+        rows.append({"group": group, "solvable": True,
+                     "delta_eta": _r(getattr(r["params"], names[0]) - getattr(p, names[0]), 4),
+                     "W2_kg_s": _r(r["W2"], 5), "T4_K": _r(r["T4"], 5), "T41_K": _r(r["T41"], 5),
+                     "EGT_model_C": _r(egt_model_K(r, raw) - 273.15, 4)})
+    return rows
 
 
 def delta_eta_sweep(p: Params, t: Targets, initial: dict, raw: dict, refs: dict, tol: float) -> list[dict]:
@@ -697,6 +717,11 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
 def main(argv: list[str]) -> int:
     p, t, initial, raw, refs = load_inputs()
     tol = _value(raw["calibration"]["tolerance"])
+    if "--band" in argv:
+        vr = validation_velocity_ratio(p, refs, initial, tol)
+        for row in uncertainty_band(p, replace(t, velocity_ratio=vr), initial, raw, tol):
+            print("  " + "  ".join(f"{k}={v}" for k, v in row.items()))
+        return 0
     if "--validate" in argv:
         pv, tv = validation_case(p, refs)
         r, _ = calibrate(pv, tv, initial, tol=tol)

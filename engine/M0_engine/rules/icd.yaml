@@ -1,0 +1,1150 @@
+description: M0 interface control document and module budgets; generated, do not edit
+  by hand
+source:
+  revision: rev005
+  params: engine/M0_engine/records/rev005/params.yaml
+  generated_by: engine/M0_engine/analysis/icd.py
+  tag: H
+ownership_rule: upstream module owns its exit station (rules/station_ownership.md)
+tolerances:
+  description: allowed deviation of an achieved module value before M0 re-balances
+  pressure_ratio:
+    value: 0.01
+    type: relative
+    tag: T
+  efficiency:
+    value: 0.005
+    type: absolute
+    tag: T
+  flow:
+    value: 0.01
+    type: relative
+    tag: T
+  temperature:
+    value: 10.0
+    type: absolute
+    unit: K
+    tag: T
+  info:
+    note: reported, not checked
+integration:
+  description: cycle re-run at the operating point with achieved module values
+  operating_point:
+    W2: 345.396593827
+    T4: 1670.65888058
+    delta_eta: 0.0171296534835
+    unit:
+      W2: kg/s
+      T4: K
+    tag: H
+  reference:
+    thrust_kN: 121.43
+    sfc_g_kNs: 10.5739932
+    egt_model_K: 1118.06988
+    tag: H
+  tolerances:
+    thrust:
+      value: 0.005
+      type: relative
+      tag: T
+    sfc:
+      value: 0.005
+      type: relative
+      tag: T
+    egt:
+      value: 10.0
+      type: absolute
+      unit: K
+      tag: T
+stations:
+  '0':
+    owner: null
+    consumers:
+    - M1
+    note: ambient, SLS ISA
+    Tt:
+      value: 288.15
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 101.325
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 345.397
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '2':
+    owner: M1
+    consumers:
+    - M1
+    note: fan face; inlet (M1) exit, P2/P1 inlet recovery
+    Tt:
+      value: 288.15
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 100.312
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 345.397
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '13':
+    owner: M1
+    consumers:
+    - M7
+    note: outer fan + OGV exit, bypass side
+    Tt:
+      value: 344.81
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 177.05
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 287.83
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '18':
+    owner: M7
+    consumers: []
+    note: bypass nozzle inlet, after the P16/P13 duct (M7 internal)
+    Tt:
+      value: 344.81
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 172.624
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 287.83
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '21':
+    owner: M1
+    consumers:
+    - M2
+    note: fan hub (inner fan) exit, core side
+    Tt:
+      value: 316.77
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 134.819
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 57.5661
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '24':
+    owner: M2
+    consumers: []
+    note: booster exit before the transition duct (M2 internal)
+    Tt:
+      value: 393.12
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 270.177
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 57.5661
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '25':
+    owner: M2
+    consumers:
+    - M3
+    note: booster + transition duct exit, HPC inlet
+    Tt:
+      value: 393.12
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 264.774
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 57.5661
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '3':
+    owner: M3
+    consumers:
+    - M4
+    - M9
+    note: HPC exit; NGV and HPT rotor cooling extracted here (M9)
+    Tt:
+      value: 817.513
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 2871.93
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 56.4148
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '31':
+    owner: M9
+    consumers:
+    - M4
+    note: 'combustor inlet: W3 minus M9 extraction'
+    Tt:
+      value: 817.513
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 2871.93
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 50.0825
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0
+      unit: '-'
+      tag: H
+      kind: info
+  '4':
+    owner: M4
+    consumers:
+    - M5
+    note: combustor exit
+    Tt:
+      value: 1670.66
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 2728.33
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 51.3665
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0256377
+      unit: '-'
+      tag: H
+      kind: info
+  '41':
+    owner: M5
+    consumers: []
+    note: HPT rotor inlet after NGV cooling mixes in (M5 internal)
+    Tt:
+      value: 1629.21
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 2728.33
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 54.2448
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0242443
+      unit: '-'
+      tag: H
+      kind: info
+  '43':
+    owner: M5
+    consumers: []
+    note: HPT rotor exit before rotor cooling mixes in (M5 internal)
+    Tt:
+      value: 1251.26
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 737.553
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 54.2448
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0242443
+      unit: '-'
+      tag: H
+      kind: info
+  '44':
+    owner: M5
+    consumers:
+    - M6
+    note: HPT exit after rotor cooling mixes in
+    Tt:
+      value: 1226.99
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 737.553
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 57.6988
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.02276
+      unit: '-'
+      tag: H
+      kind: info
+  '45':
+    owner: M6
+    consumers: []
+    note: LPT inlet after the inter-turbine duct and leak return (M6 internal)
+    Tt:
+      value: 1215.91
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 722.802
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 58.8501
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0223048
+      unit: '-'
+      tag: H
+      kind: info
+  '5':
+    owner: M6
+    consumers:
+    - M7
+    note: LPT exit
+    Tt:
+      value: 891.744
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 179.591
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 58.8501
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0223048
+      unit: '-'
+      tag: H
+      kind: info
+  '8':
+    owner: M7
+    consumers: []
+    note: core nozzle, after the P6/P5 duct
+    Tt:
+      value: 891.744
+      unit: K
+      tag: H
+      kind: info
+    Pt:
+      value: 177.795
+      unit: kPa
+      tag: H
+      kind: info
+    W:
+      value: 58.8501
+      unit: kg/s
+      tag: H
+      kind: info
+    FAR:
+      value: 0.0223048
+      unit: '-'
+      tag: H
+      kind: info
+interfaces:
+- station: '13'
+  from: M1
+  to: M7
+  Tt:
+    value: 344.81
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 177.05
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 287.83
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0
+    unit: '-'
+    tag: H
+    kind: info
+- station: '21'
+  from: M1
+  to: M2
+  Tt:
+    value: 316.77
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 134.819
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 57.5661
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0
+    unit: '-'
+    tag: H
+    kind: info
+- station: '25'
+  from: M2
+  to: M3
+  Tt:
+    value: 393.12
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 264.774
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 57.5661
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0
+    unit: '-'
+    tag: H
+    kind: info
+- station: '3'
+  from: M3
+  to: M4
+  Tt:
+    value: 817.513
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 2871.93
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 56.4148
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0
+    unit: '-'
+    tag: H
+    kind: info
+- station: '3'
+  from: M3
+  to: M9
+  Tt:
+    value: 817.513
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 2871.93
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 56.4148
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0
+    unit: '-'
+    tag: H
+    kind: info
+- station: '31'
+  from: M9
+  to: M4
+  Tt:
+    value: 817.513
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 2871.93
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 50.0825
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0
+    unit: '-'
+    tag: H
+    kind: info
+- station: '4'
+  from: M4
+  to: M5
+  Tt:
+    value: 1670.66
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 2728.33
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 51.3665
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0256377
+    unit: '-'
+    tag: H
+    kind: info
+- station: '44'
+  from: M5
+  to: M6
+  Tt:
+    value: 1226.99
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 737.553
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 57.6988
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.02276
+    unit: '-'
+    tag: H
+    kind: info
+- station: '5'
+  from: M6
+  to: M7
+  Tt:
+    value: 891.744
+    unit: K
+    tag: H
+    kind: info
+  Pt:
+    value: 179.591
+    unit: kPa
+    tag: H
+    kind: info
+  W:
+    value: 58.8501
+    unit: kg/s
+    tag: H
+    kind: info
+  FAR:
+    value: 0.0223048
+    unit: '-'
+    tag: H
+    kind: info
+modules:
+  M1:
+    name: Inlet and Fan
+    inlet_stations:
+    - '2'
+    exit_stations:
+    - '13'
+    - '21'
+    budget:
+      FPR:
+        value: 1.765
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      eta_fan_outer:
+        value: 0.89513
+        unit: '-'
+        tag: H
+        kind: efficiency
+      pr_fan_inner:
+        value: 1.344
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      eta_fan_inner:
+        value: 0.88713
+        unit: '-'
+        tag: H
+        kind: efficiency
+      inlet_recovery:
+        value: 0.99
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      W2:
+        value: 345.397
+        unit: kg/s
+        tag: H
+        kind: flow
+      W13:
+        value: 287.83
+        unit: kg/s
+        tag: H
+        kind: flow
+      W21:
+        value: 57.5661
+        unit: kg/s
+        tag: H
+        kind: flow
+      T13:
+        value: 344.81
+        unit: K
+        tag: H
+        kind: temperature
+      T21:
+        value: 316.77
+        unit: K
+        tag: H
+        kind: temperature
+      power_outer_fan:
+        value: 16.406
+        unit: MW
+        tag: H
+        kind: info
+      power_inner_fan:
+        value: 1.6558
+        unit: MW
+        tag: H
+        kind: info
+  M2:
+    name: Booster
+    inlet_stations:
+    - '21'
+    exit_stations:
+    - '25'
+    budget:
+      pr_booster:
+        value: 2.004
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      eta_booster:
+        value: 0.90713
+        unit: '-'
+        tag: H
+        kind: efficiency
+      duct_25_24:
+        value: 0.98
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      W25:
+        value: 57.5661
+        unit: kg/s
+        tag: H
+        kind: flow
+      T25:
+        value: 393.12
+        unit: K
+        tag: H
+        kind: temperature
+      power:
+        value: 4.43592
+        unit: MW
+        tag: H
+        kind: info
+  M3:
+    name: HP Compressor
+    inlet_stations:
+    - '25'
+    exit_stations:
+    - '3'
+    budget:
+      hpc_pr:
+        value: 10.8467
+        unit: '-'
+        tag: H
+        kind: pressure_ratio
+      eta_hpc:
+        value: 0.85343
+        unit: '-'
+        tag: H
+        kind: efficiency
+      leak_bleed_point:
+        value: 0.5
+        unit: '- of HPC enthalpy rise'
+        tag: T
+        kind: info
+      W3:
+        value: 56.4148
+        unit: kg/s
+        tag: H
+        kind: flow
+      T3:
+        value: 817.513
+        unit: K
+        tag: H
+        kind: temperature
+      power:
+        value: 25.4886
+        unit: MW
+        tag: H
+        kind: info
+  M4:
+    name: Combustor
+    inlet_stations:
+    - '31'
+    exit_stations:
+    - '4'
+    budget:
+      burner_eta:
+        value: 0.9995
+        unit: '-'
+        tag: H
+        kind: efficiency
+      burner_pr:
+        value: 0.95
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      W31:
+        value: 50.0825
+        unit: kg/s
+        tag: H
+        kind: flow
+      T4:
+        value: 1670.66
+        unit: K
+        tag: H
+        kind: temperature
+      fuel_flow:
+        value: 1.284
+        unit: kg/s
+        tag: K
+        kind: flow
+      FAR:
+        value: 0.0256377
+        unit: '-'
+        tag: H
+        kind: info
+  M5:
+    name: HP Turbine
+    inlet_stations:
+    - '4'
+    exit_stations:
+    - '44'
+    budget:
+      eta_hpt:
+        value: 0.89713
+        unit: '-'
+        tag: H
+        kind: efficiency
+      hpt_pr:
+        value: 3.69916
+        unit: '-'
+        tag: H
+        kind: pressure_ratio
+      T41:
+        value: 1629.21
+        unit: K
+        tag: H
+        kind: temperature
+      T44:
+        value: 1226.99
+        unit: K
+        tag: H
+        kind: temperature
+      W44:
+        value: 57.6988
+        unit: kg/s
+        tag: H
+        kind: flow
+      power:
+        value: 25.746
+        unit: MW
+        tag: H
+        kind: info
+  M6:
+    name: LP Turbine
+    inlet_stations:
+    - '44'
+    exit_stations:
+    - '5'
+    budget:
+      eta_lpt:
+        value: 0.93443
+        unit: '-'
+        tag: H
+        kind: efficiency
+      lpt_pr:
+        value: 4.02471
+        unit: '-'
+        tag: H
+        kind: pressure_ratio
+      duct_45_44:
+        value: 0.98
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      T45:
+        value: 1215.91
+        unit: K
+        tag: H
+        kind: temperature
+      T5:
+        value: 891.744
+        unit: K
+        tag: H
+        kind: temperature
+      W5:
+        value: 58.8501
+        unit: kg/s
+        tag: H
+        kind: flow
+      power:
+        value: 22.7249
+        unit: MW
+        tag: H
+        kind: info
+  M7:
+    name: Nozzle
+    inlet_stations:
+    - '5'
+    - '13'
+    exit_stations:
+    - '8'
+    - '18'
+    budget:
+      cfg_18:
+        value: 1.00998
+        unit: '-'
+        tag: KS
+        kind: efficiency
+      cfg_8:
+        value: 1.0
+        unit: '-'
+        tag: T
+        kind: efficiency
+      cd_18:
+        value: 0.99756
+        unit: '-'
+        tag: KS
+        kind: efficiency
+      cd_8:
+        value: 0.99492
+        unit: '-'
+        tag: KS
+        kind: efficiency
+      duct_6_5:
+        value: 0.99
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      bypass_duct:
+        value: 0.975
+        unit: '-'
+        tag: KS
+        kind: pressure_ratio
+      A18:
+        value: 0.773988
+        unit: m2
+        tag: H
+        kind: info
+      A8:
+        value: 0.250377
+        unit: m2
+        tag: H
+        kind: info
+      V18_V8_ideal:
+        value: 0.603638
+        unit: '-'
+        tag: H
+        kind: info
+  M8:
+    name: Shaft and Bearing
+    inlet_stations: []
+    exit_stations: []
+    budget:
+      mech_eff:
+        value: 0.99
+        unit: '-'
+        tag: KS
+        kind: efficiency
+      hp_power_offtake:
+        value: 0.0
+        unit: kW
+        tag: KS
+        kind: info
+  M9:
+    name: Secondary Air and Oil
+    inlet_stations:
+    - '3'
+    exit_stations:
+    - '31'
+    budget:
+      ngv:
+        value: 0.05
+        unit: '- of W25'
+        tag: KS
+        kind: flow
+      hpt_rotor:
+        value: 0.06
+        unit: '- of W25'
+        tag: KS
+        kind: flow
+      leak:
+        value: 0.02
+        unit: '- of W25'
+        tag: KS
+        kind: flow
+      customer_bleed:
+        value: 0.0
+        unit: kg/s
+        tag: T
+        kind: info
+shafts:
+  owner: M8
+  LP:
+    power_lpt:
+      value: 22.7249
+      unit: MW
+      tag: H
+      kind: info
+    power_fan_and_booster:
+      value: 22.4977
+      unit: MW
+      tag: H
+      kind: info
+    mech_eff:
+      value: 0.99
+      unit: '-'
+      tag: KS
+      kind: info
+    speed_refs:
+      girao_nominal:
+        value: 5282.0
+        unit: rpm
+        tag: KS
+        source: Girão 2023
+      yilmaz_takeoff_mean:
+        value: 5086.0
+        unit: rpm
+        tag: KS
+        source: Yılmaz 2009
+  HP:
+    power_hpt:
+      value: 25.746
+      unit: MW
+      tag: H
+      kind: info
+    power_hpc:
+      value: 25.4886
+      unit: MW
+      tag: H
+      kind: info
+    hp_offtake:
+      value: 0.0
+      unit: kW
+      tag: KS
+      kind: info
+    mech_eff:
+      value: 0.99
+      unit: '-'
+      tag: KS
+      kind: info
+    speed_refs:
+      girao_nominal:
+        value: 14465.0
+        unit: rpm
+        tag: KS
+        source: Girão 2023
+      yilmaz_takeoff_mean:
+        value: 14403.0
+        unit: rpm
+        tag: KS
+        source: Yılmaz 2009
+secondary_air:
+  owner: M9
+  flows:
+  - name: ngv_cooling
+    fraction_of_W25:
+      value: 0.05
+      unit: '-'
+      tag: KS
+      kind: info
+    W:
+      value: 2.8783
+      unit: kg/s
+      tag: H
+      kind: info
+    extraction: '3'
+    T_extraction:
+      value: 817.513
+      unit: K
+      tag: H
+      kind: info
+    return: '41'
+    return_module: M5
+  - name: hpt_rotor_cooling
+    fraction_of_W25:
+      value: 0.06
+      unit: '-'
+      tag: KS
+      kind: info
+    W:
+      value: 3.45397
+      unit: kg/s
+      tag: H
+      kind: info
+    extraction: '3'
+    T_extraction:
+      value: 817.513
+      unit: K
+      tag: H
+      kind: info
+    return: '44'
+    return_module: M5
+  - name: interstage_leak
+    fraction_of_W25:
+      value: 0.02
+      unit: '-'
+      tag: KS
+      kind: info
+    W:
+      value: 1.15132
+      unit: kg/s
+      tag: H
+      kind: info
+    extraction: HPC interstage at 0.5 of the enthalpy rise (M3 port)
+    T_extraction:
+      value: 609.988
+      unit: K
+      tag: H
+      kind: info
+    return: '45'
+    return_module: M6
+efficiencies_include_delta_eta:
+- eta_fan_outer
+- eta_fan_inner
+- eta_booster
+- eta_hpc
+- eta_hpt
+- eta_lpt
+fan_face_area:
+  value: 1.71577
+  unit: m2
+  tag: T
+  kind: info

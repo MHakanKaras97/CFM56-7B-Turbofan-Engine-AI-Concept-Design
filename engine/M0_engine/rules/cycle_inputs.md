@@ -83,6 +83,19 @@ Girdiler: itki 125.73 kN, yakıt 1.4023 kg/s, BPR 4.80, OPR (P3/P2) 29.88. Refer
 - Δη taraması (0-0.03, yalnızca itki ve yakıt) bilgi tablosu olarak `results.yaml` içinde; V18/V8 sütunu dahil.
 - rev004 (Δη = 0, iki hedef) yerini bu sonuca bıraktı: itki tavanına %1.2 yakın, ideal V18/V8'i yüksek (0.849) bir çözümdü.
 
+## Belirsizlik bandı (yalnızca bilgi, revizyon yok) [H]
+
+Δη farklı verim gruplarına uygulandı; her durumda aynı üç hedef çözüldü (itki, yakıt, ideal V18/V8 = 0.6036). Komut: `python -m engine.M0_engine.analysis.cycle --band`.
+
+| Δη uygulanan | Δη | W2 [kg/s] | T4 [K] | T41 [K] | EGT model [°C] |
+|---|---|---|---|---|---|
+| (a) yalnız kompresörler (fan dış/iç, booster, HPC) | 0.0344 | 345.94 | 1659.4 | 1618.0 | 843.6 |
+| (b) yalnız türbinler (HPT, LPT) | 0.0348 | 344.84 | 1682.3 | 1640.9 | 846.3 |
+| (c) hepsi eşit (rev005) | 0.0171 | 345.40 | 1670.7 | 1629.2 | 844.9 |
+| Yayılım | | 1.1 | 22.9 | 22.9 | 2.7 |
+
+(a) ve (b) durumlarında Δη, 0.03 sınırının üstünde kalıyor.
+
 ## Bilgi referansları
 
 - EGT: Girão, 125.7 kN'de yaklaşık 851 °C (formül değeri, şönt hariç). 800-920 °C bandı v4'te kaldırıldı.
