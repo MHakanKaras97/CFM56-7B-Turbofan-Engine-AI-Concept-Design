@@ -145,8 +145,12 @@ def create_cr(
     changes: list[dict],
     root: Path = ROOT,
     options: list[dict] | None = None,
+    impact: dict | None = None,
 ) -> str:
-    """Create an open CR and return its id. Invalid CRs are rejected and not written."""
+    """Create an open CR and return its id. Invalid CRs are rejected and not written.
+
+    `impact` may be given when M0 itself drafts the CR from its own analysis (budget CRs).
+    """
     cr_id = _next_cr_id(root)
     date = now_utc()
     cr = {
@@ -156,7 +160,7 @@ def create_cr(
         "to_modules": list(to_modules),
         "reason": reason,
         "changes": copy.deepcopy(changes),
-        "impact": None,
+        "impact": copy.deepcopy(impact),
         "status": "open",
         "decision": None,
         "applied_revisions": None,
@@ -170,12 +174,20 @@ def create_cr(
     return cr_id
 
 
-def set_impact(cr_id: str, affected_modules: list[str], notes: str, root: Path = ROOT) -> None:
-    """M0 records its impact analysis. Only while the CR is open."""
+def set_impact(cr_id: str, affected_modules: list[str], notes: str, root: Path = ROOT,
+               metrics: dict[str, dict] | None = None) -> None:
+    """M0 records its impact analysis. Only while the CR is open.
+
+    metrics: metric name -> Quantity. None keeps the metrics already recorded (if any).
+    """
     cr = load_cr(cr_id, root)
     if cr["status"] != "open":
         raise CRError(f"{cr_id}: impact can only be set while open (status: {cr['status']})")
+    if metrics is None:
+        metrics = (cr["impact"] or {}).get("metrics")
     cr["impact"] = {"affected_modules": list(affected_modules), "notes": notes}
+    if metrics is not None:
+        cr["impact"]["metrics"] = copy.deepcopy(metrics)
     _save(cr, root)
 
 

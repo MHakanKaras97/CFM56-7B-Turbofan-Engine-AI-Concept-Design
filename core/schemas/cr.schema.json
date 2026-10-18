@@ -70,6 +70,16 @@
             },
             "notes": {
               "type": "string"
+            },
+            "metrics": {
+              "description": "Optional structured impact, metric name -> Quantity (e.g. dSFC in %).",
+              "type": "object",
+              "propertyNames": {
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/quantity"
+              }
             }
           }
         }

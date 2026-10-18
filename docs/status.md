@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- UI faz 1: CR `impact.metrics` (isteğe bağlı; bütçe CR'leri dSFC %, dEGT K, dT41 K ile doldurur, onay için etki hazır). core/diff.py: diff_revisions, diff_concepts (saf veri). .cache/geometry/test_box.step üretildi (Fusion ilişkilendirme testi).
 - Araç yolları yapılandırması: core/toolpaths.py; ccx yapılandırılan yoldan çalıştı ("This is Version 2.22"; girdisiz: kullanım satırı).
 - UI spesifikasyonu (docs/design/ui_spec.md); ADR-011 (revizyonda section.svg, GLB/STEP önbellekte).
 - Kavramsal düzen referansı: concept_reference.yaml -> tools/reference.py -> engine_reference.svg; check_layout() taslağı.
@@ -44,10 +45,9 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - .step ilişkilendirmesi kullanıcıda bekliyor. Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
-1. UI faz 1: CR "impact" alanı + core revizyon farkı (testlerle).
-2. UI faz 2: Streamlit iskeleti (üst çubuk, menü, Genel bakış, M0 sayfaları), ui_spec.md'ye göre.
-3. UI faz 3: Talepler, Revizyonlar, Öğrenme sayfaları.
-4. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
+1. UI faz 2: Streamlit iskeleti (üst çubuk, menü, Genel bakış, M0 sayfaları), ui_spec.md'ye göre.
+2. UI faz 3: Talepler, Revizyonlar, Öğrenme sayfaları.
+3. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 

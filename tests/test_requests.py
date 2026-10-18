@@ -136,3 +136,16 @@ def test_tampered_cr_file_rejected(repo):
     path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8", newline="\n")
     with pytest.raises(CRError):
         load_cr(cr_id, root=repo)
+
+
+def test_impact_metrics_optional(repo):
+    cr_id = new_cr(repo)
+    assert load_cr(cr_id, root=repo)["impact"] is None  # old style: no impact yet
+    set_impact(cr_id, ["M1"], "no metrics", root=repo)
+    assert "metrics" not in load_cr(cr_id, root=repo)["impact"]
+    metrics = {"dSFC": {"value": 0.4, "unit": "%", "tag": "H"}}
+    set_impact(cr_id, ["M1"], "with metrics", root=repo, metrics=metrics)
+    set_impact(cr_id, ["M1", "M2"], "notes only", root=repo)  # keeps recorded metrics
+    assert load_cr(cr_id, root=repo)["impact"]["metrics"] == metrics
+    with pytest.raises(CRError):
+        set_impact(cr_id, ["M1"], "bad", root=repo, metrics={"dSFC": {"value": 0.4, "unit": "%", "tag": "X"}})

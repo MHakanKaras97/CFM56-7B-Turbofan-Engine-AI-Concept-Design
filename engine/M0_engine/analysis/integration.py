@@ -7,7 +7,8 @@ Modes [T]:
 
 Out of tolerance, a change request from the module to M0 is drafted through core/requests.py
 with two options for the user: (a) accept the achieved values in the M0 params and re-balance
-(params changes), (b) module redesign (no change). The CR stays open; nothing is applied here.
+(params changes), (b) module redesign (no change). The CR carries its impact (dSFC %, dEGT K,
+dT41 K; dThrust % in operating_point mode). The CR stays open; nothing is applied here.
 """
 
 from dataclasses import replace
@@ -87,6 +88,20 @@ def _metrics(r: dict, base: dict, raw: dict, icd: dict, mode: str) -> list[dict]
     return rows
 
 
+IMPACT_METRICS = {"thrust": ("dThrust", "%", 100.0), "sfc": ("dSFC", "%", 100.0),
+                  "egt": ("dEGT", "K", 1.0), "T41": ("dT41", "K", 1.0)}
+
+
+def impact(module: str, metrics: list[dict], mode: str) -> dict:
+    """CR impact from the integration metrics: deltas against the ICD design point, tag H."""
+    out = {}
+    for m in metrics:
+        name, unit, scale = IMPACT_METRICS[m["name"]]
+        out[name] = {"value": round(m["deviation"] * scale, 6), "unit": unit, "tag": "H"}
+    return {"affected_modules": sorted({"M0", module}),
+            "notes": f"M0 integration check ({mode}); deltas against the ICD design point", "metrics": out}
+
+
 def params_changes(module: str, achieved: dict[str, float], root: Path = ROOT) -> list[dict]:
     """Option (a): achieved values written into the M0 params. Efficiencies set this way are fixed,
     i.e. excluded from the delta_eta shift. Items that are not M0 inputs get no change."""
@@ -137,7 +152,7 @@ def integration_check(module: str, achieved: dict[str, float], mode: str = "thru
              "description": f"{module_id} redesign to meet its budget; M0 unchanged"},
         ]
         cr_id = create_cr(module_id, ["M0"], f"Integration check ({mode}) out of tolerance: {failed}",
-                          changes, root=cr_root, options=options)
+                          changes, root=cr_root, options=options, impact=impact(module_id, metrics, mode))
     return {"module": module_id, "mode": mode, "budget": budget_rows, "not_used_in_cycle": unused,
             "metrics": metrics, "passed": passed, "cr": cr_id}
 

@@ -39,7 +39,7 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 - **BOM ağacı (solda):** `bom/bom.yaml` parçaları, kimliğe göre hiyerarşik (M1.1 → M1.1.1); tekrar eden parçada "×qty". Seçilen parça kesitte vurgulanır.
 - **Kesit görünümü:** iki revizyonun `records/revNNN/section.svg` dosyaları üst üste çizilir (ADR-011). Eski revizyon kesikli gri, yeni revizyon renkli. Değişen ölçüler için ok ve etiket gösterilir (ör. "Δr uç = +13 mm"). Motor ekseni kesikli çizgiyle gösterilir.
 - **3B görünüm:** GLB dosyası yerel önbellekten (`.cache/geometry/<modül>/<rev>/`) okunur. Önbellekte yoksa kayıttaki `code_commit` ve parametrelerle yeniden üretilir, SHA-256 kayıtla karşılaştırılır.
-- **Değişen ölçüler:** A ile B arasındaki parametre ve BOM farkı; ad, eski → yeni, fark (ör. "Fan çapı 1549 → 1575 mm").
+- **Değişen ölçüler:** A ile B arasındaki parametre ve BOM farkı (`core.diff.diff_revisions`); ad, eski → yeni, fark (ör. "Fan çapı 1549 → 1575 mm").
 - **Analizler:** seçili revizyonun analiz kontrolleri (ör. santrifüj gerilme, uç hızı, Campbell), her biri rozetle.
 - **Fusion'da aç:** STEP dosyası önbelleğe dışa aktarılır ve işletim sisteminin dosya ilişkilendirmesiyle açılır (Windows'ta `os.startfile`). İlişkilendirme yoksa arayüz dosya yolunu gösterir ve uyarı verir. Fusion'da yapılan değişiklikler geri yazılmaz; tek kaynak koddur.
 - Başlamamış modülde sayfa, ICD bütçesini ve "Başlamadı" durumunu gösterir.
@@ -47,7 +47,7 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 ### 4.4 Talepler (`ui_talepler.png`)
 - Başlıkta açık ve kapalı CR sayıları. Liste `engine/M0_engine/requests/CR-*.yaml` dosyalarından okunur; açık CR'ler önce gelir.
 - **CR kartı:** kimlik, yön ("M3 → M0"), tür ("bütçe ihlali"), gerekçe, etki rozeti ("etki analizi hazır" = `impact` dolu).
-- **Etki metrikleri:** ΔSFC, ΔEGT, ΔT41 kartları. Kaynak: entegrasyon kontrolünün sonucu (bkz. Açık noktalar 1).
+- **Etki metrikleri:** ΔSFC, ΔEGT, ΔT41 kartları. Kaynak: CR'nin `impact.metrics` alanı (metrik adı → {value, unit, tag}); bütçe CR'lerinde `dSFC` [%], `dEGT` [K], `dT41` [K], operating_point modunda ayrıca `dThrust` [%]. Alan isteğe bağlıdır: `impact` boş ya da `metrics` yoksa kartlar gösterilmez, yalnızca `impact.notes` görünür.
 - **Seçenekler:** CR'deki `options` radyo düğmeleriyle gösterilir: (a) M0 değeri kabul etsin ve çevrimi yeniden dengelesin; (b) modül tasarımını düzeltsin.
 - **Karar notu:** zorunlu metin alanı.
 - **Karar:** yalnızca `core.requests.decide(cr, approve, note, option=...)` ile verilir.
@@ -59,7 +59,13 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 ### 4.5 Revizyonlar
 - **Modül zaman çizelgesi:** her modülün revizyonları (`records/revNNN/manifest.yaml`): tarih, özet, gerekçe, CR, kod commit'i; aktif olan işaretli.
 - **Konsept zaman çizelgesi:** `conceptNNN` manifestleri ve sabitlenen modül revizyonları.
-- **Fark görünümü:** aynı modülün iki revizyonu arasında `params.yaml`, `results.yaml` ve `bom.yaml` farkları (anahtar bazında: eski → yeni). Sayısal farklar yüzde olarak da gösterilir.
+- **Fark görünümü:** `core.diff.diff_revisions(modül, revA, revB)` sonucundan:
+  - `params`: [{path, old, new}] (None = yok; eklenen/silinen anahtar),
+  - `results`: [{key, old, new, delta, pct}] (delta ve yüzde yalnızca iki değer de sayıysa),
+  - `bom`: {header, added, removed, changed: {parça kimliği: [{path, old, new}]}},
+  - `outputs`: [{file, old, new}] (SHA-256 değişimi).
+  Yollar noktalıdır (ör. `calibration.W2.value`); kimlik anahtarı olan listeler kimlikle yazılır (ör. `stations[2].W_kg_s`). Boş fark `core.diff.is_empty` ile anlaşılır. Biçimlendirme (ondalık virgül, birim) arayüzün işidir.
+- **Konsept farkı:** `core.diff.diff_concepts(cA, cB)` → [{module, old, new}]; satır seçilince o modül için `diff_revisions` gösterilir.
 - **Geri dönüş:** "Aktif yap" düğmesi `core.records.revert` (modül) veya `revert_concept` çağırır; önce onay penceresi açılır. Kayıtlar silinmez.
 - Doğrulama: `core.records.verify` ile çıktı özetleri kontrol edilir ve sonuç rozetle gösterilir.
 
@@ -73,6 +79,6 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 - 3B görünüm için GLB görüntüleyici olarak tarayıcıda çalışan bir bileşen (ör. model-viewer) kullanılabilir. Eklenecek bağımlılık için önce onay alınır.
 
 ## 6. Açık noktalar
-1. **Etki metrikleri CR'de yapısal değil:** şu an gerekçe metninin içinde. Önerilen çözüm: `integration_check` sonuçları CR'nin `impact` bölümüne (veya yeni bir `metrics` alanına) yapısal olarak yazılsın. Bu bir şema değişikliği gerektirir ve kullanıcı onayına tabidir.
+1. ~~Etki metrikleri CR'de yapısal değil~~ — çözüldü (UI faz 1): `impact.metrics`, bütçe CR'lerinde `integration_check` doldurur.
 2. **`.step` dosya ilişkilendirmesi:** bu makinede `.step` ve `.stp` uzantıları hiçbir uygulamayla ilişkili değil. "Fusion'da aç" çalışması için ya ilişkilendirme yapılmalı ya da Fusion'ın çalıştırılabilir dosya yolu ayarlardan verilmeli.
-3. **Revizyon farkı fonksiyonu:** `core` içinde henüz yok. Fark görünümü için `core.records` modülüne salt okunur bir `diff(module, rev_a, rev_b)` eklenmeli.
+3. ~~Revizyon farkı fonksiyonu~~ — çözüldü (UI faz 1): `core/diff.py` (`diff_revisions`, `diff_concepts`).
