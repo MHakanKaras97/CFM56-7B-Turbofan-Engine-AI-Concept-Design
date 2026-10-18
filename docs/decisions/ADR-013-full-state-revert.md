@@ -6,7 +6,9 @@
   - params (`analysis/*_params.yaml`) ve `analysis/results.yaml` kayıttan,
   - türetilmiş dosyalar (M0: `rules/icd.yaml`) yeniden üretilir.
 - Ardından doğrulama: güncel kod kayıtlı params ile yeniden çalıştırılır. Sonuç farklıysa uyarı verilir ("kayıtlı sonuç ile güncel kod sonucu farklı") ve fark döndürülür; geri yüklenen sonuçların üzerine yazılmaz. Güncel kod eski params ile hiç çalışmıyorsa bu da uyarıdır.
-- icd.yaml önce kayıtlı params yeniden çözülerek üretilir. Güncel çözücü eski bir kaydı çözemezse kaydın çalışma noktasında (results.yaml'daki W2, T4, verimler, FPR) tek bir çevrim hesabı yapılır ve kayıtlı itki ve yakıt debisi tutmalıdır; ICD kaynağında `method` alanı bunu belirtir. İkisi de olmazsa icd.yaml değişmez ve uyarı verilir.
+- icd.yaml önce kayıtlı params yeniden çözülerek üretilir. Güncel çözücü eski bir kaydı çözemezse kaydın çalışma noktasında (results.yaml'daki W2, T4, verimler, FPR) tek bir çevrim hesabı yapılır ve kayıtlı itki ve yakıt debisi tutmalıdır; ICD kaynağında `method` alanı bunu belirtir.
+- **Yalnızca yeniden üretilebilir revizyonlara dönülür** (`core.records.reproducible`: iki yoldan biri başarılı olmalı). Diğerleri geçmiş kaydıdır: arayüzde görülür ve doğrulanır, "Bu revizyona dön" gerekçesiyle devre dışıdır; `revert` ve `revert_concept` hiçbir şey yazmadan reddeder.
+- **ICD kaynak kontrolü:** bütçe okumaları yalnızca `core.budgets.read_icd(tüketici)` ile yapılır; icd.yaml'ın `source.revision` değeri M0'ın aktif revizyonu değilse okuma reddedilir. Arayüz bu durumda bütçe yerine nedeni gösterir.
 - Kaydedilmemiş iş korunur: bom.yaml veya analiz params'ı aktif kayıttan farklıysa geri dönüş reddedilir (force hariç).
 - `core.records.revert_concept` her sabitlenmiş modül için aynı tam durum geri dönüşünü yapar.
 - Modüle özgü işler hesap eklentisindedir (`engine/<M>/analysis/calc.py`): `restore`, `rerun`, `affected_modules`.
@@ -22,4 +24,5 @@
 - Geri dönüş de bir tasarım kararıdır; CR ve kullanıcı onayıyla izlenebilir olmalı.
 
 ## Sonuç
-- rev001-rev003 güncel kodla yeniden çalıştırılamaz ve ICD'leri üretilemez (o dönemin params biçimi). rev004'ün ICD'si çalışma noktasından üretilir. rev005-rev007 yeniden çözülür.
+- rev001-rev003 güncel kodla yeniden çalıştırılamaz ve ICD'leri üretilemez (o dönemin params biçimi): geçmiş kaydı, geri dönülemez. rev004'ün ICD'si çalışma noktasından üretilir. rev005-rev007 yeniden çözülür.
+- CLAUDE.md kaydı: geri dönüş tam durumdur, yalnızca yeniden üretilebilir revizyonlara izinlidir; modül agent'ları bütçeyi yalnızca read_icd ile okur.

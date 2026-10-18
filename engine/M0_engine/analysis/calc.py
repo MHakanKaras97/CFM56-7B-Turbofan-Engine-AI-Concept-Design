@@ -7,13 +7,15 @@ infeasible or fails a HARD check; write_outputs() and regenerate() write the der
 
 Revert: restore() writes the record's params and results back to analysis/ and regenerates
 icd.yaml (re-solve, else the recorded operating point); rerun() runs the current code on the
-record's params for the verification; affected_modules() lists modules whose ICD budget changes.
+record's params for the verification; affected_modules() lists modules whose ICD budget changes;
+reproducible() tells whether a record can be restored at all (its ICD can be regenerated).
 """
 
 from pathlib import Path
 
+from core.budgets import read_icd
 from core.records import module_dir
-from core.util import read_yaml, write_yaml
+from core.util import write_yaml
 from engine.M0_engine.analysis.cycle import load_inputs, solve_rated
 from engine.M0_engine.analysis.icd import MODULES, icd_file, icd_for_revision, write_icd
 
@@ -49,14 +51,15 @@ def rerun(root: Path, params: dict) -> dict:
 
 
 def restore(root: Path, revision: str, params: dict, results: dict) -> list[str]:
-    """Write the record's params and results to analysis/ and regenerate icd.yaml. Returns warnings."""
+    """Write the record's params and results to analysis/ and regenerate icd.yaml. Returns warnings.
+
+    Only for reproducible records (core.records.revert checks first); nothing is written otherwise."""
+    icd, warnings = icd_for_revision(revision, root)
+    if icd is None:
+        raise ArithmeticError(f"{revision} is not reproducible: " + "; ".join(warnings))
     mdir = module_dir("M0", root)
     write_yaml(mdir / "analysis" / PARAMS_FILE, params)
     write_yaml(mdir / "analysis" / "results.yaml", results)
-    icd, warnings = icd_for_revision(revision, root)
-    if icd is None:
-        return warnings + [f"icd.yaml {revision} kaydından üretilemedi; dosya önceki hâliyle kaldı "
-                           f"(kaynak {read_yaml(icd_file(root))['source']['revision']})"]
     write_yaml(icd_file(root), icd)
     if icd["source"].get("method"):  # re-solve failed, the recorded operating point was used
         return [f"icd.yaml {revision} kaydının çalışma noktasından üretildi; güncel kod yeniden çözemedi "
@@ -66,9 +69,16 @@ def restore(root: Path, revision: str, params: dict, results: dict) -> list[str]
 
 def affected_modules(root: Path, revision: str) -> tuple[list[str], str]:
     """Modules whose ICD budget differs between the current icd.yaml and `revision`, plus a note."""
-    current = read_yaml(icd_file(root))["modules"]
+    current = read_icd("M0 revert impact", root)["modules"]
     target, _ = icd_for_revision(revision, root)
     if target is None:
         return list(MODULES), f"{revision} için ICD üretilemedi; bütün modüller etkilenmiş sayıldı"
     changed = [m for m in MODULES if current.get(m, {}).get("budget") != target["modules"][m]["budget"]]
     return changed, f"ICD bütçesi değişen modüller: {', '.join(changed) or 'yok'}"
+
+
+def reproducible(root: Path, revision: str) -> str | None:
+    """None if the record can be restored (its ICD re-solves or evaluates at the recorded operating
+    point), else the reason."""
+    icd, warnings = icd_for_revision(revision, root)
+    return None if icd is not None else "; ".join(warnings)

@@ -94,7 +94,12 @@ for m in reversed(manifests):
         info.caption(f"{m['date']} · {kind} · CR {m['change_request'] or '-'} · commit "
                      f"{(m['code_commit'] or '-')[:10]} · {m['reason']}")
         b1, b2 = act.columns(2)
-        if b1.button("Bu revizyona dön", key=f"revert_{rev}", disabled=is_active, width="stretch"):
+        not_reproducible = None if is_active else data.reproducible(module, rev)
+        if not_reproducible:
+            info.caption(f"Geçmiş kaydı: bu revizyona dönülemez (güncel kodla yeniden üretilemiyor: "
+                         f"{not_reproducible})")
+        if b1.button("Bu revizyona dön", key=f"revert_{rev}", disabled=is_active or bool(not_reproducible),
+                     help=not_reproducible, width="stretch"):
             targets = {module: rev}
             widgets.request("revert", f"{module}: {rev} revizyonuna dönülsün mü?",
                             [f"Şu an aktif: {active[module]} → yeni aktif: {rev}", *impact_lines(targets)],
@@ -147,8 +152,12 @@ for c in reversed(concepts):
         info.markdown(f"{badge(cid + (' aktif' if is_active else ''), 'blue' if is_active else 'gray')} {c['summary']}")
         info.caption(f"{c['date']} · " + ", ".join(f"{m} {r}" for m, r in pins.items())
                      + f" · başlamamış: {', '.join(m for m, r in c['modules'].items() if r is None) or '-'}")
-        if act.button("Bu konsepte dön", key=f"revert_concept_{cid}", disabled=is_active or not pins,
-                      width="stretch"):
+        blocked = None if is_active else next(
+            (f"{m} {r}: {why}" for m, r in pins.items() if (why := data.reproducible(m, r))), None)
+        if blocked:
+            info.caption(f"Geçmiş kaydı: bu konsepte dönülemez ({blocked})")
+        if act.button("Bu konsepte dön", key=f"revert_concept_{cid}", disabled=is_active or not pins or bool(blocked),
+                      help=blocked, width="stretch"):
             widgets.request("revert", f"{cid} konseptine dönülsün mü?",
                             ["Modüller: " + ", ".join(f"{m} {active.get(m)} → {r}" for m, r in pins.items()),
                              *impact_lines(pins)],

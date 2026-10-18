@@ -132,7 +132,7 @@ def ui_repo(tmp_path, monkeypatch) -> Path:
     shutil.copytree(ROOT / "engine", tmp_path / "engine",
                     ignore=shutil.ignore_patterns("__pycache__", "CR-*.yaml", "sources"))
     shutil.copytree(ROOT / "tools" / "data", tmp_path / "tools" / "data")  # gas data for apply()
-    icd = data.load_icd()
+    icd = data.read_icd("tests")
     eta = icd["modules"]["M3"]["budget"]["eta_hpc"]["value"]
     cr_id = integration_check("M3", {"eta_hpc": eta - 0.03}, cr_root=tmp_path)["cr"]
     assert cr_id == "CR-001"
@@ -282,3 +282,24 @@ def test_concept_diff_row_opens_module_diff():
     at.button(key="cdiff_M0").click().run()
     assert not at.exception
     assert (at.selectbox(key="rev_a").value, at.selectbox(key="rev_b").value) == (a, b)
+
+
+def test_history_revisions_cannot_be_reverted():
+    at = run(widgets.PAGES["revizyonlar"])
+    for rev in ("rev001", "rev002", "rev003"):
+        assert at.button(key=f"revert_{rev}").disabled
+        assert at.button(key=f"verify_{rev}").disabled is False  # still viewable and verifiable
+    for rev in ("rev004", "rev005", "rev006"):
+        assert not at.button(key=f"revert_{rev}").disabled
+    captions = " ".join(c.value for c in at.caption)
+    assert captions.count("Geçmiş kaydı: bu revizyona dönülemez") == 3
+
+
+def test_stale_icd_is_shown_not_used(tmp_path, monkeypatch):
+    shutil.copytree(ROOT / "engine", tmp_path / "engine",
+                    ignore=shutil.ignore_patterns("__pycache__", "CR-*.yaml", "sources"))
+    (tmp_path / "engine" / "M0_engine" / "records" / "ACTIVE").write_text("rev006\n", encoding="utf-8")
+    monkeypatch.setenv("TURBOFAN_UI_ROOT", str(tmp_path))
+    at = run(widgets.PAGES["m0"])
+    assert "active M0 revision is rev006" in " ".join(e.value for e in at.error)
+    assert not at.dataframe  # no stations or budgets from the stale ICD

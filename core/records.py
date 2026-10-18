@@ -289,18 +289,31 @@ def _restore(module: str, rev: str, root: Path) -> dict:
     return out
 
 
+def reproducible(module: str, rev: str, root: Path = ROOT) -> str | None:
+    """None if `rev` can be restored by revert, else the reason (ADR-013). A module without a calc
+    plugin restores bom.yaml only and is always reproducible; otherwise the plugin decides."""
+    mdir = module_dir(module, root)
+    if not REV_RE.match(rev) or not (mdir / "records" / rev / "bom.yaml").exists():
+        return f"{mdir.name}: revision {rev} not found"
+    plugin = calc_plugin(module, root)
+    if plugin is None or not read_revision(module, rev, "params.yaml", root):
+        return None
+    return plugin.reproducible(root, rev)
+
+
 def revert(module: str, rev: str, force: bool = False, root: Path = ROOT) -> dict:
     """Make `rev` active with its full state: bom.yaml from its snapshot and, for a module with a calc
     plugin, params and results from the record (the record is the truth) and regenerated derived
     files. The current code is then re-run on the restored params; a difference is a warning and
     does not overwrite the restored results.
 
+    Allowed only to reproducible revisions (reproducible()); older ones stay as history.
     Refuses if bom.yaml or the analysis params have unrecorded changes, unless force=True.
     Returns {module, revision, warnings, results_diff}.
     """
-    mdir = module_dir(module, root)
-    if not REV_RE.match(rev) or not (mdir / "records" / rev / "bom.yaml").exists():
-        raise RecordError(f"{mdir.name}: revision {rev} not found")
+    reason = reproducible(module, rev, root)
+    if reason:
+        raise RecordError(f"{module}: {rev} is not reproducible, revert refused: {reason}")
     _check_clean(module, force, root)
     return _restore(module, rev, root)
 
@@ -388,9 +401,9 @@ def revert_concept(concept: str, force: bool = False, root: Path = ROOT) -> dict
     records = _concept_records(root)
     pinned = {m: rev for m, rev in read_concept(concept, root)["modules"].items() if rev is not None}
     for module_id, rev in pinned.items():
-        mdir = module_dir(module_id, root)
-        if not (mdir / "records" / rev / "bom.yaml").exists():
-            raise RecordError(f"{mdir.name}: revision {rev} not found")
+        reason = reproducible(module_id, rev, root)
+        if reason:
+            raise RecordError(f"{module_id}: {rev} is not reproducible, revert refused: {reason}")
         _check_clean(module_id, force, root)
 
     out = {module_id: _restore(module_id, rev, root) for module_id, rev in pinned.items()}

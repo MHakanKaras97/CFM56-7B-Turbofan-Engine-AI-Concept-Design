@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from core.budgets import BudgetError, check_budget, load_icd
+from core.budgets import BudgetError, check_budget, read_icd
 from core.requests import load_cr
 from engine.M0_engine.analysis.cycle import load_inputs, uncertainty_band, validation_velocity_ratio
 from engine.M0_engine.analysis.icd import MODULES, STATIONS, build_icd
@@ -17,7 +17,7 @@ NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9
 
 @pytest.fixture(scope="module")
 def icd():
-    return load_icd()
+    return read_icd("tests")
 
 
 @pytest.fixture
@@ -139,3 +139,29 @@ def test_budget_cr_carries_structured_impact(icd, repo):
     assert impact["metrics"]["dSFC"] == {"value": pytest.approx(rows["sfc"]["deviation"] * 100.0), "unit": "%", "tag": "H"}
     assert impact["metrics"]["dEGT"]["unit"] == impact["metrics"]["dT41"]["unit"] == "K"
     assert impact["metrics"]["dEGT"]["value"] == pytest.approx(rows["egt"]["deviation"], abs=1e-6)
+
+
+# --- ICD source guard ---------------------------------------------------------------------------
+
+@pytest.fixture
+def mismatched(tmp_path) -> Path:
+    """Temp copy whose ACTIVE M0 revision differs from the icd.yaml source revision."""
+    shutil.copytree(ROOT / "engine", tmp_path / "engine",
+                    ignore=shutil.ignore_patterns("__pycache__", "CR-*.yaml", "sources"))
+    icd = read_icd("tests")
+    (tmp_path / "engine" / "M0_engine" / "records" / "ACTIVE").write_text("rev005\n", encoding="utf-8")
+    assert icd["source"]["revision"] != "rev005"
+    return tmp_path
+
+
+def test_read_icd_refuses_mismatched_source(mismatched):
+    with pytest.raises(BudgetError, match="M3 budget check: icd.yaml is from rev007 but the active M0 revision is rev005"):
+        check_budget("M3", {"eta_hpc": 0.85}, root=mismatched)
+    with pytest.raises(BudgetError, match="M1 agent"):
+        read_icd("M1 agent", mismatched)
+
+
+def test_integration_check_refuses_mismatched_icd(mismatched):
+    from engine.M0_engine.analysis.integration import design_point
+    with pytest.raises(BudgetError, match="integration_check"):
+        design_point(mismatched)

@@ -32,7 +32,8 @@ an M0 engine agent coordinating M1-M9 module agents.
 
 ## Records
 - Records are immutable.
-- Revert = switch the active revision; never modify or delete a record.
+- Revert restores the module's full state (bom, params, results) from its record, regenerates derived files,
+  and is allowed only to reproducible revisions. Records are never modified. Module agents read budgets only via read_icd.
 - Active revision = `records/ACTIVE` file only; manifests are never rewritten.
 - Create, revert and verify records only through `core/records.py`.
 

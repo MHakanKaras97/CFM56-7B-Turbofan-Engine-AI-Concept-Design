@@ -14,7 +14,7 @@ dT41 K; dThrust % in operating_point mode). The CR stays open; nothing is applie
 from dataclasses import replace
 from pathlib import Path
 
-from core.budgets import check_budget, load_icd
+from core.budgets import check_budget, read_icd
 from core.records import ROOT, module_dir
 from core.requests import create_cr
 from core.util import read_yaml
@@ -40,7 +40,7 @@ def apply_achieved(p: Params, achieved: dict[str, float]) -> tuple[Params, list[
 
 def design_point(root: Path = ROOT):
     """Params of the ICD source revision with its delta_eta applied, plus raw params and the ICD."""
-    icd = load_icd(root)
+    icd = read_icd("M0 integration_check", root)
     op = icd["integration"]["operating_point"]
     rev_params = module_dir("M0", ROOT) / "records" / icd["source"]["revision"] / "params.yaml"
     p, _, _, raw, _ = load_inputs(rev_params)

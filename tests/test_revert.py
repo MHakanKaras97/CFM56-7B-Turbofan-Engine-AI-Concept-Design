@@ -59,13 +59,27 @@ def test_rev005_verification_reports_result_difference(repo):
     assert read_yaml(m0(repo) / "analysis" / "results.yaml") == read_revision("M0", "rev005", "results.yaml", repo)
 
 
-def test_rev001_restores_record_and_warns(repo):
-    before_icd = read_yaml(m0(repo) / "rules" / "icd.yaml")
-    out = revert("M0", "rev001", root=repo)
-    assert read_yaml(m0(repo) / "analysis" / "results.yaml") == read_revision("M0", "rev001", "results.yaml", repo)
-    assert any("güncel kod kayıtlı params ile çalışmadı" in w for w in out["warnings"])
-    assert any("icd.yaml rev001 kaydından üretilemedi" in w for w in out["warnings"])
-    assert read_yaml(m0(repo) / "rules" / "icd.yaml") == before_icd
+def test_history_revisions_are_not_reverted(repo):
+    from core.records import reproducible
+    before = {f: f.read_bytes() for f in (m0(repo) / "analysis").glob("*.yaml")}
+    for rev in ("rev001", "rev002", "rev003"):
+        assert "girao" in reproducible("M0", rev, repo)
+        with pytest.raises(RecordError, match="not reproducible"):
+            revert("M0", rev, root=repo)
+    assert all(reproducible("M0", rev, repo) is None for rev in ("rev004", "rev005", "rev006", "rev007"))
+    assert active_revision("M0", root=repo) == "rev007"
+    assert {f: f.read_bytes() for f in (m0(repo) / "analysis").glob("*.yaml")} == before
+
+
+def test_concept_revert_refuses_history_pins(repo):
+    from core.records import revert_concept
+    manifest = m0(repo) / "records" / "concept001" / "manifest.yaml"
+    data = read_yaml(manifest)
+    data["modules"]["M0"] = "rev002"  # temp copy only: a concept pinning a history revision
+    write_yaml(manifest, data)
+    with pytest.raises(RecordError, match="not reproducible"):
+        revert_concept("concept001", root=repo)
+    assert active_concept(root=repo) == "concept003"
 
 
 def test_revert_refuses_unrecorded_params(repo):

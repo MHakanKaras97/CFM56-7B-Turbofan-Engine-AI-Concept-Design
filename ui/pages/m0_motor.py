@@ -19,6 +19,9 @@ st.markdown(f"{rev_badge} &nbsp; Doğrulama: Girão {val['passed']}/{val['total'
 if results is None:
     st.info("M0'ın aktif revizyonu yok.")
     st.stop()
+if icd is None:
+    st.error(m0["icd_error"])
+    st.stop()
 
 src = icd["source"]["revision"]
 main_tab, info_tab = st.tabs(["Genel", "Bilgi"])

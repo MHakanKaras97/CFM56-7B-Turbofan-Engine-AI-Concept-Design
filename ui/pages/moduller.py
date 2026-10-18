@@ -59,9 +59,11 @@ with section:
     st.info("Kesit görünümü sonraki aşamada (records/revNNN/section.svg, ADR-011).")
 
 widgets.section("ICD bütçesi")
-budget = icd["modules"].get(selected, {}).get("budget", {})
-tols = icd["tolerances"]
-if budget:
+budget = icd["modules"].get(selected, {}).get("budget", {}) if icd else {}
+if icd is None:
+    st.error(snap["m0"]["icd_error"])
+elif budget:
+    tols = icd["tolerances"]
     st.dataframe(pd.DataFrame([
         {"Kalem": k, "Değer": data.quantity(v), "Tür": v["kind"], "İzin": data.tolerance(tols[v["kind"]])}
         for k, v in budget.items()

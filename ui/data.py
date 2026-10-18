@@ -14,7 +14,7 @@ from pathlib import Path
 import streamlit as st
 
 from core import bom as bom_io
-from core.budgets import load_icd
+from core.budgets import BudgetError, read_icd
 from core.diff import diff_concepts as _diff_concepts
 from core.diff import diff_revisions
 from core.records import (
@@ -28,6 +28,7 @@ from core.records import (
     read_revision,
     revision_ids,
 )
+from core.records import reproducible as core_reproducible
 from core.requests import list_crs
 from core.util import read_yaml
 
@@ -173,6 +174,10 @@ def load(root: Path = ROOT) -> dict:
     rows = _module_rows(concept, crs, root)
     m0_rev = active_revision("M0", root)
     results = read_revision("M0", m0_rev, "results.yaml", root) if m0_rev else None
+    try:
+        icd, icd_error = read_icd("UI", root), None
+    except BudgetError as exc:  # stale ICD: pages show the reason instead of budgets
+        icd, icd_error = None, str(exc)
     return {
         "root": str(root),
         "concept": concept_id,
@@ -188,7 +193,8 @@ def load(root: Path = ROOT) -> dict:
             "chain": _chain("M0", m0_rev, root),
             "results": results,
             "metrics": _metrics(results, m0_rev) if results else [],
-            "icd": load_icd(root),
+            "icd": icd,
+            "icd_error": icd_error,
             "validation": _validation(root),
             "station_order": read_yaml(CONCEPT_REFERENCE)["stations"]["order"],
         },
@@ -203,6 +209,17 @@ def _cached(stamp: tuple, root_dir: str) -> dict:
 def snapshot() -> dict:
     r = root()
     return _cached(_stamp(r), str(r))
+
+
+@st.cache_data(show_spinner=False)
+def _reproducible(module: str, rev: str, root_dir: str, stamp: tuple) -> str | None:
+    return core_reproducible(module, rev, Path(root_dir))
+
+
+def reproducible(module: str, rev: str) -> str | None:
+    """None if `rev` can be reverted to, else the reason (core.records.reproducible; cached)."""
+    r = root()
+    return _reproducible(module, rev, str(r), _stamp(r))
 
 
 def diff(module: str, rev_a: str, rev_b: str) -> dict:
