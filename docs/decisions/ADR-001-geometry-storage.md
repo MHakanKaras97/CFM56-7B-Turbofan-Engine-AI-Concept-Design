@@ -1,6 +1,6 @@
 # ADR-001: Geometri dosyalarının saklanması
 
-- Durum: Kabul edildi
+- Durum: Kabul edildi; ADR-011 ile değiştirildi (revizyonda section.svg saklanır)
 - Tarih: 2026-10-17
 
 ## Karar

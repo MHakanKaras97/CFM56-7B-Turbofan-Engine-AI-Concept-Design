@@ -5,7 +5,7 @@ CFM56-7B27 sınıfı (temel, SAC) turbofan için konsept seviyesinde çoklu agen
 M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenmek + belgelemek.
 
 ## Temel kararlar
-- Mimari: docs/architecture.md, ADR-001..010.
+- Mimari: docs/architecture.md, ADR-001..011.
 - Tek doğru kaynak: bom.yaml + kod; Fusion sadece görünüm (STEP).
 - Revizyonlar değişmez; aktif = records/ACTIVE. Değişiklik yalnızca CR + kullanıcı onayı.
 - Güven etiketleri: K, KS, H, G, T. Sayılar koddan gelir, LLM metninden değil.
@@ -15,6 +15,10 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Çalışma döngüsü (her modül): ders -> araştırma -> rule book -> kod -> kabul testi. Testsiz sonraki modüle geçilmez.
 
 ## Son yapılanlar
+- UI spesifikasyonu (docs/design/ui_spec.md, 4 maketten); ADR-011 (revizyonda section.svg, GLB/STEP önbellekte).
+- Kavramsal düzen referansı: docs/design/concept_reference.yaml -> tools/reference.py -> engine_reference.svg; check_layout() taslağı.
+- Araçlar .venv'e kuruldu (Python 3.13): streamlit 1.65.0, cadquery 2.8.0 (OCP 7.9.3.1.1), gmsh 4.15.2; smoke testleri geçti.
+- Harici araçlar: PrePoMax 2.6.0 (C:\Tools, ccx 2.22), ParaView 6.2.0 (pvpython çalışıyor), Autodesk Fusion kurulu. Fusion MCP bağlı değil; .step dosya ilişkilendirmesi yok.
 - ADR-010: entegrasyon kontrolü tasarım noktası yeniden dengelemesi (alanlar serbest); çekirdek EGT etkisini yaklaşık yarı küçük gösteriyor. Geçici EGT toleransı 5 K [T] (önceden 10).
 - **M0 v1 tamam.** concept001: M0 rev005, M1-M9 null. Kabul listesi 6/6 (analysis/acceptance_M0.md), kabul testleri 5/5.
 - Params CR'leri: core/requests.py `params` türü; apply() params'ı yazar, hesabı yeniden çalıştırır (analysis/calc.py), revizyon oluşturur, results.yaml ve icd.yaml'ı yeniden üretir. Bütçe CR'leri iki seçenek sunar: (a) M0 params, (b) modül yeniden tasarımı.
@@ -35,7 +39,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
-1. Arayüz (Streamlit).
+1. Arayüz (Streamlit), ui_spec.md'ye göre; açık noktalar: CR'de yapısal etki metrikleri, revizyon farkı (core), .step ilişkilendirmesi.
 2. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
 3. M0 v2: off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 

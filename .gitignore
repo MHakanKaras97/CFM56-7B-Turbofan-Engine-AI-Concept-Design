@@ -20,7 +20,8 @@ venv/
 env/
 .env
 
-# Large CAD outputs
+# Large CAD outputs (cached locally, regenerated from records; ADR-001, ADR-011)
+.cache/
 *.step
 *.stp
 *.stl

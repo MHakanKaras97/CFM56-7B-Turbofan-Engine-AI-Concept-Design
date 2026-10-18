@@ -6,6 +6,10 @@ requires-python = ">=3.13"
 dependencies = [
     "pyyaml==6.0.3",
     "jsonschema==4.26.0",
+    "streamlit==1.65.0",
+    "cadquery==2.8.0",
+    "cadquery-ocp==7.9.3.1.1",
+    "gmsh==4.15.2",
 ]
 
 [project.optional-dependencies]
