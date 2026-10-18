@@ -96,6 +96,22 @@ def is_dirty(module: str, root: Path = ROOT) -> bool:
     return snapshot.read_bytes() != (mdir / "bom" / "bom.yaml").read_bytes()
 
 
+def revision_ids(module: str, root: Path = ROOT) -> list[str]:
+    """Recorded revisions of a module, oldest first."""
+    records = module_dir(module, root) / "records"
+    return sorted(p.name for p in records.iterdir() if p.is_dir() and REV_RE.match(p.name)) if records.is_dir() else []
+
+
+def read_revision(module: str, rev: str, name: str, root: Path = ROOT):
+    """Read one file of a record: manifest.yaml, bom.yaml, params.yaml or results.yaml."""
+    if name not in ("manifest.yaml", "bom.yaml", "params.yaml", "results.yaml"):
+        raise RecordError(f"{name}: not a record file")
+    path = module_dir(module, root) / "records" / rev / name
+    if not REV_RE.match(rev) or not path.is_file():
+        raise RecordError(f"{module}: {rev}/{name} not found")
+    return read_yaml(path)
+
+
 # --- module revisions ----------------------------------------------------------
 
 def create_revision(
@@ -199,6 +215,13 @@ def _concept_records(root: Path) -> Path:
 def active_concept(root: Path = ROOT) -> str | None:
     path = _concept_records(root) / "ACTIVE_CONCEPT"
     return path.read_text(encoding="utf-8").strip() if path.exists() else None
+
+
+def read_concept(concept: str, root: Path = ROOT) -> dict:
+    path = _concept_records(root) / concept / "manifest.yaml"
+    if not CONCEPT_RE.match(concept) or not path.is_file():
+        raise RecordError(f"concept {concept} not found")
+    return read_yaml(path)
 
 
 def create_concept(summary: str, root: Path = ROOT) -> str:

@@ -77,6 +77,12 @@ def load_cr(cr_id: str, root: Path = ROOT) -> dict:
     return cr
 
 
+def list_crs(root: Path = ROOT) -> list[dict]:
+    """All CRs, by id."""
+    folder = _requests_dir(root)
+    return [load_cr(p.stem, root) for p in sorted(folder.glob("CR-*.yaml")) if CR_RE.match(p.stem)]
+
+
 def _save(cr: dict, root: Path) -> None:
     _check(cr, root)
     write_yaml(_cr_path(cr["id"], root), cr)

@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- UI faz 2 (salt okunur): ui/app.py (st.navigation), ui/pages/ (6 sayfa), ui/data.py (core üzerinden okuma, mtime anahtarlı önbellek), ui/widgets.py (üst çubuk). Genel bakış ve M0 motor dolu; diğerleri "3. aşamada". core: revision_ids, read_revision, read_concept, list_crs. Çalıştırma: depo kökünden `streamlit run ui/app.py`. Tarayıcıda görsel kontrol yapılmadı (yalnızca AppTest + headless sağlık kontrolü).
 - Fusion MCP kullanılabilir: http://127.0.0.1:27182/mcp (HTTP, Fusion eklentisi; yerel kapsamda kayıtlı, commit edilmez). Araçlar: fusion_mcp_read (belge/proje/lisans/API dokümanı/ekran görüntüsü, salt okunur), fusion_mcp_execute (modelde işlem), fusion_mcp_update (model güncelleme), fusion_mcp_electronics_read. Salt okunur test: açık belge listesi -> 0 belge. Fusion MCP için Fusion açık olmalı; ona ihtiyaç duyan testler aksi halde atlanır. Araçlar Claude Code yeniden başlatılınca oturuma yüklenir.
 - CR kuralı: impact.by (üretici) kaydedilir; onay için impact.affected_modules boş olmamalı. Önceden doldurulmuş etki yalnızca bütçe CR'lerinde (M0 integration_check); modül CR'leri M0 set_impact bekler.
 - UI faz 1: CR `impact.metrics` (isteğe bağlı; bütçe CR'leri dSFC %, dEGT K, dT41 K ile doldurur, onay için etki hazır). core/diff.py: diff_revisions, diff_concepts (saf veri). .cache/geometry/test_box.step üretildi (Fusion ilişkilendirme testi).
@@ -47,9 +48,8 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - .step ilişkilendirmesi kullanıcıda bekliyor. Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
-1. UI faz 2: Streamlit iskeleti (üst çubuk, menü, Genel bakış, M0 sayfaları), ui_spec.md'ye göre.
-2. UI faz 3: Talepler, Revizyonlar, Öğrenme sayfaları.
-3. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
+1. UI faz 3: Talepler, Revizyonlar, Öğrenme, Modüller sayfaları. Faz 2'den kalanlar: şerit/modül kartı tıklayınca sayfa açma, M0 bilgi sekmesi (belirsizlik bandı, verim duyarlılığı), tarayıcıda açık/koyu tema kontrolü.
+2. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 

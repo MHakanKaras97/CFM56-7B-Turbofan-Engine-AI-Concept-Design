@@ -7,7 +7,7 @@ stations[3].Tt_K, other lists are compared as one value.
 
 from pathlib import Path
 
-from core.records import CONCEPT_RE, REV_RE, ROOT, RecordError, _concept_records, module_dir
+from core.records import REV_RE, ROOT, RecordError, module_dir, read_concept
 from core.util import read_yaml
 
 ID_KEYS = ("id", "station", "name")
@@ -119,12 +119,6 @@ def is_empty(diff: dict) -> bool:
 
 def diff_concepts(concept_a: str, concept_b: str, root: Path = ROOT) -> list[dict]:
     """Modules whose pinned revision differs: [{module, old, new}] (None = not started)."""
-    pins = []
-    for concept in (concept_a, concept_b):
-        path = _concept_records(root) / concept / "manifest.yaml"
-        if not CONCEPT_RE.match(concept) or not path.exists():
-            raise RecordError(f"concept {concept} not found")
-        pins.append(read_yaml(path)["modules"])
-    a, b = pins
+    a, b = (read_concept(c, root)["modules"] for c in (concept_a, concept_b))
     return [{"module": m, "old": a.get(m), "new": b.get(m)}
             for m in sorted(set(a) | set(b)) if a.get(m) != b.get(m)]

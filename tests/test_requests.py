@@ -5,7 +5,7 @@ import pytest
 import yaml
 
 from core.records import active_revision, create_revision
-from core.requests import CRError, apply, create_cr, decide, load_cr, set_impact
+from core.requests import CRError, apply, create_cr, decide, list_crs, load_cr, set_impact
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
@@ -173,3 +173,10 @@ def test_prefilled_impact_only_for_budget_crs(repo):
     cr_id = create_cr("M2", ["M1"], "r", [BLADE_QTY_CHANGE], root=repo, options=options, impact=impact)
     decide(cr_id, approve=True, note="ok", option="a", root=repo)  # no set_impact needed
     assert load_cr(cr_id, root=repo)["status"] == "approved"
+
+
+def test_list_crs(repo):
+    assert list_crs(root=repo) == []
+    new_cr(repo)
+    new_cr(repo)
+    assert [cr["id"] for cr in list_crs(root=repo)] == ["CR-001", "CR-002"]

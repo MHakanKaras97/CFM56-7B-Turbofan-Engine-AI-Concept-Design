@@ -185,3 +185,16 @@ def test_concept_with_unstarted_modules(repo):
 def test_concept_refuses_unrecorded_module_with_parts(repo):
     with pytest.raises(RecordError, match="no revision"):
         create_concept("Fan not recorded", root=repo)
+
+
+def test_read_helpers(repo):
+    create_revision("M1", "Baseline", "test", root=repo)
+    assert records.revision_ids("M1", root=repo) == ["rev001"]
+    assert records.revision_ids("M2", root=repo) == []
+    assert records.read_revision("M1", "rev001", "manifest.yaml", root=repo)["summary"] == "Baseline"
+    with pytest.raises(RecordError):
+        records.read_revision("M1", "rev001", "../ACTIVE", root=repo)
+    with pytest.raises(RecordError):
+        records.read_revision("M1", "rev009", "bom.yaml", root=repo)
+    concept = create_concept("c", root=repo)
+    assert records.read_concept(concept, root=repo)["modules"]["M1"] == "rev001"
