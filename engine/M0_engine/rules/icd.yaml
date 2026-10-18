@@ -59,10 +59,11 @@ integration:
       type: relative
       tag: T
     egt:
-      value: 10.0
+      value: 5.0
       type: absolute
       unit: K
       tag: T
+      note: 'interim, ADR-010: design-point rebalance underestimates core EGT'
 stations:
   '0':
     owner: null

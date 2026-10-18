@@ -5,7 +5,7 @@ CFM56-7B27 sınıfı (temel, SAC) turbofan için konsept seviyesinde çoklu agen
 M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenmek + belgelemek.
 
 ## Temel kararlar
-- Mimari: docs/architecture.md, ADR-001..008.
+- Mimari: docs/architecture.md, ADR-001..010.
 - Tek doğru kaynak: bom.yaml + kod; Fusion sadece görünüm (STEP).
 - Revizyonlar değişmez; aktif = records/ACTIVE. Değişiklik yalnızca CR + kullanıcı onayı.
 - Güven etiketleri: K, KS, H, G, T. Sayılar koddan gelir, LLM metninden değil.
@@ -15,6 +15,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Çalışma döngüsü (her modül): ders -> araştırma -> rule book -> kod -> kabul testi. Testsiz sonraki modüle geçilmez.
 
 ## Son yapılanlar
+- ADR-010: entegrasyon kontrolü tasarım noktası yeniden dengelemesi (alanlar serbest); çekirdek EGT etkisini yaklaşık yarı küçük gösteriyor. Geçici EGT toleransı 5 K [T] (önceden 10).
 - **M0 v1 tamam.** concept001: M0 rev005, M1-M9 null. Kabul listesi 6/6 (analysis/acceptance_M0.md), kabul testleri 5/5.
 - Params CR'leri: core/requests.py `params` türü; apply() params'ı yazar, hesabı yeniden çalıştırır (analysis/calc.py), revizyon oluşturur, results.yaml ve icd.yaml'ı yeniden üretir. Bütçe CR'leri iki seçenek sunar: (a) M0 params, (b) modül yeniden tasarımı.
 - Entegrasyon kontrolü: varsayılan `thrust_held` (itki + W2 sabit), eski mod `operating_point`.
@@ -29,14 +30,14 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Verim -0.01 (itki sabit) ΔEGT, model / Martins: fan 3.1/4, booster 1.9/3, HPC 4.3/8, HPT 5.3/12, LPT 5.5/6 K.
 
 ## Açık konular
-- HPC ve HPT verim kaybının EGT etkisi Martins'in yaklaşık yarısı (W2 sabit varsayımı, EGT formülü [T], farklı motor).
+- HPC ve HPT verim kaybının EGT etkisi Martins'in yaklaşık yarısı: sabit geometri yok (ADR-010). M0 v2 ile çözülecek.
 - Δη = +0.017 sınanmamış bir varsayım; tolerans ve entegrasyon sınırları [T].
 - Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
 1. Arayüz (Streamlit).
 2. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
-3. Seyir noktası (M0 v2).
+3. M0 v2: off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 
 ## Çalışma kuralları
 - Görev sonu raporu: Commit / Done / Decisions for user / Tests (max 15 satır).

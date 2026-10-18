@@ -29,6 +29,7 @@ Sayılar bu belgede yazılmaz. Hepsi `icd.yaml` dosyasındadır. O dosya `engine
 - İzin verilen sapma [T]: PR ±%1, verim ±0.005, debi ±%1, sıcaklık ±10 K. Güç ve alan gibi `info` kalemleri yalnızca raporlanır.
 - Modül, ulaştığı değerleri `core.budgets.check_budget(modül, değerler)` ile kontrol eder.
 - M0 entegrasyon kontrolü (`engine/M0_engine/analysis/integration.py`) çevrimi bu değerlerle yeniden çalıştırır. İki mod vardır [T]:
-  - `thrust_held` (varsayılan, FADEC benzeri): itki 121.43 kN ve W2 sabit, T4 ve yakıt çözülür. ΔSFC ±%0.5 ve ΔEGT ±10 K kontrol edilir; ΔT41 raporlanır.
-  - `operating_point`: W2, T4 ve Δη sabit; itki ±%0.5, SFC ±%0.5, EGT ±10 K kontrol edilir.
+  - `thrust_held` (varsayılan, FADEC benzeri): itki 121.43 kN ve W2 sabit, T4 ve yakıt çözülür. ΔSFC ±%0.5 ve ΔEGT ±5 K kontrol edilir; ΔT41 raporlanır.
+  - `operating_point`: W2, T4 ve Δη sabit; itki ±%0.5, SFC ±%0.5, EGT ±5 K kontrol edilir.
+- Sınır (ADR-010): bu kontrol, alanların serbest olduğu bir tasarım noktası yeniden dengelemesidir; sabit geometrili off-design değildir. Çekirdek bileşenlerinin (HPC, HPT) EGT etkisini yaklaşık yarı küçük gösterir; bu yüzden EGT toleransı geçici olarak 5 K [T].
 - Sınır aşılırsa modülden M0'a seçenekli bir CR taslağı açılır (`core/requests.py`): (a) M0 params değişikliği, yani ulaşılan değer kabul edilir ve verim Δη kaymasından çıkarılır; (b) modül yeniden tasarımı. Taslak otomatik uygulanmaz; seçimi kullanıcı yapar.
