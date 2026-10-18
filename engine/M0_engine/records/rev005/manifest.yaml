@@ -1,0 +1,10 @@
+revision: rev005
+parent_revision: rev004
+date: '2026-10-18T09:42:00Z'
+summary: 'Cycle v4.2 rated: ICAO -7B27 with similarity condition (ideal V18/V8 0.6036),
+  delta_eta = 0.0171'
+reason: 'ADR-009; rev004 superseded: two-target solution near the thrust ceiling with
+  high ideal V18/V8 (0.849)'
+change_request: null
+code_commit: 80246ddaa8c0c0199065287672a61cf4fb1e007e
+outputs: []
