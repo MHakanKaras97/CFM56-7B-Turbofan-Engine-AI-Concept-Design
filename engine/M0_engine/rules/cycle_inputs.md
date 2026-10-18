@@ -28,7 +28,7 @@ Veri dosyaları (sayılar koddan gelir):
 | Kalkış SFC, -7B27/3 | 10.648 | g/(kN·s) | [H] | aynı yöntem |
 | SFC (çapraz kontrol) | 10.63 | g/(kN·s) | [KS] | Turan; doğrulanamadı, yalnızca çapraz kontrol |
 | Yakıt debisi (kalkış, -7B27/B1F) | 1.28 | kg/s | [KS] | Lopez-Pintor vd. 2026, Tablo 2 |
-| Yanma odası hava debisi (kalkış, -7B27/B1F) | 44.52 | kg/s | [KS] | Lopez-Pintor vd. 2026, Tablo 2 |
+| Yanma odası hava debisi (kalkış, -7B27/B1F) | 44.52 | kg/s | [KS] | Lopez-Pintor vd. 2026, Tablo 2; v3'ten itibaren yalnızca kontrol (ADR-007) |
 | HPC girişi T / p | 385.9 / 216.54 | K / kPa | [KS] | Indriyati 2024, 7B test istasyonları |
 | HPC çıkışı T / p | 832.4 / 2683.49 | K / kPa | [KS] | Indriyati 2024 |
 | Türbin girişi T / p | 1553 / 2545.35 | K / kPa | [KS] | Indriyati 2024 |
@@ -43,6 +43,10 @@ Veri dosyaları (sayılar koddan gelir):
 | Politropik verim: kompresörler | 0.90 | - | [G] | Genel mühendislik varsayımı |
 | Politropik verim: türbinler | 0.90 | - | [G] | Genel mühendislik varsayımı |
 | Yanma verimi | 0.99 | - | [G] | Genel mühendislik varsayımı |
+| Toplam soğutma oranı (nominal) | 0.18 | çekirdek debisine oran | [G] | Girdi; 0.14-0.22 taranır (ADR-007) |
+| Gaz özellikleri cp(T, FAR) | NASA 7 katsayılı polinomlar | - | [K] | McBride vd. 1993, NASA TM-4513; `tools/data/nasa_glenn.yaml` |
+| Yakıt | C12H23, 298.15 K'de girer | - | [G] | Jet-A vekil bileşimi |
+| Kuru hava bileşimi | N2 / O2 / Ar / CO2 | mol oranı | [G] | ABD Standart Atmosferi 1976 |
 | Yanma odası basınç kaybı | 4 | % | [G] | Genel mühendislik varsayımı |
 | Mekanik verim | 0.99 | - | [G] | Genel mühendislik varsayımı |
 | Toplam hava debisi | 782 | lb/s | [T] | Tahmin; kalibrasyonla çözülecek |
@@ -65,7 +69,7 @@ Hesaplanan kalkış SFC değerleri bu aralıktadır (`sfc_takeoff.yaml`, `in_san
 - **OPR (çözüldü):** Tasarımda ICAO değeri 28.63 kullanılır. Turan'ın 32.8 değeri geçersiz sayıldı. Test istasyonlarından çıkan yaklaşık 26.5 farklı koşullara (T0 = 298 K, test hücresi) ait.
 - **SFC (çözüldü):** Tasarım değeri ICAO ve TCDS verisinden kodla hesaplanır. Turan'ın 10.63 değeri doğrulanamadı; hesaplanan -7B27, /2 ve /3 değerleriyle aynı mertebede olduğu için yalnızca çapraz kontrol olarak tutulur.
 - **Hava debisi (açık):** HPC havası 39.57 kg/s, yanma odası havası 44.52 kg/s'den küçük. Yanma odasına HPC'den fazla hava giremeyeceği için bu fiziksel olarak imkânsız; iki kaynak debiyi farklı tanımlıyor (çekirdek, soğutma havası, ölçüm noktası). Hangisinin kullanılacağı henüz kararlaştırılmadı.
-- **Yanma odası havası tanımı (açık):** 44.52 kg/s değerinin astar (liner) soğutma havasını içerip içermediği belirsiz. M0 v2 bu değeri yanma odasına giren havanın tamamı sayar; türbin soğutması dışarıda kalır. Kalibre edilen toplam soğutma oranı 0.22'yi aşarsa bu tanım farkı şüpheli olarak işaretlenir (rev002: 0.2645, işaretli).
+- **Yanma odası havası tanımı (çözüldü, ADR-007):** 44.52 kg/s modellenmiş bir değer ve büyük olasılıkla liner soğutmasını içeriyor. v3'te hedef değil, bilgi amaçlı kontrol. Soğutma oranı 0.18 girdisiyle model 50.96 kg/s veriyor (+%14.5). Hedef olarak kullanıldığında soğutma 0.35'e çıkıyor (rev003, `comparison_combustor_air_target`).
 - **Toplam hava debisi (açık):** 782 lb/s yalnızca başlangıç tahmini; gerçek değer kalibrasyonla çözülecek.
 - **İtki:** TCDS 121.43 kN, ICAO 121.44 kN; fark yuvarlamadan kaynaklanıyor.
 - **BPR:** ICAO 5.0-5.1 (-7B27), Kalkan 6 (CFM56-5A3); farklı motor ailesi.

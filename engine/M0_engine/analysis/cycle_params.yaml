@@ -1,4 +1,4 @@
-version: 2
+version: 3
 design_point:
   description: SLS ISA, max take-off, base CFM56-7B27 (SAC, ICAO UID 3CM034); see ADR-005
   T0: {value: 288.15, unit: K, tag: G}
@@ -9,11 +9,13 @@ reference_data:
   icao_row: {file: engine/M0_engine/rules/icao_edb_cfm56_7b27.yaml, uid: 3CM034, fields: [pressure_ratio, bpr, fuel_flow_to_kg_s], tag: K}
   sfc_ref: {file: engine/M0_engine/analysis/sfc_takeoff.yaml, uid: 3CM034, tag: H}
 gas:
-  cold_cp: {value: 1005.0, unit: J/(kg K), tag: G}
-  cold_gamma: {value: 1.40, unit: '-', tag: G}
-  hot_cp: {value: 1150.0, unit: J/(kg K), tag: G}
-  hot_gamma: {value: 1.33, unit: '-', tag: G}
-  R: {value: 287.0, unit: J/(kg K), tag: G}
+  model: nasa_glenn
+  note: 'nasa_glenn = variable cp(T, FAR), air + C12H23 products (tools/thermo.py); constant_cp = one ideal gas, closed-form checks only'
+  data: tools/data/nasa_glenn.yaml
+  constant_cp:
+    cp: {value: 1005.0, unit: J/(kg K), tag: G}
+    gamma: {value: 1.40, unit: '-', tag: G}
+    R: {value: 287.0, unit: J/(kg K), tag: G}
 components:
   inlet_recovery: {value: 0.99, unit: '-', tag: G}
   e_fan: {value: 0.89, unit: '-', tag: G}
@@ -26,11 +28,11 @@ components:
   bypass_duct_dp: {value: 0.02, unit: '-', tag: G}
   mech_eff: {value: 0.99, unit: '-', tag: G}
   nozzle_cv: {value: 0.98, unit: '-', tag: G}
-  LHV: {value: 43.0e6, unit: J/kg, tag: G}
+  LHV: {value: 43.0e6, unit: J/kg, tag: G, note: reference 298.15 K; fuel enters at 298.15 K}
   core_pr_25_2: {value: 2.1, unit: '-', tag: T}
 secondary_air:
   description: Cooling air bled at HPC exit (station 3), bypasses the combustor
-  cooling_fraction: {value: 0.17, unit: '- of core flow', tag: T, note: calibrated; this value is the initial guess}
+  cooling_fraction: {value: 0.18, unit: '- of core flow', tag: G, note: input since v3 (ADR-007); nominal mid-band value}
   ngv_share: {value: 0.47, unit: '- of cooling', tag: G, note: mixes before HPT rotor (T41), does HPT work}
   rotor_lpt_share: {value: 0.53, unit: '- of cooling', tag: G, note: mixes after HPT rotor (station 45), no HPT work}
   customer_bleed: {value: 0.0, unit: kg/s, tag: T, note: ICAO test bleed not verified}
@@ -39,17 +41,16 @@ geometry:
   fan_diameter: {value: 61.0, unit: in, tag: T}
   fan_hub_tip: {value: 0.30, unit: '-', tag: T}
 calibration:
-  unknowns: [W2, T4, FPR, cooling_fraction]
+  unknowns: [W2, T4, FPR]
   targets:
     thrust: {source: tcds, tag: K}
     fuel: {source: icao, tag: K}
     velocity_ratio: {rule: V18/V8 = eta_fan_is * eta_LPT_is}
-    combustor_air: {value: 44.52, unit: kg/s, tag: KS, source: Lopez-Pintor 2026, Table 2}
+    combustor_air: {value: 44.52, unit: kg/s, tag: KS, source: Lopez-Pintor 2026, Table 2, note: 'check only since v3 (ADR-007); used as a target only in the v2 comparison'}
   initial:
     W2: {value: 354.7, unit: kg/s, tag: T}
     T4: {value: 1800.0, unit: K, tag: T}
     FPR: {value: 1.6, unit: '-', tag: T}
-    cooling_fraction: {value: 0.22, unit: '-', tag: T}
   tolerance: {value: 1.0e-9, unit: '-', tag: G}
 checks:
   fan_choke: {hard: true, basis: 'max mass flux at M=1 for SLS ISA total conditions (P0, T0), cold gas', tag: H}
@@ -64,6 +65,7 @@ checks:
     estimate: {value: 1450.0, unit: K, tag: T, note: unit unclear in source}
     indriyati_turbine_in: {value: 1553.0, unit: K, tag: KS, note: test cell, not ISA}
   T3_ref: {value: 832.4, unit: K, tag: KS, note: test cell T0 298 K, not ISA; info only}
+cooling_sweep: {min: 0.14, max: 0.22, step: 0.02, unit: '- of core flow', tag: G}
 sensitivity:
   e_poly_step: 0.01
   cooling_step: 0.02

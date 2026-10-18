@@ -12,7 +12,7 @@ Kalibrasyon hedeflerinin tutması tek başına sonucu doğrulamaz. Eksik bir mod
 ## Sağlık kontrolleri: kalırsa raporlanır, karar kullanıcıya bırakılır
 - W2/A 190-215 kg/(s·m²) [G]
 - W2, tahmin edilen 354.7 kg/s'nin ±%10 içinde [T]
-- Toplam soğutma havası, çekirdek debisinin 0.12-0.22'si [G]
+- Toplam soğutma havası, çekirdek debisinin 0.12-0.22'si [G] (v3'ten itibaren girdi; kontrol girdinin aralıkta olduğunu doğrular)
 - SFC, ICAO/TCDS değerinin ±%0.5 içinde
 - EGT (gösterilen), TCDS sınırı 950 °C'nin altında [K]
 
@@ -20,6 +20,7 @@ Kalibrasyon hedeflerinin tutması tek başına sonucu doğrulamaz. Eksik bir mod
 - Gösterilen EGT'nin 800-920 °C bandında olup olmadığı [T]
 - T4'ün 1450 K ve 1553 K referanslarına göre konumu
 - T3'ün test hücresi değeriyle karşılaştırılması (ISA olmayan koşul)
+- Yanma odası havasının Lopez-Pintor 44.52 kg/s değerine göre sapması (ADR-007)
 
 ## Uygulama
 - Kontroller `engine/M0_engine/analysis/cycle.py` içinde hesaplanır ve `results.yaml` dosyasına yazılır.

@@ -1,0 +1,183 @@
+description: NASA 7-coefficient polynomials for cp, h and s0 of ideal-gas species (tools/thermo.py)
+form:
+  cp/R: a1 + a2*T + a3*T^2 + a4*T^3 + a5*T^4
+  h/(R*T): a1 + a2*T/2 + a3*T^2/3 + a4*T^3/4 + a5*T^4/5 + a6/T
+  s0/R: a1*ln(T) + a2*T + a3*T^2/2 + a4*T^3/3 + a5*T^4/4 + a7
+  ranges: 'low: T_ranges[0]..T_ranges[1], high: T_ranges[1]..T_ranges[2]; R = universal gas constant per mol'
+source:
+  primary: McBride B.J., Gordon S., Reno M.A., Coefficients for Calculating Thermodynamic and Transport Properties of Individual
+    Species, NASA TM-4513, 1993 (https://ntrs.nasa.gov/citations/19940013151)
+  license: US Government work, public domain
+  retrieved_from: Cantera data/nasa_gas.yaml (ck2yaml conversion of the NASA 7-coefficient file), commit 9573e6b1e1097dca3bf86da37726333ab62663bb,
+    sha256 4de6199d65d2d3db782e30573720c723130953707336add59713b02d8667e4db, retrieved 2026-10-18
+  tag: K
+universal_gas_constant:
+  value: 8.314462618
+  unit: J/(mol K)
+  tag: G
+  note: CODATA 2018 exact value
+reference_temperature:
+  value: 298.15
+  unit: K
+  tag: G
+  note: sensible enthalpy and LHV reference
+atomic_weights:
+  N:
+    value: 14.007
+    unit: g/mol
+    tag: G
+  O:
+    value: 15.999
+    unit: g/mol
+    tag: G
+  Ar:
+    value: 39.948
+    unit: g/mol
+    tag: G
+  C:
+    value: 12.011
+    unit: g/mol
+    tag: G
+  H:
+    value: 1.008
+    unit: g/mol
+    tag: G
+  note: IUPAC abridged conventional atomic weights
+air:
+  mole_fractions:
+    N2: 0.78084
+    O2: 0.209476
+    Ar: 0.00934
+    CO2: 0.000314
+  tag: G
+  note: standard dry air (US Standard Atmosphere 1976); trace species neglected, normalized in code
+fuel:
+  composition:
+    C: 12
+    H: 23
+  tag: G
+  note: Jet-A surrogate C12H23; enters at the reference temperature (zero sensible enthalpy); complete lean combustion to
+    CO2 and H2O
+species:
+  Ar:
+    composition:
+      Ar: 1
+    T_ranges:
+    - 200.0
+    - 1000.0
+    - 6000.0
+    low:
+    - 2.5
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - -745.375
+    - 4.37967491
+    high:
+    - 2.5
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - -745.375
+    - 4.37967491
+    note: 'McBride et al. data source code: L 6/88'
+  CO2:
+    composition:
+      C: 1
+      O: 2
+    T_ranges:
+    - 200.0
+    - 1000.0
+    - 6000.0
+    low:
+    - 2.35677352
+    - 0.00898459677
+    - -7.12356269e-06
+    - 2.45919022e-09
+    - -1.43699548e-13
+    - -48371.9697
+    - 9.90105222
+    high:
+    - 4.63659493
+    - 0.00274131991
+    - -9.95828531e-07
+    - 1.60373011e-10
+    - -9.16103468e-15
+    - -49024.9341
+    - -1.93534855
+    note: 'McBride et al. data source code: L 7/88'
+  H2O:
+    composition:
+      H: 2
+      O: 1
+    T_ranges:
+    - 200.0
+    - 1000.0
+    - 6000.0
+    low:
+    - 4.19864056
+    - -0.0020364341
+    - 6.52040211e-06
+    - -5.48797062e-09
+    - 1.77197817e-12
+    - -30293.7267
+    - -0.849032208
+    high:
+    - 2.67703787
+    - 0.00297318329
+    - -7.7376969e-07
+    - 9.44336689e-11
+    - -4.26900959e-15
+    - -29885.8938
+    - 6.88255571
+    note: 'McBride et al. data source code: L 8/89'
+  N2:
+    composition:
+      N: 2
+    T_ranges:
+    - 200.0
+    - 1000.0
+    - 6000.0
+    low:
+    - 3.53100528
+    - -0.000123660987
+    - -5.02999437e-07
+    - 2.43530612e-09
+    - -1.40881235e-12
+    - -1046.97628
+    - 2.96747468
+    high:
+    - 2.95257626
+    - 0.00139690057
+    - -4.92631691e-07
+    - 7.86010367e-11
+    - -4.60755321e-15
+    - -923.948645
+    - 5.87189252
+    note: 'McBride et al. data source code: TPIS78'
+  O2:
+    composition:
+      O: 2
+    T_ranges:
+    - 200.0
+    - 1000.0
+    - 6000.0
+    low:
+    - 3.78245636
+    - -0.00299673415
+    - 9.847302e-06
+    - -9.68129508e-09
+    - 3.24372836e-12
+    - -1063.94356
+    - 3.65767573
+    high:
+    - 3.66096083
+    - 0.000656365523
+    - -1.41149485e-07
+    - 2.05797658e-11
+    - -1.29913248e-15
+    - -1215.97725
+    - 3.41536184
+    note: 'McBride et al. data source code: TPIS89'

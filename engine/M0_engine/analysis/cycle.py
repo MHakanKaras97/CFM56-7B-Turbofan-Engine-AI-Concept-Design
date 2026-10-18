@@ -1,15 +1,19 @@
-"""M0 cycle v2: two-spool separate-flow turbofan with cooling air, SLS ISA, max take-off.
+"""M0 cycle v3: two-spool separate-flow turbofan with cooling air and variable cp, SLS ISA, max take-off.
 
 Stations (SAE AS755): 0 ambient, 2 fan face, 13 fan bypass exit, 18 bypass nozzle,
 25 HPC inlet, 3 HPC exit, 4 combustor exit, 41 HPT rotor inlet (after NGV cooling mixes in),
 45 LPT inlet (after rotor/LPT cooling mixes in), 5 LPT exit, 8 core nozzle.
 
+Gas properties: variable cp(T, FAR) from NASA polynomials (tools.thermo.NasaGas); a constant-cp
+gas can be switched in for closed-form checks. Station FAR is carried through mixing.
+
 Cooling air is bled at station 3 and bypasses the combustor. The NGV share mixes before the
 HPT rotor and does HPT work; the rest mixes after the HPT rotor.
 
 Calibration (Newton, finite-difference Jacobian) solves a chosen set of unknowns against the
-same number of targets. Default: W2, T4, FPR, cooling fraction against thrust, fuel flow,
-V18/V8 = eta_fan_is * eta_LPT_is and combustor air.
+same number of targets. Default: W2, T4, FPR against thrust, fuel flow and
+V18/V8 = eta_fan_is * eta_LPT_is; the cooling fraction is an input. The 44.52 kg/s combustor
+air is a check (ADR-007); solving it as a fourth target is kept as the v2 comparison.
 
 Usage:
     python -m engine.M0_engine.analysis.cycle      # writes analysis/results.yaml
@@ -22,13 +26,12 @@ from pathlib import Path
 
 from core.util import read_yaml, write_yaml
 from tools.thermo import (
-    Gas,
-    T_from_h_hot,
+    ConstantCp,
+    NasaGas,
     burner,
+    choke_mass_flux,
     compressor,
     compressor_isentropic_eff,
-    h_cold,
-    h_hot,
     mix,
     nozzle,
     turbine_for_work,
@@ -43,6 +46,8 @@ INCH = 0.0254
 STATIONS = ("0", "2", "13", "18", "25", "3", "4", "41", "45", "5", "8")
 UNKNOWNS = ("W2", "T4", "FPR", "cooling_fraction")
 TARGETS = ("thrust", "fuel", "velocity_ratio", "combustor_air")
+SOLVE = UNKNOWNS[:3]  # v3: cooling fraction is an input
+SOLVE_TARGETS = TARGETS[:3]
 E_POLY = ("e_fan", "e_booster", "e_hpc", "e_hpt", "e_lpt")
 
 
@@ -52,8 +57,7 @@ class Params:
     P0: float
     opr: float
     bpr: float
-    cold: Gas
-    hot: Gas
+    gas: object  # tools.thermo gas model (NasaGas or ConstantCp)
     inlet_recovery: float
     e_fan: float
     e_booster: float
@@ -105,13 +109,19 @@ def load_inputs(params_file: Path = PARAMS_FILE, root: Path = ROOT):
     sfc_ref = next(r for r in sfc_rows if r["uid"] == refs["sfc_ref"]["uid"])["sfc"]["value"]
 
     gas, comp, dp, sec = raw["gas"], raw["components"], raw["design_point"], raw["secondary_air"]
+    if gas["model"] == "nasa_glenn":
+        gas_model = NasaGas(root / gas["data"])
+    elif gas["model"] == "constant_cp":
+        c = gas["constant_cp"]
+        gas_model = ConstantCp(_value(c["cp"]), _value(c["gamma"]), _value(c["R"]))
+    else:
+        raise ValueError(f"unknown gas model {gas['model']!r}")
     params = Params(
         T0=_value(dp["T0"]),
         P0=_value(dp["P0"]),
         opr=float(row["pressure_ratio"]),
         bpr=float(row["bpr"]),
-        cold=Gas(_value(gas["cold_cp"]), _value(gas["cold_gamma"]), _value(gas["R"])),
-        hot=Gas(_value(gas["hot_cp"]), _value(gas["hot_gamma"]), _value(gas["R"])),
+        gas=gas_model,
         ngv_share=_value(sec["ngv_share"]),
         customer_bleed=_value(sec["customer_bleed"]),
         hp_power_offtake=_value(sec["hp_power_offtake"]),
@@ -125,6 +135,7 @@ def load_inputs(params_file: Path = PARAMS_FILE, root: Path = ROOT):
         combustor_air=_value(raw["calibration"]["targets"]["combustor_air"]),
     )
     initial = {k: _value(v) for k, v in raw["calibration"]["initial"].items()}
+    initial["cooling_fraction"] = _value(sec["cooling_fraction"])
     egt_keys = raw["checks"]["egt_limit"]["keys"]
     references = {
         "thrust_kN": thrust_kn,
@@ -138,60 +149,56 @@ def load_inputs(params_file: Path = PARAMS_FILE, root: Path = ROOT):
 
 # --- cycle ------------------------------------------------------------------------
 
-def _mix(W_hot: float, T_hot: float, W_cool: float, T_cool: float, T_ref: float, cold: Gas, hot: Gas):
-    """Adiabatic mixing of cooling air (cold gas) into hot gas; continuous enthalpy (ADR-006)."""
-    W, h = mix(W_hot, h_hot(T_hot, T_ref, cold, hot), W_cool, h_cold(T_cool, cold))
-    return W, T_from_h_hot(h, T_ref, cold, hot)
-
-
 def run(p: Params, W2: float, T4: float, FPR: float, cooling_fraction: float = 0.0) -> dict:
     """Evaluate the cycle. cooling_fraction is relative to core flow (station 25)."""
-    cold, hot = p.cold, p.hot
+    gas = p.gas
     W_core = W2 / (1.0 + p.bpr)
     W_byp = W2 - W_core
 
     Tt0, Pt0 = p.T0, p.P0  # M0 = 0
     Tt2, Pt2 = Tt0, Pt0 * p.inlet_recovery
 
-    Tt13, Pt13, w_fan = compressor(Tt2, Pt2, FPR, p.e_fan, cold)
+    Tt13, Pt13, w_fan = compressor(Tt2, Pt2, FPR, p.e_fan, gas)
     Tt18, Pt18 = Tt13, Pt13 * (1.0 - p.bypass_duct_dp)
 
-    Tt25, Pt25, w_boost = compressor(Tt2, Pt2, p.core_pr_25_2, p.e_booster, cold)
+    Tt25, Pt25, w_boost = compressor(Tt2, Pt2, p.core_pr_25_2, p.e_booster, gas)
     hpc_pr = p.opr / p.core_pr_25_2
-    Tt3, Pt3, w_hpc = compressor(Tt25, Pt25, hpc_pr, p.e_hpc, cold)
+    Tt3, Pt3, w_hpc = compressor(Tt25, Pt25, hpc_pr, p.e_hpc, gas)
 
     W_cool = cooling_fraction * W_core
     W_ngv = p.ngv_share * W_cool
     W_rotor = W_cool - W_ngv
     W_comb = W_core - W_cool - p.customer_bleed
 
-    f = burner(Tt3, T4, p.burner_eta, p.LHV, cold, hot)
+    f = burner(Tt3, T4, p.burner_eta, p.LHV, gas)
     W_fuel = f * W_comb
     W4 = W_comb + W_fuel if p.include_fuel_mass else W_comb
     Pt4 = Pt3 * (1.0 - p.burner_dp)
 
-    W41, T41 = _mix(W4, T4, W_ngv, Tt3, Tt3, cold, hot)
+    W41, T41, f41 = mix(W4, T4, f, W_ngv, Tt3, 0.0, gas)
     Pt41 = Pt4
 
     P_fan, P_boost, P_hpc = W_byp * w_fan, W_core * w_boost, W_core * w_hpc
     P_hpt = (P_hpc + p.hp_power_offtake) / p.mech_eff
     P_lpt = (P_fan + P_boost) / p.mech_eff
-    Tt44, Pt44, hpt_pr = turbine_for_work(T41, Pt41, P_hpt / W41, p.e_hpt, hot)
-    W45, Tt45 = _mix(W41, Tt44, W_rotor, Tt3, Tt3, cold, hot)
+    Tt44, Pt44, hpt_pr = turbine_for_work(T41, Pt41, P_hpt / W41, p.e_hpt, gas, f41)
+    W45, Tt45, f45 = mix(W41, Tt44, f41, W_rotor, Tt3, 0.0, gas)
     Pt45 = Pt44
-    Tt5, Pt5, lpt_pr = turbine_for_work(Tt45, Pt45, P_lpt / W45, p.e_lpt, hot)
+    Tt5, Pt5, lpt_pr = turbine_for_work(Tt45, Pt45, P_lpt / W45, p.e_lpt, gas, f45)
     Tt8, Pt8, W8 = Tt5, Pt5, W45
 
-    n18 = nozzle(Tt18, Pt18, p.P0, p.nozzle_cv, cold)
-    n8 = nozzle(Tt8, Pt8, p.P0, p.nozzle_cv, hot)
+    n18 = nozzle(Tt18, Pt18, p.P0, p.nozzle_cv, gas)
+    n8 = nozzle(Tt8, Pt8, p.P0, p.nozzle_cv, gas, f45)
     F_byp = W_byp * n18.F_per_W
     F_core = W8 * n8.F_per_W
     thrust = F_byp + F_core  # no ram drag at M0 = 0
 
+    # (Tt, Pt, W, FAR)
     stations = {
-        "0": (Tt0, Pt0, W2), "2": (Tt2, Pt2, W2), "13": (Tt13, Pt13, W_byp), "18": (Tt18, Pt18, W_byp),
-        "25": (Tt25, Pt25, W_core), "3": (Tt3, Pt3, W_core), "4": (T4, Pt4, W4),
-        "41": (T41, Pt41, W41), "45": (Tt45, Pt45, W45), "5": (Tt5, Pt5, W8), "8": (Tt8, Pt8, W8),
+        "0": (Tt0, Pt0, W2, 0.0), "2": (Tt2, Pt2, W2, 0.0), "13": (Tt13, Pt13, W_byp, 0.0),
+        "18": (Tt18, Pt18, W_byp, 0.0), "25": (Tt25, Pt25, W_core, 0.0), "3": (Tt3, Pt3, W_core, 0.0),
+        "4": (T4, Pt4, W4, f), "41": (T41, Pt41, W41, f41), "45": (Tt45, Pt45, W45, f45),
+        "5": (Tt5, Pt5, W8, f45), "8": (Tt8, Pt8, W8, f45),
     }
     return {
         "stations": stations,
@@ -201,8 +208,8 @@ def run(p: Params, W2: float, T4: float, FPR: float, cooling_fraction: float = 0
         "hpc_pr": hpc_pr, "hpt_pr": hpt_pr, "lpt_pr": lpt_pr,
         "P_fan": P_fan, "P_boost": P_boost, "P_hpc": P_hpc, "P_hpt": P_hpt, "P_lpt": P_lpt,
         "n18": n18, "n8": n8, "F_byp": F_byp, "F_core": F_core, "thrust": thrust,
-        "eta_fan_is": compressor_isentropic_eff(FPR, p.e_fan, cold),
-        "eta_lpt_is": turbine_isentropic_eff(lpt_pr, p.e_lpt, hot),
+        "eta_fan_is": compressor_isentropic_eff(Tt2, FPR, p.e_fan, gas),
+        "eta_lpt_is": turbine_isentropic_eff(Tt45, lpt_pr, p.e_lpt, gas, f45),
         "velocity_ratio": n18.V / n8.V,
     }
 
@@ -244,8 +251,8 @@ def calibrate(
     p: Params,
     t: Targets,
     initial: dict,
-    unknowns: tuple[str, ...] = UNKNOWNS,
-    targets: tuple[str, ...] = TARGETS,
+    unknowns: tuple[str, ...] = SOLVE,
+    targets: tuple[str, ...] = SOLVE_TARGETS,
     tol: float = 1e-9,
     max_iter: int = 50,
 ):
@@ -315,12 +322,6 @@ def fan_face_area(raw: dict) -> float:
     return math.pi / 4.0 * D * D * (1.0 - _value(g["fan_hub_tip"]) ** 2)
 
 
-def choke_mass_flux(Pt: float, Tt: float, gas: Gas) -> float:
-    """Maximum mass flow per unit area (M = 1) for total conditions Pt, Tt."""
-    g = gas.gamma
-    return Pt / math.sqrt(Tt) * math.sqrt(g / gas.R) * (2.0 / (g + 1.0)) ** ((g + 1.0) / (2.0 * (g - 1.0)))
-
-
 def egt_estimate(raw: dict, T45: float, T5: float) -> float:
     c = raw["checks"]["egt"]
     return c["a"] * (T45 - c["b"] * (T45 - T5))
@@ -330,13 +331,26 @@ def egt_displayed_C(r: dict, raw: dict, refs: dict) -> float:
     return egt_estimate(raw, r["stations"]["45"][0], r["stations"]["5"][0]) - 273.15 + refs["egt_shunt_K"]
 
 
-# --- sensitivity --------------------------------------------------------------------
+def summary_row(r: dict, raw: dict, refs: dict) -> dict:
+    """One row of the cooling sweep / comparison table."""
+    return {
+        "cooling_fraction": _r(r["cooling_fraction"], 4),
+        "W2_kg_s": _r(r["W2"], 5),
+        "W2_per_A": _r(r["W2"] / fan_face_area(raw), 4),
+        "T4_K": _r(r["T4"], 5),
+        "T41_K": _r(r["T41"], 5),
+        "FPR": _r(r["FPR"], 4),
+        "EGT_displayed_C": _r(egt_displayed_C(r, raw, refs), 4),
+        "combustor_air_kg_s": _r(r["W_comb"], 4),
+    }
+
+
+# --- sweeps -------------------------------------------------------------------------
 
 def sensitivity(p: Params, t: Targets, base: dict, raw: dict, refs: dict, tol: float) -> list[dict]:
     """Recalibrate after each perturbation; report deltas of W2, T4 and displayed EGT.
 
-    e_poly steps: all four unknowns re-solved. Cooling steps: cooling fixed at base +/- step,
-    combustor-air target dropped, other three unknowns re-solved.
+    W2, T4 and FPR are re-solved in every case; the cooling fraction is an input.
     """
     cfg = raw["sensitivity"]
     start = {k: base[k] for k in UNKNOWNS}
@@ -358,10 +372,28 @@ def sensitivity(p: Params, t: Targets, base: dict, raw: dict, refs: dict, tol: f
             record(f"{name} {step:+.2f}", r)
     for sign in (+1, -1):
         step = sign * cfg["cooling_step"]
-        fixed = dict(start, cooling_fraction=base["cooling_fraction"] + step)
-        r, _ = calibrate(p, t, fixed, unknowns=UNKNOWNS[:3], targets=TARGETS[:3], tol=tol)
+        r, _ = calibrate(p, t, dict(start, cooling_fraction=base["cooling_fraction"] + step), tol=tol)
         record(f"cooling_fraction {step:+.2f}", r)
     return rows
+
+
+def cooling_sweep(p: Params, t: Targets, base: dict, raw: dict, refs: dict, tol: float) -> list[dict]:
+    """Calibrate W2, T4, FPR at each cooling fraction of the configured band."""
+    cfg = raw["cooling_sweep"]
+    n = int(round((cfg["max"] - cfg["min"]) / cfg["step"]))
+    guess = {k: base[k] for k in UNKNOWNS}
+    rows = []
+    for i in range(n + 1):
+        guess["cooling_fraction"] = cfg["min"] + i * cfg["step"]
+        r, _ = calibrate(p, t, guess, tol=tol)
+        rows.append(summary_row(r, raw, refs))
+    return rows
+
+
+def combustor_air_target(p: Params, t: Targets, base: dict, tol: float) -> dict:
+    """v2 setup: combustor air as a fourth target, cooling fraction solved."""
+    r, _ = calibrate(p, t, {k: base[k] for k in UNKNOWNS}, unknowns=UNKNOWNS, targets=TARGETS, tol=tol)
+    return r
 
 
 # --- feasibility --------------------------------------------------------------------
@@ -378,9 +410,9 @@ def thrust_envelope(p: Params, t: Targets, initial: dict, raw: dict, tol: float,
     out = []
     for i in range(int(round(c_max / step)) + 1):
         guess["cooling_fraction"] = i * step
-        r, _ = calibrate(p, t, guess, unknowns=UNKNOWNS[:3],
+        r, _ = calibrate(p, t, guess, unknowns=SOLVE,
                          targets=("fuel", "velocity_ratio", "combustor_air"), tol=tol)
-        guess.update({k: r[k] for k in UNKNOWNS[:3]})
+        guess.update({k: r[k] for k in SOLVE})
         out.append({
             "cooling_fraction": _r(i * step, 3),
             "thrust_kN": _r(r["thrust"] / 1000.0, 5),
@@ -394,12 +426,12 @@ def thrust_envelope(p: Params, t: Targets, initial: dict, raw: dict, tol: float,
 
 # --- outputs ------------------------------------------------------------------------
 
-def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
+def build_checks(r: dict, p: Params, t: Targets, raw: dict, refs: dict) -> list[dict]:
     cfg = raw["checks"]
     sfc = r["W_fuel"] / r["thrust"] * 1e6
     A_fan = fan_face_area(raw)
     w2a = r["W2"] / A_fan
-    choke = choke_mass_flux(p.P0, p.T0, p.cold)
+    choke = choke_mass_flux(p.T0, p.P0, p.gas)
     w2_ref = cfg["w2_ref"]
     lo, hi = cfg["w2a_range"]["min"], cfg["w2a_range"]["max"]
     c_lo, c_hi = cfg["cooling_range"]["min"], cfg["cooling_range"]["max"]
@@ -420,10 +452,8 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
          "deviation": _r(r["W2"] / w2_ref["value"] - 1.0, 3), "criterion": f"within {w2_ref['tolerance']:.0%}",
          "result": verdict(abs(r["W2"] / w2_ref["value"] - 1.0) <= w2_ref["tolerance"])},
         {"name": "Total cooling fraction", "value": _r(r["cooling_fraction"], 4), "reference": [c_lo, c_hi],
-         "unit": "- of core flow", "criterion": f"{c_lo:g} <= c <= {c_hi:g}",
-         "result": verdict(c_lo <= r["cooling_fraction"] <= c_hi),
-         **({"flag": "above range: check whether the 44.52 kg/s combustor air includes liner cooling air"}
-            if r["cooling_fraction"] > c_hi else {})},
+         "unit": "- of core flow", "criterion": f"{c_lo:g} <= c <= {c_hi:g} (input since v3)",
+         "result": verdict(c_lo <= r["cooling_fraction"] <= c_hi)},
         {"name": "SFC vs ICAO/TCDS", "value": _r(sfc), "reference": refs["sfc_ref"], "unit": "g/(kN s)",
          "criterion": f"within {cfg['sfc_tolerance']['value']:.1%}",
          "result": verdict(abs(sfc / refs["sfc_ref"] - 1.0) <= cfg["sfc_tolerance"]["value"])},
@@ -431,6 +461,9 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
          "unit": "degC", "margin": _r(refs["egt_limit_displayed_C"] - egt_disp, 4),
          "criterion": f"model + {refs['egt_shunt_K']:g} K shunt < {refs['egt_limit_displayed_C']:g}",
          "result": verdict(egt_disp < refs["egt_limit_displayed_C"])},
+        {"name": "Combustor air vs Lopez-Pintor", "value": _r(r["W_comb"], 4), "reference": t.combustor_air,
+         "unit": "kg/s", "deviation": _r(r["W_comb"] / t.combustor_air - 1.0, 3),
+         "criterion": "info only (ADR-007: modeled source value, flow definition unclear)", "result": "info"},
         {"name": "EGT displayed vs expected band", "value": _r(egt_disp, 4), "reference": [band["min"], band["max"]],
          "unit": "degC", "criterion": "info only",
          "in_band": band["min"] <= egt_disp <= band["max"], "result": "info"},
@@ -443,27 +476,34 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
     ]
 
 
+MODEL = ("M0 cycle v3, two-spool separate-flow, cooling air from HPC exit, "
+         "variable cp(T, FAR) from NASA 7-coefficient polynomials, continuous enthalpy (ADR-006, ADR-007)")
+
+
 def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterations: int,
-                  sens: list[dict] | None = None) -> dict:
+                  sens: list[dict] | None = None, sweep: list[dict] | None = None,
+                  comparison: dict | None = None) -> dict:
     sfc = r["W_fuel"] / r["thrust"] * 1e6  # g/(kN s)
     A_fan = fan_face_area(raw)
     T45, T5 = r["stations"]["45"][0], r["stations"]["5"][0]
     egt_K = egt_estimate(raw, T45, T5)
-    checks = build_checks(r, p, raw, refs)
+    checks = build_checks(r, p, t, raw, refs)
     results = {
-        "model": "M0 cycle v2, two-spool separate-flow, cooling air from HPC exit, continuous enthalpy (ADR-006)",
+        "model": MODEL,
+        "gas_model": raw["gas"]["model"],
         "design_point": {"condition": "SLS ISA, max take-off", "icao_uid": refs["icao_uid"],
                          "T0": _q(p.T0, "K", "G"), "P0": _q(p.P0, "Pa", "G")},
         "calibration": {
             "iterations": iterations,
+            "unknowns": list(SOLVE),
             "targets": {"thrust": _q(t.thrust / 1000.0, "kN", "K"), "fuel_flow": _q(t.fuel, "kg/s", "K"),
-                        "velocity_ratio": "V18/V8 = eta_fan_is * eta_LPT_is",
-                        "combustor_air": _q(t.combustor_air, "kg/s", "KS")},
+                        "velocity_ratio": "V18/V8 = eta_fan_is * eta_LPT_is"},
+            "inputs": {"cooling_fraction": _q(r["cooling_fraction"], "- of core flow", "G")},
             "W2": _q(r["W2"], "kg/s"), "T4": _q(r["T4"], "K"), "FPR": _q(r["FPR"], "-"),
-            "cooling_fraction": _q(r["cooling_fraction"], "- of core flow"),
         },
         "stations": [
-            {"station": s, "Tt_K": _r(v[0], 5), "Pt_kPa": _r(v[1] / 1000.0, 5), "W_kg_s": _r(v[2], 5)}
+            {"station": s, "Tt_K": _r(v[0], 5), "Pt_kPa": _r(v[1] / 1000.0, 5), "W_kg_s": _r(v[2], 5),
+             "FAR": _r(v[3], 5)}
             for s, v in ((s, r["stations"][s]) for s in STATIONS)
         ],
         "performance": {
@@ -501,16 +541,26 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
             "lpt": _q(r["P_lpt"] / 1e6, "MW"), "hp_offtake": _q(p.hp_power_offtake / 1e6, "MW", "T"),
         },
         "fan": {"face_area": _q(A_fan, "m2", "T"), "specific_flow": _q(r["W2"] / A_fan, "kg/(s m2)"),
-                "choke_mass_flux": _q(choke_mass_flux(p.P0, p.T0, p.cold), "kg/(s m2)")},
+                "choke_mass_flux": _q(choke_mass_flux(p.T0, p.P0, p.gas), "kg/(s m2)")},
         "egt": {"model_K": _q(egt_K, "K", "T"), "model_C": _q(egt_K - 273.15, "degC", "T"),
                 "displayed_C": _q(egt_K - 273.15 + refs["egt_shunt_K"], "degC", "T"),
                 "note": "CFM56-3 form via Martins 2015, applied in K; displayed = model + SAC shunt"},
         "checks": checks,
         "hard_checks_passed": all(c["result"] == "pass" for c in checks if c.get("hard")),
     }
+    if sweep is not None:
+        results["cooling_sweep"] = {
+            "method": "W2, T4, FPR calibrated to thrust, fuel and V18/V8 at each cooling fraction",
+            "rows": sweep,
+        }
+    if comparison is not None:
+        results["comparison_combustor_air_target"] = {
+            "method": "v2 setup with variable cp: combustor air 44.52 kg/s as fourth target, cooling solved",
+            "row": summary_row(comparison, raw, refs),
+        }
     if sens is not None:
         results["sensitivity"] = {
-            "method": "recalibrated per case; cooling cases fix cooling and drop the combustor-air target",
+            "method": "recalibrated per case (W2, T4, FPR); cooling cases shift the cooling input",
             "cases": sens,
         }
     return results
@@ -520,7 +570,7 @@ def infeasible_results(p: Params, t: Targets, initial: dict, raw: dict, tol: flo
     envelope = thrust_envelope(p, t, initial, raw, tol)
     best = max(envelope, key=lambda e: e["thrust_kN"])
     return {
-        "model": "M0 cycle v2, two-spool separate-flow, cooling air from HPC exit",
+        "model": MODEL,
         "status": "infeasible",
         "reason": "no solution matches all calibration targets with the current assumptions",
         "solver_message": error,
@@ -547,12 +597,18 @@ def main(argv: list[str]) -> int:
               f"(target {results['target_thrust']['value']} kN)")
         return 1
     sens = sensitivity(p, t, r, raw, refs, tol)
-    results = build_results(r, p, t, raw, refs, iterations, sens)
+    sweep = cooling_sweep(p, t, r, raw, refs, tol)
+    comparison = combustor_air_target(p, t, r, tol)
+    results = build_results(r, p, t, raw, refs, iterations, sens, sweep, comparison)
     write_yaml(RESULTS_FILE, results)
     print(f"W2={r['W2']:.2f} kg/s  T4={r['T4']:.1f} K  T41={r['T41']:.1f} K  FPR={r['FPR']:.4f}  "
           f"cool={r['cooling_fraction']:.4f}  ({iterations} it)")
     for c in results["checks"]:
         print(f"  [{c['result']:>4}] {c['name']}: {c['value']} (ref {c['reference']})")
+    rows = sweep + [dict(results["comparison_combustor_air_target"]["row"])]
+    print("  " + " ".join(f"{k[:10]:>10}" for k in rows[0]))
+    for row in rows:
+        print("  " + " ".join(f"{v!s:>10}" for v in row.values()))
     for s in sens:
         print(f"  {s['case']:<24} dW2={s['dW2_kg_s']:>8} dT4={s['dT4_K']:>8} dEGT={s['dEGT_K']:>8}")
     return 0

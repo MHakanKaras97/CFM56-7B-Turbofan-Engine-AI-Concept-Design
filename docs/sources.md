@@ -16,4 +16,6 @@ Kural: alıntı veya şekil kopyalanmaz; yalnızca faktler kullanılır, kendi c
 | 9 | Yadav et al., ASME Turbo Expo, GT2005-68244, 2005. | Referans | faktler, kendi cümlelerimizle |
 | 10 | Grönstedt T., Kyprianidis K.G., ASME Turbo Expo, GT2010-22519, 2010. | Referans | faktler, kendi cümlelerimizle |
 | 11 | Müller et al., ISROMAC 2017. | Referans | faktler, kendi cümlelerimizle |
+| 13 | McBride B.J., Gordon S., Reno M.A., *Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species*, NASA TM-4513, 1993. https://ntrs.nasa.gov/citations/19940013151 | N2, O2, Ar, CO2, H2O için 7 katsayılı cp/h/s polinomları (`tools/data/nasa_glenn.yaml`) | ABD hükümeti eseri, kamu malı |
+| 14 | Cantera, `data/nasa_gas.yaml` (commit 9573e6b), https://github.com/Cantera/cantera | Kaynak 13'teki katsayıların makinece okunur kopyası; katsayılar buradan kodla aktarıldı | BSD-3-Clause (dosya); veriler kamu malı |
 | 12 | Martins D., *Off-Design Performance Prediction of the CFM56-3 Aircraft Engine*, genişletilmiş özet, Instituto Superior Técnico, Lizbon, 2015. | Yalnızca kalibrasyon yöntemi (Kurzke yaklaşımı); motor CFM56-3 | faktler, kendi cümlelerimizle |
