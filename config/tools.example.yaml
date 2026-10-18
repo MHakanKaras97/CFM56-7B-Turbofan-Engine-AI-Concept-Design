@@ -8,3 +8,10 @@ tools:
   pvpython:
     path: C:\Program Files\ParaView 6.2.0\bin\pvpython.exe
     note: ParaView Python for post-processing
+services:
+  fusion_mcp_url:
+    url: http://127.0.0.1:27182/mcp
+    note: >-
+      Local Fusion MCP server (HTTP), served by Fusion's add-in; reachable only while Fusion runs.
+      Registered in Claude Code local scope (not committed):
+      claude mcp add --transport http fusion http://127.0.0.1:27182/mcp

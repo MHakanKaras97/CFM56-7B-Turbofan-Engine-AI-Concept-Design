@@ -22,13 +22,14 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- Fusion MCP kullanılabilir: http://127.0.0.1:27182/mcp (HTTP, Fusion eklentisi; yerel kapsamda kayıtlı, commit edilmez). Araçlar: fusion_mcp_read (belge/proje/lisans/API dokümanı/ekran görüntüsü, salt okunur), fusion_mcp_execute (modelde işlem), fusion_mcp_update (model güncelleme), fusion_mcp_electronics_read. Salt okunur test: açık belge listesi -> 0 belge. Fusion MCP için Fusion açık olmalı; ona ihtiyaç duyan testler aksi halde atlanır. Araçlar Claude Code yeniden başlatılınca oturuma yüklenir.
 - CR kuralı: impact.by (üretici) kaydedilir; onay için impact.affected_modules boş olmamalı. Önceden doldurulmuş etki yalnızca bütçe CR'lerinde (M0 integration_check); modül CR'leri M0 set_impact bekler.
 - UI faz 1: CR `impact.metrics` (isteğe bağlı; bütçe CR'leri dSFC %, dEGT K, dT41 K ile doldurur, onay için etki hazır). core/diff.py: diff_revisions, diff_concepts (saf veri). .cache/geometry/test_box.step üretildi (Fusion ilişkilendirme testi).
 - Araç yolları yapılandırması: core/toolpaths.py; ccx yapılandırılan yoldan çalıştı ("This is Version 2.22"; girdisiz: kullanım satırı).
 - UI spesifikasyonu (docs/design/ui_spec.md); ADR-011 (revizyonda section.svg, GLB/STEP önbellekte).
 - Kavramsal düzen referansı: concept_reference.yaml -> tools/reference.py -> engine_reference.svg; check_layout() taslağı.
 - Araçlar (.venv, Python 3.13): streamlit 1.65.0, cadquery 2.8.0 (OCP 7.9.3.1.1), gmsh 4.15.2; smoke testleri geçti.
-- Harici: PrePoMax 2.6.0 (C:\Tools, ccx 2.22), ParaView 6.2.0, Autodesk Fusion. Fusion MCP bağlı değil.
+- Harici: PrePoMax 2.6.0 (C:\Tools, ccx 2.22), ParaView 6.2.0, Autodesk Fusion (MCP: aşağıya bakın).
 - ADR-010: entegrasyon kontrolü tasarım noktası yeniden dengelemesi; geçici EGT toleransı 5 K [T].
 - **M0 v1 tamam.** concept001: M0 rev005, M1-M9 null. Kabul listesi 6/6, kabul testleri 5/5.
 - Params CR'leri (apply: params -> yeniden hesap -> revizyon -> results.yaml + icd.yaml); bütçe CR'si seçenekleri (a)/(b).
