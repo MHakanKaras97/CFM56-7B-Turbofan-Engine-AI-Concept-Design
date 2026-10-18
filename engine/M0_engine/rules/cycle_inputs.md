@@ -48,22 +48,31 @@ Veri dosyaları (sayılar koddan gelir):
 
 ## v4 girdileri (Girão 2023, Şekil 4.9-4.10) [KS]
 
+Verimler izentropiktir (GasTurb girdileri, Şekil 4.9); politropiğe çevrilmez (v4.1).
+
 | Büyüklük | Değer | Not |
 |---|---|---|
-| FPR | 1.765 | Girdi (ADR-008) |
-| P25/P2 (toplam) | 2.64 | P25/P24 = 0.98 dahil |
-| Politropik verim: fan / çekirdek tarafı / HPC / HPT / LPT | 0.887 / 0.89 / 0.879 / 0.862 / 0.903 | |
+| Dış fan PR (FPR) / izentropik verim | 1.765 / 0.878 | Girdi (ADR-008) |
+| İç fan PR / izentropik verim | 1.344 / 0.870 | P21/P2 |
+| Booster PR / izentropik verim | 2.004 / 0.890 | P24/P21 |
+| P25/P24 | 0.98 | P25/P2 = 1.344 · 2.004 · 0.98 = 2.64 |
+| HPC / HPT / LPT izentropik verim | 0.8363 / 0.880 / 0.9173 | |
 | Yanma verimi / P4/P3 | 0.9995 / 0.95 | |
 | P2/P1, P45/P44, P16/P13, P6/P5 | 0.99, 0.98, 0.975, 0.99 | |
 | Mekanik verim | 0.99 | |
-| İkincil hava (W25 oranı) | NGV 0.05, HPT rotor 0.06, kaçak 0.02; toplam 0.13 | NGV rotordan önce, diğerleri 45'te karışır |
+| Lüle itki katsayısı: by-pass / çekirdek | 1.00998 / 1.0 | Çekirdek değeri tezde yok, GasTurb varsayılanı [T] |
+| Lüle debi katsayısı CD18 / CD8 | 0.99756 / 0.99492 | Yalnızca alanı etkiler |
+| HP güç çekişi | 0 kW | |
+| İkincil hava (W25 oranı) | NGV 0.05, HPT rotor 0.06, kaçak 0.02; toplam 0.13 | NGV rotordan önce, rotor soğutması 44'te, kaçak 45'te karışır |
 | EGT formülü | EGT = 0.976·(T45 − 0.217·(T45 − T5)) | Şekil 4.10'da 0.976, metinde 0.9664 |
 
-Girão'dan alınmayan varsayımlar: lüle cv 0.98 [G], LHV 43.0 MJ/kg [G], HP güç çekişi 100 kW [T].
+Kaçak havası HPC çıkışından önce ayrılır (Girão W3 60.499 < W25 61.733). Model bunu HPC entalpi artışının %50'sinde ayrılan bir ara kademe çekişi olarak ele alır [T].
+
+Girão'dan alınmayan varsayımlar: LHV 43.124 MJ/kg [T] (GasTurb genel yakıtı varsayıldı, tezde yok); kaçak çekiş noktası 0.5 [T].
 
 ## Doğrulama noktası (yalnızca test, revizyon değil) [KS]
 
-Girdiler: itki 125.73 kN, yakıt 1.4023 kg/s, BPR 4.80, OPR (P3/P2) 29.88. Referanslar: W2 358.28 kg/s, T3 838.0 K, P3 2997 kPa, T4 1690.5 K, T41 1649.0 K, T45 1220.9 K, T5 902.1 K, P5 171.1 kPa, EGT 1124.0 K. Geçme ölçütü: sıcaklıklar ±%2, W2 ve basınçlar ±%3. Veriler `girao_2023.yaml` dosyasında.
+Girdiler: itki 125.73 kN, yakıt 1.4023 kg/s, BPR 4.80, OPR (P3/P2) 29.88. Referanslar (gaz yolu sırasıyla): W2 358.28 kg/s; T13 345.73 K, P13 177.088 kPa; T21 317.23 K; T25 395.08 K, P25 264.816 kPa; T3 838.0 K, P3 2997 kPa; W3 60.499, W31 53.708 kg/s; T4 1690.5 K; T41 1649.0 K; T43 1254.55 K; P44 705.1 kPa, T44 1231.30 K; T45 1220.9 K; T5 902.1 K, P5 171.1 kPa; EGT 1124.0 K. Doğrulama, sapması %1'i aşan ilk kalemi de raporlar. Geçme ölçütü: sıcaklıklar ±%2, W2 ve basınçlar ±%3. Veriler `girao_2023.yaml` dosyasında.
 
 ## Bilgi referansları
 

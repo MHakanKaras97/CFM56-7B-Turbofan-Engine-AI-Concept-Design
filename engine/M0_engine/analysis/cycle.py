@@ -1,17 +1,18 @@
 """M0 cycle v4: two-spool separate-flow turbofan, CFM56-7B-specific inputs (Girão 2023), SLS ISA, max take-off.
 
-Stations (SAE AS755): 0 ambient, 2 fan face, 13 fan bypass exit, 18 bypass nozzle (after the
-P16/P13 duct), 24 booster exit, 25 HPC inlet, 3 HPC exit, 31 combustor inlet (after secondary
-air bleed), 4 combustor exit, 41 HPT rotor inlet (after NGV cooling mixes in), 44 HPT exit,
-45 LPT inlet (after rotor cooling and leakage mix in, P45/P44 duct), 5 LPT exit,
-8 core nozzle (after the P6/P5 duct).
+Stations (SAE AS755 / GasTurb): 0 ambient, 2 fan face, 13 outer fan exit, 18 bypass nozzle (after
+the P16/P13 duct), 21 inner fan exit, 24 booster exit, 25 HPC inlet (after the P25/P24 duct),
+3 HPC exit, 31 combustor inlet (after secondary air bleed), 4 combustor exit, 41 HPT rotor inlet
+(after NGV cooling mixes in), 43 HPT exit, 44 after HPT rotor cooling mixes in, 45 LPT inlet
+(after leakage returns, P45/P44 duct), 5 LPT exit, 8 core nozzle (after the P6/P5 duct).
 
 Gas properties: variable cp(T, FAR) from NASA polynomials (tools.thermo.NasaGas); a constant-cp
 gas can be switched in for closed-form checks. Station FAR is carried through mixing.
+Component efficiencies are isentropic (GasTurb inputs, Girão Fig. 4.9).
 
-Secondary air is bled at station 3 as fixed fractions of W25 and bypasses the combustor:
-NGV cooling mixes before the HPT rotor and does HPT work; HPT rotor cooling and leakage mix
-at station 45.
+Secondary air, fractions of W25, bypasses the combustor: NGV cooling (HPC exit) mixes before
+the HPT rotor and does HPT work; HPT rotor cooling (HPC exit) mixes at station 44; leakage
+leaves the HPC at a fraction of its enthalpy rise and returns at station 45.
 
 FPR is an input (ADR-008). Calibration (Newton, finite-difference Jacobian) solves W2 and T4
 against thrust and fuel flow. V18/V8 is reported for information only.
@@ -32,12 +33,10 @@ from tools.thermo import (
     NasaGas,
     burner,
     choke_mass_flux,
-    compressor,
-    compressor_isentropic_eff,
+    compressor_is,
     mix,
     nozzle,
-    turbine_for_work,
-    turbine_isentropic_eff,
+    turbine_is_for_work,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -45,12 +44,14 @@ HERE = Path(__file__).resolve().parent
 PARAMS_FILE = HERE / "cycle_params.yaml"
 RESULTS_FILE = HERE / "results.yaml"
 INCH = 0.0254
-STATIONS = ("0", "2", "13", "18", "24", "25", "3", "31", "4", "41", "44", "45", "5", "8")
+STATIONS = ("0", "2", "13", "18", "21", "24", "25", "3", "31", "4", "41", "43", "44", "45", "5", "8")
 UNKNOWNS = ("W2", "T4")
 TARGETS = ("thrust", "fuel")
-E_POLY = ("e_fan", "e_booster", "e_hpc", "e_hpt", "e_lpt")
-COMPONENTS = ("inlet_recovery", "FPR", *E_POLY, "core_pr_25_2", "duct_25_24", "burner_eta", "burner_pr",
-              "duct_45_44", "duct_6_5", "bypass_duct", "mech_eff", "nozzle_cv", "LHV")
+ETA = ("eta_fan_outer", "eta_fan_inner", "eta_booster", "eta_hpc", "eta_hpt", "eta_lpt")
+COMPONENTS = ("inlet_recovery", "FPR", *ETA, "pr_fan_inner", "pr_booster", "duct_25_24", "burner_eta",
+              "burner_pr", "duct_45_44", "duct_6_5", "bypass_duct", "mech_eff", "cfg_18", "cfg_8", "cd_18",
+              "cd_8", "LHV")
+SECONDARY = ("ngv", "hpt_rotor", "leak", "leak_bleed_point", "customer_bleed", "hp_power_offtake")
 
 
 @dataclass(frozen=True)
@@ -61,13 +62,15 @@ class Params:
     bpr: float
     gas: object         # tools.thermo gas model (NasaGas or ConstantCp)
     inlet_recovery: float
-    FPR: float
-    e_fan: float
-    e_booster: float
-    e_hpc: float
-    e_hpt: float
-    e_lpt: float
-    core_pr_25_2: float  # P25/P2 including the P25/P24 duct
+    FPR: float           # outer fan P13/P2
+    eta_fan_outer: float  # isentropic efficiencies
+    eta_fan_inner: float
+    eta_booster: float
+    eta_hpc: float
+    eta_hpt: float
+    eta_lpt: float
+    pr_fan_inner: float  # P21/P2
+    pr_booster: float    # P24/P21
     duct_25_24: float
     burner_eta: float
     burner_pr: float     # P4/P3
@@ -75,11 +78,15 @@ class Params:
     duct_6_5: float
     bypass_duct: float   # P16/P13
     mech_eff: float
-    nozzle_cv: float
+    cfg_18: float        # nozzle thrust coefficients
+    cfg_8: float
+    cd_18: float         # nozzle discharge coefficients (area only)
+    cd_8: float
     LHV: float
     ngv: float = 0.0        # secondary air, fractions of W25
     hpt_rotor: float = 0.0
     leak: float = 0.0
+    leak_bleed_point: float = 0.5  # fraction of the HPC enthalpy rise where the leakage leaves
     customer_bleed: float = 0.0     # kg/s
     hp_power_offtake: float = 0.0   # W
     include_fuel_mass: bool = True  # False only for the ideal closed-form comparison
@@ -87,6 +94,10 @@ class Params:
     @property
     def secondary_fraction(self) -> float:
         return self.ngv + self.hpt_rotor + self.leak
+
+    @property
+    def core_pr_25_2(self) -> float:
+        return self.pr_fan_inner * self.pr_booster * self.duct_25_24
 
 
 @dataclass(frozen=True)
@@ -135,7 +146,7 @@ def load_inputs(params_file: Path = PARAMS_FILE, root: Path = ROOT):
         bpr=float(row["bpr"]),
         gas=gas_model,
         **{k: _value(comp[k]) for k in COMPONENTS},
-        **{k: _value(sec[k]) for k in ("ngv", "hpt_rotor", "leak", "customer_bleed", "hp_power_offtake")},
+        **{k: _value(sec[k]) for k in SECONDARY},
     )
     targets = Targets(thrust=thrust_kn * 1000.0, fuel=float(row["fuel_flow_to_kg_s"]))
     initial = {k: _value(v) for k, v in raw["calibration"]["initial"].items()}
@@ -162,19 +173,24 @@ def run(p: Params, W2: float, T4: float) -> dict:
     Tt0, Pt0 = p.T0, p.P0  # M0 = 0
     Tt2, Pt2 = Tt0, Pt0 * p.inlet_recovery
 
-    Tt13, Pt13, w_fan = compressor(Tt2, Pt2, p.FPR, p.e_fan, gas)
+    Tt13, Pt13, w_fan = compressor_is(Tt2, Pt2, p.FPR, p.eta_fan_outer, gas)
     Tt18, Pt18 = Tt13, Pt13 * p.bypass_duct
 
-    Tt24, Pt24, w_boost = compressor(Tt2, Pt2, p.core_pr_25_2 / p.duct_25_24, p.e_booster, gas)
+    Tt21, Pt21, w_inner = compressor_is(Tt2, Pt2, p.pr_fan_inner, p.eta_fan_inner, gas)
+    Tt24, Pt24, w_boost = compressor_is(Tt21, Pt21, p.pr_booster, p.eta_booster, gas)
     Tt25, Pt25 = Tt24, Pt24 * p.duct_25_24
     hpc_pr = p.opr / p.core_pr_25_2
-    Tt3, Pt3, w_hpc = compressor(Tt25, Pt25, hpc_pr, p.e_hpc, gas)
+    Tt3, Pt3, w_hpc = compressor_is(Tt25, Pt25, hpc_pr, p.eta_hpc, gas)
 
+    # leakage leaves the HPC part-way: it absorbs only that part of the HPC work
+    W_leak = p.leak * W_core
+    h_leak = gas.h(Tt25) + p.leak_bleed_point * w_hpc
+    T_leak = gas.T_from_h(h_leak)
+    W3 = W_core - W_leak
     W_ngv = p.ngv * W_core
     W_rotor = p.hpt_rotor * W_core
-    W_leak = p.leak * W_core
     W_sec = W_ngv + W_rotor + W_leak
-    W_comb = W_core - W_sec - p.customer_bleed
+    W_comb = W3 - W_ngv - W_rotor - p.customer_bleed
 
     f = burner(Tt3, T4, p.burner_eta, p.LHV, gas)
     W_fuel = f * W_comb
@@ -184,17 +200,21 @@ def run(p: Params, W2: float, T4: float) -> dict:
     W41, T41, f41 = mix(W4, T4, f, W_ngv, Tt3, 0.0, gas)
     Pt41 = Pt4
 
-    P_fan, P_boost, P_hpc = W_byp * w_fan, W_core * w_boost, W_core * w_hpc
+    P_fan = W_byp * w_fan
+    P_boost = W_core * (w_inner + w_boost)  # inner fan + booster, core side
+    P_hpc = W3 * w_hpc + W_leak * p.leak_bleed_point * w_hpc
     P_hpt = (P_hpc + p.hp_power_offtake) / p.mech_eff
     P_lpt = (P_fan + P_boost) / p.mech_eff
-    Tt44, Pt44, hpt_pr = turbine_for_work(T41, Pt41, P_hpt / W41, p.e_hpt, gas, f41)
-    W45, Tt45, f45 = mix(W41, Tt44, f41, W_rotor + W_leak, Tt3, 0.0, gas)
+    Tt43, Pt43, hpt_pr = turbine_is_for_work(T41, Pt41, P_hpt / W41, p.eta_hpt, gas, f41)
+    W44, Tt44, f44 = mix(W41, Tt43, f41, W_rotor, Tt3, 0.0, gas)
+    Pt44 = Pt43
+    W45, Tt45, f45 = mix(W44, Tt44, f44, W_leak, T_leak, 0.0, gas)
     Pt45 = Pt44 * p.duct_45_44
-    Tt5, Pt5, lpt_pr = turbine_for_work(Tt45, Pt45, P_lpt / W45, p.e_lpt, gas, f45)
+    Tt5, Pt5, lpt_pr = turbine_is_for_work(Tt45, Pt45, P_lpt / W45, p.eta_lpt, gas, f45)
     Tt8, Pt8, W8 = Tt5, Pt5 * p.duct_6_5, W45
 
-    n18 = nozzle(Tt18, Pt18, p.P0, p.nozzle_cv, gas)
-    n8 = nozzle(Tt8, Pt8, p.P0, p.nozzle_cv, gas, f45)
+    n18 = nozzle(Tt18, Pt18, p.P0, gas, cfg=p.cfg_18, cd=p.cd_18)
+    n8 = nozzle(Tt8, Pt8, p.P0, gas, f45, cfg=p.cfg_8, cd=p.cd_8)
     F_byp = W_byp * n18.F_per_W
     F_core = W8 * n8.F_per_W
     thrust = F_byp + F_core  # no ram drag at M0 = 0
@@ -202,21 +222,20 @@ def run(p: Params, W2: float, T4: float) -> dict:
     # (Tt, Pt, W, FAR)
     stations = {
         "0": (Tt0, Pt0, W2, 0.0), "2": (Tt2, Pt2, W2, 0.0), "13": (Tt13, Pt13, W_byp, 0.0),
-        "18": (Tt18, Pt18, W_byp, 0.0), "24": (Tt24, Pt24, W_core, 0.0), "25": (Tt25, Pt25, W_core, 0.0),
-        "3": (Tt3, Pt3, W_core, 0.0), "31": (Tt3, Pt3, W_comb, 0.0), "4": (T4, Pt4, W4, f),
-        "41": (T41, Pt41, W41, f41), "44": (Tt44, Pt44, W41, f41), "45": (Tt45, Pt45, W45, f45),
-        "5": (Tt5, Pt5, W8, f45), "8": (Tt8, Pt8, W8, f45),
+        "18": (Tt18, Pt18, W_byp, 0.0), "21": (Tt21, Pt21, W_core, 0.0), "24": (Tt24, Pt24, W_core, 0.0),
+        "25": (Tt25, Pt25, W_core, 0.0), "3": (Tt3, Pt3, W3, 0.0), "31": (Tt3, Pt3, W_comb, 0.0),
+        "4": (T4, Pt4, W4, f), "41": (T41, Pt41, W41, f41), "43": (Tt43, Pt43, W41, f41),
+        "44": (Tt44, Pt44, W44, f44), "45": (Tt45, Pt45, W45, f45), "5": (Tt5, Pt5, W8, f45),
+        "8": (Tt8, Pt8, W8, f45),
     }
     return {
         "stations": stations,
-        "W2": W2, "T4": T4, "T41": T41, "Tt44": Tt44, "FPR": p.FPR,
-        "W_core": W_core, "W_byp": W_byp, "W_sec": W_sec, "W_ngv": W_ngv, "W_rotor": W_rotor, "W_leak": W_leak,
-        "W_comb": W_comb, "W8": W8, "f": f, "W_fuel": W_fuel,
+        "W2": W2, "T4": T4, "T41": T41, "Tt43": Tt43, "FPR": p.FPR,
+        "W_core": W_core, "W_byp": W_byp, "W3": W3, "W_sec": W_sec, "W_ngv": W_ngv, "W_rotor": W_rotor,
+        "W_leak": W_leak, "T_leak": T_leak, "W_comb": W_comb, "W8": W8, "f": f, "W_fuel": W_fuel,
         "hpc_pr": hpc_pr, "hpt_pr": hpt_pr, "lpt_pr": lpt_pr,
         "P_fan": P_fan, "P_boost": P_boost, "P_hpc": P_hpc, "P_hpt": P_hpt, "P_lpt": P_lpt,
         "n18": n18, "n8": n8, "F_byp": F_byp, "F_core": F_core, "thrust": thrust,
-        "eta_fan_is": compressor_isentropic_eff(Tt2, p.FPR, p.e_fan, gas),
-        "eta_lpt_is": turbine_isentropic_eff(Tt45, lpt_pr, p.e_lpt, gas, f45),
         "velocity_ratio": n18.V / n8.V,
     }
 
@@ -369,15 +388,26 @@ def validation_case(p: Params, refs: dict) -> tuple[Params, Targets]:
 
 
 def validation_rows(r: dict, raw: dict, refs: dict) -> list[dict]:
-    """Model vs Girão per item: deviation and pass/fail against the kind's tolerance."""
+    """Model vs Girão per item, in gas-path order: deviation and pass/fail against the kind's tolerance."""
     case = refs["girao"]["validation_case"]
     st = r["stations"]
+
+    def T(s):
+        return st[s][0]
+
+    def P(s):
+        return st[s][1] / 1000.0
+
     model = {
-        "W2": r["W2"], "T3": st["3"][0], "P3": st["3"][1] / 1000.0, "T4": r["T4"], "T41": r["T41"],
-        "T45": st["45"][0], "T5": st["5"][0], "P5": st["5"][1] / 1000.0, "EGT": egt_model_K(r, raw),
+        "W2": r["W2"], "T13": T("13"), "P13": P("13"), "T21": T("21"), "T25": T("25"), "P25": P("25"),
+        "T3": T("3"), "P3": P("3"), "W3": r["W3"], "W31": r["W_comb"], "T4": r["T4"], "T41": r["T41"],
+        "T43": T("43"), "P44": P("44"), "T44": T("44"), "T45": T("45"), "T5": T("5"), "P5": P("5"),
+        "EGT": egt_model_K(r, raw),
     }
     rows = []
     for name, ref in case["references"].items():
+        if name not in model:
+            continue
         dev = model[name] / ref["value"] - 1.0
         tol = case["tolerances"][ref["kind"]]["value"]
         rows.append({"item": name, "model": _r(model[name], 5), "girao": ref["value"], "unit": ref["unit"],
@@ -388,22 +418,30 @@ def validation_rows(r: dict, raw: dict, refs: dict) -> list[dict]:
 
 # --- sensitivity --------------------------------------------------------------------
 
+def first_deviation(rows: list[dict], limit: float = 1.0) -> dict | None:
+    """First validation item in gas-path order whose |deviation| exceeds `limit` percent."""
+    return next((row for row in rows if abs(row["deviation_pct"]) > limit), None)
+
+
 def sensitivity(p: Params, t: Targets, base: dict, raw: dict, tol: float) -> list[dict]:
-    """Recalibrate W2, T4 after each e_poly step; report deltas of W2, T4 and EGT."""
-    step0 = raw["sensitivity"]["e_poly_step"]
+    """Recalibrate W2, T4 after each efficiency step and each relative LHV step;
+    report deltas of W2, T4 and EGT."""
+    cfg = raw["sensitivity"]
     start = {k: base[k] for k in UNKNOWNS}
     egt0 = egt_model_K(base, raw)
+    cases = [(f"{n} {s * cfg['eta_step']:+.2f}", {n: getattr(p, n) + s * cfg["eta_step"]})
+             for n in ETA for s in (+1, -1)]
+    cases += [(f"LHV {s * cfg['LHV_rel_step']:+.1%}", {"LHV": p.LHV * (1 + s * cfg["LHV_rel_step"])})
+              for s in (+1, -1)]
     rows = []
-    for name in E_POLY:
-        for sign in (+1, -1):
-            step = sign * step0
-            r, _ = calibrate(replace(p, **{name: getattr(p, name) + step}), t, start, tol=tol)
-            rows.append({
-                "case": f"{name} {step:+.2f}",
-                "dW2_kg_s": _r(round(r["W2"] - base["W2"], 6), 4),
-                "dT4_K": _r(round(r["T4"] - base["T4"], 6), 4),
-                "dEGT_K": _r(round(egt_model_K(r, raw) - egt0, 6), 4),
-            })
+    for label, change in cases:
+        r, _ = calibrate(replace(p, **change), t, start, tol=tol)
+        rows.append({
+            "case": label,
+            "dW2_kg_s": _r(round(r["W2"] - base["W2"], 6), 4),
+            "dT4_K": _r(round(r["T4"] - base["T4"], 6), 4),
+            "dEGT_K": _r(round(egt_model_K(r, raw) - egt0, 6), 4),
+        })
     return rows
 
 
@@ -455,7 +493,7 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
          "criterion": "info only (Lopez-Pintor modeled, ADR-007; Girão at 125.73 kN)", "result": "info"},
         {"name": "V18/V8", "value": _r(r["velocity_ratio"], 4),
          "reference": {"girao_ideal_takeoff": vr_ideal,
-                       "eta_fan_is_x_eta_lpt_is": _r(r["eta_fan_is"] * r["eta_lpt_is"], 4)},
+                       "eta_fan_outer_x_eta_lpt": _r(p.eta_fan_outer * p.eta_lpt, 4)},
          "unit": "-", "criterion": "info only (ADR-008)", "result": "info"},
         {"name": "T4 vs references", "value": _r(r["T4"], 5), "reference": T4_refs, "unit": "K",
          "deviation": {k: _r(r["T4"] / v - 1.0, 3) for k, v in T4_refs.items()},
@@ -466,8 +504,9 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
     ]
 
 
-MODEL = ("M0 cycle v4, two-spool separate-flow, CFM56-7B inputs (Girão 2023), secondary air from HPC exit, "
-         "variable cp(T, FAR) NASA 7-coefficient polynomials (ADR-006, ADR-007, ADR-008)")
+MODEL = ("M0 cycle v4.1, two-spool separate-flow, CFM56-7B inputs (Girão 2023), secondary air from HPC exit, "
+         "isentropic component efficiencies, variable cp(T, FAR) NASA 7-coefficient polynomials "
+         "(ADR-006, ADR-007, ADR-008)")
 
 
 def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterations: int,
@@ -506,6 +545,8 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
             "bpr": _q(p.bpr, "-", "K"),
             "fpr": _q(p.FPR, "-", "KS"),
             "core_pr_25_2": _q(p.core_pr_25_2, "-", "KS"),
+            "pr_fan_inner": _q(p.pr_fan_inner, "-", "KS"),
+            "pr_booster": _q(p.pr_booster, "-", "KS"),
             "hpc_pr": _q(r["hpc_pr"], "-"),
             "hpt_pr": _q(r["hpt_pr"], "-"),
             "lpt_pr": _q(r["lpt_pr"], "-"),
@@ -518,9 +559,9 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
             "W_cooling_ngv": _q(r["W_ngv"], "kg/s"),
             "W_cooling_hpt_rotor": _q(r["W_rotor"], "kg/s"),
             "W_leak": _q(r["W_leak"], "kg/s"),
+            "W3": _q(r["W3"], "kg/s"),
             "V18": _q(r["n18"].V, "m/s"), "V8": _q(r["n8"].V, "m/s"),
             "velocity_ratio": _q(r["velocity_ratio"], "-"),
-            "eta_fan_is": _q(r["eta_fan_is"], "-"), "eta_lpt_is": _q(r["eta_lpt_is"], "-"),
             "A18": _q(r["n18"].A * r["W_byp"], "m2"), "A8": _q(r["n8"].A * r["W8"], "m2"),
             "nozzle18_choked": r["n18"].choked, "nozzle8_choked": r["n8"].choked,
         },
@@ -538,7 +579,8 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
         "hard_checks_passed": all(c["result"] == "pass" for c in checks if c.get("hard")),
     }
     if sens is not None:
-        results["sensitivity"] = {"method": "W2, T4 recalibrated per e_poly step", "cases": sens}
+        results["sensitivity"] = {"method": "W2, T4 recalibrated per isentropic-efficiency or LHV step",
+                                  "cases": sens}
     return results
 
 
@@ -548,9 +590,14 @@ def main(argv: list[str]) -> int:
     if "--validate" in argv:
         pv, tv = validation_case(p, refs)
         r, _ = calibrate(pv, tv, initial, tol=tol)
-        for row in validation_rows(r, raw, refs):
+        rows = validation_rows(r, raw, refs)
+        for row in rows:
             print(f"  [{row['result']:>4}] {row['item']:<4} model {row['model']:>9} girao {row['girao']:>9} "
                   f"{row['unit']:<5} dev {row['deviation_pct']:>7} % (tol {row['tolerance_pct']} %)")
+        first = first_deviation(rows)
+        print(f"  first item beyond 1 %: {first['item'] if first else 'none'}")
+        for s in sensitivity(pv, tv, r, raw, tol):
+            print(f"  {s['case']:<24} dW2={s['dW2_kg_s']:>8} dT4={s['dT4_K']:>8} dEGT={s['dEGT_K']:>8}")
         return 0
     try:
         r, iterations = calibrate(p, t, initial, tol=tol)

@@ -12,14 +12,27 @@ validation_case:
     opr: {value: 29.88, unit: '-', tag: KS, note: P3/P2}
   references:
     W2: {value: 358.28, unit: kg/s, tag: KS, kind: flow}
+    T13: {value: 345.73, unit: K, tag: KS, kind: temperature}
+    P13: {value: 177.088, unit: kPa, tag: KS, kind: pressure}
+    T21: {value: 317.23, unit: K, tag: KS, kind: temperature}
+    T25: {value: 395.08, unit: K, tag: KS, kind: temperature}
+    P25: {value: 264.816, unit: kPa, tag: KS, kind: pressure}
     T3: {value: 838.0, unit: K, tag: KS, kind: temperature}
     P3: {value: 2997.0, unit: kPa, tag: KS, kind: pressure}
+    W3: {value: 60.499, unit: kg/s, tag: KS, kind: flow}
+    W31: {value: 53.708, unit: kg/s, tag: KS, kind: flow}
     T4: {value: 1690.5, unit: K, tag: KS, kind: temperature}
     T41: {value: 1649.0, unit: K, tag: KS, kind: temperature}
+    T43: {value: 1254.55, unit: K, tag: KS, kind: temperature}
+    P44: {value: 705.1, unit: kPa, tag: KS, kind: pressure}
+    T44: {value: 1231.30, unit: K, tag: KS, kind: temperature}
     T45: {value: 1220.9, unit: K, tag: KS, kind: temperature}
     T5: {value: 902.1, unit: K, tag: KS, kind: temperature}
     P5: {value: 171.1, unit: kPa, tag: KS, kind: pressure}
     EGT: {value: 1124.0, unit: K, tag: KS, kind: temperature, note: 'formula value, EGT = a*(T45 - b*(T45 - T5))'}
+  references_order: gas path; the validation reports the first item beyond 1 %
+  info:
+    W25: {value: 61.733, unit: kg/s, tag: KS, note: W3 < W25 locates the leakage before the HPC exit}
   tolerances:
     temperature: {value: 0.02, unit: '-', tag: G}
     flow: {value: 0.03, unit: '-', tag: G}

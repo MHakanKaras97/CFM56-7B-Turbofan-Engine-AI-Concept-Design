@@ -15,29 +15,29 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Çalışma döngüsü (her modül): ders -> araştırma -> rule book -> kod -> kabul testi. Testsiz sonraki modüle geçilmez.
 
 ## Son yapılanlar
-- M0 cycle v4 (ADR-008): Girão 2023 girdileri [KS]; FPR 1.765 girdi; bilinmeyenler W2, T4; hedefler itki, yakıt. V18/V8 kuralı kaldırıldı.
-- v4 nominal nokta (ICAO 121.43 kN, 1.284 kg/s) ÇÖZÜMSÜZ: bu yakıtla en fazla 118.0 kN (W2 395). rev004 yok; aktif rev003.
-- v4 doğrulama (Girão 125.73 kN): 9 kalemin 7'si kaldı (testlerde xfail strict).
+- M0 v4.1: Girão Şekil 4.9 girdileri [KS]; izentropik verimler, iki adımlı çekirdek sıkıştırma (iç fan + booster), lüle itki/debi katsayıları, güç çekişi 0, LHV 43.124 [T], HPC ara kademe kaçağı (%50 entalpi artışı [T], 45'te döner), 43/44 istasyonları.
+- v4.1 doğrulama (Girão 125.73 kN): 19 kalemin 18'i geçti; P5 kaldı (xfail strict). Nominal noktaya dokunulmadı.
+- Öğrenme notu: docs/learning/cfm56_7b_module_facts.md (Girão §3); fan kanadı (24) ve yakıt memesi (20) sayıları çözüldü.
+- M0 cycle v4 (ADR-008): FPR girdi; bilinmeyenler W2, T4; hedefler itki, yakıt. Nominal nokta (v4 girdileriyle) çözümsüzdü: en fazla 118.0 kN. rev004 yok; aktif rev003.
 - M0 cycle v3 (rev003): değişken cp(T, FAR), NASA 7 katsayılı polinomlar; ADR-007 (44.52 kontrol).
 - Sürekli entalpi (ADR-006); rev001 geçersiz. Ders: hedefleri tutturmak sonucu doğrulamaz.
-- core tamam: BOM şeması, revizyon, konsept manifest, CR akışı, kanonik BOM yazıcı.
 
-## v4 doğrulama sapmaları (model / Girão) [H]
-- W2 387.6 / 358.28 (+%8.2), T4 1643 / 1690.5 (−%2.8), T41 −%2.7, T45 −%4.1, T5 −%6.2, P5 146.3 / 171.1 (−%14.5), EGT −%4.4.
-- Geçen: T3 841.0 / 838.0 (+%0.4), P3 2997 (+%0.01).
-- Tanı: Girão'nun W2 ve T4'ü modele verilince T45 −%0.3, T5 −%0.7, P5 −%3.6, yakıt −%1.4; itki 120.8 kN (−%3.9).
-  Termodinamik yakın; özgül itki düşük. Şüpheliler, Girão'dan gelmeyen varsayımlar: cv 0.98 [G], LHV 43.0 [G], 100 kW çekiş [T].
-- cv 1.0 ile doğrulama: W2 +%2.7, sıcaklıklar ±%2 içinde, P5 −%5.9 (kalır).
-- Nominal nokta: Girão SFC 11.15, ICAO 10.57 g/(kN·s) (−%5.2). cv 1.0 + LHV 43.124 + çekiş 0 ile bile en fazla 121.2 kN.
+## v4.1 doğrulama sapmaları (model / Girão, %) [H]
+- W2 355.8 (−0.70), T13 +0.05, P13 −0.02, T21 +0.03, T25 +0.05, P25 −0.02, T3 840.1 (+0.26), P3 +0.01.
+- W3 60.11 (−0.64), W31 53.36 (−0.64), T4 1708.4 (+1.06), T41 +1.05, T43 +1.30, P44 716.7 (+1.65), T44 +1.26.
+- T45 +1.20, T5 916.2 (+1.56), P5 177.0 (+3.46, kalır; sınır 3), EGT 1138.3 (+1.27).
+- %1'i aşan ilk istasyon: T4 (yanma odası çıkışı). Ondan önceki her şey %0.7 içinde.
+- LHV ±%0.3: T4 ∓5.2 K, W2 ∓1.2 kg/s, EGT ∓4.8 K. LHV −%0.3 ile (≈43.0) P5 +%2.23, her kalem geçer.
+- V18/V8 = 0.610 (Girão ideal 0.627). W2/A = 207.3 (bant içinde).
 
 ## Açık konular
-- Nominal nokta için hangi veri seti: ICAO yakıtı mı, Girão verimleri mi? (İkisi birlikte tutmuyor.)
-- Lüle cv, LHV ve güç çekişi için Girão değerleri tezden okunmalı.
-- W2/A: doğrulama noktasında 225.9 > 215 (fan çapı/göbek oranı [T]).
-- Indriyati HPC havası 39.57 vs model çekirdek havası (tanım farkı).
+- T4 +%1.06 ve P5 +%3.46: yanma ve LPT tarafında kalan fark (LHV [T], yakıt özellikleri, kaçak çekiş noktası [T]).
+- Nominal nokta için veri seti: ICAO yakıtı mı, Girão verimleri mi? (v4'te tutmadı; v4.1 girdileriyle denenmedi.)
+- analysis/results.yaml hâlâ v4 nominal denemesinin (çözümsüz, eski girdiler) çıktısı.
+- He 2025 ve Bennett vd. künyeleri eksik.
 
 ## Sıradaki adımlar
-1. Kullanıcı kararı: nominal nokta veri seti ve cv/LHV kaynağı; ardından rev004.
+1. Nominal noktayı v4.1 girdileriyle dene (kullanıcı onayıyla); ardından rev004.
 2. M0 kapsamını tamamla: istasyon tablosu -> modül bütçeleri, arayüz sözleşmesi.
 3. Arayüz (Streamlit).
 4. M1 Inlet & Fan: ders + araştırma.

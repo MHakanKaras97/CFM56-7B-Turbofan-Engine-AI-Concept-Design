@@ -5,6 +5,7 @@ import pytest
 
 from engine.M0_engine.analysis.cycle import (
     calibrate,
+    first_deviation,
     load_inputs,
     run,
     thrust_envelope,
@@ -17,9 +18,11 @@ from tools.thermo import (
     burner,
     choke_mass_flux,
     compressor,
+    compressor_is,
     mix,
     nozzle,
     turbine_for_work,
+    turbine_is_for_work,
 )
 
 GAS = NasaGas()
@@ -94,6 +97,19 @@ def test_turbine_inverts_compressor_at_eff1():
         assert (Tt_t, Pt_t, pi) == pytest.approx((300.0, 1e5, 3.0))
 
 
+def test_isentropic_components_roundtrip():
+    for gas in (GAS, CONST):
+        Tt_c, Pt_c, w = compressor_is(300.0, 1e5, 3.0, 1.0, gas)
+        assert compressor_is(300.0, 1e5, 3.0, 1.0, gas)[0] == pytest.approx(compressor(300.0, 1e5, 3.0, 1.0, gas)[0])
+        Tt_t, Pt_t, pi = turbine_is_for_work(Tt_c, Pt_c, w, 1.0, gas)
+        assert (Tt_t, Pt_t, pi) == pytest.approx((300.0, 1e5, 3.0))
+    # isentropic efficiency is the ratio of ideal to actual enthalpy rise
+    T_is = compressor_is(300.0, 1e5, 3.0, 1.0, GAS)[0]
+    T_out, _, w = compressor_is(300.0, 1e5, 3.0, 0.85, GAS)
+    assert (GAS.h(T_is) - GAS.h(300.0)) / w == pytest.approx(0.85)
+    assert GAS.h(T_out) - GAS.h(300.0) == pytest.approx(w)
+
+
 def test_constant_cp_compressor_is_closed_form():
     Tt, Pt, w = compressor(288.15, 101325.0, 4.0, 0.9, CONST)
     assert Tt == pytest.approx(288.15 * 4.0 ** (0.4 / 1.4 / 0.9))
@@ -102,25 +118,34 @@ def test_constant_cp_compressor_is_closed_form():
 
 def test_nozzle_choking():
     critical = (2 / 2.4) ** (-1.4 / 0.4)
-    assert not nozzle(300.0, 0.99 * critical * 1e5, 1e5, 1.0, CONST).choked
-    n = nozzle(300.0, 1.2 * critical * 1e5, 1e5, 1.0, CONST)
+    assert not nozzle(300.0, 0.99 * critical * 1e5, 1e5, CONST).choked
+    n = nozzle(300.0, 1.2 * critical * 1e5, 1e5, CONST)
     assert n.choked
     assert n.V == pytest.approx(math.sqrt(2 * 1005.0 * (300.0 - 300.0 * 2 / 2.4)))
     assert n.F_per_W > n.V  # pressure thrust added
     # variable cp: choked exit velocity equals the local speed of sound
-    n = nozzle(1100.0, 3e5, 1e5, 1.0, GAS, 0.02)
+    n = nozzle(1100.0, 3e5, 1e5, GAS, 0.02)
     Ts = GAS.T_from_phi(GAS.phi(1100.0, 0.02) + GAS.R(0.02) * math.log(n.p_exit / 3e5), 0.02)
     assert n.choked
     assert n.V == pytest.approx(math.sqrt(GAS.gamma(Ts, 0.02) * GAS.R(0.02) * Ts), rel=1e-9)
+
+
+def test_nozzle_coefficients():
+    base = nozzle(1100.0, 3e5, 1e5, GAS, 0.02)
+    n = nozzle(1100.0, 3e5, 1e5, GAS, 0.02, cfg=1.01, cd=0.99)
+    assert n.F_per_W == pytest.approx(1.01 * base.F_per_W)  # thrust coefficient scales gross thrust
+    assert n.A == pytest.approx(base.A / 0.99)  # discharge coefficient scales the area only
+    assert n.p_exit == base.p_exit
 
 
 # --- cycle -----------------------------------------------------------------------
 
 def ideal_params(p):
     return replace(
-        p, gas=CONST, inlet_recovery=1.0, FPR=1.5, e_fan=1.0, e_booster=1.0, e_hpc=1.0, e_hpt=1.0, e_lpt=1.0,
-        core_pr_25_2=2.0, duct_25_24=1.0, burner_eta=1.0, burner_pr=1.0, duct_45_44=1.0, duct_6_5=1.0,
-        bypass_duct=1.0, mech_eff=1.0, nozzle_cv=1.0, include_fuel_mass=False, opr=10.0, bpr=5.0,
+        p, gas=CONST, inlet_recovery=1.0, FPR=1.5, eta_fan_outer=1.0, eta_fan_inner=1.0, eta_booster=1.0,
+        eta_hpc=1.0, eta_hpt=1.0, eta_lpt=1.0, pr_fan_inner=1.5, pr_booster=2.0 / 1.5, duct_25_24=1.0,
+        burner_eta=1.0, burner_pr=1.0, duct_45_44=1.0, duct_6_5=1.0, bypass_duct=1.0, mech_eff=1.0,
+        cfg_18=1.0, cfg_8=1.0, cd_18=1.0, cd_8=1.0, include_fuel_mass=False, opr=10.0, bpr=5.0,
         ngv=0.0, hpt_rotor=0.0, leak=0.0, hp_power_offtake=0.0, customer_bleed=0.0,
     )
 
@@ -181,6 +206,9 @@ def test_pressure_chain(calibrated):
     assert st["3"][1] / st["2"][1] == pytest.approx(p.opr)
     assert st["25"][1] / st["2"][1] == pytest.approx(p.core_pr_25_2)
     assert st["25"][1] / st["24"][1] == pytest.approx(p.duct_25_24)
+    assert st["21"][1] / st["2"][1] == pytest.approx(p.pr_fan_inner)
+    assert st["24"][1] / st["21"][1] == pytest.approx(p.pr_booster)
+    assert st["44"][1] == st["43"][1]
     assert st["4"][1] / st["3"][1] == pytest.approx(p.burner_pr)
     assert st["45"][1] / st["44"][1] == pytest.approx(p.duct_45_44)
     assert st["8"][1] / st["5"][1] == pytest.approx(p.duct_6_5)
@@ -195,19 +223,40 @@ def test_secondary_air_and_t41(calibrated):
     assert p.secondary_fraction == pytest.approx(0.13)
     T3 = r["stations"]["3"][0]
     assert T3 < r["T41"] < r["T4"]  # NGV cooling air dilutes the gas before the rotor
-    assert r["stations"]["45"][0] < r["Tt44"]  # rotor cooling and leakage mix in at 45
+    st = r["stations"]
+    assert st["44"][0] < st["43"][0]  # HPT rotor cooling mixes in at 44
+    assert st["45"][0] < st["44"][0]  # leakage returns at 45
+    assert st["3"][2] == pytest.approx(r["W_core"] - r["W_leak"])  # leakage leaves before the HPC exit
 
 
-VALIDATION_OPEN = {"W2", "T4", "T41", "T45", "T5", "P5", "EGT"}  # v4 open deviations, see docs/status.md
+def test_leakage_takes_part_of_hpc_work(calibrated):
+    p, _, r = calibrated
+    gas, st = p.gas, calibrated[2]["stations"]
+    w_hpc = gas.h(st["3"][0]) - gas.h(st["25"][0])
+    assert gas.h(r["T_leak"]) - gas.h(st["25"][0]) == pytest.approx(p.leak_bleed_point * w_hpc)
+    assert r["P_hpc"] == pytest.approx(r["W3"] * w_hpc + r["W_leak"] * p.leak_bleed_point * w_hpc)
 
 
-@pytest.mark.parametrize("item", ["W2", "T3", "P3", "T4", "T41", "T45", "T5", "P5", "EGT"])
+VALIDATION_ITEMS = ["W2", "T13", "P13", "T21", "T25", "P25", "T3", "P3", "W3", "W31", "T4", "T41", "T43", "P44",
+                    "T44", "T45", "T5", "P5", "EGT"]  # gas-path order
+VALIDATION_OPEN = {"P5"}  # v4.1 open deviation, see docs/status.md
+
+
+@pytest.mark.parametrize("item", VALIDATION_ITEMS)
 def test_validation_against_girao(item, inputs, calibrated, request):
     if item in VALIDATION_OPEN:
-        request.applymarker(pytest.mark.xfail(strict=True, reason="v4 deviation from Girão, decision open"))
+        request.applymarker(pytest.mark.xfail(strict=True, reason="v4.1 deviation from Girão, decision open"))
     _, _, _, raw, refs = inputs
     row = next(x for x in validation_rows(calibrated[2], raw, refs) if x["item"] == item)
     assert row["result"] == "pass", row
+
+
+def test_validation_rows_follow_gas_path(inputs, calibrated):
+    _, _, _, raw, refs = inputs
+    rows = validation_rows(calibrated[2], raw, refs)
+    assert [x["item"] for x in rows] == VALIDATION_ITEMS
+    first = first_deviation(rows)
+    assert first is None or all(abs(x["deviation_pct"]) <= 1.0 for x in rows[:rows.index(first)])
 
 
 def test_choke_mass_flux_sls():

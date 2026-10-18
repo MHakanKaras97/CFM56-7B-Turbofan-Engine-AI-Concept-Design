@@ -178,6 +178,27 @@ def turbine_for_work(Tt: float, Pt: float, w: float, e_poly: float, gas, f: floa
     return Tt_out, Pt / pi, pi
 
 
+def compressor_is(Tt: float, Pt: float, pi: float, eta_is: float, gas, f: float = 0.0):
+    """Compression by total pressure ratio pi with isentropic efficiency. Returns (Tt_out, Pt_out, w)."""
+    h = gas.h(Tt, f)
+    T_is = gas.T_from_phi(gas.phi(Tt, f) + gas.R_s(f) * math.log(pi), f)
+    w = (gas.h(T_is, f) - h) / eta_is
+    return gas.T_from_h(h + w, f), Pt * pi, w
+
+
+def turbine_is_for_work(Tt: float, Pt: float, w: float, eta_is: float, gas, f: float = 0.0):
+    """Expansion delivering specific work w with isentropic efficiency.
+    Returns (Tt_out, Pt_out, pi), pi = Pt_in/Pt_out > 1."""
+    h = gas.h(Tt, f)
+    try:
+        Tt_out = gas.T_from_h(h - w, f)
+        T_is = gas.T_from_h(h - w / eta_is, f)
+    except ValueError:
+        raise ValueError(f"turbine work {w:.0f} J/kg exceeds available enthalpy at Tt={Tt:.1f} K") from None
+    pi = math.exp((gas.phi(Tt, f) - gas.phi(T_is, f)) / gas.R_s(f))
+    return Tt_out, Pt / pi, pi
+
+
 def burner(Tt_in: float, T_out: float, eta_b: float, LHV: float, gas) -> float:
     """Fuel-air ratio f from h_air(Tt_in) + eta_b*f*LHV = (1 + f)*h(T_out, f); fuel enters at T_REF."""
     h_in = gas.h(Tt_in, 0.0)
@@ -202,8 +223,8 @@ def mix(W_a: float, T_a: float, f_a: float, W_b: float, T_b: float, f_b: float, 
 
 @dataclass(frozen=True)
 class Nozzle:
-    V: float          # exit velocity incl. cv [m/s]
-    A: float          # geometric exit area per unit mass flow [m2 per kg/s]
+    V: float          # effective exit velocity, thrust coefficient * ideal velocity [m/s]
+    A: float          # geometric exit area per unit mass flow, effective area / CD [m2 per kg/s]
     choked: bool
     p_exit: float     # exit static pressure [Pa]
     F_per_W: float    # gross thrust per unit mass flow [N per kg/s]
@@ -232,10 +253,11 @@ def critical_pressure(Tt: float, Pt: float, gas, f: float = 0.0) -> float:
     raise ArithmeticError("critical pressure did not converge")
 
 
-def nozzle(Tt: float, Pt: float, P0: float, cv: float, gas, f: float = 0.0) -> Nozzle:
-    """Convergent nozzle. Choked: exit at critical pressure, pressure thrust A*(p_exit - P0).
+def nozzle(Tt: float, Pt: float, P0: float, gas, f: float = 0.0, cfg: float = 1.0, cd: float = 1.0) -> Nozzle:
+    """Convergent nozzle. Choked: exit at critical pressure, pressure thrust A_eff*(p_exit - P0).
 
-    cv scales the velocity only; the area comes from the ideal (isentropic) exit state.
+    Gross thrust = cfg * ideal gross thrust (momentum + pressure term). CD scales the area only:
+    A_geometric = A_effective / cd, where A_effective comes from the ideal (isentropic) exit state.
     """
     if Pt <= P0:
         raise ValueError(f"nozzle total pressure {Pt:.0f} Pa <= ambient {P0:.0f} Pa")
@@ -243,9 +265,9 @@ def nozzle(Tt: float, Pt: float, P0: float, cv: float, gas, f: float = 0.0) -> N
     choked = p_crit > P0
     p_exit = p_crit if choked else P0
     T_exit, V_is = _static(Tt, Pt, p_exit, gas, f)
-    A = 1.0 / (p_exit / (gas.R(f) * T_exit) * V_is)
-    V = cv * V_is
-    return Nozzle(V=V, A=A, choked=choked, p_exit=p_exit, F_per_W=V + A * (p_exit - P0))
+    A_eff = 1.0 / (p_exit / (gas.R(f) * T_exit) * V_is)
+    return Nozzle(V=cfg * V_is, A=A_eff / cd, choked=choked, p_exit=p_exit,
+                  F_per_W=cfg * (V_is + A_eff * (p_exit - P0)))
 
 
 def choke_mass_flux(Tt: float, Pt: float, gas, f: float = 0.0) -> float:
