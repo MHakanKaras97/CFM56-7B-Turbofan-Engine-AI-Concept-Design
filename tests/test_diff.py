@@ -54,7 +54,7 @@ def test_flatten_keys_lists_by_id_and_keeps_scalar_lists():
 
 # --- BOM, outputs and concepts on a temp copy -------------------------------------------------
 
-NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "CR-*.yaml")
+NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "ACCEPTED", "CR-*.yaml")
 FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
 
 
@@ -98,3 +98,23 @@ def test_bom_outputs_and_concepts(repo):
     assert diff_concepts(c1, c2, root=repo) == [{"module": "M1", "old": "rev001", "new": "rev002"}]
     assert diff_concepts(c1, c1, root=repo) == []
     assert read_yaml(m1 / "records" / "rev002" / "manifest.yaml")["parent_revision"] == "rev001"
+
+
+def test_numeric_changes_counts_numbers_not_text_or_added_keys():
+    from core.diff import blocking, diff_data, numeric_changes
+    a = {"params": {"q": {"value": 1.0, "note": "x"}, "t": {"value": 0.1, "tag": "T"}, "s": {"value": "4.3e6"}},
+         "results": {"r": 2.0, "list": [1, 2]}}
+    same = {"params": {"q": {"value": 1.0, "note": "y"}, "t2": {"value": 0.1, "tag": "T"}, "s": {"value": "4.3e6"}},
+            "results": {"r": 2.0, "list": [1, 2], "new": 5.0}}
+    changes = numeric_changes(diff_data(a, same))
+    assert [c["kind"] for c in changes] == ["moved"] and blocking(changes) == []
+    worse = {"params": {"q": {"value": 1.1}, "s": {"value": "4.4e6"}}, "results": {"list": [1, 3]}}
+    kinds = sorted((c["kind"], c["path"]) for c in blocking(numeric_changes(diff_data(a, worse))))
+    assert kinds == [("changed", "list"), ("changed", "q.value"), ("changed", "s.value"),
+                     ("removed", "r"), ("removed", "t.value")]
+
+
+def test_rev006_is_a_maintenance_revision():
+    from core.diff import numeric_changes
+    assert numeric_changes(diff_revisions("M0", "rev005", "rev006")) == []
+    assert numeric_changes(diff_revisions("M0", "rev004", "rev005"))  # design

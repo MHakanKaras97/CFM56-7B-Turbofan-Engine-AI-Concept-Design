@@ -7,6 +7,12 @@ Concept level: engine/M0_engine/records/conceptNNN/manifest.yaml pins one revisi
 the active concept.
 
 Records are written once and never rewritten. Only ACTIVE / ACTIVE_CONCEPT change.
+
+Revision types (ADR-012):
+  design       numbers, params values or geometry change. Once the module is accepted
+               (records/ACCEPTED names the accepted revision) it needs an approved CR.
+  maintenance  schema, metadata or text only; no CR. Refused if the diff to the parent
+               revision shows a numeric change (core.diff.numeric_changes).
 """
 
 import hashlib
@@ -21,6 +27,7 @@ from core.util import now_utc, read_yaml, schema_errors, write_yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 REV_RE = re.compile(r"^rev(\d{3})$")
+REVISION_TYPES = ("design", "maintenance")
 CONCEPT_RE = re.compile(r"^concept(\d{3})$")
 MODULE_RE = re.compile(r"^(M\d)_")
 
@@ -86,6 +93,20 @@ def active_revision(module: str, root: Path = ROOT) -> str | None:
     return active.read_text(encoding="utf-8").strip() if active.exists() else None
 
 
+def accepted_revision(module: str, root: Path = ROOT) -> str | None:
+    """Revision at which the module passed its acceptance (records/ACCEPTED), or None."""
+    path = module_dir(module, root) / "records" / "ACCEPTED"
+    return path.read_text(encoding="utf-8").strip() if path.exists() else None
+
+
+def mark_accepted(module: str, rev: str, root: Path = ROOT) -> None:
+    """Record the module's acceptance at `rev`. From then on design revisions need an approved CR."""
+    mdir = module_dir(module, root)
+    if not REV_RE.match(rev) or not (mdir / "records" / rev / "manifest.yaml").exists():
+        raise RecordError(f"{mdir.name}: revision {rev} not found")
+    _write_pointer(mdir / "records" / "ACCEPTED", rev)
+
+
 def is_dirty(module: str, root: Path = ROOT) -> bool:
     """True if there is no active revision or bom.yaml differs from its snapshot."""
     mdir = module_dir(module, root)
@@ -123,15 +144,25 @@ def create_revision(
     results: dict | None = None,
     outputs: list[str | Path] | None = None,
     root: Path = ROOT,
+    kind: str = "design",
 ) -> str:
-    """Snapshot the module's current state into a new revNNN and make it active."""
+    """Snapshot the module's current state into a new revNNN and make it active.
+
+    kind: "design" or "maintenance" (ADR-012). A design revision of an accepted module needs `cr`;
+    a maintenance revision takes no CR and is refused if it changes a number against the parent.
+    """
     mdir = module_dir(module, root)
     records = mdir / "records"
     bom_path = mdir / "bom" / "bom.yaml"
 
+    if kind not in REVISION_TYPES:
+        raise RecordError(f"revision type {kind!r}; one of {REVISION_TYPES}")
     errors = bom_io.validate(bom_path)
     if errors:
         raise RecordError(f"{bom_path} is invalid: " + "; ".join(errors))
+    parent = active_revision(module, root)
+    if kind == "design" and cr is None and accepted_revision(module, root):
+        raise RecordError(f"{mdir.name}: accepted module; a design revision needs an approved CR (ADR-012)")
 
     rev = _next_id(records, REV_RE, "rev")
 
@@ -148,9 +179,15 @@ def create_revision(
             raise RecordError(f"output {out} not found")
         output_entries.append({"file": rel.as_posix(), "sha256": _sha256(out_path)})
 
+    bom = bom_io.load(bom_path)
+    if kind == "maintenance":
+        _check_maintenance(module, parent, cr, {"params": params or {}, "results": results or {},
+                                                 "bom": dict(bom, revision=parent), "outputs": output_entries}, root)
+
     manifest = {
         "revision": rev,
-        "parent_revision": active_revision(module, root),
+        "parent_revision": parent,
+        "revision_type": kind,
         "date": now_utc(),
         "summary": summary,
         "reason": reason,
@@ -160,7 +197,6 @@ def create_revision(
     }
     _check_schema("manifest.schema.json", manifest)
 
-    bom = bom_io.load(bom_path)
     bom["revision"] = rev
 
     rev_dir = records / rev
@@ -173,6 +209,19 @@ def create_revision(
     bom_io.write(bom_path, bom)
     _write_pointer(records / "ACTIVE", rev)
     return rev
+
+
+def _check_maintenance(module: str, parent: str | None, cr: str | None, new: dict, root: Path) -> None:
+    from core.diff import blocking, diff_data, numeric_changes, read_record  # core.diff imports this module
+
+    if parent is None:
+        raise RecordError(f"{module}: a maintenance revision needs a parent revision")
+    if cr is not None:
+        raise RecordError(f"{module}: a maintenance revision takes no CR (ADR-012)")
+    changes = blocking(numeric_changes(diff_data(read_record(module, parent, root), new)))
+    if changes:
+        listed = ", ".join(f"{c['section']} {c['path']}" for c in changes[:5])
+        raise RecordError(f"{module}: not a maintenance revision, {len(changes)} numeric change(s): {listed}")
 
 
 def revert(module: str, rev: str, force: bool = False, root: Path = ROOT) -> None:

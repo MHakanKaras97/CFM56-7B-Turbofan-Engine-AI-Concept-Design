@@ -40,6 +40,10 @@
       "type": "string",
       "minLength": 1
     },
+    "revision_type": {
+      "description": "ADR-012: design or maintenance. Absent in revisions recorded before ADR-012.",
+      "enum": ["design", "maintenance"]
+    },
     "change_request": {
       "oneOf": [
         {

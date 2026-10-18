@@ -19,7 +19,7 @@ from core.records import (
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
-NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "CR-*.yaml")
+NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "ACCEPTED", "CR-*.yaml")
 
 
 @pytest.fixture
@@ -198,3 +198,44 @@ def test_read_helpers(repo):
         records.read_revision("M1", "rev009", "bom.yaml", root=repo)
     concept = create_concept("c", root=repo)
     assert records.read_concept(concept, root=repo)["modules"]["M1"] == "rev001"
+
+
+# --- revision types (ADR-012) ------------------------------------------------------------------
+
+def test_maintenance_allows_text_and_added_keys_only(repo):
+    create_revision("M1", "Baseline", "test", params={"x": {"value": 1.0, "note": "a"}}, results={"r": 2.0}, root=repo)
+    rev = create_revision("M1", "note", "text only", params={"x": {"value": 1.0, "note": "b"}},
+                          results={"r": 2.0, "assumptions": [{"path": "x", "value": 1.0}]}, root=repo, kind="maintenance")
+    manifest = yaml.safe_load((rev_dir(repo, rev) / "manifest.yaml").read_text(encoding="utf-8"))
+    assert (manifest["revision_type"], manifest["change_request"]) == ("maintenance", None)
+    with pytest.raises(RecordError, match="numeric"):
+        create_revision("M1", "n", "number", params={"x": {"value": 1.5, "note": "b"}}, results={"r": 2.0},
+                        root=repo, kind="maintenance")
+    with pytest.raises(RecordError, match="no CR"):
+        create_revision("M1", "n", "cr", params={"x": {"value": 1.0}}, results={"r": 2.0}, cr="CR-001",
+                        root=repo, kind="maintenance")
+    assert records.revision_ids("M1", root=repo) == ["rev001", "rev002"]
+
+
+def test_maintenance_refuses_part_and_output_changes(repo):
+    create_revision("M1", "Baseline", "test", root=repo)
+    bom = yaml.safe_load(bom_path(repo).read_text(encoding="utf-8"))
+    bom["parts"] = [p for p in bom["parts"] if p["id"] != "M1.1.1"]
+    for p in bom["parts"]:
+        p.pop("joints", None)
+    write_bom(bom_path(repo), bom)
+    with pytest.raises(RecordError, match="numeric"):
+        create_revision("M1", "drop part", "test", root=repo, kind="maintenance")
+
+
+def test_accepted_module_needs_cr_for_design_revision(repo):
+    rev = create_revision("M1", "Baseline", "test", root=repo)
+    create_revision("M1", "before acceptance", "no CR needed", root=repo)
+    records.mark_accepted("M1", rev, root=repo)
+    assert records.accepted_revision("M1", root=repo) == rev
+    with pytest.raises(RecordError, match="CR"):
+        create_revision("M1", "design", "no CR", root=repo)
+    assert create_revision("M1", "design", "with CR", cr="CR-001", root=repo) == "rev003"
+    assert create_revision("M1", "text", "maintenance", root=repo, kind="maintenance") == "rev004"
+    with pytest.raises(RecordError):
+        records.mark_accepted("M1", "rev099", root=repo)

@@ -31,6 +31,7 @@ import re
 from pathlib import Path
 
 from core import bom as bom_io
+from core.params import params_errors
 from core.records import ROOT, create_revision, is_dirty, module_dir, module_dirs
 from core.util import dump_yaml, now_utc, read_yaml, schema_errors, write_yaml
 
@@ -334,6 +335,12 @@ def apply(cr_id: str, root: Path = ROOT) -> dict[str, str]:
         if errors:
             raise CRError(f"{cr_id}: {module} would become invalid: " + "; ".join(errors))
 
+    for module, files in new_params.items():
+        for name, data in files.items():
+            errors = params_errors(data)
+            if errors:
+                raise CRError(f"{cr_id}: {module} {name} would become invalid: " + "; ".join(errors))
+
     calcs, computed = {}, {}
     for module, files in new_params.items():
         calcs[module] = _calc(module, root)
@@ -353,7 +360,7 @@ def apply(cr_id: str, root: Path = ROOT) -> dict[str, str]:
                 write_yaml(mdir / "analysis" / name, data)
             calcs[module].write_outputs(root, out)
         revisions[module] = create_revision(
-            module, f"Apply {cr_id}", cr["reason"], cr=cr_id,
+            module, f"Apply {cr_id}", cr["reason"], cr=cr_id, kind="design",
             params=out["params"] if out else None, results=out["results"] if out else None, root=root)
         if out is not None:
             calcs[module].regenerate(root, revisions[module])

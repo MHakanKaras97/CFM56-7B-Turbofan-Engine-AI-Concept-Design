@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "params.schema.json",
+  "title": "Module params file (engine/<M>/analysis/*_params.yaml)",
+  "description": "Any mapping with a 'value' key is a quantity entry and may only have value, unit, tag, note, source.",
+  "type": "object",
+  "$ref": "#/$defs/node",
+  "$defs": {
+    "node": {
+      "if": {
+        "type": "object",
+        "required": ["value"]
+      },
+      "then": {
+        "$ref": "#/$defs/quantity"
+      },
+      "else": {
+        "additionalProperties": {
+          "$ref": "#/$defs/node"
+        },
+        "items": {
+          "$ref": "#/$defs/node"
+        }
+      }
+    },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value"],
+      "properties": {
+        "value": {},
+        "unit": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": ["K", "KS", "H", "G", "T"]
+        },
+        "note": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

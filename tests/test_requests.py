@@ -9,7 +9,7 @@ from core.requests import CRError, apply, create_cr, decide, list_crs, load_cr, 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
-NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "CR-*.yaml")
+NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "ACTIVE", "ACTIVE_CONCEPT", "ACCEPTED", "CR-*.yaml")
 
 BLADE_QTY_CHANGE = {
     "module": "M1",

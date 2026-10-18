@@ -33,18 +33,18 @@ components:
   eta_hpt: {value: 0.880, unit: '-', tag: KS, source: Girão 2023 Fig. 4.9, note: isentropic}
   duct_45_44: {value: 0.98, unit: '-', tag: KS, source: Girão 2023, note: P45/P44}
   eta_lpt: {value: 0.9173, unit: '-', tag: KS, source: Girão 2023 Fig. 4.9, note: isentropic}
-  duct_6_5: {value: 0.99, unit: '-', tag: KS, source: Girão 2023, note: P6/P5, core exhaust duct}
+  duct_6_5: {value: 0.99, unit: '-', tag: KS, source: Girão 2023, note: 'P6/P5, core exhaust duct'}
   bypass_duct: {value: 0.975, unit: '-', tag: KS, source: Girão 2023, note: P16/P13}
   mech_eff: {value: 0.99, unit: '-', tag: KS, source: Girão 2023}
   cfg_18: {value: 1.00998, unit: '-', tag: KS, source: Girão 2023 Fig. 4.9, note: bypass nozzle thrust coefficient}
-  cfg_8: {value: 1.0, unit: '-', tag: T, note: core nozzle thrust coefficient; not shown by Girão, GasTurb default}
-  cd_18: {value: 0.99756, unit: '-', tag: KS, source: Girão 2023 Fig. 4.9, note: discharge coefficient, area only}
-  cd_8: {value: 0.99492, unit: '-', tag: KS, source: Girão 2023 Fig. 4.9, note: discharge coefficient, area only}
+  cfg_8: {value: 1.0, unit: '-', tag: T, note: 'core nozzle thrust coefficient; not shown by Girão, GasTurb default'}
+  cd_18: {value: 0.99756, unit: '-', tag: KS, source: Girão 2023 Fig. 4.9, note: 'discharge coefficient, area only'}
+  cd_8: {value: 0.99492, unit: '-', tag: KS, source: Girão 2023 Fig. 4.9, note: 'discharge coefficient, area only'}
   LHV: {value: 43.124e6, unit: J/kg, tag: T, note: 'assumed GasTurb generic fuel, not in the thesis; reference 298.15 K, fuel enters at 298.15 K'}
 secondary_air:
   description: Fractions of W25, bypass the combustor
-  ngv: {value: 0.05, unit: '- of W25', tag: KS, source: Girão 2023, note: bled at HPC exit, mixes before HPT rotor (T41), does HPT work}
-  hpt_rotor: {value: 0.06, unit: '- of W25', tag: KS, source: Girão 2023, note: bled at HPC exit, mixes at HPT exit (station 44), no HPT work}
+  ngv: {value: 0.05, unit: '- of W25', tag: KS, source: Girão 2023, note: 'bled at HPC exit, mixes before HPT rotor (T41), does HPT work'}
+  hpt_rotor: {value: 0.06, unit: '- of W25', tag: KS, source: Girão 2023, note: 'bled at HPC exit, mixes at HPT exit (station 44), no HPT work'}
   leak: {value: 0.02, unit: '- of W25', tag: KS, source: Girão 2023, note: 'leaves the HPC before its exit (Girão W3 60.499 < W25 61.733), returned at station 45'}
   leak_bleed_point: {value: 0.5, unit: '- of HPC enthalpy rise', tag: T}
   customer_bleed: {value: 0.0, unit: kg/s, tag: T, note: ICAO test bleed not verified}
@@ -64,18 +64,19 @@ calibration:
 checks:
   fan_choke: {hard: true, basis: 'max mass flux at M=1 for SLS ISA total conditions (P0, T0), air', tag: H}
   w2a_range: {min: 190.0, max: 215.0, unit: kg/(s m2), tag: G}
-  w2_ref: {value: 354.7, unit: kg/s, tag: T, tolerance: 0.10}
+  w2_ref: {value: 354.7, unit: kg/s, tag: T}
+  w2_tolerance: {value: 0.10, unit: '-', tag: T, note: allowed relative deviation of W2 from w2_ref}
   cooling_range: {min: 0.12, max: 0.22, unit: '- of W25, total secondary air', tag: G}
   sfc_tolerance: {value: 0.005, unit: '-', tag: G}
   egt_limit: {file: engine/M0_engine/rules/tcds_e004.yaml, keys: [limits.egt_takeoff_displayed, limits.egt_shunt_sac], tag: K, note: 'displayed = measured (T49.5) + 30 K shunt for SAC'}
   egt: {a: 0.976, b: 0.217, tag: KS, form: 'EGT = a*(T45 - b*(T45 - T5)), in K', note: 'Girão 2023 Fig. 4.10 uses a = 0.976, the text gives 0.9664; CFM56-3 origin via Martins 2015'}
   combustor_air_refs:
-    lopez_pintor: {value: 44.52, unit: kg/s, tag: KS, note: modeled value, ADR-007}
+    lopez_pintor: {value: 44.52, unit: kg/s, tag: KS, note: 'modeled value, ADR-007'}
     girao_W31_125.7kN: {value: 53.71, unit: kg/s, tag: KS}
   T4_refs:
     estimate: {value: 1450.0, unit: K, tag: T, note: unit unclear in source}
-    indriyati_turbine_in: {value: 1553.0, unit: K, tag: KS, note: test cell, not ISA}
-  T3_ref: {value: 832.4, unit: K, tag: KS, note: test cell T0 298 K, not ISA; info only}
+    indriyati_turbine_in: {value: 1553.0, unit: K, tag: KS, note: 'test cell, not ISA'}
+  T3_ref: {value: 832.4, unit: K, tag: KS, note: 'test cell T0 298 K, not ISA; info only'}
 rated_case:
   description: ICAO -7B27 rating (thrust, fuel, BPR, OPR from reference_data); Girão FPR and core split kept
   similarity: {target: ideal V18/V8, source: model at the Girão validation point, tag: T, note: 'same family, take-off (ADR-009)'}

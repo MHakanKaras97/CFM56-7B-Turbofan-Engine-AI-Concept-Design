@@ -413,7 +413,7 @@ assumptions:
 - path: components.cfg_8
   value: 1.0
   unit: '-'
-  note: core nozzle thrust coefficient; not shown by Girão
+  note: core nozzle thrust coefficient; not shown by Girão, GasTurb default
 - path: components.LHV
   value: 43124000.0
   unit: J/kg

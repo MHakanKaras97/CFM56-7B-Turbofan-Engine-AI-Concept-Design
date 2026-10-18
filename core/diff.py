@@ -91,6 +91,22 @@ def _load(rev_dir: Path, name: str):
     return read_yaml(rev_dir / name) or {}
 
 
+def diff_data(a: dict, b: dict) -> dict:
+    """Changes between two record contents {params, results, bom, outputs} (any may be missing)."""
+    return {
+        "params": _changes(a.get("params") or {}, b.get("params") or {}),
+        "results": [_with_delta(c) for c in _changes(a.get("results") or {}, b.get("results") or {})],
+        "bom": _bom_diff(a.get("bom") or {}, b.get("bom") or {}),
+        "outputs": _outputs_diff(a.get("outputs"), b.get("outputs")),
+    }
+
+
+def read_record(module: str, rev: str, root: Path = ROOT) -> dict:
+    d = _rev_dir(module, rev, root)
+    return {"params": _load(d, "params.yaml"), "results": _load(d, "results.yaml"), "bom": _load(d, "bom.yaml"),
+            "outputs": _load(d, "manifest.yaml").get("outputs")}
+
+
 def diff_revisions(module: str, rev_a: str, rev_b: str, root: Path = ROOT) -> dict:
     """Changes from rev_a to rev_b of one module.
 
@@ -99,16 +115,81 @@ def diff_revisions(module: str, rev_a: str, rev_b: str, root: Path = ROOT) -> di
     bom:     {header: [...], added: [ids], removed: [ids], changed: {id: [{path, old, new}]}}
     outputs: [{file, old, new}]            sha256 per output file
     """
-    da, db = _rev_dir(module, rev_a, root), _rev_dir(module, rev_b, root)
-    return {
-        "module": module.split("_")[0],
-        "from": rev_a,
-        "to": rev_b,
-        "params": _changes(_load(da, "params.yaml"), _load(db, "params.yaml")),
-        "results": [_with_delta(c) for c in _changes(_load(da, "results.yaml"), _load(db, "results.yaml"))],
-        "bom": _bom_diff(_load(da, "bom.yaml"), _load(db, "bom.yaml")),
-        "outputs": _outputs_diff(_load(da, "manifest.yaml").get("outputs"), _load(db, "manifest.yaml").get("outputs")),
-    }
+    return {"module": module.split("_")[0], "from": rev_a, "to": rev_b,
+            **diff_data(read_record(module, rev_a, root), read_record(module, rev_b, root))}
+
+
+# --- numeric change (ADR-012) ------------------------------------------------------------
+
+def _numeric(x, path: str) -> bool:
+    """A number, or a numeric string stored as a quantity value (YAML reads 43.124e6 as text)."""
+    if _number(x):
+        return True
+    if isinstance(x, str) and path.rsplit(".", 1)[-1] == "value":
+        try:
+            float(x)
+        except ValueError:
+            return False
+        return True
+    return False
+
+
+def numeric_changes(diff: dict) -> list[dict]:
+    """Changes that alter a number, a part or a geometry output (ADR-012).
+
+    Counted: a numeric value changed or removed (params, results, BOM), a part added or removed,
+    an output sha256 changed. Not counted: text, added keys (schema/metadata additions), and a
+    params number that only moved to another path with the same value (reported as "moved").
+    """
+    out = []
+    removed, added = [], []
+    for section, key in (("params", "path"), ("results", "key")):
+        for c in diff[section]:
+            path, old, new = c[key], c["old"], c["new"]
+            old_num, new_num = _numeric(old, path), _numeric(new, path)
+            if old_num and new_num:
+                if float(old) != float(new):
+                    out.append({"kind": "changed", "section": section, "path": path, "old": old, "new": new})
+            elif old_num:
+                removed.append((section, path, old))
+            elif new_num:
+                added.append((section, path, new))
+            elif isinstance(old, (list, dict)) and old != new and any(_number(v) for v in _leaves(old)):
+                out.append({"kind": "changed", "section": section, "path": path, "old": old, "new": new})
+    for section, path, value in removed:
+        match = next((a for a in added if a[0] == section and float(a[2]) == float(value)), None)
+        if section == "params" and match:
+            added.remove(match)
+            out.append({"kind": "moved", "section": section, "path": path, "to": match[1], "value": value})
+        else:
+            out.append({"kind": "removed", "section": section, "path": path, "old": value})
+    bom = diff["bom"]
+    out += [{"kind": "part_added", "section": "bom", "path": i} for i in bom["added"]]
+    out += [{"kind": "part_removed", "section": "bom", "path": i} for i in bom["removed"]]
+    for pid, changes in bom["changed"].items():
+        for c in changes:
+            if _numeric(c["old"], c["path"]) or _numeric(c["new"], c["path"]):
+                out.append({"kind": "changed", "section": "bom", "path": f"{pid}.{c['path']}",
+                            "old": c["old"], "new": c["new"]})
+    out += [{"kind": "output", "section": "outputs", "path": o["file"], "old": o["old"], "new": o["new"]}
+            for o in diff["outputs"]]
+    return [c for c in out if c["kind"] != "moved"] + [c for c in out if c["kind"] == "moved"]
+
+
+def blocking(changes: list[dict]) -> list[dict]:
+    """Numeric changes that a maintenance revision may not contain (moves are allowed)."""
+    return [c for c in changes if c["kind"] != "moved"]
+
+
+def _leaves(x):
+    if isinstance(x, dict):
+        for v in x.values():
+            yield from _leaves(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from _leaves(v)
+    else:
+        yield x
 
 
 def is_empty(diff: dict) -> bool:

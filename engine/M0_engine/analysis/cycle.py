@@ -592,7 +592,7 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
     A_fan = fan_face_area(raw)
     w2a = r["W2"] / A_fan
     choke = choke_mass_flux(p.T0, p.P0, p.gas)
-    w2_ref = cfg["w2_ref"]
+    w2_ref, w2_tol = cfg["w2_ref"], cfg["w2_tolerance"]["value"]
     lo, hi = cfg["w2a_range"]["min"], cfg["w2a_range"]["max"]
     c_lo, c_hi = cfg["cooling_range"]["min"], cfg["cooling_range"]["max"]
     egt_disp = egt_displayed_C(r, raw, refs)
@@ -613,8 +613,8 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
         {"name": "Fan specific flow W2/A", "value": _r(w2a, 4), "reference": [lo, hi], "unit": "kg/(s m2)",
          "criterion": f"{lo:g} <= W2/A <= {hi:g}", "result": verdict(lo <= w2a <= hi)},
         {"name": "W2 vs estimate", "value": _r(r["W2"], 5), "reference": w2_ref["value"], "unit": "kg/s",
-         "deviation": _r(r["W2"] / w2_ref["value"] - 1.0, 3), "criterion": f"within {w2_ref['tolerance']:.0%}",
-         "result": verdict(abs(r["W2"] / w2_ref["value"] - 1.0) <= w2_ref["tolerance"])},
+         "deviation": _r(r["W2"] / w2_ref["value"] - 1.0, 3), "criterion": f"within {w2_tol:.0%}",
+         "result": verdict(abs(r["W2"] / w2_ref["value"] - 1.0) <= w2_tol)},
         {"name": "Total secondary air fraction", "value": _r(p.secondary_fraction, 4), "reference": [c_lo, c_hi],
          "unit": "- of W25", "criterion": f"{c_lo:g} <= c <= {c_hi:g} (input, Girão 2023)",
          "result": verdict(c_lo <= p.secondary_fraction <= c_hi)},
