@@ -17,6 +17,10 @@ leaves the HPC at a fraction of its enthalpy rise and returns at station 45.
 FPR is an input (ADR-008). Calibration (Newton, finite-difference Jacobian) solves W2 and T4
 against thrust and fuel flow. V18/V8 is reported for information only.
 
+Rated case (ICAO -7B27): the Girão efficiencies (validated at 125.73 kN) cannot reach the ICAO
+SFC, so one uniform delta_eta is added to all isentropic turbomachinery efficiencies and swept;
+the nominal is the smallest delta_eta that solves and passes all HARD checks.
+
 Usage:
     python -m engine.M0_engine.analysis.cycle              # writes analysis/results.yaml
     python -m engine.M0_engine.analysis.cycle --validate   # Girão validation case, prints only
@@ -332,10 +336,11 @@ def thrust_envelope(p: Params, t: Targets, W2_min: float = 300.0, W2_max: float 
     return out
 
 
-def infeasible_results(p: Params, t: Targets, error: str) -> dict:
+def infeasible_results(p: Params, t: Targets, error: str, sweep: list[dict] | None = None) -> dict:
     envelope = thrust_envelope(p, t)
     best = max(envelope, key=lambda e: e["thrust_kN"])
     return {
+        **({"delta_eta_sweep": sweep} if sweep is not None else {}),
         "model": MODEL,
         "status": "infeasible",
         "reason": "no W2, T4 matches thrust and fuel flow with the current inputs",
@@ -445,6 +450,53 @@ def sensitivity(p: Params, t: Targets, base: dict, raw: dict, tol: float) -> lis
     return rows
 
 
+# --- rated case ---------------------------------------------------------------------
+
+def with_delta_eta(p: Params, delta_eta: float) -> Params:
+    """Add delta_eta to every isentropic turbomachinery efficiency."""
+    return replace(p, **{n: getattr(p, n) + delta_eta for n in ETA})
+
+
+def delta_eta_sweep(p: Params, t: Targets, initial: dict, raw: dict, refs: dict, tol: float):
+    """Calibrate W2, T4 at each delta_eta of the configured sweep.
+
+    The sweep continues past its end (up to `extend_to`) only while no nominal is found.
+    Returns (rows, nominal) with nominal = (delta_eta, Params, result, iterations) or None.
+    """
+    cfg = raw["rated_case"]["delta_eta_sweep"]
+    lo, hi, step, extend_to = cfg["min"], cfg["max"], cfg["step"], cfg["extend_to"]
+    A_fan = fan_face_area(raw)
+    guess = {k: initial[k] for k in UNKNOWNS}
+    rows, nominal = [], None
+    i = 0
+    while True:
+        d = round(lo + i * step, 10)
+        if d > extend_to + 1e-12 or (d > hi + 1e-12 and nominal is not None):
+            break
+        i += 1
+        pd = with_delta_eta(p, d)
+        try:
+            r, it = calibrate(pd, t, guess, tol=tol)
+        except ArithmeticError:
+            best = max(thrust_envelope(pd, t), key=lambda e: e["thrust_kN"])
+            rows.append({"delta_eta": d, "solvable": False, "max_thrust_kN": best["thrust_kN"]})
+            continue
+        guess = {k: r[k] for k in UNKNOWNS}
+        hard = all(c["result"] == "pass" for c in build_checks(r, pd, raw, refs) if c.get("hard"))
+        rows.append({
+            "delta_eta": d, "solvable": True, "hard_checks_passed": hard,
+            "W2_kg_s": _r(r["W2"], 5), "W2_per_A": _r(r["W2"] / A_fan, 4),
+            "T4_K": _r(r["T4"], 5), "T41_K": _r(r["T41"], 5),
+            "EGT_model_C": _r(egt_model_K(r, raw) - 273.15, 4),
+            "EGT_displayed_C": _r(egt_displayed_C(r, raw, refs), 4),
+            "combustor_air_kg_s": _r(r["W_comb"], 4),
+            "sfc_g_kNs": _r(r["W_fuel"] / r["thrust"] * 1e6, 5),
+        })
+        if nominal is None and hard:
+            nominal = (d, pd, r, it)
+    return rows, nominal
+
+
 # --- outputs ------------------------------------------------------------------------
 
 def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
@@ -510,7 +562,7 @@ MODEL = ("M0 cycle v4.1, two-spool separate-flow, CFM56-7B inputs (Girão 2023),
 
 
 def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterations: int,
-                  sens: list[dict] | None = None) -> dict:
+                  sens: list[dict] | None = None, rated: dict | None = None) -> dict:
     sfc = r["W_fuel"] / r["thrust"] * 1e6  # g/(kN s)
     A_fan = fan_face_area(raw)
     egt_K = egt_model_K(r, raw)
@@ -578,6 +630,8 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
         "checks": checks,
         "hard_checks_passed": all(c["result"] == "pass" for c in checks if c.get("hard")),
     }
+    if rated is not None:
+        results["rated_case"] = rated
     if sens is not None:
         results["sensitivity"] = {"method": "W2, T4 recalibrated per isentropic-efficiency or LHV step",
                                   "cases": sens}
@@ -599,19 +653,35 @@ def main(argv: list[str]) -> int:
         for s in sensitivity(pv, tv, r, raw, tol):
             print(f"  {s['case']:<24} dW2={s['dW2_kg_s']:>8} dT4={s['dT4_K']:>8} dEGT={s['dEGT_K']:>8}")
         return 0
-    try:
-        r, iterations = calibrate(p, t, initial, tol=tol)
-    except ArithmeticError as exc:
-        results = infeasible_results(p, t, str(exc))
+    rows, nominal = delta_eta_sweep(p, t, initial, raw, refs, tol)
+    for row in rows:
+        print("  " + "  ".join(f"{k}={v}" for k, v in row.items()))
+    if nominal is None:
+        results = infeasible_results(p, t, "no delta_eta in the sweep solves with all HARD checks passed", rows)
         write_yaml(RESULTS_FILE, results)
-        m = results["max_reachable_thrust"]
-        print(f"INFEASIBLE: max thrust {m['value']} kN at W2 {m['at_W2_kg_s']} kg/s, T4 {m['at_T4_K']} K "
-              f"(target {results['target_thrust']['value']} kN at {t.fuel} kg/s fuel)")
+        print(f"INFEASIBLE up to delta_eta {raw['rated_case']['delta_eta_sweep']['extend_to']}")
         return 1
+    delta_eta, p, r, iterations = nominal
+    flag_limit = raw["rated_case"]["delta_eta_sweep"]["max"]
+    rated = {
+        "description": "ICAO -7B27 rating; uniform delta_eta added to all isentropic turbomachinery efficiencies",
+        "delta_eta": _q(delta_eta, "-", "H"),
+        "efficiencies_used": {n: _q(getattr(p, n), "-", "H") for n in ETA},
+        "selection": "smallest delta_eta that solves and passes all HARD checks",
+        **({"flag": f"delta_eta > {flag_limit:g}: another assumption is likely wrong"}
+           if delta_eta > flag_limit + 1e-12 else {}),
+        "thrust_ceiling": {
+            **(lambda b: {"value": b["thrust_kN"], "unit": "kN", "tag": "H", "at_W2_kg_s": b["W2_kg_s"]})(
+                max(thrust_envelope(p, t), key=lambda e: e["thrust_kN"])),
+            "note": "max thrust at the target fuel flow over W2; the solution is on the low-W2 branch",
+        },
+        "sweep": rows,
+        "validation": "Girão 125.73 kN design point, 18 of 19 items pass (analysis/validation_girao.md)",
+    }
     sens = sensitivity(p, t, r, raw, tol)
-    results = build_results(r, p, t, raw, refs, iterations, sens)
+    results = build_results(r, p, t, raw, refs, iterations, sens, rated)
     write_yaml(RESULTS_FILE, results)
-    print(f"W2={r['W2']:.2f} kg/s  T4={r['T4']:.1f} K  T41={r['T41']:.1f} K  FPR={p.FPR:.4f}  ({iterations} it)")
+    print(f"delta_eta={delta_eta:g}  W2={r['W2']:.2f} kg/s  T4={r['T4']:.1f} K  T41={r['T41']:.1f} K  FPR={p.FPR:.4f}  ({iterations} it)")
     for c in results["checks"]:
         print(f"  [{c['result']:>4}] {c['name']}: {c['value']} (ref {c['reference']})")
     for s in sens:

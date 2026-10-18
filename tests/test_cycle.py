@@ -4,8 +4,11 @@ from dataclasses import replace
 import pytest
 
 from engine.M0_engine.analysis.cycle import (
+    ETA,
     calibrate,
+    fan_face_area,
     first_deviation,
+    with_delta_eta,
     load_inputs,
     run,
     thrust_envelope,
@@ -239,13 +242,14 @@ def test_leakage_takes_part_of_hpc_work(calibrated):
 
 VALIDATION_ITEMS = ["W2", "T13", "P13", "T21", "T25", "P25", "T3", "P3", "W3", "W31", "T4", "T41", "T43", "P44",
                     "T44", "T45", "T5", "P5", "EGT"]  # gas-path order
-VALIDATION_OPEN = {"P5"}  # v4.1 open deviation, see docs/status.md
+VALIDATION_OPEN = {"P5"}  # accepted, see engine/M0_engine/analysis/validation_girao.md
+P5_REASON = "hot-gas property model and fuel definition differ from GasTurb; LHV not tuned (43.124 [T])"
 
 
 @pytest.mark.parametrize("item", VALIDATION_ITEMS)
 def test_validation_against_girao(item, inputs, calibrated, request):
     if item in VALIDATION_OPEN:
-        request.applymarker(pytest.mark.xfail(strict=True, reason="v4.1 deviation from Girão, decision open"))
+        request.applymarker(pytest.mark.xfail(strict=True, reason=P5_REASON))
     _, _, _, raw, refs = inputs
     row = next(x for x in validation_rows(calibrated[2], raw, refs) if x["item"] == item)
     assert row["result"] == "pass", row
@@ -271,3 +275,20 @@ def test_envelope_points_match_fuel(calibrated):
     for e in env:
         assert run(p, e["W2_kg_s"], e["T4_K"])["W_fuel"] == pytest.approx(t.fuel, rel=1e-4)
     assert env[1]["thrust_kN"] == pytest.approx(r["thrust"] / 1000.0, rel=1e-3)
+
+
+def test_delta_eta_shifts_all_turbomachinery_efficiencies(inputs):
+    p = inputs[0]
+    q = with_delta_eta(p, 0.01)
+    assert all(getattr(q, n) == pytest.approx(getattr(p, n) + 0.01) for n in ETA)
+    assert (q.burner_eta, q.mech_eff) == (p.burner_eta, p.mech_eff)
+
+
+def test_rated_case_solves_on_low_w2_branch(inputs):
+    p, t, initial, raw, refs = inputs
+    r, _ = calibrate(p, t, initial)  # nominal delta_eta = 0
+    assert r["thrust"] == pytest.approx(t.thrust, rel=1e-6)
+    assert r["W_fuel"] == pytest.approx(t.fuel, rel=1e-6)
+    ceiling = max(thrust_envelope(p, t), key=lambda e: e["thrust_kN"])
+    assert r["W2"] < ceiling["W2_kg_s"]
+    assert r["W2"] / fan_face_area(raw) < choke_mass_flux(p.T0, p.P0, p.gas)  # HARD

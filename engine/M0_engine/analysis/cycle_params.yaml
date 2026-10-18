@@ -1,4 +1,4 @@
-version: 4.1
+version: 4.2
 design_point:
   description: SLS ISA, max take-off, base CFM56-7B27 (SAC, ICAO UID 3CM034); see ADR-005
   T0: {value: 288.15, unit: K, tag: G}
@@ -76,6 +76,9 @@ checks:
     estimate: {value: 1450.0, unit: K, tag: T, note: unit unclear in source}
     indriyati_turbine_in: {value: 1553.0, unit: K, tag: KS, note: test cell, not ISA}
   T3_ref: {value: 832.4, unit: K, tag: KS, note: test cell T0 298 K, not ISA; info only}
+rated_case:
+  description: ICAO -7B27 rating (thrust, fuel, BPR, OPR from reference_data); Girão FPR and core split kept
+  delta_eta_sweep: {min: 0.0, max: 0.03, step: 0.005, extend_to: 0.06, unit: '-', tag: G, note: 'uniform delta added to all isentropic turbomachinery efficiencies; beyond max is flagged'}
 sensitivity:
   eta_step: 0.01
   LHV_rel_step: 0.003

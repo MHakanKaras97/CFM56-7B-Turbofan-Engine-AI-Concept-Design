@@ -74,6 +74,12 @@ Girão'dan alınmayan varsayımlar: LHV 43.124 MJ/kg [T] (GasTurb genel yakıtı
 
 Girdiler: itki 125.73 kN, yakıt 1.4023 kg/s, BPR 4.80, OPR (P3/P2) 29.88. Referanslar (gaz yolu sırasıyla): W2 358.28 kg/s; T13 345.73 K, P13 177.088 kPa; T21 317.23 K; T25 395.08 K, P25 264.816 kPa; T3 838.0 K, P3 2997 kPa; W3 60.499, W31 53.708 kg/s; T4 1690.5 K; T41 1649.0 K; T43 1254.55 K; P44 705.1 kPa, T44 1231.30 K; T45 1220.9 K; T5 902.1 K, P5 171.1 kPa; EGT 1124.0 K. Doğrulama, sapması %1'i aşan ilk kalemi de raporlar. Geçme ölçütü: sıcaklıklar ±%2, W2 ve basınçlar ±%3. Veriler `girao_2023.yaml` dosyasında.
 
+## Nominal nokta (ICAO -7B27, rev004)
+
+- Hedefler: itki 121.43 kN, yakıt 1.284 kg/s; BPR 5.0, OPR 28.63 [K]. Girão FPR'si 1.765 ve çekirdek bölüşümü (1.344, 2.004, P25/P24 0.98) korunur; HPC PR = OPR / 2.64.
+- Bütün izentropik turbomakine verimlerine aynı Δη eklenir; 0 ile +0.03 arası 0.005 adımla taranır. Nominal, çözülen ve tüm HARD kontrollerden geçen en küçük Δη'dır. 0.03'ün üstü işaretlenir.
+- Sonuç: Δη = 0 [H]. Bu yakıtla itki tavanı 122.88 kN (W2 400); hedef bu tavanın %1.2 altında.
+
 ## Bilgi referansları
 
 - EGT: Girão, 125.7 kN'de yaklaşık 851 °C (formül değeri, şönt hariç). 800-920 °C bandı v4'te kaldırıldı.
@@ -110,7 +116,7 @@ Hesaplanan kalkış SFC değerleri bu aralıktadır (`sfc_takeoff.yaml`, `in_san
 
 ## Çelişkiler (v4)
 
-- **ICAO nominal noktası ile Girão verimleri (açık):** Girão noktasındaki SFC 11.15 g/(kN·s), ICAO/TCDS SFC'si ise 10.57 (−%5.2). Girão girdileriyle ve 1.284 kg/s yakıtla ulaşılabilecek en yüksek itki 118.0 kN; 121.43 kN'ye ulaşılamıyor (rev004 oluşturulmadı).
+- **ICAO nominal noktası ile Girão verimleri (çözüldü, v4.1):** v4 girdileriyle (cv 0.98, LHV 43.0, 100 kW çekiş) en fazla 118.0 kN çıkıyordu. Şekil 4.9 girdileriyle (lüle katsayıları, çekiş 0, LHV 43.124 [T]) Δη = 0'da çözülüyor (rev004).
 
 ## Yöntem
 

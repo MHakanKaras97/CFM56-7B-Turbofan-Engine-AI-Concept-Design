@@ -17,3 +17,9 @@ rev002 superseded by rev003 (not invalid).
 rev003 superseded by the v4 inputs (ADR-008, Girão 2023); it stays ACTIVE because no rev004 exists.
 - v4 rated case (121.43 kN, 1.284 kg/s) is infeasible with the Girão component inputs: max thrust 118.0 kN at that fuel flow.
 - v4 validation against Girão fails 7 of 9 items (W2 +8.2 %, P5 -14.5 %); see docs/status.md.
+
+## 2026-10-18 rev003 (update)
+rev003 superseded by rev004 (cycle v4.1, Girão 2023 inputs, ICAO -7B27 rating).
+- Combustor-air and cooling assumptions of rev003 replaced by Girão secondary air (0.13 of W25).
+- Validation against Girão: 18 of 19 items pass; P5 +3.46 % accepted (engine/M0_engine/analysis/validation_girao.md).
+- rev004 soft-check deviation: W2/A 216.8 > 215 (fan geometry is [T]); explained, user decision open.
