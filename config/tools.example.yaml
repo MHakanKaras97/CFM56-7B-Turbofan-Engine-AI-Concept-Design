@@ -1,0 +1,10 @@
+description: >-
+  External tool paths. Copy this file to config/tools.local.yaml (git-ignored) and set the
+  paths for this machine. Code reads tool paths only from tools.local.yaml (core/toolpaths.py).
+tools:
+  ccx:
+    path: C:\Tools\PrePoMax v2.6.0\Solver\ccx_dynamic.exe
+    note: CalculiX solver shipped with PrePoMax
+  pvpython:
+    path: C:\Program Files\ParaView 6.2.0\bin\pvpython.exe
+    note: ParaView Python for post-processing

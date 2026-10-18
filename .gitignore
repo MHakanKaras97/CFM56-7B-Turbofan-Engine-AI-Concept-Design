@@ -38,3 +38,6 @@ engine/*/learning/sources/
 *.pdf
 *.xlsx
 *.xls
+
+# Machine-specific tool paths (template: config/tools.example.yaml)
+config/tools.local.yaml
