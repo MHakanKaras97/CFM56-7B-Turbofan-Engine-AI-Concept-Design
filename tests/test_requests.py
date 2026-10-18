@@ -180,3 +180,12 @@ def test_list_crs(repo):
     new_cr(repo)
     new_cr(repo)
     assert [cr["id"] for cr in list_crs(root=repo)] == ["CR-001", "CR-002"]
+
+
+def test_decision_records_decided_by_and_needs_note(repo):
+    cr_id = new_cr(repo)
+    set_impact(cr_id, ["M1"], "fan", root=repo)
+    with pytest.raises(CRError, match="note"):
+        decide(cr_id, approve=True, note="  ", root=repo)
+    decide(cr_id, approve=True, note="ok", root=repo, decided_by="user (UI)")
+    assert load_cr(cr_id, root=repo)["decision"]["decided_by"] == "user (UI)"

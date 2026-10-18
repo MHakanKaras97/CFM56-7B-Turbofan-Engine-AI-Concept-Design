@@ -21,18 +21,19 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 ## 4. Sayfalar
 
 ### 4.1 Genel bakış (`ui_genel_bakis.png`)
-- **Motor şeridi:** M0-M9 kutuları gaz yolu sırasıyla dizilir (`docs/design/concept_reference.yaml`). Renk modül durumunu gösterir: aktif revizyonu olan yeşil, başlamamış (konseptte null) gri, açık CR'si olan turuncu çerçeveli. Tıklanınca modül sayfası açılır.
+- **Motor şeridi:** M0-M9 kutuları gaz yolu sırasıyla dizilir (`docs/design/concept_reference.yaml`). Renk modül durumunu gösterir: aktif revizyonu olan yeşil, başlamamış (konseptte null) gri, açık CR'si olan (veya aktif revizyonu konseptten farklı olan) turuncu. Kutu bir düğmedir: M0 → M0 motor sayfası, M1-M9 → modül sayfası (`pages/moduller.py?m=Mx`).
 - **Metrik kartları:** itki, SFC, EGT payı, W2. Kaynak: aktif M0 revizyonunun `results.yaml` dosyası (`performance.thrust`, `performance.sfc`, EGT sınır kontrolünün `margin` değeri, `calibration.W2`).
-- **Modül kartları:** her modül için ad ve durum ("Başlamadı · sıradaki", "revNNN aktif").
+- **Modül kartları:** her modül için ad ve durum ("Başlamadı · sıradaki", "revNNN aktif"); "Aç" düğmesi modül sayfasını açar.
 - **Son revizyonlar:** M0'ın revizyon zinciri (`parent_revision` ile), aktif olan mavi.
 - Ek (maketin dışında): kavramsal düzen referansı `engine_reference.svg` katlanabilir bir panelde gösterilir.
 
 ### 4.2 M0 motor (`ui_m0.png`)
 - **Başlık:** aktif revizyon rozeti, doğrulama özeti ("Girão 18/19", kaynak `analysis/validation_girao.md`), "Revizyonları karşılaştır" düğmesi (Revizyonlar sayfasındaki fark görünümüne gider).
 - **İstasyon tablosu:** istasyon, sahip modül, Tt, Pt, W, FAR. Kaynak `rules/icd.yaml` (`stations`). Altında not: "Her değerin yanında etiket: H · kaynak revNNN". Kısaltılmış görünümde ana istasyonlar, genişletince hepsi gösterilir.
-- **Kontroller:** `results.yaml` içindeki `checks`. Her satırda ad, değer ve rozet (geçti / kaldı / bilgi). HARD kontroller "(sert)" etiketi taşır. [T] varsayımları ayrı satırda turuncu rozetle gösterilir (ör. "Δη varsayımı · T · 0,017").
+- **Kontroller:** `results.yaml` içindeki `checks`. Her satırda ad, değer ve rozet (geçti / kaldı / bilgi). HARD kontroller "(sert)" etiketi taşır. Değerin altında referans ve referansın etiketi (`ref_tag`) gösterilir (ör. "ref 950 [K]"; birden çok referansta "[KS/T]").
+- **Varsayımlar [T]:** `results.yaml` → `assumptions` (sonucun dayandığı [T] params girdileri; kontrol referansları ve çözücü başlangıç değerleri hariç). Her satır turuncu T rozeti, yol, değer ve not (ipucu). Δη çözülen bir değerdir [H]; dayandığı benzerlik koşulu `rated_case.similarity` [T] olarak listelenir.
 - **Modül bütçeleri (ICD):** her modül için kart: ana bütçe kalemleri ve izin verilen sapmalar (`icd.yaml` → `modules.<Mx>.budget`, `tolerances`). Kart tıklanınca tüm kalemler listelenir.
-- Ek: belirsizlik bandı ve verim duyarlılığı tablosu (`rules/cycle_inputs.md`, `analysis/acceptance_M0.md`) bilgi sekmesinde.
+- **Bilgi sekmesi:** belirsizlik bandı (`rules/cycle_inputs.md` → "Belirsizlik bandı" bölümü), verim duyarlılığı ve Martins karşılaştırması (`analysis/acceptance_M0.md` → "Makullük" bölümü), ADR-010 sınır notu (uyarı kutusu + tam metin). Arayüz bu tabloları hesaplamaz, belgelerden gösterir.
 
 ### 4.3 Modül sayfası, M1-M9 (`ui_modul.png`)
 - **Başlık:** modül adı; "Karşılaştır: [rev A] → [rev B]" seçicileri (varsayılan: önceki → aktif); düğmeler: Kesit, 3B, Fusion'da aç.
@@ -43,6 +44,7 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 - **Analizler:** seçili revizyonun analiz kontrolleri (ör. santrifüj gerilme, uç hızı, Campbell), her biri rozetle.
 - **Fusion'da aç:** STEP dosyası önbelleğe dışa aktarılır ve işletim sisteminin dosya ilişkilendirmesiyle açılır (Windows'ta `os.startfile`). İlişkilendirme yoksa arayüz dosya yolunu gösterir ve uyarı verir. Fusion'da yapılan değişiklikler geri yazılmaz; tek kaynak koddur.
 - Başlamamış modülde sayfa, ICD bütçesini ve "Başlamadı" durumunu gösterir.
+- **Faz 3 durumu (şablon):** başlık, durum rozeti, A/B revizyon seçicileri, BOM ağacı (`bom.yaml`, şimdilik boş), kesit yer tutucusu, ICD bütçe tablosu. Kesit, 3B ve Fusion'da aç düğmeleri devre dışı; değişen ölçüler ve analizler henüz yok.
 
 ### 4.4 Talepler (`ui_talepler.png`)
 - Başlıkta açık ve kapalı CR sayıları. Liste `engine/M0_engine/requests/CR-*.yaml` dosyalarından okunur; açık CR'ler önce gelir.
@@ -50,11 +52,11 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 - **Etki metrikleri:** ΔSFC, ΔEGT, ΔT41 kartları. Kaynak: CR'nin `impact.metrics` alanı (metrik adı → {value, unit, tag}); bütçe CR'lerinde `dSFC` [%], `dEGT` [K], `dT41` [K], operating_point modunda ayrıca `dThrust` [%]. Alan isteğe bağlıdır: `impact` boş ya da `metrics` yoksa kartlar gösterilmez, yalnızca `impact.notes` görünür.
 - **Seçenekler:** CR'deki `options` radyo düğmeleriyle gösterilir: (a) M0 değeri kabul etsin ve çevrimi yeniden dengelesin; (b) modül tasarımını düzeltsin.
 - **Karar notu:** zorunlu metin alanı.
-- **Karar:** yalnızca `core.requests.decide(cr, approve, note, option=...)` ile verilir.
+- **Karar:** "Kararı kaydet" bir onay penceresi (`st.dialog`) açar: CR, onay/ret, seçenek ve not gösterilir. "Kaydet" yalnızca `core.requests.decide(cr, approve, note, option=..., decided_by="user (UI)")` çağırır; "Vazgeç" veya pencereyi kapatmak hiçbir şey yazmaz. Not boşsa düğme devre dışıdır (`decide` de boş notu reddeder). Kararda `decision.decided_by` kaydedilir.
   - Maketten farkı: (b) bir ret kararıdır, (a) onaydır. Bu yüzden "Onayla / Reddet" yerine tek bir **"Kararı kaydet"** düğmesi olur; onay mı ret mi olduğu seçilen seçenekten çıkar. Seçeneği olmayan CR'lerde Onayla ve Reddet düğmeleri kalır.
   - Etki analizi yoksa veya `impact.affected_modules` boşsa onay seçeneği devre dışıdır (`core.requests` zaten reddeder).
-- **Uygulama:** onaylanmış CR'de "Uygula" düğmesi `core.requests.apply` çağırır. Sonuçta oluşan revizyonlar ve yeniden üretilen dosyalar gösterilir.
-- Kapalı CR'ler geçmiş (`history`) ve kararla birlikte salt okunur listelenir.
+- **Uygulama:** onaylanmış CR'de "Uygula" düğmesi `core.requests.apply` çağırır. Sonuçta oluşan revizyonlar ve yeniden üretilen dosyalar gösterilir. *Henüz yok (faz 3 yalnızca karar verir).*
+- Kapalı CR'ler karar (tarih, seçenek, not, `decided_by`) ve uygulanan revizyonlarla salt okunur listelenir. Her CR'de geçmiş (`history`) tablosu katlanabilir panelde.
 
 ### 4.5 Revizyonlar
 - **Modül zaman çizelgesi:** her modülün revizyonları (`records/revNNN/manifest.yaml`): tarih, özet, gerekçe, CR, kod commit'i; aktif olan işaretli.
@@ -65,17 +67,23 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
   - `bom`: {header, added, removed, changed: {parça kimliği: [{path, old, new}]}},
   - `outputs`: [{file, old, new}] (SHA-256 değişimi).
   Yollar noktalıdır (ör. `calibration.W2.value`); kimlik anahtarı olan listeler kimlikle yazılır (ör. `stations[2].W_kg_s`). Boş fark `core.diff.is_empty` ile anlaşılır. Biçimlendirme (ondalık virgül, birim) arayüzün işidir.
-- **Konsept farkı:** `core.diff.diff_concepts(cA, cB)` → [{module, old, new}]; satır seçilince o modül için `diff_revisions` gösterilir.
+- **Konsept farkı:** `core.diff.diff_concepts(cA, cB)` → [{module, old, new}] tablosu. (Satır seçilince o modül için `diff_revisions` gösterme henüz yok.)
+- Fark sekmeleri: Parametreler, Sonuçlar (fark ve %), BOM (eklenen/silinen/değişen), Çıktılar (sha256). Varsayılan B = aktif revizyon, A = bir önceki.
 - **Geri dönüş:** "Aktif yap" düğmesi `core.records.revert` (modül) veya `revert_concept` çağırır; önce onay penceresi açılır. Kayıtlar silinmez.
 - Doğrulama: `core.records.verify` ile çıktı özetleri kontrol edilir ve sonuç rozetle gösterilir.
+- *Geri dönüş ve doğrulama henüz yok (faz 3 salt okunur).*
 
 ### 4.6 Öğrenme
 - `docs/learning/` ve `engine/*/learning/` altındaki `.md` dosyaları markdown olarak gösterilir; `.txt` dosyaları (ör. parça bilgi dokümanı) sabit genişlikli metin olarak gösterilir.
 - Solda modüle göre gruplanmış dosya listesi bulunur. `learning/sources/` (indirilen kaynaklar, git dışı) listelenmez.
+- **Kaynaklar sekmesi:** `docs/sources.md` tablosu (kaynak, kullanım, lisans).
+- **Etiketler sekmesi:** K, KS, H, G, T açıklamaları; T turuncu rozetli.
 
 ## 5. Uygulama notları
 - Streamlit çok sayfalı uygulama: `ui/app.py` ve `ui/pages/`. Kurulu sürüm `pyproject.toml` içinde sabitlenir.
-- Okuma katmanı (`ui/data.py`) yalnızca okur ve önbelleğe alır (`st.cache_data`, dosya değişiklik zamanı anahtarlı). Yazma düğmeleri yalnızca `core` fonksiyonlarını çağırır ve sonrasında önbelleği temizler.
+- Okuma katmanı (`ui/data.py`) yalnızca okur ve önbelleğe alır (`st.cache_data`; ACTIVE işaretçileri, bom.yaml, CR dosyaları ve icd.yaml değişiklik zamanı anahtarlı, bir yazmadan sonraki çalıştırmada kendiliğinden yenilenir). Yazma düğmeleri yalnızca `core` fonksiyonlarını çağırır.
+- Depo kökü `TURBOFAN_UI_ROOT` ortam değişkeniyle değiştirilebilir (testler geçici kopya kullanır; gerçek depoya yazılmaz). `docs/` her zaman gerçek kökten okunur.
+- Ortak parçalar `ui/widgets.py` içinde (üst çubuk, rozetler, modül sayfasına geçiş).
 - 3B görünüm için GLB görüntüleyici olarak tarayıcıda çalışan bir bileşen (ör. model-viewer) kullanılabilir. Eklenecek bağımlılık için önce onay alınır.
 
 ## 6. Açık noktalar

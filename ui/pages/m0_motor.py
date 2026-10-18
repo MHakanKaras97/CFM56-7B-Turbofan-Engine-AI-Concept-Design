@@ -21,7 +21,7 @@ if results is None:
     st.stop()
 
 src = icd["source"]["revision"]
-left, right = st.columns([3, 2], gap="large")
+main_tab, info_tab = st.tabs(["Genel", "Bilgi"])
 
 
 def station_rows(ids):
@@ -36,6 +36,20 @@ def station_rows(ids):
                      "Etiket": ", ".join(sorted({v["tag"] for v in q.values()}))})
     return pd.DataFrame(rows)
 
+
+def reference_text(c) -> str:
+    ref = c.get("reference")
+    if isinstance(ref, list):
+        text = " – ".join(data.num(x) for x in ref)
+    elif isinstance(ref, dict):
+        text = ", ".join(f"{k} {data.num(v)}" for k, v in ref.items())
+    else:
+        text = data.num(ref)
+    return f"ref {text} {widgets.ref_tag(c.get('ref_tag'))}".rstrip()
+
+
+with main_tab:
+    left, right = st.columns([3, 2], gap="large")
 
 with left:
     st.subheader("İstasyon tablosu")
@@ -53,17 +67,22 @@ with right:
         color, label = {"pass": ("green", "geçti"), "fail": ("red", "kaldı")}.get(c["result"], ("blue", "bilgi"))
         a, b = st.columns([3, 2], vertical_alignment="center")
         a.markdown(name, help=c.get("criterion"))
-        b.markdown(f"{value} {badge(label, color)}")
+        b.markdown(f"{value} {badge(label, color)}", help=reference_text(c))
+        a.caption(reference_text(c))
     st.caption(f"Sert kontrollerin hepsi geçti: {'evet' if results.get('hard_checks_passed') else 'hayır'}"
                f" · kaynak {m0['rev']}/results.yaml")
-    estimates = data.tagged(results)
-    with st.expander(f"[T] etiketli değerler ({len(estimates)})"):
-        for e in estimates:
-            st.markdown(f"{tag_badge('T')} `{e['path']}` · {data.quantity({**e, 'tag': None})}")
+    st.subheader("Varsayımlar [T]")
+    assumptions = results.get("assumptions")
+    if assumptions is None:
+        st.caption(f"{m0['rev']} sonuçlarında varsayım listesi yok.")
+    for e in assumptions or []:
+        value = data.quantity({**e, "tag": None}) if e.get("value") is not None else e.get("target", "")
+        st.markdown(f"{tag_badge('T')} `{e['path']}` · {value}", help=e.get("note"))
+    st.caption(f"Sonucun dayandığı [T] girdiler · kaynak {m0['rev']}/results.yaml (assumptions)")
 
-st.subheader("Modül bütçeleri (ICD)")
+main_tab.subheader("Modül bütçeleri (ICD)")
 tols = icd["tolerances"]
-cols = st.columns(3)
+cols = main_tab.columns(3)
 for i, (mid, mod) in enumerate(icd["modules"].items()):
     items = mod["budget"]
     checked = [(k, v) for k, v in items.items() if v["kind"] != "info"]
@@ -75,4 +94,17 @@ for i, (mid, mod) in enumerate(icd["modules"].items()):
                 {"Kalem": k, "Değer": data.num(v["value"]), "Birim": data.unit_tr(v["unit"]), "Etiket": v["tag"],
                  "Tür": v["kind"], "İzin": data.tolerance(tols[v["kind"]])} for k, v in items.items()
             ]), hide_index=True, width="stretch")
-st.caption(f"İzin verilen sapmalar [{tols['efficiency']['tag']}] · kaynak {src} (rules/icd.yaml)")
+main_tab.caption(f"İzin verilen sapmalar [{tols['efficiency']['tag']}] · kaynak {src} (rules/icd.yaml)")
+
+with info_tab:
+    info = data.info_sections()
+    st.markdown(info["band"])
+    st.caption("kaynak engine/M0_engine/rules/cycle_inputs.md")
+    st.divider()
+    st.markdown(info["sensitivity"])
+    st.caption("kaynak engine/M0_engine/analysis/acceptance_M0.md")
+    st.divider()
+    st.warning("Entegrasyon kontrolünün sınırı (ADR-010): çekirdek modülleri (M3, M5) için EGT sonuçları "
+               "iyimserdir; geçici EGT toleransı 5 K [T].")
+    with st.expander("ADR-010 tam metin"):
+        st.markdown(info["adr010"])

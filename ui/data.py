@@ -2,8 +2,12 @@
 
 The snapshot is cached and keyed by the modification times of the record pointers, CRs and
 derived files, so a change on disk shows up on the next rerun.
+
+The repo root is ROOT unless TURBOFAN_UI_ROOT names another copy (tests use a temporary copy, so
+UI writes in tests never reach the real repo). Docs (docs/) are always read from ROOT.
 """
 
+import os
 import re
 from pathlib import Path
 
@@ -11,14 +15,18 @@ import streamlit as st
 
 from core import bom as bom_io
 from core.budgets import load_icd
+from core.diff import diff_concepts as _diff_concepts
+from core.diff import diff_revisions
 from core.records import (
     ROOT,
     active_concept,
     active_revision,
+    concept_ids,
     module_dir,
     module_dirs,
     read_concept,
     read_revision,
+    revision_ids,
 )
 from core.requests import list_crs
 from core.util import read_yaml
@@ -32,6 +40,19 @@ TAGS = ("K", "KS", "H", "G", "T")
 EGT_CHECK = "EGT displayed vs TCDS limit"
 REFERENCE_SVG = ROOT / "docs" / "design" / "engine_reference.svg"
 CONCEPT_REFERENCE = ROOT / "docs" / "design" / "concept_reference.yaml"
+SOURCES = ROOT / "docs" / "sources.md"
+TAG_LEGEND = [
+    ("K", "Birincil kaynak (ör. EASA TCDS, ICAO veri bankası)"),
+    ("KS", "İkincil kaynak (ör. tez, makale)"),
+    ("H", "Koddan hesaplanan değer"),
+    ("G", "Genel mühendislik bilgisi"),
+    ("T", "Tahmin / varsayım; doğrulanmadı"),
+]
+STATUS_TR = {"open": "açık", "approved": "onaylandı", "rejected": "reddedildi", "applied": "uygulandı"}
+
+
+def root() -> Path:
+    return Path(os.environ.get("TURBOFAN_UI_ROOT", ROOT))
 
 
 # --- formatting (display only: decimal comma, tags) ---------------------------------------
@@ -62,20 +83,6 @@ def tolerance(tol: dict) -> str:
     if tol["type"] == "relative":
         return f"± %{num(tol['value'] * 100.0)}"
     return f"± {num(tol['value'])}{' ' + tol['unit'] if tol.get('unit') else ''}"
-
-
-def tagged(data, prefix: str = "", tag: str = "T") -> list[dict]:
-    """Quantities with the given tag anywhere in a nested result: [{path, value, unit}]."""
-    out = []
-    if isinstance(data, dict):
-        if data.get("tag") == tag and "value" in data:
-            return [{"path": prefix, "value": data["value"], "unit": data.get("unit")}]
-        for k, v in data.items():
-            out += tagged(v, f"{prefix}.{k}" if prefix else str(k), tag)
-    elif isinstance(data, list):
-        for i, v in enumerate(data):
-            out += tagged(v, f"{prefix}[{i}]", tag)
-    return out
 
 
 # --- snapshot -------------------------------------------------------------------------------
@@ -159,13 +166,19 @@ def _metrics(results: dict, rev: str) -> list[dict]:
 def load(root: Path = ROOT) -> dict:
     """Everything the pages show, read through core/."""
     concept_id = active_concept(root)
+    revisions = {m: [read_revision(m, r, "manifest.yaml", root) for r in revision_ids(m, root)] for m in MODULES}
+    concepts = [read_concept(c, root) for c in concept_ids(root)]
     concept = read_concept(concept_id, root) if concept_id else None
     crs = list_crs(root)
     rows = _module_rows(concept, crs, root)
     m0_rev = active_revision("M0", root)
     results = read_revision("M0", m0_rev, "results.yaml", root) if m0_rev else None
     return {
+        "root": str(root),
         "concept": concept_id,
+        "concepts": concepts,
+        "revisions": revisions,
+        "crs": sorted(crs, key=lambda cr: (cr["status"] != "open", cr["id"])),
         "modules": rows,
         "open_crs": sum(cr["status"] == "open" for cr in crs),
         "closed_crs": sum(cr["status"] != "open" for cr in crs),
@@ -183,9 +196,75 @@ def load(root: Path = ROOT) -> dict:
 
 
 @st.cache_data(show_spinner=False)
-def _cached(stamp: tuple, root: str) -> dict:
-    return load(Path(root))
+def _cached(stamp: tuple, root_dir: str) -> dict:
+    return load(Path(root_dir))
 
 
-def snapshot(root: Path = ROOT) -> dict:
-    return _cached(_stamp(root), str(root))
+def snapshot() -> dict:
+    r = root()
+    return _cached(_stamp(r), str(r))
+
+
+def diff(module: str, rev_a: str, rev_b: str) -> dict:
+    return diff_revisions(module, rev_a, rev_b, root())
+
+
+def read_bom(module: str) -> dict:
+    return bom_io.load(module_dir(module, root()) / "bom" / "bom.yaml")
+
+
+def diff_concepts(concept_a: str, concept_b: str) -> list[dict]:
+    return _diff_concepts(concept_a, concept_b, root())
+
+
+# --- documents (learning, sources, info sections) -------------------------------------------
+
+def learning_files() -> dict[str, list[Path]]:
+    """Group -> .md/.txt files: 'Genel' (docs/learning) and one group per module; sources/ excluded."""
+    groups = {"Genel": sorted((ROOT / "docs" / "learning").glob("*.*"))}
+    for mdir in module_dirs(root()):
+        files = sorted((mdir / "learning").glob("*.*")) if (mdir / "learning").is_dir() else []
+        groups[mdir.name] = files
+    return {g: [f for f in files if f.suffix in (".md", ".txt")] for g, files in groups.items()}
+
+
+def read_text(path: Path) -> str:
+    return Path(path).read_text(encoding="utf-8")
+
+
+def markdown_table(text: str, after_heading: str | None = None) -> list[dict]:
+    """First markdown table (optionally after a heading) as rows keyed by the header cells."""
+    if after_heading:
+        text = text[text.index(after_heading):]
+    lines = [ln.strip() for ln in text.splitlines()]
+    start = next(i for i, ln in enumerate(lines) if ln.startswith("|"))
+    block = []
+    for ln in lines[start:]:
+        if not ln.startswith("|"):
+            break
+        block.append([c.strip() for c in ln.strip("|").split("|")])
+    header, rows = block[0], [r for r in block[2:]]
+    return [dict(zip(header, r)) for r in rows]
+
+
+def md_section(path: Path, heading: str) -> str:
+    """A markdown section from its heading line up to the next heading of the same or higher level."""
+    text = read_text(path)
+    start = text.index(heading)
+    level = len(heading) - len(heading.lstrip("#"))
+    rest = text[start + len(heading):]
+    m = re.search(rf"^#{{1,{level}}} ", rest, re.M)
+    return heading + (rest[:m.start()] if m else rest)
+
+
+def sources() -> list[dict]:
+    return markdown_table(read_text(SOURCES))
+
+
+def info_sections() -> dict[str, str]:
+    m0 = module_dir("M0", ROOT)
+    return {
+        "band": md_section(m0 / "rules" / "cycle_inputs.md", "## Belirsizlik bandı"),
+        "sensitivity": md_section(m0 / "analysis" / "acceptance_M0.md", "## Makullük"),
+        "adr010": read_text(ROOT / "docs" / "decisions" / "ADR-010-integration-limitation.md"),
+    }

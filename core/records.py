@@ -217,6 +217,11 @@ def active_concept(root: Path = ROOT) -> str | None:
     return path.read_text(encoding="utf-8").strip() if path.exists() else None
 
 
+def concept_ids(root: Path = ROOT) -> list[str]:
+    records = _concept_records(root)
+    return sorted(p.name for p in records.iterdir() if p.is_dir() and CONCEPT_RE.match(p.name))
+
+
 def read_concept(concept: str, root: Path = ROOT) -> dict:
     path = _concept_records(root) / concept / "manifest.yaml"
     if not CONCEPT_RE.match(concept) or not path.is_file():

@@ -39,6 +39,18 @@ def top_bar(snap: dict) -> None:
     st.divider()
 
 
-def placeholder(title: str) -> None:
-    st.title(title)
-    st.info("3. aşamada")
+def open_module(module_id: str) -> None:
+    """Go to a module's page: M0 has its own page, M1-M9 use the module page template."""
+    if module_id == "M0":
+        st.switch_page(PAGES["m0"])
+    st.switch_page(PAGES["moduller"], query_params={"m": module_id})
+
+
+def ref_tag(tag) -> str:
+    """'[K]' or '[KS/T]' for a check reference tag (str or mapping per reference)."""
+    tags = list(dict.fromkeys(tag.values())) if isinstance(tag, dict) else [tag]
+    return "[" + "/".join(t for t in tags if t) + "]" if any(tags) else ""
+
+
+def quantity_card(col, label: str, q: dict, help: str | None = None) -> None:
+    col.metric(label, data.quantity(q), help=help, border=True)

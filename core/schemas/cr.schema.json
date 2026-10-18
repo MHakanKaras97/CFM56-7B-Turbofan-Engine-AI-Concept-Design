@@ -115,6 +115,11 @@
             "option": {
               "type": "string",
               "pattern": "^[a-z]$"
+            },
+            "decided_by": {
+              "description": "Who recorded the decision, e.g. 'user (UI)'.",
+              "type": "string",
+              "minLength": 1
             }
           }
         }

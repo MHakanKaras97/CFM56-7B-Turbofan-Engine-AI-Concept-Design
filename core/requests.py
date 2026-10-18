@@ -205,11 +205,12 @@ def set_impact(cr_id: str, affected_modules: list[str], notes: str, root: Path =
     _save(cr, root)
 
 
-def decide(cr_id: str, approve: bool, note: str, root: Path = ROOT, option: str | None = None) -> None:
+def decide(cr_id: str, approve: bool, note: str, root: Path = ROOT, option: str | None = None,
+           decided_by: str | None = None) -> None:
     """User decision. Approval requires an impact analysis with at least one affected module.
 
     For a CR with options, `option` names the pick; it must apply changes when approving and
-    must not when rejecting.
+    must not when rejecting. `decided_by` records who decided (e.g. "user (UI)").
     """
     cr = load_cr(cr_id, root)
     if cr["status"] != "open":
@@ -228,7 +229,10 @@ def decide(cr_id: str, approve: bool, note: str, root: Path = ROOT, option: str 
             raise CRError(f"{cr_id}: option {option!r} does not match approve={approve}")
     elif option is not None:
         raise CRError(f"{cr_id}: has no options")
-    cr["decision"] = {"date": now_utc(), "note": note, **({"option": option} if option else {})}
+    if not note.strip():
+        raise CRError(f"{cr_id}: a decision note is required")
+    cr["decision"] = {"date": now_utc(), "note": note, **({"option": option} if option else {}),
+                      **({"decided_by": decided_by} if decided_by else {})}
     _set_status(cr, "approved" if approve else "rejected")
     _save(cr, root)
 
