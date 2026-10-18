@@ -1,0 +1,9 @@
+revision: rev006
+parent_revision: rev005
+date: '2026-10-18T15:39:12Z'
+summary: rev005 numbers with assumptions list and check reference tags
+reason: 'UI phase 3: results carry [T] assumptions and ref_tag per check; no numeric
+  change'
+change_request: null
+code_commit: 9bbce328022cf22d3cea41609a25d80c444ae5d4
+outputs: []

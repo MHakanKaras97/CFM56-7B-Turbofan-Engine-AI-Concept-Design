@@ -1,8 +1,8 @@
 description: M0 interface control document and module budgets; generated, do not edit
   by hand
 source:
-  revision: rev005
-  params: engine/M0_engine/records/rev005/params.yaml
+  revision: rev006
+  params: engine/M0_engine/records/rev006/params.yaml
   generated_by: engine/M0_engine/analysis/icd.py
   tag: H
 ownership_rule: upstream module owns its exit station (rules/station_ownership.md)

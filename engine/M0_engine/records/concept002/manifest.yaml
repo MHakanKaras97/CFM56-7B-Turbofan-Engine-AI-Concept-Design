@@ -1,0 +1,15 @@
+concept: concept002
+parent_concept: concept001
+date: '2026-10-18T15:39:13Z'
+summary: M0 rev006 (rev005 numbers, assumptions and ref_tag); M1-M9 not started
+modules:
+  M0: rev006
+  M1: null
+  M2: null
+  M3: null
+  M4: null
+  M5: null
+  M6: null
+  M7: null
+  M8: null
+  M9: null

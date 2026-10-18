@@ -31,3 +31,8 @@ rev004 superseded by rev005 (ADR-009). Reason: two-target solution on the low-V1
 
 ## 2026-10-18 rev004 (correction)
 Wording correction to the previous entry: rev004 was on the HIGH ideal-V18/V8 side (0.849 vs the family take-off value of about 0.60-0.63), near the thrust ceiling. The supersede decision stands.
+
+## 2026-10-18 rev006
+rev005 superseded by rev006 (same numbers). Reason: results now carry `assumptions` ([T] inputs from params) and `ref_tag` per check.
+- params identical; core/diff.py rev005 -> rev006: no params change, no numeric result change, only added keys.
+- icd.yaml regenerated from rev006; concept002 pins M0 rev006, M1-M9 null.
