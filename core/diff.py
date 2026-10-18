@@ -1,7 +1,7 @@
 """Read-only differences between records (revisions of one module, or two concepts).
 
 Pure data, no formatting. Nested params/results are flattened to dotted paths; a list of
-mappings that share a unique identity key (id, station, name) is keyed by it, e.g.
+mappings that share a unique identity key (id, station, name, path) is keyed by it, e.g.
 stations[3].Tt_K, other lists are compared as one value.
 """
 
@@ -10,7 +10,7 @@ from pathlib import Path
 from core.records import REV_RE, ROOT, RecordError, module_dir, read_concept
 from core.util import read_yaml
 
-ID_KEYS = ("id", "station", "name")
+ID_KEYS = ("id", "station", "name", "path")
 BOM_IGNORED = ("revision",)  # differs between any two snapshots by construction
 
 

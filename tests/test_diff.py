@@ -118,3 +118,12 @@ def test_rev006_is_a_maintenance_revision():
     from core.diff import numeric_changes
     assert numeric_changes(diff_revisions("M0", "rev005", "rev006")) == []
     assert numeric_changes(diff_revisions("M0", "rev004", "rev005"))  # design
+
+
+def test_text_change_inside_keyed_list_is_not_numeric():
+    from core.diff import diff_data, numeric_changes
+    a = {"results": {"assumptions": [{"path": "x", "value": 1.0, "note": "a"}]}}
+    b = {"results": {"assumptions": [{"path": "x", "value": 1.0, "note": "a, b"}]}}
+    d = diff_data(a, b)
+    assert [c["key"] for c in d["results"]] == ["assumptions[x].note"]
+    assert numeric_changes(d) == []
