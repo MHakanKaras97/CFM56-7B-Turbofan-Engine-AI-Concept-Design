@@ -1,0 +1,8 @@
+revision: rev004
+parent_revision: rev003
+date: '2026-10-18T09:14:51Z'
+summary: 'Cycle v4.1 rated: ICAO -7B27, Girão 2023 inputs, delta_eta = 0'
+reason: ADR-008; Girão validation accepted (18/19); rev003 superseded
+change_request: null
+code_commit: 16e636bcc4f8b4b75be249f1cb598dd4f3f73e9c
+outputs: []
