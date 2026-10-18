@@ -606,7 +606,8 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
     def verdict(ok: bool) -> str:
         return "pass" if ok else "fail"
 
-    return [
+    rd = raw["reference_data"]
+    checks = [
         {"name": "Fan choke (HARD)", "hard": True, "value": _r(w2a, 4), "reference": _r(choke, 4),
          "unit": "kg/(s m2)", "criterion": "W2/A < choke mass flux at SLS ISA", "result": verdict(w2a < choke)},
         {"name": "Fan specific flow W2/A", "value": _r(w2a, 4), "reference": [lo, hi], "unit": "kg/(s m2)",
@@ -641,6 +642,51 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
          "deviation": _r(T3 / T3_ref - 1.0, 3), "criterion": "info only (test cell T0 298 K, not ISA)",
          "result": "info"},
     ]
+    # tag of each reference, from the params entry it comes from (same order as the checks)
+    ref_tags = [
+        cfg["fan_choke"]["tag"],
+        cfg["w2a_range"]["tag"],
+        cfg["w2_ref"]["tag"],
+        cfg["cooling_range"]["tag"],
+        rd["sfc_ref"]["tag"],
+        cfg["egt_limit"]["tag"],
+        rd["girao"]["tag"],
+        {k: v["tag"] for k, v in cfg["combustor_air_refs"].items()},
+        {"girao_ideal_takeoff": rd["girao"]["tag"],
+         **({"model_at_girao_point": "H"} if "validation_velocity_ratio" in refs else {})},
+        {k: v["tag"] for k, v in cfg["T4_refs"].items()},
+        cfg["T3_ref"]["tag"],
+    ]
+    for c, tag in zip(checks, ref_tags, strict=True):
+        c["ref_tag"] = tag
+    return checks
+
+
+ASSUMPTION_SKIP = ("checks", "calibration", "sensitivity")  # check references, solver guesses, step sizes
+
+
+def assumptions(raw: dict) -> list[dict]:
+    """[T]-tagged params entries the result depends on (check references and solver guesses excluded)."""
+    out = []
+
+    def walk(node, path):
+        if isinstance(node, dict):
+            if node.get("tag") == "T":
+                value = node.get("value")
+                entry = {"path": path, "value": _value(node) if isinstance(value, str) else value,
+                         "unit": node.get("unit")}
+                if "value" not in node:
+                    entry.update({k: node[k] for k in ("target", "source") if k in node})
+                if "note" in node:
+                    entry["note"] = node["note"]
+                out.append(entry)
+                return
+            for k, v in node.items():
+                if not (path == "" and k in ASSUMPTION_SKIP):
+                    walk(v, f"{path}.{k}" if path else k)
+
+    walk(raw, "")
+    return out
 
 
 MODEL = ("M0 cycle v4.2, two-spool separate-flow, CFM56-7B inputs (Girão 2023), secondary air from HPC exit, "
@@ -716,6 +762,7 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
                 "note": "a = 0.976 (Girão Fig. 4.10; text gives 0.9664); displayed = model + SAC shunt"},
         "checks": checks,
         "hard_checks_passed": all(c["result"] == "pass" for c in checks if c.get("hard")),
+        "assumptions": assumptions(raw),
     }
     if rated is not None:
         results["rated_case"] = rated

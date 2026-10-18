@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from core.records import active_revision, revert, verify
+from core.records import active_revision, revert, revision_ids, verify
 from core.requests import CRError, apply, decide, load_cr, set_impact
 from core.util import dump_yaml, read_yaml
 from engine.M0_engine.analysis import calc
@@ -78,9 +78,10 @@ def test_revert_and_rerun_reproduces_record(repo):
     m0 = repo / "engine" / "M0_engine"
     revert("M0", "rev004", root=repo)
     assert active_revision("M0", root=repo) == "rev004"
-    revert("M0", "rev005", root=repo)
+    latest = revision_ids("M0", repo)[-1]  # the current code reproduces the latest record
+    revert("M0", latest, root=repo)
     rev = active_revision("M0", root=repo)
-    assert rev == "rev005" and verify("M0", rev, root=repo) == []
+    assert rev == latest and verify("M0", rev, root=repo) == []
     p, t, initial, raw, refs = load_inputs(m0 / "records" / rev / "params.yaml", repo)
     results, *_ = solve_rated(p, t, initial, raw, refs, TOL)
     rerun = hashlib.sha256(dump_yaml(results).encode("utf-8")).hexdigest()
@@ -110,14 +111,32 @@ def test_conflict_reject_then_approve(repo):
     set_impact(cr2, ["M0", "M3"], "HPC efficiency fixed at the achieved value; other efficiencies re-balance.",
                root=repo)
     decide(cr2, approve=True, note="accept achieved HPC efficiency", option="a", root=repo)
+    new = f"rev{int(revision_ids('M0', repo)[-1][3:]) + 1:03d}"
     revisions = apply(cr2, root=repo)
-    assert revisions == {"M0": "rev006"} and active_revision("M0", root=repo) == "rev006"
+    assert revisions == {"M0": new} and active_revision("M0", root=repo) == new
     params = read_yaml(m0 / "analysis" / "cycle_params.yaml")
     assert params["components"]["eta_hpc"]["value"] == pytest.approx(eta - 0.03)
     assert params["rated_case"]["delta_eta_exclude"] == ["eta_hpc"]
     icd = read_yaml(m0 / "rules" / "icd.yaml")
-    assert icd["source"]["revision"] == "rev006"
+    assert icd["source"]["revision"] == new
     assert icd["modules"]["M3"]["budget"]["eta_hpc"]["value"] == pytest.approx(eta - 0.03, abs=1e-6)
     assert "eta_hpc" not in icd["integration"]["operating_point"]["delta_eta_group"]
-    assert read_yaml(m0 / "analysis" / "results.yaml") == read_yaml(m0 / "records" / "rev006" / "results.yaml")
-    assert read_yaml(m0 / "records" / "rev006" / "manifest.yaml")["change_request"] == cr2
+    assert read_yaml(m0 / "analysis" / "results.yaml") == read_yaml(m0 / "records" / new / "results.yaml")
+    assert read_yaml(m0 / "records" / new / "manifest.yaml")["change_request"] == cr2
+
+
+def test_results_carry_assumptions_and_reference_tags(rated):
+    results = rated[0]
+    tags = {"K", "KS", "H", "G", "T"}
+    for c in results["checks"]:
+        ref_tags = c["ref_tag"].values() if isinstance(c["ref_tag"], dict) else [c["ref_tag"]]
+        assert set(ref_tags) <= tags
+        if isinstance(c["reference"], dict):
+            assert set(c["ref_tag"]) == set(c["reference"])
+    by_name = {c["name"]: c["ref_tag"] for c in results["checks"]}
+    assert by_name["EGT displayed vs TCDS limit"] == "K"
+    assert by_name["Fan specific flow W2/A"] == "G"
+    assert by_name["Fan choke (HARD)"] == "H"
+    paths = {a["path"] for a in results["assumptions"]}
+    assert {"components.LHV", "rated_case.similarity", "geometry.fan_diameter"} <= paths
+    assert not any(p.startswith(("checks.", "calibration.")) for p in paths)
