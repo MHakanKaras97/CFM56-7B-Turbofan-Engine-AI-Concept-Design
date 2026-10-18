@@ -42,3 +42,20 @@ def test_check_layout_flags_order_and_stage_counts(ref):
     assert len(problems) == 3
     assert any("order" in p for p in problems)
     assert any("M2: 4 stages, reference 3" in p for p in problems)
+
+
+def test_svg_is_theme_neutral_and_turkish(ref):
+    svg = build_svg(ref)
+    assert 'fill="#ffffff"' not in svg and "<rect x=\"0\" y=\"0\"" not in svg  # transparent background
+    assert "#0f172a" not in svg and "currentColor" in svg  # neutral ink follows the theme text colour
+    assert "kavramsal düzen referansı" in svg and "HP mili" in svg and "motor ekseni" in svg
+
+
+def test_hp_shaft_label_clear_of_hpc_and_station_labels_apart(ref):
+    doc = xml.dom.minidom.parseString(build_svg(ref))
+    texts = {t.firstChild.data: t for t in doc.getElementsByTagName("text") if t.firstChild}
+    hp = texts[next(k for k in texts if k.startswith("HP mili"))]
+    assert float(hp.getAttribute("y")) > 330 + 40  # legend below the axis, away from the HPC annulus
+    s3, s31 = texts["3"], texts["31"]
+    assert abs(float(s3.getAttribute("x")) - float(s31.getAttribute("x"))) >= 20
+    assert s3.getAttribute("text-anchor") == "end" and s31.getAttribute("text-anchor") == "start"

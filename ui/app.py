@@ -24,5 +24,5 @@ nav = st.navigation([
     st.Page(widgets.PAGES["revizyonlar"], title="Revizyonlar", icon=":material/history:"),
     st.Page(widgets.PAGES["ogrenme"], title="Öğrenme", icon=":material/menu_book:"),
 ])
-widgets.top_bar(data.snapshot())
+widgets.top_bar(data.snapshot(), nav.title)
 nav.run()

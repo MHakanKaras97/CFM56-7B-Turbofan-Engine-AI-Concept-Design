@@ -12,7 +12,7 @@ icd = snap["m0"]["icd"]
 selected = st.query_params.get("m")
 
 if selected not in rows or selected == "M0":
-    st.title("Modüller")
+    widgets.page_title("Modüller")
     for row in (r for r in snap["modules"] if r["id"] != "M0"):
         with st.container(border=True):
             a, b = st.columns([5, 1], vertical_alignment="center")
@@ -27,7 +27,7 @@ if st.button("Modüller", icon=":material/arrow_back:", key="back"):
     st.query_params.clear()
     st.rerun()
 
-st.title(f"{selected} {row['name_tr']}")
+widgets.page_title(f"{selected} {row['name_tr']}")
 st.markdown(f"{row['name']} · {badge(row['status'], row['color'])}")
 
 a, b, c = st.columns([2, 2, 3], vertical_alignment="bottom")
@@ -45,7 +45,7 @@ with c:
 
 tree, section = st.columns([1, 2], gap="large")
 with tree:
-    st.subheader("BOM ağacı")
+    widgets.section("BOM ağacı")
     parts = data.read_bom(selected)["parts"]
     if parts:
         for p in sorted(parts, key=lambda p: [int(x) for x in p["id"].split(".")[1:]]):
@@ -55,10 +55,10 @@ with tree:
     else:
         st.caption("BOM boş (parça yok).")
 with section:
-    st.subheader("Kesit görünümü")
+    widgets.section("Kesit görünümü")
     st.info("Kesit görünümü sonraki aşamada (records/revNNN/section.svg, ADR-011).")
 
-st.subheader("ICD bütçesi")
+widgets.section("ICD bütçesi")
 budget = icd["modules"].get(selected, {}).get("budget", {})
 tols = icd["tolerances"]
 if budget:

@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 from core.requests import CRError, decide
-from ui import data
+from ui import data, widgets
 from ui.widgets import badge
 
 DECIDED_BY = "user (UI)"
@@ -55,8 +55,8 @@ def impact_block(cr: dict) -> bool:
     metrics = impact.get("metrics") or {}
     if metrics:
         for col, (name, q) in zip(st.columns(len(metrics)), metrics.items()):
-            col.metric(name.replace("d", "Δ", 1) if name.startswith("d") else name,
-                       data.quantity(q, 2), help=f"impact.metrics.{name} · {impact.get('by', '')}", border=True)
+            widgets.metric(col, name.replace("d", "Δ", 1) if name.startswith("d") else name, q, 2,
+                           help=f"impact.metrics.{name} · {impact.get('by', '')}")
     return ready
 
 
@@ -95,7 +95,7 @@ def decision_form(cr: dict, approvable: bool) -> None:
         st.session_state[PENDING] = {"cr": key, "approve": approve, "option": option, "note": note.strip()}
 
 
-st.title("Talepler")
+widgets.page_title("Talepler")
 n_open = sum(cr["status"] == "open" for cr in crs)
 st.markdown(f"{badge(f'{n_open} açık', 'orange' if n_open else 'gray')} {badge(f'{len(crs) - n_open} kapalı', 'gray')}")
 

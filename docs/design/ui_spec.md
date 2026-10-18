@@ -10,7 +10,9 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 - Dil: Türkçe arayüz metinleri; kimlikler (M1.1.1, CR-004, rev005) olduğu gibi kalır.
 
 ## 2. Görsel dil (maketlerden)
-- Koyu tema: koyu gri zemin, ince kenarlı yuvarlatılmış kartlar.
+- Açık ve koyu tema: yalnızca Streamlit bileşenleri ve tema uyumlu renkler; koyu gri zemin, ince kenarlı yuvarlatılmış kartlar.
+- Sayfa başlığı küçük (`st.subheader`); üst çubuk sayfa adını da gösterir. Bölüm başlıkları daha küçük (`#####`).
+- Metrik kartları: etiket küçük gri rozet olarak başlığın yanında ([T] turuncu); değer etiketsiz ve büyük. 5 karakterden uzun birim başlığa taşınır (ör. "SFC (g/(kN s))").
 - Durum renkleri: yeşil = geçti / tamam / aktif; turuncu = bekliyor / [T] / uyarı; kırmızı = kaldı; mavi = bilgi / seçili revizyon; gri = başlamadı.
 - Metrik kartlarında küçük başlık ve büyük değer kullanılır (ör. "İtki / 121,4 kN"). Ondalık ayırıcı virgüldür.
 
@@ -21,11 +23,11 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 ## 4. Sayfalar
 
 ### 4.1 Genel bakış (`ui_genel_bakis.png`)
-- **Motor şeridi:** M0-M9 kutuları gaz yolu sırasıyla dizilir (`docs/design/concept_reference.yaml`). Renk modül durumunu gösterir: aktif revizyonu olan yeşil, başlamamış (konseptte null) gri, açık CR'si olan (veya aktif revizyonu konseptten farklı olan) turuncu. Kutu bir düğmedir: M0 → M0 motor sayfası, M1-M9 → modül sayfası (`pages/moduller.py?m=Mx`).
+- **Motor şeridi:** M0-M9 kutuları gaz yolu sırasıyla dizilir (`docs/design/concept_reference.yaml`). Renk modül durumunu gösterir: aktif revizyonu olan yeşil, başlamamış (konseptte null) gri, açık CR'si olan (veya aktif revizyonu konseptten farklı olan) turuncu. Kutu bir düğmedir: M0 → M0 motor sayfası, M1-M9 → modül sayfası (`pages/moduller.py?m=Mx`). Şerit tam genişlikte, eşit genişlikli renkli dilimlerden oluşur; etiketler (M0..M9) dilimin içindedir; altında renk açıklaması.
 - **Metrik kartları:** itki, SFC, EGT payı, W2. Kaynak: aktif M0 revizyonunun `results.yaml` dosyası (`performance.thrust`, `performance.sfc`, EGT sınır kontrolünün `margin` değeri, `calibration.W2`).
 - **Modül kartları:** her modül için ad ve durum ("Başlamadı · sıradaki", "revNNN aktif"); "Aç" düğmesi modül sayfasını açar.
 - **Son revizyonlar:** M0'ın revizyon zinciri (`parent_revision` ile), aktif olan mavi.
-- Ek (maketin dışında): kavramsal düzen referansı `engine_reference.svg` katlanabilir bir panelde gösterilir.
+- Ek (maketin dışında): kavramsal düzen referansı `engine_reference.svg` katlanabilir bir panelde satır içi SVG olarak gösterilir (şeffaf zemin, nötr çizgi ve yazılar `currentColor` ile temaya uyar, Türkçe etiketler; `tools/reference.py` ile `concept_reference.yaml`'dan üretilir).
 
 ### 4.2 M0 motor (`ui_m0.png`)
 - **Başlık:** aktif revizyon rozeti, doğrulama özeti ("Girão 18/19", kaynak `analysis/validation_girao.md`), "Revizyonları karşılaştır" düğmesi (Revizyonlar sayfasındaki fark görünümüne gider).

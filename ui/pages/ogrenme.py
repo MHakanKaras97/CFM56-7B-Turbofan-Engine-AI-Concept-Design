@@ -3,10 +3,10 @@
 import pandas as pd
 import streamlit as st
 
-from ui import data
+from ui import data, widgets
 from ui.widgets import tag_badge
 
-st.title("Öğrenme")
+widgets.page_title("Öğrenme")
 notes, sources, legend = st.tabs(["Notlar", "Kaynaklar", "Etiketler"])
 
 with notes:

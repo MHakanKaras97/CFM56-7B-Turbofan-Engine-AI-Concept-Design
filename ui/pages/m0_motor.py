@@ -10,7 +10,7 @@ results, icd = m0["results"], m0["icd"]
 val = m0["validation"]
 
 head, button = st.columns([4, 1], vertical_alignment="center")
-head.title("M0 motor")
+widgets.page_title("M0 motor", head)
 button.page_link(widgets.PAGES["revizyonlar"], label="Revizyonları karşılaştır", icon=":material/compare_arrows:")
 rev_badge = badge(f"{m0['rev']} aktif", "green") if m0["rev"] else badge("revizyon yok", "gray")
 st.markdown(f"{rev_badge} &nbsp; Doğrulama: Girão {val['passed']}/{val['total']}",
@@ -52,7 +52,7 @@ with main_tab:
     left, right = st.columns([3, 2], gap="large")
 
 with left:
-    st.subheader("İstasyon tablosu")
+    widgets.section("İstasyon tablosu")
     main = [s for s in m0["station_order"] if s in icd["stations"]]
     st.dataframe(station_rows(main), hide_index=True, width="stretch")
     with st.expander(f"Tüm istasyonlar ({len(icd['stations'])})"):
@@ -60,7 +60,7 @@ with left:
     st.caption(f"Her değerin etiketi tabloda · kaynak {src} (rules/icd.yaml)")
 
 with right:
-    st.subheader("Kontroller")
+    widgets.section("Kontroller")
     for c in results["checks"]:
         name = c["name"] + (" (sert)" if c.get("hard") else "")
         value = data.quantity({"value": c["value"], "unit": c.get("unit"), "tag": "H"})
@@ -71,7 +71,7 @@ with right:
         a.caption(reference_text(c))
     st.caption(f"Sert kontrollerin hepsi geçti: {'evet' if results.get('hard_checks_passed') else 'hayır'}"
                f" · kaynak {m0['rev']}/results.yaml")
-    st.subheader("Varsayımlar [T]")
+    widgets.section("Varsayımlar [T]")
     assumptions = results.get("assumptions")
     if assumptions is None:
         st.caption(f"{m0['rev']} sonuçlarında varsayım listesi yok.")
@@ -80,7 +80,7 @@ with right:
         st.markdown(f"{tag_badge('T')} `{e['path']}` · {value}", help=e.get("note"))
     st.caption(f"Sonucun dayandığı [T] girdiler · kaynak {m0['rev']}/results.yaml (assumptions)")
 
-main_tab.subheader("Modül bütçeleri (ICD)")
+widgets.section("Modül bütçeleri (ICD)", main_tab)
 tols = icd["tolerances"]
 cols = main_tab.columns(3)
 for i, (mid, mod) in enumerate(icd["modules"].items()):

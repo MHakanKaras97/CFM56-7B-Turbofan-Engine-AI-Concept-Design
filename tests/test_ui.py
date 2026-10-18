@@ -35,7 +35,7 @@ def text(at: AppTest) -> str:
 @pytest.mark.parametrize("page", list(widgets.PAGES.values()))
 def test_every_page_loads(page):
     # AppTest.switch_page runs the page script alone; the entry script (top bar, nav) is tested below
-    assert len(run(page).title) == 1
+    assert len(run(page).subheader) == 1
 
 
 def test_entry_renders_top_bar_and_overview():
@@ -44,35 +44,41 @@ def test_entry_renders_top_bar_and_overview():
     snap = data.load()
     assert "CFM56-7B27 konsept" in md and snap["concept"] in md
     assert snap["active_module"]["label"] in md
-    assert [t.value for t in at.title] == ["Genel bakış"]
+    assert [t.value for t in at.subheader] == ["Genel bakış"] and not at.title
+    assert "&nbsp;·&nbsp; Genel bakış" in md  # top bar names the page
 
 
 def test_overview_metrics_match_results():
     rev = active_revision("M0")
     results = read_revision("M0", rev, "results.yaml")
     egt = next(c for c in results["checks"] if c["name"] == data.EGT_CHECK)
-    expected = {
-        "İtki": data.quantity(results["performance"]["thrust"], 1),
-        "SFC": data.quantity(results["performance"]["sfc"], 2),
-        "EGT payı": data.quantity({"value": egt["margin"], "unit": "K", "tag": results["egt"]["displayed_C"]["tag"]}, 0),
-        "W2": data.quantity(results["calibration"]["W2"], 0),
-    }
+    margin = {"value": egt["margin"], "unit": "K", "tag": results["egt"]["displayed_C"]["tag"]}
+    cards = {"İtki": (results["performance"]["thrust"], 1), "SFC": (results["performance"]["sfc"], 2),
+             "EGT payı": (margin, 0), "W2": (results["calibration"]["W2"], 0)}
+    expected = {}
+    for k, (q, d) in cards.items():
+        if len(q["unit"]) > widgets.LONG_UNIT:  # long unit moves to the label
+            k, q = f"{k} ({q['unit']})", {**q, "unit": None}
+        expected[f"{k} {widgets.tag_badge(q['tag'])}"] = data.quantity(q, d, tag=False)
     shown = {m.label: m.value for m in run().metric}
     assert shown == expected
-    assert shown["İtki"] == f"{results['performance']['thrust']['value']:.1f}".replace(".", ",") + " kN [H]"
+    assert shown["SFC (g/(kN s)) :gray-badge[H]"] == data.num(results["performance"]["sfc"]["value"], 2)
+    thrust = results["performance"]["thrust"]
+    assert shown["İtki :gray-badge[H]"] == f"{thrust['value']:.1f}".replace(".", ",") + " kN"  # tag not in value
+    assert shown["EGT payı :orange-badge[T]"].endswith(" K")
 
 
 @pytest.mark.parametrize("module, title", [("M1", "M1 Giriş ve fan"), ("M0", "M0 motor")])
 def test_strip_opens_module_page(module, title):
     at = run()
     at.button(key=f"strip_{module}").click().run()
-    assert not at.exception and [t.value for t in at.title] == [title]
+    assert not at.exception and [t.value for t in at.subheader] == [title]
 
 
 def test_module_card_and_template():
     at = run()
     at.button(key="card_M3").click().run()
-    assert [t.value for t in at.title] == ["M3 HP kompresör"]
+    assert [t.value for t in at.subheader] == ["M3 HP kompresör"]
     assert "BOM boş" in " ".join(c.value for c in at.caption)
     assert {"btn_section", "btn_3d", "btn_fusion"} <= {b.key for b in at.button}
     assert {"mod_rev_a", "mod_rev_b"} <= {s.key for s in at.selectbox}
@@ -138,7 +144,7 @@ def ui_repo(tmp_path, monkeypatch) -> Path:
 def open_dialog(root: Path, option: str, note: str) -> AppTest:
     at = run(widgets.PAGES["talepler"])
     assert "CR-001" in text(at) and data.root() == root
-    assert {m.label for m in at.metric} >= {"ΔSFC", "ΔEGT", "ΔT41"}
+    assert {m.label.split()[0] for m in at.metric} >= {"ΔSFC", "ΔEGT", "ΔT41"}
     assert "M0 integration_check" in text(at)
     at.radio(key="opt_CR-001").set_value(option).run()
     at.text_area(key="note_CR-001").input(note).run()

@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- UI görsel düzeltmeler: tam genişlik renkli motor şeridi, metrik etiketleri rozet (değer temiz), küçük sayfa başlıkları, Bilgi sekmesinde küçük başlıklar. engine_reference.svg: şeffaf zemin, currentColor, Türkçe etiketler (label_tr, rules_tr), mil açıklamaları eksen altında, 3/31/44 etiketleri ayrık. Ekran görüntüleri localhost:8501'de açık ve koyu temada alındı (başsız Chrome, DevTools).
 - UI faz 3: Talepler (etki kartları, seçenekler, zorunlu not, onay penceresi -> yalnızca decide, decided_by "user (UI)", geçmiş), Revizyonlar (modül/konsept zaman çizelgesi, A->B farkı), Öğrenme (notlar, kaynaklar, etiket açıklaması), Modüller (liste + modül şablonu), şerit/kart tıklama ile gezinme, M0 Bilgi sekmesi. Uygula, geri dönüş ve doğrulama düğmeleri henüz yok.
 - M0 rev006 + concept002: results.yaml'a `assumptions` ([T] girdiler) ve kontrollerde `ref_tag`; sayılar rev005 ile aynı (core/diff ile doğrulandı). icd.yaml rev006'dan yeniden üretildi.
 - UI faz 2 (salt okunur): ui/app.py (st.navigation), ui/pages/ (6 sayfa), ui/data.py (core üzerinden okuma, mtime anahtarlı önbellek), ui/widgets.py (üst çubuk). Genel bakış ve M0 motor dolu; diğerleri "3. aşamada". core: revision_ids, read_revision, read_concept, list_crs. Çalıştırma: depo kökünden `streamlit run ui/app.py`. Tarayıcıda görsel kontrol yapılmadı (yalnızca AppTest + headless sağlık kontrolü).
@@ -50,7 +51,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - .step ilişkilendirmesi kullanıcıda bekliyor. Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
-1. UI kalanlar: CR Uygula düğmesi, revizyon geri dönüş + verify, konsept farkından modül farkına geçiş, tarayıcıda açık/koyu tema kontrolü.
+1. UI kalanlar: CR Uygula düğmesi, revizyon geri dönüş + verify, konsept farkından modül farkına geçiş.
 2. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.

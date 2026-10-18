@@ -8,13 +8,13 @@ modules:
   description: gas-path order; stage counts from EASA TCDS E.004 (turbomachinery)
   order: [M1, M2, M3, M4, M5, M6, M7]
   items:
-    M1: {name: Inlet and Fan, component: fan, stages: {value: 1, unit: '-', tag: K}}
-    M2: {name: Booster, component: LPC, stages: {value: 3, unit: '-', tag: K}}
-    M3: {name: HP Compressor, component: HPC, stages: {value: 9, unit: '-', tag: K}}
-    M4: {name: Combustor, component: annular combustor, stages: null}
-    M5: {name: HP Turbine, component: HPT, stages: {value: 1, unit: '-', tag: K}}
-    M6: {name: LP Turbine, component: LPT, stages: {value: 4, unit: '-', tag: K}}
-    M7: {name: Nozzle, component: core nozzle and bypass duct, stages: null}
+    M1: {name: Inlet and Fan, component: fan, label_tr: fan, stages: {value: 1, unit: '-', tag: K}}
+    M2: {name: Booster, component: LPC, label_tr: booster (LPC), stages: {value: 3, unit: '-', tag: K}}
+    M3: {name: HP Compressor, component: HPC, label_tr: HP kompresör, stages: {value: 9, unit: '-', tag: K}}
+    M4: {name: Combustor, component: annular combustor, label_tr: yanma odası, stages: null}
+    M5: {name: HP Turbine, component: HPT, label_tr: HP türbin, stages: {value: 1, unit: '-', tag: K}}
+    M6: {name: LP Turbine, component: LPT, label_tr: LP türbin, stages: {value: 4, unit: '-', tag: K}}
+    M7: {name: Nozzle, component: core nozzle and bypass duct, label_tr: çekirdek lülesi, stages: null}
 stations:
   description: order along the gas path, bypass exit last (engine/M0_engine/rules/station_ownership.md)
   order: ['2', '13', '21', '25', '3', '31', '4', '41', '44', '45', '5', '8', '18']
@@ -28,3 +28,7 @@ radius_rules:
     - fan has the largest radius of all modules
     - HPC annulus radius decreases along the flow
     - LPT annulus radius increases along the flow
+  rules_tr:
+    - fan tüm modüller içinde en büyük yarıçapa sahiptir
+    - HPC kanal yarıçapı akış boyunca azalır
+    - LPT kanal yarıçapı akış boyunca artar

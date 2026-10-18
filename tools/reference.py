@@ -1,7 +1,7 @@
 """Concept layout reference: schematic engine SVG and layout check.
 
 Reads docs/design/concept_reference.yaml and writes docs/design/engine_reference.svg, an upper
-half-section along the engine axis (schematic, not to scale). The SVG depends only on the YAML,
+half-section along the engine axis (schematic, not to scale), with Turkish labels (label_tr, rules_tr). The SVG depends only on the YAML,
 so regenerating it gives identical bytes.
 
 check_layout() compares a module layout (order, stage counts) with the reference; module agents
@@ -37,6 +37,9 @@ HUB = {"M1": 70, "M2": 72, "M3": 44, "M4": 40, "M5": 46, "M6": 52, "M7": 26}
 COLORS = {"M1": "#3b82f6", "M2": "#06b6d4", "M3": "#10b981", "M4": "#f59e0b",
           "M5": "#ef4444", "M6": "#a855f7", "M7": "#64748b"}
 BYPASS_IN, BYPASS_OUT = 196, 250  # bypass duct radii: inner (core cowl) and outer (fan case)
+LEGEND_Y = 62  # first legend row below the axis (px)
+# station label (dx, dy, anchor) where the alternating default would crowd a neighbour
+STATION_LABEL = {"3": (-5, -6, "end"), "31": (5, -10, "start"), "44": (-4, -8, "end")}
 
 
 def load_reference(path: Path = REFERENCE_FILE) -> dict:
@@ -73,25 +76,31 @@ def station_x(ref: dict) -> dict[str, tuple[int, int]]:
 
 
 def build_svg(ref: dict) -> str:
+    """Transparent background; neutral strokes and text use currentColor, so the drawing follows the
+    surrounding text colour (light or dark theme) when inlined. Module colours are mid-tone."""
     mx = module_x(ref)
     end = mx[ref["modules"]["order"][-1]][1]
-    width, height = end + 60, AXIS_Y + 150
+    rules = ref["radius_rules"]["rules_tr"]
+    height = AXIS_Y + LEGEND_Y + 16 * (2 + len(rules)) + 10
+    width = end + 60
     y = lambda r: AXIS_Y - r  # noqa: E731  radius (px) to SVG y
+    muted = 'fill="currentColor" fill-opacity="0.7"'
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'width="{width}" height="{height}" font-family="sans-serif" font-size="12">',
-        f'<rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff"/>',
-        f'<text x="{X0}" y="28" font-size="16" font-weight="bold">CFM56-7B27 class: concept layout reference</text>',
-        f'<text x="{X0}" y="46" fill="#475569">Schematic, not to scale. Upper half-section; flow left to right. '
-        f'Envelope length {ref["envelope"]["length"]["value"]:g} mm [K], fan diameter about '
+        f'<text x="{X0}" y="28" font-size="16" font-weight="bold" fill="currentColor">'
+        f'CFM56-7B27 sınıfı: kavramsal düzen referansı</text>',
+        f'<text x="{X0}" y="46" {muted}>Şematik, ölçeksiz. Üst yarı kesit; akış soldan sağa. '
+        f'Motor boyu {ref["envelope"]["length"]["value"]:g} mm [K], fan çapı yaklaşık '
         f'{ref["envelope"]["fan_diameter"]["value"]:g} in [KS].</text>',
     ]
     # bypass duct from fan exit to the bypass nozzle (end of M4 region)
     x13, x18 = mx["M1"][1], station_x(ref)["18"][0]
     out.append(f'<path d="M{x13} {y(BYPASS_OUT)} L{x18} {y(BYPASS_OUT - 14)} L{x18} {y(BYPASS_IN + 6)} '
-               f'L{x13} {y(BYPASS_IN)} Z" fill="#e2e8f0" stroke="#64748b"/>')
-    out.append(f'<text x="{(x13 + x18) // 2}" y="{y(BYPASS_IN) - 14}" text-anchor="middle" fill="#334155">'
-               f'bypass duct + fan nozzle (M7)</text>')
+               f'L{x13} {y(BYPASS_IN)} Z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" '
+               f'stroke-opacity="0.5"/>')
+    out.append(f'<text x="{(x13 + x18) // 2}" y="{y(BYPASS_IN) - 14}" text-anchor="middle" {muted}>'
+               f'bypass kanalı + fan lülesi (M7)</text>')
     # modules: annulus between hub and outer radius
     for m in ref["modules"]["order"]:
         x1, x2 = mx[m]
@@ -111,32 +120,35 @@ def build_svg(ref: dict) -> str:
                 rs = r1 + (r2 - r1) * (xs - x1) / (x2 - x1)
                 out.append(f'<line x1="{xs}" y1="{y(round(rs) - 4)}" x2="{xs}" y2="{y(h + 4)}" '
                            f'stroke="{COLORS[m]}" stroke-width="3"/>')
-        label = f'{m} {item["component"]}' + (f' ({n})' if n else "")
+        label = item["label_tr"] + (f' ({n})' if n else "")
         out.append(f'<text x="{(x1 + x2) // 2}" y="{AXIS_Y + 22}" text-anchor="middle" '
                    f'fill="{COLORS[m]}" font-weight="bold">{escape(m)}</text>')
-        out.append(f'<text x="{(x1 + x2) // 2}" y="{AXIS_Y + 38}" text-anchor="middle" fill="#334155" '
-                   f'font-size="10">{escape(label[len(m) + 1:])}</text>')
-    # engine axis and shafts (LP inside HP)
+        out.append(f'<text x="{(x1 + x2) // 2}" y="{AXIS_Y + 38}" text-anchor="middle" {muted} '
+                   f'font-size="10">{escape(label)}</text>')
+    # engine axis and shafts (LP inside HP); shaft names in a legend below the axis, clear of the modules
     out.append(f'<line x1="{X0 - 20}" y1="{AXIS_Y}" x2="{end + 30}" y2="{AXIS_Y}" '
-               f'stroke="#0f172a" stroke-dasharray="10 4 2 4"/>')
-    out.append(f'<text x="{end + 30}" y="{AXIS_Y - 6}" text-anchor="end" fill="#0f172a" font-size="10">'
-               f'engine axis</text>')
+               f'stroke="currentColor" stroke-dasharray="10 4 2 4"/>')
+    out.append(f'<text x="{end + 30}" y="{AXIS_Y - 6}" text-anchor="end" {muted} font-size="10">'
+               f'motor ekseni</text>')
     shafts = ref["shafts"]
-    for name, r, color in (("LP", 14, "#2563eb"), ("HP", 30, "#dc2626")):
+    for k, (name, r, color) in enumerate((("LP", 14, "#3b82f6"), ("HP", 30, "#ef4444"))):
         s = shafts[name]
         xa = mx[s["drives"][0]][0] + (30 if name == "LP" else 10)
         xb = mx[s["driven_by"]][1] - 10
         out.append(f'<rect x="{xa}" y="{y(r + 4)}" width="{xb - xa}" height="8" fill="{color}" fill-opacity="0.8"/>')
-        out.append(f'<text x="{xa + 4}" y="{y(r + 4) - 3}" fill="{color}" font-size="10">'
-                   f'{name} shaft: {", ".join(s["drives"])} &lt;- {s["driven_by"]}</text>')
-    # stations in reference order
+        ly = AXIS_Y + LEGEND_Y + 16 * k
+        out.append(f'<rect x="{X0}" y="{ly - 8}" width="24" height="8" fill="{color}" fill-opacity="0.8"/>')
+        out.append(f'<text x="{X0 + 32}" y="{ly}" fill="currentColor" font-size="11">'
+                   f'{name} mili: {", ".join(s["drives"])} ← {s["driven_by"]}</text>')
+    # stations in reference order; label offsets alternate unless set in STATION_LABEL
     for k, (s, (xs, rs)) in enumerate((s, station_x(ref)[s]) for s in ref["stations"]["order"]):
-        out.append(f'<circle cx="{xs}" cy="{y(rs)}" r="3" fill="#0f172a"/>')
-        dy = -8 if k % 2 == 0 else 14
-        out.append(f'<text x="{xs + 3}" y="{y(rs) + dy}" fill="#0f172a" font-size="10">{escape(s)}</text>')
+        out.append(f'<circle cx="{xs}" cy="{y(rs)}" r="3" fill="currentColor"/>')
+        dx, dy, anchor = STATION_LABEL.get(s, (3, -8 if k % 2 == 0 else 14, "start"))
+        out.append(f'<text x="{xs + dx}" y="{y(rs) + dy}" text-anchor="{anchor}" fill="currentColor" '
+                   f'font-size="10">{escape(s)}</text>')
     # radius rules
-    for k, rule in enumerate(ref["radius_rules"]["rules"]):
-        out.append(f'<text x="{X0}" y="{AXIS_Y + 66 + 16 * k}" fill="#475569" font-size="11">'
+    for k, rule in enumerate(rules):
+        out.append(f'<text x="{X0}" y="{AXIS_Y + LEGEND_Y + 16 * (2 + k)}" {muted} font-size="11">'
                    f'[{ref["radius_rules"]["tag"]}] {escape(rule)}</text>')
     out.append("</svg>")
     return "\n".join(out) + "\n"

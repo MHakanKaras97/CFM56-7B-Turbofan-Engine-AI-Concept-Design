@@ -261,10 +261,15 @@ def sources() -> list[dict]:
     return markdown_table(read_text(SOURCES))
 
 
+def demote(text: str) -> str:
+    """Show document headings as small section headings inside a page."""
+    return re.sub(r"^#{1,5} ", "##### ", text, flags=re.M)
+
+
 def info_sections() -> dict[str, str]:
     m0 = module_dir("M0", ROOT)
     return {
-        "band": md_section(m0 / "rules" / "cycle_inputs.md", "## Belirsizlik bandı"),
-        "sensitivity": md_section(m0 / "analysis" / "acceptance_M0.md", "## Makullük"),
-        "adr010": read_text(ROOT / "docs" / "decisions" / "ADR-010-integration-limitation.md"),
+        "band": demote(md_section(m0 / "rules" / "cycle_inputs.md", "## Belirsizlik bandı")),
+        "sensitivity": demote(md_section(m0 / "analysis" / "acceptance_M0.md", "## Makullük")),
+        "adr010": demote(read_text(ROOT / "docs" / "decisions" / "ADR-010-integration-limitation.md")),
     }

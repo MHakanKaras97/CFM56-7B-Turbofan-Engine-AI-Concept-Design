@@ -4,12 +4,19 @@ import pandas as pd
 import streamlit as st
 
 from core.diff import is_empty
-from ui import data
+from ui import data, widgets
 from ui.widgets import badge
 
 snap = data.snapshot()
 active = {r["id"]: r["active"] for r in snap["modules"]}
 started = [m for m in data.MODULES if snap["revisions"][m]]
+
+
+def table(rows: list[dict]) -> None:
+    if rows:
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+    else:
+        st.caption("Bu bölümde fark yok.")
 
 
 def value(x) -> str:
@@ -18,7 +25,7 @@ def value(x) -> str:
     return data.num(x)
 
 
-st.title("Revizyonlar")
+widgets.page_title("Revizyonlar")
 if not started:
     st.info("Henüz kayıtlı revizyon yok.")
     st.stop()
@@ -27,7 +34,7 @@ module = st.selectbox("Modül", started, format_func=lambda m: f"{m} {data.NAMES
 manifests = snap["revisions"][module]
 revs = [m["revision"] for m in manifests]
 
-st.subheader("Modül zaman çizelgesi")
+widgets.section("Modül zaman çizelgesi")
 st.markdown(" → ".join(badge(f"{r} aktif", "blue") if r == active[module] else badge(r, "gray") for r in revs))
 st.dataframe(pd.DataFrame([
     {"Revizyon": m["revision"] + (" (aktif)" if m["revision"] == active[module] else ""), "Tarih": m["date"],
@@ -36,7 +43,7 @@ st.dataframe(pd.DataFrame([
     for m in reversed(manifests)
 ]), hide_index=True, width="stretch")
 
-st.subheader("Fark görünümü")
+widgets.section("Fark görünümü")
 default_b = revs.index(active[module]) if active[module] in revs else len(revs) - 1
 a_col, b_col = st.columns(2)
 rev_b = b_col.selectbox("B (yeni)", revs, index=default_b, key="rev_b")
@@ -50,8 +57,7 @@ else:
     p_tab, r_tab, b_tab, o_tab = st.tabs([f"Parametreler ({len(d['params'])})", f"Sonuçlar ({len(d['results'])})",
                                           "BOM", f"Çıktılar ({len(d['outputs'])})"])
     with p_tab:
-        st.dataframe(pd.DataFrame([{"Yol": c["path"], "Eski": value(c["old"]), "Yeni": value(c["new"])}
-                                   for c in d["params"]]), hide_index=True, width="stretch")
+        table([{"Yol": c["path"], "Eski": value(c["old"]), "Yeni": value(c["new"])} for c in d["params"]])
     with r_tab:
         st.dataframe(pd.DataFrame([{"Anahtar": c["key"], "Eski": value(c["old"]), "Yeni": value(c["new"]),
                                     "Fark": data.num(c["delta"]) if c["delta"] is not None else "",
@@ -64,14 +70,12 @@ else:
                 for c in bom["header"]]
         rows += [{"Parça": pid, "Yol": c["path"], "Eski": value(c["old"]), "Yeni": value(c["new"])}
                  for pid, changes in bom["changed"].items() for c in changes]
-        if rows:
-            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+        table(rows)
     with o_tab:
-        st.dataframe(pd.DataFrame([{"Dosya": o["file"], "Eski sha256": (o["old"] or "-")[:16],
-                                    "Yeni sha256": (o["new"] or "-")[:16]} for o in d["outputs"]]),
-                     hide_index=True, width="stretch")
+        table([{"Dosya": o["file"], "Eski sha256": (o["old"] or "-")[:16], "Yeni sha256": (o["new"] or "-")[:16]}
+               for o in d["outputs"]])
 
-st.subheader("Konsept zaman çizelgesi")
+widgets.section("Konsept zaman çizelgesi")
 concepts = snap["concepts"]
 st.dataframe(pd.DataFrame([
     {"Konsept": c["concept"] + (" (aktif)" if c["concept"] == snap["concept"] else ""), "Tarih": c["date"],
