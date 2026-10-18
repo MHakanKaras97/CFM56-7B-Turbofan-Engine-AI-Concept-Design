@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- Tam durum geri dönüşü (ADR-013): revert bom, params, results'u kayıttan getirir, icd.yaml'ı yeniden üretir (çözülemezse kaydın çalışma noktasından), güncel kodla doğrular (fark = uyarı). Arayüz geri dönüşü revert CR'si (impact.by M0 revert) ile; konsept geri dönüşü de. Bakımda `moved` için REVIEW.md'de eski -> yeni satırı şart. rev005/006 yeniden çalışabilir (eski w2_ref.tolerance okunur).
 - ADR-012 revizyon türleri: tasarım / bakım; core bakım revizyonunu sayısal farkta reddeder, kabul edilmiş modülde CR'siz tasarım revizyonunu reddeder. M0 kabulü: rev005 (records/ACCEPTED). rev001-006 REVIEW.md'de sınıflandırıldı (rev006 bakım).
 - Params şeması (core/params.py, params.schema.json): büyüklük girdisi yalnızca value, unit, tag, note, source. cycle_params notları tırnaklandı, W2 toleransı `checks.w2_tolerance` oldu. M0 rev007 = bakım (sayısal fark yok; 0.1 yalnızca taşındı), concept003.
 - UI faz 3b: Talepler "Uygula", Revizyonlar "Bu revizyona dön" / "Doğrula", konsept farkından modül farkına geçiş; hepsi onay penceresiyle ve core üzerinden.
@@ -54,7 +55,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - .step ilişkilendirmesi kullanıcıda bekliyor. Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
-1. Açık: revert analiz dosyalarını (params, results, icd) geri getirmiyor; revert_concept arayüzde yok.
+1. Açık: rev001-003 güncel kodla çalışmıyor (geri dönüşte uyarı, ICD değişmez).
 2. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.

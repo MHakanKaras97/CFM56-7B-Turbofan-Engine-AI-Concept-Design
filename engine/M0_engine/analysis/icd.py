@@ -22,6 +22,7 @@ from engine.M0_engine.analysis.cycle import (
     egt_model_K,
     fan_face_area,
     load_inputs,
+    run,
     similarity_solve,
     validation_velocity_ratio,
 )
@@ -146,8 +147,36 @@ def module_budgets(p, r: dict, raw: dict) -> dict:
     }
 
 
-def build_icd(rev: str, root: Path = ROOT) -> dict:
-    p, t, r, raw, refs, p0 = solve_revision(rev, root)
+def evaluate_record(rev: str, root: Path = ROOT, rel_tol: float = 1e-4):
+    """Evaluate a record at its recorded operating point (W2, T4, efficiencies and FPR from its
+    results.yaml) without re-solving; used when the current solver cannot re-solve an older record.
+    The recorded thrust and fuel flow must be reproduced. Returns (Params, result, raw, refs, base Params)."""
+    rev_dir = module_dir("M0", root) / "records" / rev
+    p0, _, _, raw, refs = load_inputs(rev_dir / "params.yaml", root)
+    res = read_yaml(rev_dir / "results.yaml")
+    rated = res.get("rated_case", {})
+    changes = {n: q["value"] for n, q in rated.get("efficiencies_used", {}).items()}
+    if "FPR" in rated:
+        changes["FPR"] = rated["FPR"]["value"]
+    p = replace(p0, **changes)
+    r = run(p, res["calibration"]["W2"]["value"], res["calibration"]["T4"]["value"])
+    perf = res["performance"]
+    for name, model, recorded in (("thrust", r["thrust"] / 1000.0, perf["thrust"]["value"]),
+                                  ("fuel flow", r["W_fuel"], perf["fuel_flow"]["value"])):
+        if abs(model / recorded - 1.0) > rel_tol:
+            raise ArithmeticError(f"{rev}: {name} at the recorded point {model:.6g} differs from recorded {recorded}")
+    return p, r, raw, refs, p0
+
+
+def build_icd(rev: str, root: Path = ROOT, method: str = "solve") -> dict:
+    """ICD of a revision. method "solve": re-solve its params (default); "record": evaluate at the
+    recorded operating point (evaluate_record)."""
+    if method == "solve":
+        p, _, r, raw, refs, p0 = solve_revision(rev, root)
+    elif method == "record":
+        p, r, raw, refs, p0 = evaluate_record(rev, root)
+    else:
+        raise ValueError(f"unknown ICD method {method!r}")
     group = delta_eta_group(raw)
     st = r["stations"]
     budgets = module_budgets(p, r, raw)
@@ -156,7 +185,9 @@ def build_icd(rev: str, root: Path = ROOT) -> dict:
     return {
         "description": "M0 interface control document and module budgets; generated, do not edit by hand",
         "source": {"revision": rev, "params": f"engine/M0_engine/records/{rev}/params.yaml",
-                   "generated_by": "engine/M0_engine/analysis/icd.py", "tag": "H"},
+                   "generated_by": "engine/M0_engine/analysis/icd.py", "tag": "H",
+                   **({"method": "recorded operating point (re-solve not possible with the current code)"}
+                      if method == "record" else {})},
         "ownership_rule": "upstream module owns its exit station (rules/station_ownership.md)",
         "tolerances": {
             "description": "allowed deviation of an achieved module value before M0 re-balances",
@@ -220,10 +251,21 @@ def build_icd(rev: str, root: Path = ROOT) -> dict:
     }
 
 
-def write_icd(rev: str, root: Path = ROOT) -> Path:
+def write_icd(rev: str, root: Path = ROOT, method: str = "solve") -> Path:
     path = icd_file(root)
-    write_yaml(path, build_icd(rev, root))
+    write_yaml(path, build_icd(rev, root, method))
     return path
+
+
+def icd_for_revision(rev: str, root: Path = ROOT) -> tuple[dict | None, list[str]]:
+    """ICD for `rev` by re-solving, else at the recorded operating point. Returns (icd or None, warnings)."""
+    warnings = []
+    for method in ("solve", "record"):
+        try:
+            return build_icd(rev, root, method), warnings
+        except (KeyError, ArithmeticError, ValueError, TypeError) as exc:
+            warnings.append(f"icd.yaml ({method}): {type(exc).__name__}: {exc}")
+    return None, warnings
 
 
 def main(argv: list[str]) -> int:

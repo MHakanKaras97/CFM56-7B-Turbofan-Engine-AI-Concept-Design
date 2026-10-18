@@ -201,6 +201,18 @@
           }
         }
       }
+    },
+    "concept": {
+      "description": "Revert CR for a whole concept: the concept made active on apply.",
+      "type": "string",
+      "pattern": "^concept[0-9]{3}$"
+    },
+    "apply_warnings": {
+      "description": "Warnings raised while applying (e.g. revert verification).",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "allOf": [
@@ -326,7 +338,7 @@
       }
     },
     "change": {
-      "description": "BOM change (type omitted or 'bom') or params change (type 'params').",
+      "description": "BOM change (type omitted or 'bom'), params change (type 'params') or revert (type 'revert').",
       "if": {
         "type": "object",
         "required": [
@@ -342,7 +354,23 @@
         "$ref": "#/$defs/params_change"
       },
       "else": {
-        "$ref": "#/$defs/bom_change"
+        "if": {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "revert"
+            }
+          }
+        },
+        "then": {
+          "$ref": "#/$defs/revert_change"
+        },
+        "else": {
+          "$ref": "#/$defs/bom_change"
+        }
       }
     },
     "bom_change": {
@@ -407,6 +435,40 @@
         },
         "new": {
           "$ref": "#/$defs/change_value"
+        }
+      }
+    },
+    "revert_change": {
+      "description": "Full-state revert of a module to a recorded revision (core.records.revert).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "module",
+        "from",
+        "to"
+      ],
+      "properties": {
+        "type": {
+          "const": "revert"
+        },
+        "module": {
+          "$ref": "#/$defs/module_id"
+        },
+        "from": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^rev[0-9]{3}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^rev[0-9]{3}$"
         }
       }
     }

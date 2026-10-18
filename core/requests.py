@@ -15,6 +15,11 @@ Change types:
                   Applying re-runs the module calculation (engine/<M>/analysis/calc.py), records a
                   revision and regenerates the module's derived files.
 
+  revert          {module, from, to}: full-state revert of a module to a recorded revision
+                  (core.records.revert). A revert CR holds only revert changes; with `concept` it
+                  reverts the whole concept (core.records.revert_concept). Warnings of the revert
+                  verification are kept in `apply_warnings`.
+
 Options: a CR may offer resolution options (e.g. budget CRs: (a) accept the value in M0 params,
 (b) module redesign). decide() records the user's pick; only an option that applies changes
 can be approved.
@@ -26,13 +31,24 @@ impact.affected_modules.
 """
 
 import copy
-import importlib
 import re
 from pathlib import Path
 
 from core import bom as bom_io
 from core.params import params_errors
-from core.records import ROOT, create_revision, is_dirty, module_dir, module_dirs
+from core.records import (
+    ROOT,
+    RecordError,
+    active_revision,
+    calc_plugin,
+    create_revision,
+    is_dirty,
+    module_dir,
+    module_dirs,
+    read_concept,
+    revert,
+    revert_concept,
+)
 from core.util import dump_yaml, now_utc, read_yaml, schema_errors, write_yaml
 
 CR_RE = re.compile(r"^CR-(\d{3})$")
@@ -158,14 +174,20 @@ def create_cr(
     root: Path = ROOT,
     options: list[dict] | None = None,
     impact: dict | None = None,
+    concept: str | None = None,
 ) -> str:
     """Create an open CR and return its id. Invalid CRs are rejected and not written.
 
-    `impact` may be pre-filled only for a budget CR (one with options) drafted by an M0 analysis;
-    it must name its producer in `by` ("M0 <function>").
+    `impact` may be pre-filled only by an M0 analysis: for a budget CR (one with options) or a
+    revert CR (only revert changes); it must name its producer in `by` ("M0 <function>").
     """
-    if impact is not None and (not options or "by" not in impact):
-        raise CRError("pre-filled impact is only for budget CRs (with options) and must record 'by'")
+    is_revert = bool(changes) and all(c.get("type") == "revert" for c in changes)
+    if impact is not None and (not (options or is_revert) or "by" not in impact):
+        raise CRError("pre-filled impact is only for budget or revert CRs and must record 'by'")
+    if any(c.get("type") == "revert" for c in changes) and not is_revert:
+        raise CRError("a revert CR holds only revert changes")
+    if concept is not None and not is_revert:
+        raise CRError("`concept` is only for revert CRs")
     cr_id = _next_cr_id(root)
     date = now_utc()
     cr = {
@@ -183,10 +205,39 @@ def create_cr(
     }
     if options:
         cr["options"] = copy.deepcopy(options)
+    if concept:
+        cr["concept"] = concept
     _check(cr, root)
     with _cr_path(cr_id, root).open("x", encoding="utf-8", newline="\n") as f:  # never overwrite
         f.write(dump_yaml(cr))
     return cr_id
+
+
+def revert_impact(targets: dict[str, str], root: Path = ROOT) -> dict:
+    """Impact of reverting modules to the given revisions (read-only). Affected: the reverted modules
+    and every module whose ICD budget changes (calc plugin affected_modules), started or not."""
+    affected, notes = set(targets), []
+    for module, rev in targets.items():
+        plugin = calc_plugin(module, root)
+        if plugin is not None and hasattr(plugin, "affected_modules"):
+            changed, note = plugin.affected_modules(root, rev)
+            affected |= set(changed)
+            notes.append(f"{module} -> {rev}: {note}")
+        else:
+            notes.append(f"{module} -> {rev}")
+    return {"affected_modules": sorted(affected), "notes": "; ".join(notes), "by": "M0 revert"}
+
+
+def create_revert_cr(targets: dict[str, str], reason: str, root: Path = ROOT, concept: str | None = None) -> str:
+    """Open a revert CR (one revert change per module) with its impact filled in by M0."""
+    if concept is not None:
+        pinned = {m: r for m, r in read_concept(concept, root)["modules"].items() if r is not None}
+        if pinned != targets:
+            raise CRError(f"revert targets {targets} differ from {concept} pins {pinned}")
+    changes = [{"type": "revert", "module": m, "from": active_revision(m, root), "to": rev}
+               for m, rev in targets.items()]
+    return create_cr("M0", sorted(targets), reason, changes, root=root, impact=revert_impact(targets, root),
+                     concept=concept)
 
 
 def set_impact(cr_id: str, affected_modules: list[str], notes: str, root: Path = ROOT,
@@ -281,11 +332,32 @@ def _params_put(container: dict, key: str, new, cr_id: str) -> None:
 
 def _calc(module: str, root: Path):
     """The module's calculation plugin: engine/<M>/analysis/calc.py."""
-    name = f"engine.{module_dir(module, root).name}.analysis.calc"
+    plugin = calc_plugin(module, root)
+    if plugin is None:
+        raise CRError(f"{module}: params change needs engine/{module_dir(module, root).name}/analysis/calc.py")
+    return plugin
+
+
+def _apply_revert(cr: dict, root: Path) -> dict[str, str]:
+    """Apply a revert CR: full-state revert of each module (or of the whole concept)."""
+    targets = {c["module"]: c["to"] for c in cr["changes"]}
+    for c in cr["changes"]:
+        if active_revision(c["module"], root) != c["from"]:
+            raise CRError(f"{cr['id']}: {c['module']} active revision is {active_revision(c['module'], root)}, "
+                          f"the CR expects {c['from']}")
     try:
-        return importlib.import_module(name)
-    except ModuleNotFoundError:
-        raise CRError(f"{module}: params change needs {name.replace('.', '/')}.py") from None
+        if cr.get("concept"):
+            results = revert_concept(cr["concept"], root=root)
+            if {m: r["revision"] for m, r in results.items()} != targets:
+                raise CRError(f"{cr['id']}: {cr['concept']} pins differ from the CR changes")
+        else:
+            results = {m: revert(m, rev, root=root) for m, rev in targets.items()}
+    except RecordError as exc:
+        raise CRError(f"{cr['id']}: {exc}") from None
+    warnings = [w for r in results.values() for w in r["warnings"]]
+    if warnings:
+        cr["apply_warnings"] = warnings
+    return {m: r["revision"] for m, r in results.items()}
 
 
 def apply(cr_id: str, root: Path = ROOT) -> dict[str, str]:
@@ -298,6 +370,11 @@ def apply(cr_id: str, root: Path = ROOT) -> dict[str, str]:
     cr = load_cr(cr_id, root)
     if cr["status"] != "approved":
         raise CRError(f"{cr_id}: only approved CRs can be applied (status: {cr['status']})")
+    if cr["changes"][0].get("type") == "revert":
+        cr["applied_revisions"] = _apply_revert(cr, root)
+        _set_status(cr, "applied")
+        _save(cr, root)
+        return cr["applied_revisions"]
 
     modules: list[str] = []
     new_boms: dict[str, dict] = {}

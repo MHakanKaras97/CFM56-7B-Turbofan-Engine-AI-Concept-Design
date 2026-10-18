@@ -16,6 +16,7 @@ Revision types (ADR-012):
 """
 
 import hashlib
+import importlib
 import re
 import shutil
 import subprocess
@@ -218,25 +219,90 @@ def _check_maintenance(module: str, parent: str | None, cr: str | None, new: dic
         raise RecordError(f"{module}: a maintenance revision needs a parent revision")
     if cr is not None:
         raise RecordError(f"{module}: a maintenance revision takes no CR (ADR-012)")
-    changes = blocking(numeric_changes(diff_data(read_record(module, parent, root), new)))
-    if changes:
-        listed = ", ".join(f"{c['section']} {c['path']}" for c in changes[:5])
-        raise RecordError(f"{module}: not a maintenance revision, {len(changes)} numeric change(s): {listed}")
+    changes = numeric_changes(diff_data(read_record(module, parent, root), new))
+    blocked = blocking(changes)
+    if blocked:
+        listed = ", ".join(f"{c['section']} {c['path']}" for c in blocked[:5])
+        raise RecordError(f"{module}: not a maintenance revision, {len(blocked)} numeric change(s): {listed}")
+    review = module_dir(module, root) / "records" / "REVIEW.md"
+    text = review.read_text(encoding="utf-8") if review.exists() else ""
+    missing = [f"{c['path']} -> {c['to']}" for c in changes if c["kind"] == "moved"
+               and f"{c['path']} -> {c['to']}" not in text]
+    if missing:
+        raise RecordError(f"{module}: moved value(s) need an old -> new path line in records/REVIEW.md first: "
+                          + "; ".join(missing))
 
 
-def revert(module: str, rev: str, force: bool = False, root: Path = ROOT) -> None:
-    """Make `rev` active and restore bom.yaml from its snapshot.
+def calc_plugin(module: str, root: Path = ROOT):
+    """The module's calculation plugin engine/<M>/analysis/calc.py, or None if it has none."""
+    name = f"engine.{module_dir(module, root).name}.analysis.calc"
+    try:
+        return importlib.import_module(name)
+    except ModuleNotFoundError as exc:
+        if exc.name in (name, name.rsplit(".", 1)[0]):
+            return None
+        raise
 
-    Refuses if the working bom.yaml has unrecorded changes, unless force=True.
+
+def _check_clean(module: str, force: bool, root: Path) -> None:
+    """Refuse to overwrite unrecorded work: bom.yaml or the analysis params differ from the active record."""
+    if force:
+        return
+    mdir = module_dir(module, root)
+    if is_dirty(module, root):
+        raise RecordError(f"{mdir.name}: bom.yaml has unrecorded changes; create a revision or use force")
+    plugin, active = calc_plugin(module, root), active_revision(module, root)
+    if plugin is not None and active is not None:
+        recorded = read_revision(module, active, "params.yaml", root)
+        current = mdir / "analysis" / plugin.PARAMS_FILE
+        if recorded and current.exists() and read_yaml(current) != recorded:
+            raise RecordError(f"{mdir.name}: analysis/{plugin.PARAMS_FILE} differs from {active}; "
+                              f"record it or use force")
+
+
+def _restore(module: str, rev: str, root: Path) -> dict:
+    """Full-state restore of one module (no checks): bom.yaml, ACTIVE, and through the calc plugin
+    params, results and derived files; then re-run the current code on the restored params."""
+    from core.diff import diff_data  # core.diff imports this module
+
+    mdir = module_dir(module, root)
+    shutil.copyfile(mdir / "records" / rev / "bom.yaml", mdir / "bom" / "bom.yaml")
+    _write_pointer(mdir / "records" / "ACTIVE", rev)
+    out = {"module": module.split("_")[0], "revision": rev, "warnings": [], "results_diff": None}
+    plugin = calc_plugin(module, root)
+    params = read_revision(module, rev, "params.yaml", root)
+    if plugin is None or not params:
+        return out
+    results = read_revision(module, rev, "results.yaml", root)
+    out["warnings"] += plugin.restore(root, rev, params, results)
+    try:
+        rerun = plugin.rerun(root, params)
+    except Exception as exc:  # any failure of the current code on an old record is reported, not raised
+        out["warnings"].append(f"{rev}: güncel kod kayıtlı params ile çalışmadı ({type(exc).__name__}: {exc}); "
+                               f"kayıtlı sonuçlar geri yüklendi")
+        return out
+    diff = diff_data({"results": results}, {"results": rerun})["results"]
+    if diff:
+        out["results_diff"] = diff
+        out["warnings"].append(f"{rev}: kayıtlı sonuç ile güncel kod sonucu farklı ({len(diff)} anahtar); "
+                               f"kayıtlı sonuçlar geri yüklendi")
+    return out
+
+
+def revert(module: str, rev: str, force: bool = False, root: Path = ROOT) -> dict:
+    """Make `rev` active with its full state: bom.yaml from its snapshot and, for a module with a calc
+    plugin, params and results from the record (the record is the truth) and regenerated derived
+    files. The current code is then re-run on the restored params; a difference is a warning and
+    does not overwrite the restored results.
+
+    Refuses if bom.yaml or the analysis params have unrecorded changes, unless force=True.
+    Returns {module, revision, warnings, results_diff}.
     """
     mdir = module_dir(module, root)
-    snapshot = mdir / "records" / rev / "bom.yaml"
-    if not REV_RE.match(rev) or not snapshot.exists():
+    if not REV_RE.match(rev) or not (mdir / "records" / rev / "bom.yaml").exists():
         raise RecordError(f"{mdir.name}: revision {rev} not found")
-    if not force and is_dirty(module, root):
-        raise RecordError(f"{mdir.name}: bom.yaml has unrecorded changes; create a revision or use force")
-    shutil.copyfile(snapshot, mdir / "bom" / "bom.yaml")
-    _write_pointer(mdir / "records" / "ACTIVE", rev)
+    _check_clean(module, force, root)
+    return _restore(module, rev, root)
 
 
 def verify(module: str, rev: str, root: Path = ROOT) -> list[str]:
@@ -314,24 +380,19 @@ def create_concept(summary: str, root: Path = ROOT) -> str:
     return concept
 
 
-def revert_concept(concept: str, force: bool = False, root: Path = ROOT) -> None:
-    """Restore every pinned module's ACTIVE pointer (and bom.yaml); null modules are skipped.
+def revert_concept(concept: str, force: bool = False, root: Path = ROOT) -> dict[str, dict]:
+    """Full-state revert of every pinned module (see revert); null modules are skipped.
 
-    All modules are checked before any is changed.
+    All modules are checked before any is changed. Returns the revert result per module.
     """
     records = _concept_records(root)
-    manifest_path = records / concept / "manifest.yaml"
-    if not CONCEPT_RE.match(concept) or not manifest_path.exists():
-        raise RecordError(f"concept {concept} not found")
-    pinned = {m: rev for m, rev in read_yaml(manifest_path)["modules"].items() if rev is not None}
-
+    pinned = {m: rev for m, rev in read_concept(concept, root)["modules"].items() if rev is not None}
     for module_id, rev in pinned.items():
         mdir = module_dir(module_id, root)
         if not (mdir / "records" / rev / "bom.yaml").exists():
             raise RecordError(f"{mdir.name}: revision {rev} not found")
-        if not force and is_dirty(module_id, root):
-            raise RecordError(f"{mdir.name}: bom.yaml has unrecorded changes; create a revision or use force")
+        _check_clean(module_id, force, root)
 
-    for module_id, rev in pinned.items():
-        revert(module_id, rev, force=True, root=root)
+    out = {module_id: _restore(module_id, rev, root) for module_id, rev in pinned.items()}
     _write_pointer(records / "ACTIVE_CONCEPT", concept)
+    return out

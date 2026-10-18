@@ -1,13 +1,15 @@
 """Revision and concept timelines, the A -> B difference (core/diff.py), revert and verify (core/records.py).
 
-Writes: core.records.revert only, after a confirmation dialog. Verify only reads.
+Writes: a revert CR (core.requests: create_revert_cr -> decide -> apply) after a confirmation dialog;
+the dialog decision is recorded as the CR's approval. Verify only reads.
 """
 
 import pandas as pd
 import streamlit as st
 
 from core.diff import is_empty
-from core.records import RecordError, revert, verify
+from core.records import RecordError, verify
+from core.requests import apply, create_revert_cr, decide, load_cr, revert_impact
 from ui import data, widgets
 from ui.widgets import badge
 
@@ -29,9 +31,26 @@ def value(x) -> str:
     return data.num(x)
 
 
+DECIDED_BY = "user (UI)"
+FULL_STATE = ("Tam durum geri dönüşü: bom.yaml, params ve results kayıttan geri yüklenir, icd.yaml yeniden "
+              "üretilir; ardından güncel kod kayıtlı params ile yeniden çalıştırılır (fark uyarı olarak gösterilir). "
+              "Bir revert CR'si oluşturulur; onayınız bu CR'nin onayı olarak kaydedilir ve CR uygulanır.")
+
+
+def impact_lines(targets: dict[str, str]) -> list[str]:
+    impact = revert_impact(targets, data.root())
+    return [f"Etkilenen modüller ({impact['by']}): {', '.join(impact['affected_modules'])}", impact["notes"]]
+
+
 def run_revert(p: dict) -> str:
-    revert(p["module"], p["rev"], root=data.root())
-    return f"{p['module']}: aktif revizyon artık {p['rev']}."
+    """Revert CR: create (impact by M0), record the dialog decision as approval, apply."""
+    root = data.root()
+    cr_id = create_revert_cr(p["targets"], p["reason"], root=root, concept=p.get("concept"))
+    decide(cr_id, True, p["reason"], root=root, decided_by=DECIDED_BY)
+    applied = apply(cr_id, root=root)
+    st.session_state["ui_warn"] = load_cr(cr_id, root=root).get("apply_warnings", [])
+    target = p.get("concept") or ", ".join(f"{m} {r}" for m, r in applied.items())
+    return f"{cr_id} uygulandı: aktif artık {target}."
 
 
 def run_verify(p: dict) -> str:
@@ -76,11 +95,11 @@ for m in reversed(manifests):
                      f"{(m['code_commit'] or '-')[:10]} · {m['reason']}")
         b1, b2 = act.columns(2)
         if b1.button("Bu revizyona dön", key=f"revert_{rev}", disabled=is_active, width="stretch"):
-            widgets.request("revert", f"{module}: {rev} aktif yapılsın mı?",
-                            [f"Şu an aktif: {active[module]} → yeni aktif: {rev}"], "Aktif yap",
-                            "core.records.revert: yalnızca records/ACTIVE ve bom.yaml değişir; kayıtlar silinmez. "
-                            "Analiz dosyaları (params, results.yaml, icd.yaml) ve aktif konsept değişmez.",
-                            module=module, rev=rev)
+            targets = {module: rev}
+            widgets.request("revert", f"{module}: {rev} revizyonuna dönülsün mü?",
+                            [f"Şu an aktif: {active[module]} → yeni aktif: {rev}", *impact_lines(targets)],
+                            "Onayla ve uygula", FULL_STATE, targets=targets,
+                            reason=f"Revizyonlar sayfası: {module} {active[module]} -> {rev}")
         if b2.button("Doğrula", key=f"verify_{rev}", width="stretch"):
             widgets.request("verify", f"{module} {rev} doğrulansın mı?",
                             ["Kayıttaki çıktı dosyalarının sha256 özetleri yeniden hesaplanır (yalnızca okuma)."],
@@ -120,11 +139,21 @@ else:
 
 widgets.section("Konsept zaman çizelgesi")
 concepts = snap["concepts"]
-st.dataframe(pd.DataFrame([
-    {"Konsept": c["concept"] + (" (aktif)" if c["concept"] == snap["concept"] else ""), "Tarih": c["date"],
-     "Özet": c["summary"], **{m: c["modules"].get(m) or "-" for m in data.MODULES}}
-    for c in reversed(concepts)
-]), hide_index=True, width="stretch")
+for c in reversed(concepts):
+    cid, is_active = c["concept"], c["concept"] == snap["concept"]
+    pins = {m: r for m, r in c["modules"].items() if r is not None}
+    with st.container(border=True):
+        info, act = st.columns([5, 2], vertical_alignment="center")
+        info.markdown(f"{badge(cid + (' aktif' if is_active else ''), 'blue' if is_active else 'gray')} {c['summary']}")
+        info.caption(f"{c['date']} · " + ", ".join(f"{m} {r}" for m, r in pins.items())
+                     + f" · başlamamış: {', '.join(m for m, r in c['modules'].items() if r is None) or '-'}")
+        if act.button("Bu konsepte dön", key=f"revert_concept_{cid}", disabled=is_active or not pins,
+                      width="stretch"):
+            widgets.request("revert", f"{cid} konseptine dönülsün mü?",
+                            ["Modüller: " + ", ".join(f"{m} {active.get(m)} → {r}" for m, r in pins.items()),
+                             *impact_lines(pins)],
+                            "Onayla ve uygula", FULL_STATE + " Tek bir revert CR'si bütün modülleri listeler.",
+                            targets=pins, concept=cid, reason=f"Revizyonlar sayfası: konsept {snap['concept']} -> {cid}")
 if len(concepts) >= 2:
     ids = [c["concept"] for c in concepts]
     ca, cb = st.columns(2)

@@ -144,5 +144,7 @@ def flash() -> None:
     """Result of the last confirmed action."""
     if "ui_done" in st.session_state:
         st.success(st.session_state.pop("ui_done"))
+    for warning in st.session_state.pop("ui_warn", []):
+        st.warning(warning)
     if "ui_error" in st.session_state:
         st.error(st.session_state.pop("ui_error"))

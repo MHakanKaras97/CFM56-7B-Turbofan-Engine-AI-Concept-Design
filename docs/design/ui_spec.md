@@ -50,7 +50,7 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 
 ### 4.4 Talepler (`ui_talepler.png`)
 - Başlıkta açık ve kapalı CR sayıları. Liste `engine/M0_engine/requests/CR-*.yaml` dosyalarından okunur; açık CR'ler önce gelir.
-- **CR kartı:** kimlik, yön ("M3 → M0"), tür ("bütçe ihlali"), gerekçe, etki rozeti ("etki analizi hazır" = `impact` dolu ve `affected_modules` boş değil), yanında üretici (`impact.by`, ör. "M0 integration_check").
+- **CR kartı:** kimlik, yön ("M3 → M0"), tür ("bütçe ihlali", "değişiklik talebi", "geri dönüş"), gerekçe, etki rozeti ("etki analizi hazır" = `impact` dolu ve `affected_modules` boş değil), yanında üretici (`impact.by`, ör. "M0 integration_check").
 - **Etki metrikleri:** ΔSFC, ΔEGT, ΔT41 kartları. Kaynak: CR'nin `impact.metrics` alanı (metrik adı → {value, unit, tag}); bütçe CR'lerinde `dSFC` [%], `dEGT` [K], `dT41` [K], operating_point modunda ayrıca `dThrust` [%]. Alan isteğe bağlıdır: `impact` boş ya da `metrics` yoksa kartlar gösterilmez, yalnızca `impact.notes` görünür.
 - **Seçenekler:** CR'deki `options` radyo düğmeleriyle gösterilir: (a) M0 değeri kabul etsin ve çevrimi yeniden dengelesin; (b) modül tasarımını düzeltsin.
 - **Karar notu:** zorunlu metin alanı.
@@ -71,7 +71,8 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
   Yollar noktalıdır (ör. `calibration.W2.value`); kimlik anahtarı olan listeler kimlikle yazılır (ör. `stations[2].W_kg_s`). Boş fark `core.diff.is_empty` ile anlaşılır. Biçimlendirme (ondalık virgül, birim) arayüzün işidir.
 - **Konsept farkı:** `core.diff.diff_concepts(cA, cB)` → [{module, old, new}] satırları; "Modül farkını göster" o modülü ve A/B revizyonlarını fark görünümüne yükler (iki taraf da varsa).
 - Fark sekmeleri: Parametreler, Sonuçlar (fark ve %), BOM (eklenen/silinen/değişen), Çıktılar (sha256). Varsayılan B = aktif revizyon, A = bir önceki.
-- **Geri dönüş:** "Bu revizyona dön" onay penceresinden sonra `core.records.revert` çağırır. Yalnızca `records/ACTIVE` ve `bom.yaml` değişir; kayıtlar silinmez. Analiz dosyaları (params, results.yaml, icd.yaml) ve aktif konsept değişmez; pencere bunu yazar. Konsept geri dönüşü (`revert_concept`) henüz yok.
+- **Geri dönüş (ADR-013):** "Bu revizyona dön" onay penceresini açar; pencere etkiyi gösterir (`core.requests.revert_impact`: etkilenen modüller, ICD bütçesi değişenler). Onayda bir revert CR'si oluşturulur (`create_revert_cr`, `impact.by: M0 revert`), karar CR onayı olarak kaydedilir (`decided_by: user (UI)`) ve CR uygulanır: tam durum geri dönüşü (bom, params, results, icd.yaml). Doğrulama uyarıları sarı kutularda ve CR'nin `apply_warnings` alanında görünür. Vazgeç hiçbir şey yazmaz.
+- **Konsept geri dönüşü:** konsept zaman çizelgesinde her konsept bir satır; "Bu konsepte dön" aynı akışla tek bir revert CR'si (`concept` alanı, bütün sabitlenmiş modüller) oluşturur ve `revert_concept` ile uygular.
 - **Doğrulama:** "Doğrula" onay penceresinden sonra `core.records.verify` çalışır (yalnızca okuma); sonuç başarı veya hata kutusunda (uyuşmayan dosyalar listelenir).
 
 ### 4.6 Öğrenme

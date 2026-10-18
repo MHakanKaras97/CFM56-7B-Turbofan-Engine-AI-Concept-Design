@@ -592,7 +592,9 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
     A_fan = fan_face_area(raw)
     w2a = r["W2"] / A_fan
     choke = choke_mass_flux(p.T0, p.P0, p.gas)
-    w2_ref, w2_tol = cfg["w2_ref"], cfg["w2_tolerance"]["value"]
+    w2_ref = cfg["w2_ref"]
+    # params before rev007 kept the tolerance inside w2_ref; records must stay re-runnable
+    w2_tol = cfg["w2_tolerance"]["value"] if "w2_tolerance" in cfg else w2_ref["tolerance"]
     lo, hi = cfg["w2a_range"]["min"], cfg["w2a_range"]["max"]
     c_lo, c_hi = cfg["cooling_range"]["min"], cfg["cooling_range"]["max"]
     egt_disp = egt_displayed_C(r, raw, refs)

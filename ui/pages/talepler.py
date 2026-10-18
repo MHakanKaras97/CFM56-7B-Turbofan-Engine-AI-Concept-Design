@@ -47,9 +47,13 @@ def impact_block(cr: dict) -> bool:
 def changes_table(cr: dict) -> None:
     if not cr["changes"]:
         return
-    rows = [{"Modül": c["module"], "Tür": c.get("type", "bom"), "Yol": c["path"],
-             "Eski": data.quantity(c["old"]) if isinstance(c["old"], dict) else str(c["old"]),
-             "Yeni": data.quantity(c["new"]) if isinstance(c["new"], dict) else str(c["new"])}
+    def cell(x):
+        return data.quantity(x) if isinstance(x, dict) else str(x)
+
+    rows = [{"Modül": c["module"], "Tür": "revert", "Yol": "ACTIVE (tam durum)", "Eski": str(c["from"]),
+             "Yeni": c["to"]} if c.get("type") == "revert" else
+            {"Modül": c["module"], "Tür": c.get("type", "bom"), "Yol": c["path"], "Eski": cell(c["old"]),
+             "Yeni": cell(c["new"])}
             for c in cr["changes"]]
     st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
 
@@ -95,7 +99,10 @@ if not crs:
 for cr in crs:
     is_open = cr["status"] == "open"
     with st.container(border=True):
-        kind = "bütçe ihlali" if cr.get("options") else "değişiklik talebi"
+        if cr["changes"] and cr["changes"][0].get("type") == "revert":
+            kind = f"geri dönüş ({cr['concept']})" if cr.get("concept") else "geri dönüş"
+        else:
+            kind = "bütçe ihlali" if cr.get("options") else "değişiklik talebi"
         st.markdown(f"**{cr['id']}** · {cr['from_module']} → {', '.join(cr['to_modules'])} · {kind} "
                     f"{badge(data.STATUS_TR[cr['status']], STATUS_COLOR[cr['status']])}")
         st.markdown(cr["reason"])
@@ -117,6 +124,8 @@ for cr in crs:
                                           "her modül için yeni bir tasarım revizyonu oluşur.", cr=cr["id"])
             if cr.get("applied_revisions"):
                 st.caption("Uygulanan revizyonlar: " + ", ".join(f"{m} {r}" for m, r in cr["applied_revisions"].items()))
+            for warning in cr.get("apply_warnings", []):
+                st.warning(warning)
         with st.expander("Geçmiş"):
             history(cr)
 

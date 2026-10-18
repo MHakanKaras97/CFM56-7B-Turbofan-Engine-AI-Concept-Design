@@ -237,7 +237,32 @@ def test_revert_cancel_and_confirm(ui_repo):
     at.button(key=f"revert_{target}").click().run()
     at.button(key="confirm_ok").click().run()
     assert not at.exception and active_revision("M0", ui_repo) == target
+    cr = load_cr("CR-002", root=ui_repo)  # CR-001 is the fixture's budget CR
+    assert cr["changes"] == [{"type": "revert", "module": "M0", "from": active, "to": target}]
+    assert (cr["status"], cr["impact"]["by"], cr["decision"]["decided_by"]) == ("applied", "M0 revert", "user (UI)")
+    assert "CR-002 uygulandı" in " ".join(s.value for s in at.success)
+    warnings = " ".join(w.value for w in at.warning)
+    assert all(w in warnings for w in cr.get("apply_warnings", []))
+    params = read_revision("M0", target, "params.yaml", ui_repo)
+    assert data.read_yaml(ui_repo / "engine" / "M0_engine" / "analysis" / "cycle_params.yaml") == params
     assert active_revision("M0") == active  # real repo untouched
+
+
+def test_concept_revert_through_ui(ui_repo):
+    from core.records import active_concept
+    before = tree_sha(ui_repo)
+    at = run(widgets.PAGES["revizyonlar"])
+    at.button(key="revert_concept_concept001").click().run()
+    at.button(key="confirm_cancel").click().run()
+    assert tree_sha(ui_repo) == before
+    at.button(key="revert_concept_concept001").click().run()
+    at.button(key="confirm_ok").click().run()
+    assert not at.exception
+    pins = {m: r for m, r in data.read_concept("concept001", ui_repo)["modules"].items() if r}
+    cr = load_cr("CR-002", root=ui_repo)
+    assert cr["concept"] == "concept001" and {c["module"]: c["to"] for c in cr["changes"]} == pins
+    assert active_concept(root=ui_repo) == "concept001"
+    assert all(active_revision(m, ui_repo) == r for m, r in pins.items())
 
 
 def test_verify_reports_result(ui_repo):

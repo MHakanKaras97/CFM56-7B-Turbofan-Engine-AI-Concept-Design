@@ -46,6 +46,7 @@
 - Bütçe CR'si (M0 entegrasyon kontrolü sınırı aşınca) iki seçenek sunar: (a) ulaşılan değer M0 params'a yazılır ve çevrim yeniden dengelenir, (b) modül yeniden tasarlanır (M0 değişmez).
 - Çakışmada kullanıcı karar verir; karar kaydedilir.
 - Revizyon türleri (ADR-012): tasarım (sayı/geometri; kabul edilmiş modülde CR şart) ve bakım (yalnızca şema/üst veri/metin; CR yok, sayısal fark varsa core reddeder). Kabul `records/ACCEPTED` ile işaretlenir. Params dosyaları `core/schemas/params.schema.json` ile doğrulanır.
+- Geri dönüş tam durumdur (ADR-013): bom, params, results kayıttan; türetilmiş dosyalar yeniden üretilir; güncel kodla doğrulanır. Arayüzden geri dönüş bir revert CR'siyle yapılır.
 
 ## 9. Güven etiketleri
 - `[K]` birincil kaynak

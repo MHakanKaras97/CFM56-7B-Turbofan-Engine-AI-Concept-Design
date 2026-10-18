@@ -14,6 +14,8 @@
   - eklenen veya silinen parça,
   - değişen çıktı SHA-256 değeri (geometri).
 - Sayılmayanlar: metin, yeni eklenen anahtarlar (şema veya üst veri eklemesi) ve params içinde aynı değerle başka bir yola taşınan sayı. Taşınan sayı farkta `moved` olarak raporlanır.
+- Her `moved` girdisi için modülün `records/REVIEW.md` dosyasında revizyondan **önce** `eski.yol -> yeni.yol` satırı bulunmalı (ör. `checks.w2_ref.tolerance -> checks.w2_tolerance.value`); yoksa bakım revizyonu reddedilir.
+- Kod, eski kayıtların params biçimini okumaya devam eder (ör. rev007 öncesi `w2_ref.tolerance`), böylece eski kayıtlar yeniden çalıştırılabilir kalır.
 - Kimlik anahtarı olan listeler (`id`, `station`, `name`, `path`) öğe bazında karşılaştırılır; böylece bir notun değişmesi sayısal değişiklik sayılmaz.
 
 ## Neden
