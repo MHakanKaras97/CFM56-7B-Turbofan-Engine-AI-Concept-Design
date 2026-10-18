@@ -5,11 +5,11 @@ import pytest
 
 from engine.M0_engine.analysis.cycle import (
     calibrate,
-    combustor_air_target,
-    cooling_sweep,
     load_inputs,
     run,
     thrust_envelope,
+    validation_case,
+    validation_rows,
 )
 from tools.thermo import (
     ConstantCp,
@@ -33,10 +33,11 @@ def inputs():
 
 @pytest.fixture(scope="module")
 def calibrated(inputs):
-    """v3 calibration: W2, T4, FPR against thrust, fuel and V18/V8 at the input cooling fraction."""
-    p, t, initial, raw, _ = inputs
-    r, _ = calibrate(p, t, initial)
-    return p, t, r
+    """Girão validation case: W2, T4 against its thrust and fuel flow (the rated case is infeasible in v4)."""
+    p, _, initial, _, refs = inputs
+    pv, tv = validation_case(p, refs)
+    r, _ = calibrate(pv, tv, initial)
+    return pv, tv, r
 
 
 # --- thermo ----------------------------------------------------------------------
@@ -117,21 +118,22 @@ def test_nozzle_choking():
 
 def ideal_params(p):
     return replace(
-        p, gas=CONST, inlet_recovery=1.0, e_fan=1.0, e_booster=1.0, e_hpc=1.0, e_hpt=1.0, e_lpt=1.0,
-        burner_eta=1.0, burner_dp=0.0, bypass_duct_dp=0.0, mech_eff=1.0, nozzle_cv=1.0,
-        include_fuel_mass=False, opr=10.0, bpr=5.0, core_pr_25_2=2.0, hp_power_offtake=0.0, customer_bleed=0.0,
+        p, gas=CONST, inlet_recovery=1.0, FPR=1.5, e_fan=1.0, e_booster=1.0, e_hpc=1.0, e_hpt=1.0, e_lpt=1.0,
+        core_pr_25_2=2.0, duct_25_24=1.0, burner_eta=1.0, burner_pr=1.0, duct_45_44=1.0, duct_6_5=1.0,
+        bypass_duct=1.0, mech_eff=1.0, nozzle_cv=1.0, include_fuel_mass=False, opr=10.0, bpr=5.0,
+        ngv=0.0, hpt_rotor=0.0, leak=0.0, hp_power_offtake=0.0, customer_bleed=0.0,
     )
 
 
 def test_ideal_limit_matches_closed_form(inputs):
     p = ideal_params(inputs[0])
-    T4, FPR, W2 = 1000.0, 1.5, 300.0
-    r = run(p, W2, T4, FPR)
+    T4, W2 = 1000.0, 300.0
+    r = run(p, W2, T4)
     assert not r["n18"].choked and not r["n8"].choked  # closed form assumes full expansion
 
     g, cp, T0 = 1.4, 1005.0, p.T0
     k = (g - 1) / g
-    tau_lam, tau_c, tau_f, alpha = T4 / T0, p.opr ** k, FPR ** k, p.bpr
+    tau_lam, tau_c, tau_f, alpha = T4 / T0, p.opr ** k, p.FPR ** k, p.bpr
     tau_t = 1 - (tau_c - 1 + alpha * (tau_f - 1)) / tau_lam
     a0 = math.sqrt((g - 1) * cp * T0)
     v9 = a0 * math.sqrt(2 / (g - 1) * (tau_lam * tau_t - tau_lam / tau_c))
@@ -150,7 +152,7 @@ def test_energy_balance_closes(calibrated):
     bleed_out = p.customer_bleed * gas.h(st["3"][0])
     inflow = r["W2"] * gas.h(st["2"][0]) + heat
     outflow = r["W_byp"] * gas.h(st["18"][0]) + r["W8"] * gas.h(st["8"][0], st["8"][3])
-    assert r["W_cool"] > 0
+    assert r["W_sec"] > 0
     assert outflow + mech_loss + p.hp_power_offtake + bleed_out == pytest.approx(inflow, rel=1e-9)
 
 
@@ -168,32 +170,44 @@ def test_shaft_balance(calibrated):
 
 def test_calibration_hits_targets(calibrated):
     p, t, r = calibrated
-    assert r["thrust"] == pytest.approx(t.thrust, rel=1e-3)
-    assert r["W_fuel"] == pytest.approx(t.fuel, rel=1e-3)
-    assert r["velocity_ratio"] == pytest.approx(r["eta_fan_is"] * r["eta_lpt_is"], rel=1e-3)
-    assert r["cooling_fraction"] == pytest.approx(0.18)  # input, not solved
+    assert r["thrust"] == pytest.approx(t.thrust, rel=1e-6)
+    assert r["W_fuel"] == pytest.approx(t.fuel, rel=1e-6)
+    assert r["FPR"] == p.FPR  # input, not solved
 
 
-def test_cooling_flows_and_t41(calibrated):
+def test_pressure_chain(calibrated):
     p, _, r = calibrated
-    assert r["W_comb"] + r["W_cool"] + p.customer_bleed == pytest.approx(r["W_core"])
-    assert r["W_ngv"] == pytest.approx(p.ngv_share * r["W_cool"])
+    st = r["stations"]
+    assert st["3"][1] / st["2"][1] == pytest.approx(p.opr)
+    assert st["25"][1] / st["2"][1] == pytest.approx(p.core_pr_25_2)
+    assert st["25"][1] / st["24"][1] == pytest.approx(p.duct_25_24)
+    assert st["4"][1] / st["3"][1] == pytest.approx(p.burner_pr)
+    assert st["45"][1] / st["44"][1] == pytest.approx(p.duct_45_44)
+    assert st["8"][1] / st["5"][1] == pytest.approx(p.duct_6_5)
+    assert st["18"][1] / st["13"][1] == pytest.approx(p.bypass_duct)
+
+
+def test_secondary_air_and_t41(calibrated):
+    p, _, r = calibrated
+    assert r["W_comb"] + r["W_sec"] + p.customer_bleed == pytest.approx(r["W_core"])
+    assert (r["W_ngv"], r["W_rotor"], r["W_leak"]) == pytest.approx(
+        (p.ngv * r["W_core"], p.hpt_rotor * r["W_core"], p.leak * r["W_core"]))
+    assert p.secondary_fraction == pytest.approx(0.13)
     T3 = r["stations"]["3"][0]
     assert T3 < r["T41"] < r["T4"]  # NGV cooling air dilutes the gas before the rotor
+    assert r["stations"]["45"][0] < r["Tt44"]  # rotor cooling and leakage mix in at 45
 
 
-def test_combustor_air_comparison_hits_its_target(inputs, calibrated):
-    p, t, _, _, _ = inputs
-    r = combustor_air_target(p, t, calibrated[2], tol=1e-9)
-    assert r["W_comb"] == pytest.approx(t.combustor_air, rel=1e-3)
-    assert r["thrust"] == pytest.approx(t.thrust, rel=1e-3)
+VALIDATION_OPEN = {"W2", "T4", "T41", "T45", "T5", "P5", "EGT"}  # v4 open deviations, see docs/status.md
 
 
-def test_cooling_sweep_rows(inputs, calibrated):
-    p, t, _, raw, refs = inputs
-    rows = cooling_sweep(p, t, calibrated[2], raw, refs, tol=1e-9)
-    assert [row["cooling_fraction"] for row in rows] == pytest.approx([0.14, 0.16, 0.18, 0.20, 0.22])
-    assert rows[2]["W2_kg_s"] == pytest.approx(calibrated[2]["W2"], rel=1e-4)
+@pytest.mark.parametrize("item", ["W2", "T3", "P3", "T4", "T41", "T45", "T5", "P5", "EGT"])
+def test_validation_against_girao(item, inputs, calibrated, request):
+    if item in VALIDATION_OPEN:
+        request.applymarker(pytest.mark.xfail(strict=True, reason="v4 deviation from Girão, decision open"))
+    _, _, _, raw, refs = inputs
+    row = next(x for x in validation_rows(calibrated[2], raw, refs) if x["item"] == item)
+    assert row["result"] == "pass", row
 
 
 def test_choke_mass_flux_sls():
@@ -201,8 +215,10 @@ def test_choke_mass_flux_sls():
     assert choke_mass_flux(p.T0, p.P0, p.gas) == pytest.approx(241.3, abs=0.1)
 
 
-def test_envelope_runs_and_matches_its_targets(inputs):
-    p, t, initial, raw, _ = inputs
-    env = thrust_envelope(p, t, initial, raw, tol=1e-9, c_max=0.04, step=0.02)
-    assert [e["cooling_fraction"] for e in env] == [0.0, 0.02, 0.04]
-    assert env[0]["W2_kg_s"] == pytest.approx(t.combustor_air * (1 + p.bpr), rel=1e-3)
+def test_envelope_points_match_fuel(calibrated):
+    p, t, r = calibrated
+    env = thrust_envelope(p, t, W2_min=r["W2"] - 10.0, W2_max=r["W2"] + 10.0, step=10.0)
+    assert len(env) == 3
+    for e in env:
+        assert run(p, e["W2_kg_s"], e["T4_K"])["W_fuel"] == pytest.approx(t.fuel, rel=1e-4)
+    assert env[1]["thrust_kN"] == pytest.approx(r["thrust"] / 1000.0, rel=1e-3)

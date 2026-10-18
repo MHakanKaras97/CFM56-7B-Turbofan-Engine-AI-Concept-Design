@@ -1,4 +1,4 @@
-version: 3
+version: 4
 design_point:
   description: SLS ISA, max take-off, base CFM56-7B27 (SAC, ICAO UID 3CM034); see ADR-005
   T0: {value: 288.15, unit: K, tag: G}
@@ -8,6 +8,7 @@ reference_data:
   thrust_to: {file: engine/M0_engine/rules/tcds_e004.yaml, key: ratings.CFM56-7B27.takeoff_thrust, tag: K}
   icao_row: {file: engine/M0_engine/rules/icao_edb_cfm56_7b27.yaml, uid: 3CM034, fields: [pressure_ratio, bpr, fuel_flow_to_kg_s], tag: K}
   sfc_ref: {file: engine/M0_engine/analysis/sfc_takeoff.yaml, uid: 3CM034, tag: H}
+  girao: {file: engine/M0_engine/rules/girao_2023.yaml, tag: KS}
 gas:
   model: nasa_glenn
   note: 'nasa_glenn = variable cp(T, FAR), air + C12H23 products (tools/thermo.py); constant_cp = one ideal gas, closed-form checks only'
@@ -17,56 +18,57 @@ gas:
     gamma: {value: 1.40, unit: '-', tag: G}
     R: {value: 287.0, unit: J/(kg K), tag: G}
 components:
-  inlet_recovery: {value: 0.99, unit: '-', tag: G}
-  e_fan: {value: 0.89, unit: '-', tag: G}
-  e_booster: {value: 0.89, unit: '-', tag: G}
-  e_hpc: {value: 0.90, unit: '-', tag: G}
-  e_hpt: {value: 0.89, unit: '-', tag: G}
-  e_lpt: {value: 0.90, unit: '-', tag: G}
-  burner_eta: {value: 0.995, unit: '-', tag: G}
-  burner_dp: {value: 0.04, unit: '-', tag: G}
-  bypass_duct_dp: {value: 0.02, unit: '-', tag: G}
-  mech_eff: {value: 0.99, unit: '-', tag: G}
+  inlet_recovery: {value: 0.99, unit: '-', tag: KS, source: Girão 2023, note: P2/P1}
+  FPR: {value: 1.765, unit: '-', tag: KS, source: Girão 2023, note: input since v4 (ADR-008)}
+  e_fan: {value: 0.887, unit: '-', tag: KS, source: Girão 2023, note: fan bypass side}
+  e_booster: {value: 0.89, unit: '-', tag: KS, source: Girão 2023, note: core side (fan root + booster), P2 to P24}
+  core_pr_25_2: {value: 2.64, unit: '-', tag: KS, source: Girão 2023, note: P25/P2 overall, includes the P25/P24 duct}
+  duct_25_24: {value: 0.98, unit: '-', tag: KS, source: Girão 2023, note: P25/P24}
+  e_hpc: {value: 0.879, unit: '-', tag: KS, source: Girão 2023}
+  burner_eta: {value: 0.9995, unit: '-', tag: KS, source: Girão 2023}
+  burner_pr: {value: 0.95, unit: '-', tag: KS, source: Girão 2023, note: P4/P3}
+  e_hpt: {value: 0.862, unit: '-', tag: KS, source: Girão 2023}
+  duct_45_44: {value: 0.98, unit: '-', tag: KS, source: Girão 2023, note: P45/P44}
+  e_lpt: {value: 0.903, unit: '-', tag: KS, source: Girão 2023}
+  duct_6_5: {value: 0.99, unit: '-', tag: KS, source: Girão 2023, note: P6/P5, core exhaust duct}
+  bypass_duct: {value: 0.975, unit: '-', tag: KS, source: Girão 2023, note: P16/P13}
+  mech_eff: {value: 0.99, unit: '-', tag: KS, source: Girão 2023}
   nozzle_cv: {value: 0.98, unit: '-', tag: G}
   LHV: {value: 43.0e6, unit: J/kg, tag: G, note: reference 298.15 K; fuel enters at 298.15 K}
-  core_pr_25_2: {value: 2.1, unit: '-', tag: T}
 secondary_air:
-  description: Cooling air bled at HPC exit (station 3), bypasses the combustor
-  cooling_fraction: {value: 0.18, unit: '- of core flow', tag: G, note: input since v3 (ADR-007); nominal mid-band value}
-  ngv_share: {value: 0.47, unit: '- of cooling', tag: G, note: mixes before HPT rotor (T41), does HPT work}
-  rotor_lpt_share: {value: 0.53, unit: '- of cooling', tag: G, note: mixes after HPT rotor (station 45), no HPT work}
+  description: Bled at HPC exit (station 3) at T3, bypasses the combustor; fractions of W25
+  ngv: {value: 0.05, unit: '- of W25', tag: KS, source: Girão 2023, note: mixes before HPT rotor (T41), does HPT work}
+  hpt_rotor: {value: 0.06, unit: '- of W25', tag: KS, source: Girão 2023, note: mixes after HPT rotor (station 45), no HPT work}
+  leak: {value: 0.02, unit: '- of W25', tag: KS, source: Girão 2023, note: returned at station 45}
   customer_bleed: {value: 0.0, unit: kg/s, tag: T, note: ICAO test bleed not verified}
   hp_power_offtake: {value: 100.0e3, unit: W, tag: T, note: ICAO test offtake not verified}
 geometry:
   fan_diameter: {value: 61.0, unit: in, tag: T}
   fan_hub_tip: {value: 0.30, unit: '-', tag: T}
 calibration:
-  unknowns: [W2, T4, FPR]
+  unknowns: [W2, T4]
   targets:
     thrust: {source: tcds, tag: K}
     fuel: {source: icao, tag: K}
-    velocity_ratio: {rule: V18/V8 = eta_fan_is * eta_LPT_is}
-    combustor_air: {value: 44.52, unit: kg/s, tag: KS, source: Lopez-Pintor 2026, Table 2, note: 'check only since v3 (ADR-007); used as a target only in the v2 comparison'}
   initial:
     W2: {value: 354.7, unit: kg/s, tag: T}
-    T4: {value: 1800.0, unit: K, tag: T}
-    FPR: {value: 1.6, unit: '-', tag: T}
+    T4: {value: 1650.0, unit: K, tag: T}
   tolerance: {value: 1.0e-9, unit: '-', tag: G}
 checks:
-  fan_choke: {hard: true, basis: 'max mass flux at M=1 for SLS ISA total conditions (P0, T0), cold gas', tag: H}
+  fan_choke: {hard: true, basis: 'max mass flux at M=1 for SLS ISA total conditions (P0, T0), air', tag: H}
   w2a_range: {min: 190.0, max: 215.0, unit: kg/(s m2), tag: G}
   w2_ref: {value: 354.7, unit: kg/s, tag: T, tolerance: 0.10}
-  cooling_range: {min: 0.12, max: 0.22, unit: '- of core flow', tag: G}
+  cooling_range: {min: 0.12, max: 0.22, unit: '- of W25, total secondary air', tag: G}
   sfc_tolerance: {value: 0.005, unit: '-', tag: G}
   egt_limit: {file: engine/M0_engine/rules/tcds_e004.yaml, keys: [limits.egt_takeoff_displayed, limits.egt_shunt_sac], tag: K, note: 'displayed = measured (T49.5) + 30 K shunt for SAC'}
-  egt_display_band: {min: 800.0, max: 920.0, unit: degC, tag: T, info_only: true}
-  egt: {a: 0.976, b: 0.217, tag: T, form: 'EGT = a*(T45 - b*(T45 - T5)), CFM56-3 form via Martins 2015, applied in K'}
+  egt: {a: 0.976, b: 0.217, tag: KS, form: 'EGT = a*(T45 - b*(T45 - T5)), in K', note: 'Girão 2023 Fig. 4.10 uses a = 0.976, the text gives 0.9664; CFM56-3 origin via Martins 2015'}
+  combustor_air_refs:
+    lopez_pintor: {value: 44.52, unit: kg/s, tag: KS, note: modeled value, ADR-007}
+    girao_W31_125.7kN: {value: 53.71, unit: kg/s, tag: KS}
   T4_refs:
     estimate: {value: 1450.0, unit: K, tag: T, note: unit unclear in source}
     indriyati_turbine_in: {value: 1553.0, unit: K, tag: KS, note: test cell, not ISA}
   T3_ref: {value: 832.4, unit: K, tag: KS, note: test cell T0 298 K, not ISA; info only}
-cooling_sweep: {min: 0.14, max: 0.22, step: 0.02, unit: '- of core flow', tag: G}
 sensitivity:
   e_poly_step: 0.01
-  cooling_step: 0.02
   outputs: [W2, T4, EGT]

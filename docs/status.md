@@ -5,40 +5,40 @@ CFM56-7B27 sınıfı (temel, SAC) turbofan için konsept seviyesinde çoklu agen
 M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenmek + belgelemek.
 
 ## Temel kararlar
-- Mimari: docs/architecture.md, ADR-001..007.
+- Mimari: docs/architecture.md, ADR-001..008.
 - Tek doğru kaynak: bom.yaml + kod; Fusion sadece görünüm (STEP).
 - Revizyonlar değişmez; aktif = records/ACTIVE. Değişiklik yalnızca CR + kullanıcı onayı.
 - Güven etiketleri: K, KS, H, G, T. Sayılar koddan gelir, LLM metninden değil.
 - Telif: kendi cümlelerimiz, kaynaklar docs/sources.md'de lisansıyla; PDF/xlsx git'e girmez.
 - Tasarım noktası: deniz seviyesi, ISA, maksimum kalkış. Seyir noktası sonra.
+- M8 devir referansları M0 kurallarında (girao_2023.yaml); M8'e aktarım M8'in işi.
 - Çalışma döngüsü (her modül): ders -> araştırma -> rule book -> kod -> kabul testi. Testsiz sonraki modüle geçilmez.
 
 ## Son yapılanlar
-- M0 cycle v3 (rev003, aktif): değişken cp(T, FAR), NASA 7 katsayılı polinomlar (TM-4513); soğutma 0.18 girdi [G].
-- ADR-007: 44.52 kg/s yanma odası havası hedef değil, bilgi kontrolü. rev002 REVIEW.md'de "yerini aldı" olarak kayıtlı.
-- Sürekli entalpi düzeltmesi (ADR-006); rev001 geçersiz.
-- M0 cycle v1 (rev001): hedefler tuttu ama W2/A choke sınırını aştı. Ders: hedefleri tutturmak sonucu doğrulamaz.
-- ICAO EDB v32: -7B27 OPR 28.63, BPR 5.0, T/O yakıt 1.284 kg/s [K]. SFC = 10.57 g/kNs [H].
+- M0 cycle v4 (ADR-008): Girão 2023 girdileri [KS]; FPR 1.765 girdi; bilinmeyenler W2, T4; hedefler itki, yakıt. V18/V8 kuralı kaldırıldı.
+- v4 nominal nokta (ICAO 121.43 kN, 1.284 kg/s) ÇÖZÜMSÜZ: bu yakıtla en fazla 118.0 kN (W2 395). rev004 yok; aktif rev003.
+- v4 doğrulama (Girão 125.73 kN): 9 kalemin 7'si kaldı (testlerde xfail strict).
+- M0 cycle v3 (rev003): değişken cp(T, FAR), NASA 7 katsayılı polinomlar; ADR-007 (44.52 kontrol).
+- Sürekli entalpi (ADR-006); rev001 geçersiz. Ders: hedefleri tutturmak sonucu doğrulamaz.
 - core tamam: BOM şeması, revizyon, konsept manifest, CR akışı, kanonik BOM yazıcı.
 
-## M0 v3 sonucu (rev003, soğutma 0.18)
-- W2 = 372.9 kg/s, W2/A = 217.3, FPR = 1.785, HPC PR = 13.63, T3 = 811.5 K [H].
-- T4 = 1646.5 K, T41 = 1576.3 K, FAR = 0.0252; yanma odası havası 50.96 kg/s (44.52'ye göre +%14.5) [H].
-- EGT (gösterilen) = 795.2 °C; TCDS sınırı 950 °C [T].
-- HARD (fan choke 217.3 < 241.3) geçti. SFC, W2, soğutma, EGT sınırı geçti. W2/A 190-215 bandını aştı (kaldı).
-- Soğutma taraması 0.14 -> 0.22: W2 367.0 -> 379.5, W2/A 213.9 -> 221.2, T4 1623 -> 1671 K, FPR 1.814 -> 1.754, EGT 804 -> 785 °C.
-- Karşılaştırma (44.52 hedef, değişken cp): soğutma 0.352, W2/A 240.2 (choke'a çok yakın), T4 1752 K, FPR 1.629.
-- Hassasiyet: e_poly +0.01 -> W2 2-6 kg/s azalır, T4 2-9 K, EGT 2-9 K artar.
+## v4 doğrulama sapmaları (model / Girão) [H]
+- W2 387.6 / 358.28 (+%8.2), T4 1643 / 1690.5 (−%2.8), T41 −%2.7, T45 −%4.1, T5 −%6.2, P5 146.3 / 171.1 (−%14.5), EGT −%4.4.
+- Geçen: T3 841.0 / 838.0 (+%0.4), P3 2997 (+%0.01).
+- Tanı: Girão'nun W2 ve T4'ü modele verilince T45 −%0.3, T5 −%0.7, P5 −%3.6, yakıt −%1.4; itki 120.8 kN (−%3.9).
+  Termodinamik yakın; özgül itki düşük. Şüpheliler, Girão'dan gelmeyen varsayımlar: cv 0.98 [G], LHV 43.0 [G], 100 kW çekiş [T].
+- cv 1.0 ile doğrulama: W2 +%2.7, sıcaklıklar ±%2 içinde, P5 −%5.9 (kalır).
+- Nominal nokta: Girão SFC 11.15, ICAO 10.57 g/(kN·s) (−%5.2). cv 1.0 + LHV 43.124 + çekiş 0 ile bile en fazla 121.2 kN.
 
 ## Açık konular
-- W2/A 217.3 > 215: W2/A bandı, fan çapı/göbek oranı [T] veya FPR'ye bakılmalı.
-- EGT 795 °C, 800-920 bilgi bandının altında; EGT formülü CFM56-3 katsayılarıyla [T].
-- Indriyati HPC havası 39.57 vs model çekirdek havası 62.1 kg/s (tanım farkı).
-- ICAO test koşulunda müşteri bleed/güç çekişi doğrulanmadı.
+- Nominal nokta için hangi veri seti: ICAO yakıtı mı, Girão verimleri mi? (İkisi birlikte tutmuyor.)
+- Lüle cv, LHV ve güç çekişi için Girão değerleri tezden okunmalı.
+- W2/A: doğrulama noktasında 225.9 > 215 (fan çapı/göbek oranı [T]).
+- Indriyati HPC havası 39.57 vs model çekirdek havası (tanım farkı).
 
 ## Sıradaki adımlar
-1. W2/A sapmasını açıkla (fan geometrisi [T] / bant) ve kayda geçir.
-2. M0 kapsamını tamamla: istasyon tablosu -> modül bütçeleri, arayüz sözleşmesi, review_criteria.
+1. Kullanıcı kararı: nominal nokta veri seti ve cv/LHV kaynağı; ardından rev004.
+2. M0 kapsamını tamamla: istasyon tablosu -> modül bütçeleri, arayüz sözleşmesi.
 3. Arayüz (Streamlit).
 4. M1 Inlet & Fan: ders + araştırma.
 

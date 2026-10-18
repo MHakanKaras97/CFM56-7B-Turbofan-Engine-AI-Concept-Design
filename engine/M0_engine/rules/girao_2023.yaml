@@ -1,0 +1,35 @@
+source:
+  document: 'Girão B.P., Development of a Prediction Model for the CFM56-7B Engine, MSc thesis, UBI, 2023'
+  figures: 'Fig. 4.9-4.10: GasTurb design point, test-cell data corrected to standard day'
+  tag: KS
+  note: facts only, own wording; see docs/sources.md
+validation_case:
+  description: Girão design point, used only by the v4 validation test (not a revision)
+  inputs:
+    thrust: {value: 125.73, unit: kN, tag: KS}
+    fuel: {value: 1.4023, unit: kg/s, tag: KS}
+    bpr: {value: 4.80, unit: '-', tag: KS}
+    opr: {value: 29.88, unit: '-', tag: KS, note: P3/P2}
+  references:
+    W2: {value: 358.28, unit: kg/s, tag: KS, kind: flow}
+    T3: {value: 838.0, unit: K, tag: KS, kind: temperature}
+    P3: {value: 2997.0, unit: kPa, tag: KS, kind: pressure}
+    T4: {value: 1690.5, unit: K, tag: KS, kind: temperature}
+    T41: {value: 1649.0, unit: K, tag: KS, kind: temperature}
+    T45: {value: 1220.9, unit: K, tag: KS, kind: temperature}
+    T5: {value: 902.1, unit: K, tag: KS, kind: temperature}
+    P5: {value: 171.1, unit: kPa, tag: KS, kind: pressure}
+    EGT: {value: 1124.0, unit: K, tag: KS, kind: temperature, note: 'formula value, EGT = a*(T45 - b*(T45 - T5))'}
+  tolerances:
+    temperature: {value: 0.02, unit: '-', tag: G}
+    flow: {value: 0.03, unit: '-', tag: G}
+    pressure: {value: 0.03, unit: '-', tag: G}
+info_refs:
+  combustor_air_W31: {value: 53.71, unit: kg/s, tag: KS, at_thrust_kN: 125.73}
+  velocity_ratio_ideal_takeoff: {value: 0.627, unit: '-', tag: KS, note: Girão ideal V18/V8 at take-off}
+spool_speeds:
+  description: Info references for M8 (shaft and bearing); M0 does not use them
+  girao_nominal_hp: {value: 14465.0, unit: rpm, tag: KS, source: Girão 2023}
+  girao_nominal_lp: {value: 5282.0, unit: rpm, tag: KS, source: Girão 2023}
+  yilmaz_takeoff_mean_n1: {value: 5086.0, unit: rpm, tag: KS, source: Yılmaz 2009}
+  yilmaz_takeoff_mean_n2: {value: 14403.0, unit: rpm, tag: KS, source: Yılmaz 2009}

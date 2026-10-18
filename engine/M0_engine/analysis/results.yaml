@@ -1,459 +1,102 @@
-model: M0 cycle v3, two-spool separate-flow, cooling air from HPC exit, variable cp(T,
-  FAR) from NASA 7-coefficient polynomials, continuous enthalpy (ADR-006, ADR-007)
-gas_model: nasa_glenn
-design_point:
-  condition: SLS ISA, max take-off
-  icao_uid: 3CM034
-  T0:
-    value: 288.15
-    unit: K
-    tag: G
-  P0:
-    value: 101325.0
-    unit: Pa
-    tag: G
-calibration:
-  iterations: 5
-  unknowns:
-  - W2
-  - T4
-  - FPR
-  targets:
-    thrust:
-      value: 121.43
-      unit: kN
-      tag: K
-    fuel_flow:
-      value: 1.284
-      unit: kg/s
-      tag: K
-    velocity_ratio: V18/V8 = eta_fan_is * eta_LPT_is
-  inputs:
-    cooling_fraction:
-      value: 0.18
-      unit: '- of core flow'
-      tag: G
-  W2:
-    value: 372.852
-    unit: kg/s
-    tag: H
-  T4:
-    value: 1646.55
-    unit: K
-    tag: H
-  FPR:
-    value: 1.78513
-    unit: '-'
-    tag: H
-stations:
-- station: '0'
-  Tt_K: 288.15
-  Pt_kPa: 101.33
-  W_kg_s: 372.85
-  FAR: 0.0
-- station: '2'
-  Tt_K: 288.15
-  Pt_kPa: 100.31
-  W_kg_s: 372.85
-  FAR: 0.0
-- station: '13'
-  Tt_K: 346.98
-  Pt_kPa: 179.07
-  W_kg_s: 310.71
-  FAR: 0.0
-- station: '18'
-  Tt_K: 346.98
-  Pt_kPa: 175.49
-  W_kg_s: 310.71
-  FAR: 0.0
-- station: '25'
-  Tt_K: 365.47
-  Pt_kPa: 210.65
-  W_kg_s: 62.142
-  FAR: 0.0
-- station: '3'
-  Tt_K: 811.54
-  Pt_kPa: 2871.9
-  W_kg_s: 62.142
-  FAR: 0.0
-- station: '4'
-  Tt_K: 1646.5
-  Pt_kPa: 2757.0
-  W_kg_s: 52.24
-  FAR: 0.025198
-- station: '41'
-  Tt_K: 1576.3
-  Pt_kPa: 2757.0
-  W_kg_s: 57.498
-  FAR: 0.022841
-- station: '45'
-  Tt_K: 1132.3
-  Pt_kPa: 629.77
-  W_kg_s: 63.426
-  FAR: 0.020662
-- station: '5'
-  Tt_K: 816.86
-  Pt_kPa: 143.35
-  W_kg_s: 63.426
-  FAR: 0.020662
-- station: '8'
-  Tt_K: 816.86
-  Pt_kPa: 143.35
-  W_kg_s: 63.426
-  FAR: 0.020662
-performance:
-  thrust:
-    value: 121.43
-    unit: kN
-    tag: H
-  thrust_bypass:
-    value: 96.9015
-    unit: kN
-    tag: H
-  thrust_core:
-    value: 24.5285
-    unit: kN
-    tag: H
-  fuel_flow:
-    value: 1.284
-    unit: kg/s
-    tag: H
-  fuel_air_ratio:
-    value: 0.025198
-    unit: '-'
-    tag: H
-  sfc:
-    value: 10.574
-    unit: g/(kN s)
-    tag: H
-  specific_thrust:
-    value: 325.679
-    unit: N/(kg/s)
-    tag: H
-  opr:
-    value: 28.63
-    unit: '-'
-    tag: K
-  bpr:
-    value: 5.0
-    unit: '-'
-    tag: K
-  core_pr_25_2:
-    value: 2.1
-    unit: '-'
-    tag: T
-  hpc_pr:
-    value: 13.6333
-    unit: '-'
-    tag: H
-  hpt_pr:
-    value: 4.37784
-    unit: '-'
-    tag: H
-  lpt_pr:
-    value: 4.39339
-    unit: '-'
-    tag: H
-  T4:
-    value: 1646.55
-    unit: K
-    tag: H
-  T41:
-    value: 1576.35
-    unit: K
-    tag: H
-  Tt44_hpt_exit_before_mixing:
-    value: 1163.36
-    unit: K
-    tag: H
-  W_core:
-    value: 62.142
-    unit: kg/s
-    tag: H
-  W_bypass:
-    value: 310.71
-    unit: kg/s
-    tag: H
-  W_combustor:
-    value: 50.9565
-    unit: kg/s
-    tag: H
-  W_cooling:
-    value: 11.1856
-    unit: kg/s
-    tag: H
-  W_cooling_ngv:
-    value: 5.25722
-    unit: kg/s
-    tag: H
-  W_cooling_rotor_lpt:
-    value: 5.92835
-    unit: kg/s
-    tag: H
-  V18:
-    value: 311.871
-    unit: m/s
-    tag: H
-  V8:
-    value: 386.726
-    unit: m/s
-    tag: H
-  velocity_ratio:
-    value: 0.80644
-    unit: '-'
-    tag: H
-  eta_fan_is:
-    value: 0.880694
-    unit: '-'
-    tag: H
-  eta_lpt_is:
-    value: 0.915687
-    unit: '-'
-    tag: H
-  A18:
-    value: 0.820564
-    unit: m2
-    tag: H
-  A8:
-    value: 0.340479
-    unit: m2
-    tag: H
-  nozzle18_choked: false
-  nozzle8_choked: false
-shaft_power_MW:
-  fan:
-    value: 18.3901
-    unit: MW
-    tag: H
-  booster:
-    value: 4.8376
-    unit: MW
-    tag: H
-  hpc:
-    value: 29.1216
-    unit: MW
-    tag: H
-  hpt:
-    value: 29.5168
-    unit: MW
-    tag: H
-  lpt:
-    value: 23.4623
-    unit: MW
-    tag: H
-  hp_offtake:
-    value: 0.1
-    unit: MW
-    tag: T
-fan:
-  face_area:
-    value: 1.71577
-    unit: m2
-    tag: T
-  specific_flow:
-    value: 217.309
-    unit: kg/(s m2)
-    tag: H
-  choke_mass_flux:
-    value: 241.287
-    unit: kg/(s m2)
-    tag: H
-egt:
-  model_K:
-    value: 1038.35
-    unit: K
-    tag: T
-  model_C:
-    value: 765.199
-    unit: degC
-    tag: T
-  displayed_C:
-    value: 795.199
-    unit: degC
-    tag: T
-  note: CFM56-3 form via Martins 2015, applied in K; displayed = model + SAC shunt
-checks:
-- name: Fan choke (HARD)
-  hard: true
-  value: 217.3
-  reference: 241.3
-  unit: kg/(s m2)
-  criterion: W2/A < choke mass flux at SLS ISA
-  result: pass
-- name: Fan specific flow W2/A
-  value: 217.3
-  reference:
-  - 190.0
-  - 215.0
-  unit: kg/(s m2)
-  criterion: 190 <= W2/A <= 215
-  result: fail
-- name: W2 vs estimate
-  value: 372.85
-  reference: 354.7
+model: M0 cycle v4, two-spool separate-flow, CFM56-7B inputs (Girão 2023), secondary
+  air from HPC exit, variable cp(T, FAR) NASA 7-coefficient polynomials (ADR-006,
+  ADR-007, ADR-008)
+status: infeasible
+reason: no W2, T4 matches thrust and fuel flow with the current inputs
+solver_message: calibration did not converge in 50 iterations; residuals [-0.03739868690818737,
+  -0.009366615292037084]
+max_reachable_thrust:
+  value: 118.02
+  unit: kN
+  tag: H
+  at_W2_kg_s: 395.0
+  at_T4_K: 1583.1
+target_thrust:
+  value: 121.43
+  unit: kN
+  tag: K
+target_fuel:
+  value: 1.284
   unit: kg/s
-  deviation: 0.0512
-  criterion: within 10%
-  result: pass
-- name: Total cooling fraction
-  value: 0.18
-  reference:
-  - 0.12
-  - 0.22
-  unit: '- of core flow'
-  criterion: 0.12 <= c <= 0.22 (input since v3)
-  result: pass
-- name: SFC vs ICAO/TCDS
-  value: 10.574
-  reference: 10.574
-  unit: g/(kN s)
-  criterion: within 0.5%
-  result: pass
-- name: EGT displayed vs TCDS limit
-  value: 795.2
-  reference: 950.0
-  unit: degC
-  margin: 154.8
-  criterion: model + 30 K shunt < 950
-  result: pass
-- name: Combustor air vs Lopez-Pintor
-  value: 50.96
-  reference: 44.52
-  unit: kg/s
-  deviation: 0.145
-  criterion: 'info only (ADR-007: modeled source value, flow definition unclear)'
-  result: info
-- name: EGT displayed vs expected band
-  value: 795.2
-  reference:
-  - 800.0
-  - 920.0
-  unit: degC
-  criterion: info only
-  in_band: false
-  result: info
-- name: T4 vs references
-  value: 1646.5
-  reference:
-    estimate: 1450.0
-    indriyati_turbine_in: 1553.0
-  unit: K
-  deviation:
-    estimate: 0.136
-    indriyati_turbine_in: 0.0602
-  criterion: info only
-  result: info
-- name: T3 vs test cell
-  value: 811.54
-  reference: 832.4
-  unit: K
-  deviation: -0.0251
-  criterion: info only (test cell T0 298 K, not ISA)
-  result: info
-hard_checks_passed: true
-cooling_sweep:
-  method: W2, T4, FPR calibrated to thrust, fuel and V18/V8 at each cooling fraction
-  rows:
-  - cooling_fraction: 0.14
-    W2_kg_s: 367.03
-    W2_per_A: 213.9
-    T4_K: 1623.1
-    T41_K: 1571.3
-    FPR: 1.814
-    EGT_displayed_C: 804.3
-    combustor_air_kg_s: 52.61
-  - cooling_fraction: 0.16
-    W2_kg_s: 369.85
-    W2_per_A: 215.6
-    T4_K: 1634.7
-    T41_K: 1573.9
-    FPR: 1.8
-    EGT_displayed_C: 799.9
-    combustor_air_kg_s: 51.78
-  - cooling_fraction: 0.18
-    W2_kg_s: 372.85
-    W2_per_A: 217.3
-    T4_K: 1646.5
-    T41_K: 1576.3
-    FPR: 1.785
-    EGT_displayed_C: 795.2
-    combustor_air_kg_s: 50.96
-  - cooling_fraction: 0.2
-    W2_kg_s: 376.07
-    W2_per_A: 219.2
+  tag: K
+envelope:
+  description: fuel flow matched by T4 at each W2; thrust is the free output
+  points:
+  - W2_kg_s: 300.0
+    T4_K: 1791.6
+    thrust_kN: 106.53
+  - W2_kg_s: 305.0
+    T4_K: 1777.8
+    thrust_kN: 107.46
+  - W2_kg_s: 310.0
+    T4_K: 1764.3
+    thrust_kN: 108.36
+  - W2_kg_s: 315.0
+    T4_K: 1751.2
+    thrust_kN: 109.25
+  - W2_kg_s: 320.0
+    T4_K: 1738.5
+    thrust_kN: 110.11
+  - W2_kg_s: 325.0
+    T4_K: 1726.2
+    thrust_kN: 110.94
+  - W2_kg_s: 330.0
+    T4_K: 1714.2
+    thrust_kN: 111.74
+  - W2_kg_s: 335.0
+    T4_K: 1702.5
+    thrust_kN: 112.5
+  - W2_kg_s: 340.0
+    T4_K: 1691.1
+    thrust_kN: 113.24
+  - W2_kg_s: 345.0
+    T4_K: 1680.0
+    thrust_kN: 113.93
+  - W2_kg_s: 350.0
+    T4_K: 1669.2
+    thrust_kN: 114.59
+  - W2_kg_s: 355.0
     T4_K: 1658.6
-    T41_K: 1578.6
-    FPR: 1.77
-    EGT_displayed_C: 790.3
-    combustor_air_kg_s: 50.14
-  - cooling_fraction: 0.22
-    W2_kg_s: 379.52
-    W2_per_A: 221.2
-    T4_K: 1670.9
-    T41_K: 1580.5
-    FPR: 1.754
-    EGT_displayed_C: 785.1
-    combustor_air_kg_s: 49.34
-comparison_combustor_air_target:
-  method: 'v2 setup with variable cp: combustor air 44.52 kg/s as fourth target, cooling
-    solved'
-  row:
-    cooling_fraction: 0.3519
-    W2_kg_s: 412.17
-    W2_per_A: 240.2
-    T4_K: 1752.5
-    T41_K: 1580.4
-    FPR: 1.629
-    EGT_displayed_C: 739.4
-    combustor_air_kg_s: 44.52
-sensitivity:
-  method: recalibrated per case (W2, T4, FPR); cooling cases shift the cooling input
-  cases:
-  - case: e_fan +0.01
-    dW2_kg_s: -4.468
-    dT4_K: 9.006
-    dEGT_K: 7.273
-  - case: e_fan -0.01
-    dW2_kg_s: 4.629
-    dT4_K: -9.129
-    dEGT_K: -7.376
-  - case: e_booster +0.01
-    dW2_kg_s: -1.675
-    dT4_K: 1.716
-    dEGT_K: 2.001
-  - case: e_booster -0.01
-    dW2_kg_s: 1.756
-    dT4_K: -1.807
-    dEGT_K: -2.091
-  - case: e_hpc +0.01
-    dW2_kg_s: -5.86
-    dT4_K: 6.239
-    dEGT_K: 9.215
-  - case: e_hpc -0.01
-    dW2_kg_s: 6.568
-    dT4_K: -7.082
-    dEGT_K: -10.05
-  - case: e_hpt +0.01
-    dW2_kg_s: -4.622
-    dT4_K: 9.321
-    dEGT_K: 7.202
-  - case: e_hpt -0.01
-    dW2_kg_s: 5.067
-    dT4_K: -9.981
-    dEGT_K: -7.728
-  - case: e_lpt +0.01
-    dW2_kg_s: -4.695
-    dT4_K: 9.469
-    dEGT_K: 7.122
-  - case: e_lpt -0.01
-    dW2_kg_s: 4.921
-    dT4_K: -9.697
-    dEGT_K: -7.32
-  - case: cooling_fraction +0.02
-    dW2_kg_s: 3.214
-    dT4_K: 12.05
-    dEGT_K: -4.922
-  - case: cooling_fraction -0.02
-    dW2_kg_s: -3.004
-    dT4_K: -11.83
-    dEGT_K: 4.663
+    thrust_kN: 115.21
+  - W2_kg_s: 360.0
+    T4_K: 1648.4
+    thrust_kN: 115.78
+  - W2_kg_s: 365.0
+    T4_K: 1638.3
+    thrust_kN: 116.31
+  - W2_kg_s: 370.0
+    T4_K: 1628.6
+    thrust_kN: 116.78
+  - W2_kg_s: 375.0
+    T4_K: 1619.0
+    thrust_kN: 117.18
+  - W2_kg_s: 380.0
+    T4_K: 1609.7
+    thrust_kN: 117.53
+  - W2_kg_s: 385.0
+    T4_K: 1600.6
+    thrust_kN: 117.79
+  - W2_kg_s: 390.0
+    T4_K: 1591.8
+    thrust_kN: 117.96
+  - W2_kg_s: 395.0
+    T4_K: 1583.1
+    thrust_kN: 118.02
+  - W2_kg_s: 400.0
+    T4_K: 1574.6
+    thrust_kN: 117.94
+  - W2_kg_s: 405.0
+    T4_K: 1566.3
+    thrust_kN: 117.69
+  - W2_kg_s: 410.0
+    T4_K: 1558.2
+    thrust_kN: 117.2
+  - W2_kg_s: 415.0
+    T4_K: 1550.3
+    thrust_kN: 116.35
+  - W2_kg_s: 420.0
+    T4_K: 1542.5
+    thrust_kN: 114.82
+  - W2_kg_s: 425.0
+    T4_K: 1534.9
+    thrust_kN: 110.65
