@@ -1,0 +1,9 @@
+revision: rev003
+parent_revision: rev002
+date: '2026-10-18T08:29:34Z'
+summary: 'Cycle v3: variable cp(T, FAR) NASA polynomials, cooling 0.18 input, combustor
+  air as check'
+reason: ADR-007 (44.52 kg/s check, not target); ADR-006 planned variable cp
+change_request: null
+code_commit: 799b4e1936bb4b7bc3a3b3adabf699fa02d23f23
+outputs: []
