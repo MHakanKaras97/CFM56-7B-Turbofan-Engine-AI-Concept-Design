@@ -1,0 +1,10 @@
+revision: rev007
+parent_revision: rev006
+revision_type: maintenance
+date: '2026-10-18T16:28:43Z'
+summary: Params notes quoted; W2 tolerance as its own quantity (w2_tolerance)
+reason: 'ADR-012 maintenance: params schema (quantity keys value, unit, tag, note,
+  source); no numeric change'
+change_request: null
+code_commit: ddcc409f2e5ab876575b6341de6e80e4b58dfcc2
+outputs: []

@@ -36,3 +36,17 @@ Wording correction to the previous entry: rev004 was on the HIGH ideal-V18/V8 si
 rev005 superseded by rev006 (same numbers). Reason: results now carry `assumptions` ([T] inputs from params) and `ref_tag` per check.
 - params identical; core/diff.py rev005 -> rev006: no params change, no numeric result change, only added keys.
 - icd.yaml regenerated from rev006; concept002 pins M0 rev006, M1-M9 null.
+
+## 2026-10-18 Revision types (ADR-012), retroactive classification
+Classification only; the records themselves are unchanged. M0 acceptance: rev005 (records/ACCEPTED).
+- rev001: design, before acceptance (no CR needed). Invalid (see the rev001 entry).
+- rev002: design, before acceptance.
+- rev003: design, before acceptance.
+- rev004: design, before acceptance.
+- rev005: design, before acceptance; the accepted revision (M0 v1 acceptance list 6/6).
+- rev006: maintenance. core.diff.numeric_changes(rev005 -> rev006) = none; only added keys (assumptions, ref_tag).
+
+## 2026-10-18 rev007 (maintenance)
+rev006 superseded by rev007. Params notes quoted (unquoted commas had created stray keys); W2 tolerance moved from checks.w2_ref.tolerance to checks.w2_tolerance (same value 0.10).
+- numeric_changes(rev006 -> rev007): no blocking change; one move (checks.w2_ref.tolerance -> checks.w2_tolerance.value, 0.1).
+- results: only the text of assumptions[components.cfg_8].note changed. icd.yaml regenerated from rev007; concept003 pins M0 rev007.
