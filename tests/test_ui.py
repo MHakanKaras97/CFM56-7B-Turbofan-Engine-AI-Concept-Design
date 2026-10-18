@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from core.records import active_revision, read_revision
-from core.requests import load_cr
+from core.records import active_revision, read_revision, revision_ids
+from core.requests import decide, load_cr
 from ui import data, widgets
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -131,6 +131,7 @@ def ui_repo(tmp_path, monkeypatch) -> Path:
 
     shutil.copytree(ROOT / "engine", tmp_path / "engine",
                     ignore=shutil.ignore_patterns("__pycache__", "CR-*.yaml", "sources"))
+    shutil.copytree(ROOT / "tools" / "data", tmp_path / "tools" / "data")  # gas data for apply()
     icd = data.load_icd()
     eta = icd["modules"]["M3"]["budget"]["eta_hpc"]["value"]
     cr_id = integration_check("M3", {"eta_hpc": eta - 0.03}, cr_root=tmp_path)["cr"]
@@ -184,3 +185,75 @@ def test_decision_flow_records_decision(ui_repo):
 def test_save_needs_a_note(ui_repo):
     at = run(widgets.PAGES["talepler"])
     assert at.button(key="save_CR-001").disabled
+
+
+# --- phase 3b: apply, revert, verify, concept diff link (temporary copy only) ---------------------
+
+def tree_sha(root: Path) -> dict:
+    return {str(f.relative_to(root)): hashlib.sha256(f.read_bytes()).hexdigest()
+            for f in (root / "engine").rglob("*") if f.is_file() and "__pycache__" not in f.parts}
+
+
+def approved_cr(root: Path) -> None:
+    decide("CR-001", True, "accept achieved HPC efficiency", root=root, option="a")
+
+
+def test_apply_cancel_writes_nothing(ui_repo):
+    approved_cr(ui_repo)
+    before = tree_sha(ui_repo)
+    at = run(widgets.PAGES["talepler"])
+    at.button(key="apply_CR-001").click().run()
+    assert {"confirm_ok", "confirm_cancel"} <= {b.key for b in at.button}
+    at.button(key="confirm_cancel").click().run()
+    assert not at.exception and tree_sha(ui_repo) == before
+    assert load_cr("CR-001", root=ui_repo)["status"] == "approved"
+
+
+def test_apply_flow_creates_design_revision(ui_repo):
+    approved_cr(ui_repo)
+    latest = revision_ids("M0", ui_repo)[-1]
+    new = f"rev{int(latest[3:]) + 1:03d}"
+    at = run(widgets.PAGES["talepler"])
+    at.button(key="apply_CR-001").click().run()
+    at.button(key="confirm_ok").click().run()
+    assert not at.exception
+    cr = load_cr("CR-001", root=ui_repo)
+    assert cr["status"] == "applied" and cr["applied_revisions"] == {"M0": new}
+    manifest = read_revision("M0", new, "manifest.yaml", ui_repo)
+    assert (manifest["revision_type"], manifest["change_request"]) == ("design", "CR-001")
+    assert f"CR-001 uygulandı: M0 {new}" in " ".join(s.value for s in at.success)
+    assert active_revision("M0") == latest  # real repo untouched
+
+
+def test_revert_cancel_and_confirm(ui_repo):
+    active = active_revision("M0", ui_repo)
+    target = revision_ids("M0", ui_repo)[-2]
+    before = tree_sha(ui_repo)
+    at = run(widgets.PAGES["revizyonlar"])
+    assert at.button(key=f"revert_{active}").disabled
+    at.button(key=f"revert_{target}").click().run()
+    at.button(key="confirm_cancel").click().run()
+    assert tree_sha(ui_repo) == before
+    at.button(key=f"revert_{target}").click().run()
+    at.button(key="confirm_ok").click().run()
+    assert not at.exception and active_revision("M0", ui_repo) == target
+    assert active_revision("M0") == active  # real repo untouched
+
+
+def test_verify_reports_result(ui_repo):
+    before = tree_sha(ui_repo)
+    rev = active_revision("M0", ui_repo)
+    at = run(widgets.PAGES["revizyonlar"])
+    at.button(key=f"verify_{rev}").click().run()
+    at.button(key="confirm_ok").click().run()
+    assert "kayıtla aynı" in " ".join(s.value for s in at.success)
+    assert tree_sha(ui_repo) == before  # read-only
+
+
+def test_concept_diff_row_opens_module_diff():
+    at = run(widgets.PAGES["revizyonlar"])
+    concepts = data.load()["concepts"]
+    a, b = concepts[-2]["modules"]["M0"], concepts[-1]["modules"]["M0"]
+    at.button(key="cdiff_M0").click().run()
+    assert not at.exception
+    assert (at.selectbox(key="rev_a").value, at.selectbox(key="rev_b").value) == (a, b)

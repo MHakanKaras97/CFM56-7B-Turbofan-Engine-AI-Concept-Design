@@ -22,6 +22,9 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- ADR-012 revizyon türleri: tasarım / bakım; core bakım revizyonunu sayısal farkta reddeder, kabul edilmiş modülde CR'siz tasarım revizyonunu reddeder. M0 kabulü: rev005 (records/ACCEPTED). rev001-006 REVIEW.md'de sınıflandırıldı (rev006 bakım).
+- Params şeması (core/params.py, params.schema.json): büyüklük girdisi yalnızca value, unit, tag, note, source. cycle_params notları tırnaklandı, W2 toleransı `checks.w2_tolerance` oldu. M0 rev007 = bakım (sayısal fark yok; 0.1 yalnızca taşındı), concept003.
+- UI faz 3b: Talepler "Uygula", Revizyonlar "Bu revizyona dön" / "Doğrula", konsept farkından modül farkına geçiş; hepsi onay penceresiyle ve core üzerinden.
 - UI görsel düzeltmeler: tam genişlik renkli motor şeridi, metrik etiketleri rozet (değer temiz), küçük sayfa başlıkları, Bilgi sekmesinde küçük başlıklar. engine_reference.svg: şeffaf zemin, currentColor, Türkçe etiketler (label_tr, rules_tr), mil açıklamaları eksen altında, 3/31/44 etiketleri ayrık. Ekran görüntüleri localhost:8501'de açık ve koyu temada alındı (başsız Chrome, DevTools).
 - UI faz 3: Talepler (etki kartları, seçenekler, zorunlu not, onay penceresi -> yalnızca decide, decided_by "user (UI)", geçmiş), Revizyonlar (modül/konsept zaman çizelgesi, A->B farkı), Öğrenme (notlar, kaynaklar, etiket açıklaması), Modüller (liste + modül şablonu), şerit/kart tıklama ile gezinme, M0 Bilgi sekmesi. Uygula, geri dönüş ve doğrulama düğmeleri henüz yok.
 - M0 rev006 + concept002: results.yaml'a `assumptions` ([T] girdiler) ve kontrollerde `ref_tag`; sayılar rev005 ile aynı (core/diff ile doğrulandı). icd.yaml rev006'dan yeniden üretildi.
@@ -39,7 +42,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Params CR'leri (apply: params -> yeniden hesap -> revizyon -> results.yaml + icd.yaml); bütçe CR'si seçenekleri (a)/(b).
 - M0 ICD ve bütçeler, belirsizlik bandı, ders 02; rev005 benzerlik koşulu (ADR-009), Girão 18/19.
 
-## M0 v1 özeti (rev005 = rev006 sayıları) [H]
+## M0 v1 özeti (rev005 = rev006 = rev007 sayıları) [H]
 - W2 345.4 kg/s, W2/A 201.3, FPR 1.765 [KS], HPC PR 10.85, T3 817.5 K, T4 1670.7 K, T41 1629.2 K.
 - W31 50.08 kg/s, SFC 10.574, EGT gösterilen 874.9 °C (pay 75 K), ideal V18/V8 0.6036, itki tavanına pay %7.8.
 - Belirsizlik bandı: T4 1659-1682 K (Δη'nın hangi gruba uygulandığına göre).
@@ -51,7 +54,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - .step ilişkilendirmesi kullanıcıda bekliyor. Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
-1. UI kalanlar: CR Uygula düğmesi, revizyon geri dönüş + verify, konsept farkından modül farkına geçiş.
+1. Açık: revert analiz dosyalarını (params, results, icd) geri getirmiyor; revert_concept arayüzde yok.
 2. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.

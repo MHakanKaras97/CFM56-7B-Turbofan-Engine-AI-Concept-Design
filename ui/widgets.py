@@ -3,6 +3,8 @@ so the light and dark themes both work."""
 
 import streamlit as st
 
+from core.records import RecordError
+from core.requests import CRError
 from ui import data
 
 PAGES = {
@@ -91,3 +93,56 @@ def strip_style(rows: list[dict]) -> None:
         rules.append(f".st-key-strip_{r['id']} button:hover {{ filter: brightness(1.15); color: #fff; "
                      f"border-color: {c}; }}")
     st.html("<style>" + " ".join(rules) + "</style>")
+
+
+# --- confirmed actions -----------------------------------------------------------------------
+# A button stores the action in session state; the dialog stays open on reruns until "Vazgeç",
+# dismissal or the confirmed call. Only the runner given by the page writes, and it calls core/.
+
+PENDING_ACTION = "ui_pending_action"
+
+
+def request(kind: str, title: str, lines: list[str], ok: str, warning: str | None = None, **args) -> None:
+    st.session_state[PENDING_ACTION] = {"kind": kind, "title": title, "lines": lines, "ok": ok,
+                                        "warning": warning, **args}
+
+
+def _clear() -> None:
+    st.session_state.pop(PENDING_ACTION, None)
+
+
+@st.dialog("Onay", on_dismiss=_clear)
+def _confirm(p: dict, run) -> None:
+    st.markdown(f"**{p['title']}**")
+    for line in p["lines"]:
+        st.markdown(line)
+    if p.get("warning"):
+        st.caption(p["warning"])
+    ok, back = st.columns(2)
+    if ok.button(p["ok"], key="confirm_ok", type="primary", width="stretch"):
+        try:
+            message = run(p)
+        except (CRError, RecordError) as exc:
+            st.session_state["ui_error"] = str(exc)
+        else:
+            st.session_state["ui_done"] = message
+        _clear()
+        st.rerun()
+    if back.button("Vazgeç", key="confirm_cancel", width="stretch"):
+        _clear()
+        st.rerun()
+
+
+def confirm_pending(runners: dict) -> None:
+    """Open the dialog for the pending action, if it belongs to this page (call at the end of the page)."""
+    p = st.session_state.get(PENDING_ACTION)
+    if p and p["kind"] in runners:
+        _confirm(p, runners[p["kind"]])
+
+
+def flash() -> None:
+    """Result of the last confirmed action."""
+    if "ui_done" in st.session_state:
+        st.success(st.session_state.pop("ui_done"))
+    if "ui_error" in st.session_state:
+        st.error(st.session_state.pop("ui_error"))

@@ -1,43 +1,27 @@
-"""Change requests. The only write is core.requests.decide, after a confirmation dialog."""
+"""Change requests. Writes: core.requests.decide and core.requests.apply, each after a confirmation dialog."""
 
 import pandas as pd
 import streamlit as st
 
-from core.requests import CRError, decide
+from core.requests import apply, decide
 from ui import data, widgets
 from ui.widgets import badge
 
 DECIDED_BY = "user (UI)"
-PENDING = "talep_pending"  # {"cr", "approve", "option", "note"} while the dialog is open
 STATUS_COLOR = {"open": "orange", "approved": "blue", "rejected": "gray", "applied": "green"}
 
 snap = data.snapshot()
 crs = snap["crs"]
 
 
-def cancel() -> None:
-    st.session_state.pop(PENDING, None)
+def run_decide(p: dict) -> str:
+    decide(p["cr"], p["approve"], p["note"], root=data.root(), option=p["option"], decided_by=DECIDED_BY)
+    return f"{p['cr']}: karar kaydedildi ({'onay' if p['approve'] else 'ret'})."
 
 
-@st.dialog("Kararı onayla", on_dismiss=cancel)
-def confirm(p: dict) -> None:
-    verdict = "ONAY" if p["approve"] else "RET"
-    st.markdown(f"**{p['cr']}** için karar: **{verdict}**" + (f" · seçenek ({p['option']})" if p["option"] else ""))
-    st.markdown(f"Not: {p['note']}")
-    st.caption(f"Kaydeden: {DECIDED_BY}. Karar CR dosyasına yazılır; geri alınamaz.")
-    ok, back = st.columns(2)
-    if ok.button("Kaydet", key="confirm_ok", type="primary", width="stretch"):
-        try:
-            decide(p["cr"], p["approve"], p["note"], root=data.root(), option=p["option"], decided_by=DECIDED_BY)
-        except CRError as exc:
-            st.session_state["talep_error"] = str(exc)
-        else:
-            st.session_state["talep_done"] = f"{p['cr']}: karar kaydedildi ({verdict.lower()})."
-        cancel()
-        st.rerun()
-    if back.button("Vazgeç", key="confirm_cancel", width="stretch"):
-        cancel()
-        st.rerun()
+def run_apply(p: dict) -> str:
+    revisions = apply(p["cr"], root=data.root())
+    return f"{p['cr']} uygulandı: " + ", ".join(f"{m} {r}" for m, r in revisions.items())
 
 
 def impact_block(cr: dict) -> bool:
@@ -92,16 +76,18 @@ def decision_form(cr: dict, approvable: bool) -> None:
     if blocked:
         st.caption("Onay devre dışı: etki analizi yok veya etkilenen modül listesi boş.")
     if st.button("Kararı kaydet", key=f"save_{key}", type="primary", disabled=blocked or not note.strip()):
-        st.session_state[PENDING] = {"cr": key, "approve": approve, "option": option, "note": note.strip()}
+        verdict = "ONAY" if approve else "RET"
+        widgets.request("decide", f"{key} için karar: {verdict}" + (f" · seçenek ({option})" if option else ""),
+                        [f"Not: {note.strip()}"], "Kaydet",
+                        f"Kaydeden: {DECIDED_BY}. Karar CR dosyasına yazılır; geri alınamaz.",
+                        cr=key, approve=approve, option=option, note=note.strip())
 
 
 widgets.page_title("Talepler")
 n_open = sum(cr["status"] == "open" for cr in crs)
 st.markdown(f"{badge(f'{n_open} açık', 'orange' if n_open else 'gray')} {badge(f'{len(crs) - n_open} kapalı', 'gray')}")
 
-for k, kind in (("talep_done", st.success), ("talep_error", st.error)):
-    if k in st.session_state:
-        kind(st.session_state.pop(k))
+widgets.flash()
 
 if not crs:
     st.info("Kayıtlı değişiklik talebi yok.")
@@ -122,10 +108,16 @@ for cr in crs:
             option = f" · seçenek ({d['option']})" if d.get("option") else ""
             st.markdown(f"Karar: {d.get('date', '-')}{option} · {d.get('decided_by', 'kaydeden belirtilmemiş')}")
             st.caption(d.get("note", ""))
+            if cr["status"] == "approved" and st.button("Uygula", key=f"apply_{cr['id']}", type="primary",
+                                                        icon=":material/play_arrow:"):
+                widgets.request("apply", f"{cr['id']} uygulansın mı?",
+                                [f"{len(cr['changes'])} değişiklik: "
+                                 + ", ".join(f"{c['module']} {c['path']}" for c in cr["changes"])],
+                                "Uygula", "core.requests.apply: değişiklikler yazılır, modül hesabı yeniden çalışır, "
+                                          "her modül için yeni bir tasarım revizyonu oluşur.", cr=cr["id"])
             if cr.get("applied_revisions"):
                 st.caption("Uygulanan revizyonlar: " + ", ".join(f"{m} {r}" for m, r in cr["applied_revisions"].items()))
         with st.expander("Geçmiş"):
             history(cr)
 
-if PENDING in st.session_state:
-    confirm(st.session_state[PENDING])
+widgets.confirm_pending({"decide": run_decide, "apply": run_apply})

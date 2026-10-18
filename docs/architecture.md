@@ -45,6 +45,7 @@
 - CR değişiklik türleri: `bom` (bom.yaml) ve `params` (`engine/<M>/analysis/*_params.yaml`). Bir params değişikliği uygulanınca modül hesabı (`analysis/calc.py`) yeniden çalışır, yeni revizyon oluşur ve türetilmiş dosyalar (M0 için `results.yaml`, `icd.yaml`) yeniden üretilir.
 - Bütçe CR'si (M0 entegrasyon kontrolü sınırı aşınca) iki seçenek sunar: (a) ulaşılan değer M0 params'a yazılır ve çevrim yeniden dengelenir, (b) modül yeniden tasarlanır (M0 değişmez).
 - Çakışmada kullanıcı karar verir; karar kaydedilir.
+- Revizyon türleri (ADR-012): tasarım (sayı/geometri; kabul edilmiş modülde CR şart) ve bakım (yalnızca şema/üst veri/metin; CR yok, sayısal fark varsa core reddeder). Kabul `records/ACCEPTED` ile işaretlenir. Params dosyaları `core/schemas/params.schema.json` ile doğrulanır.
 
 ## 9. Güven etiketleri
 - `[K]` birincil kaynak

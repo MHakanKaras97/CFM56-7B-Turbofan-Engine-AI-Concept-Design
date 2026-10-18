@@ -1,9 +1,13 @@
-"""Revision and concept timelines, and the A -> B difference from core/diff.py. Read-only."""
+"""Revision and concept timelines, the A -> B difference (core/diff.py), revert and verify (core/records.py).
+
+Writes: core.records.revert only, after a confirmation dialog. Verify only reads.
+"""
 
 import pandas as pd
 import streamlit as st
 
 from core.diff import is_empty
+from core.records import RecordError, revert, verify
 from ui import data, widgets
 from ui.widgets import badge
 
@@ -25,23 +29,62 @@ def value(x) -> str:
     return data.num(x)
 
 
+def run_revert(p: dict) -> str:
+    revert(p["module"], p["rev"], root=data.root())
+    return f"{p['module']}: aktif revizyon artık {p['rev']}."
+
+
+def run_verify(p: dict) -> str:
+    problems = verify(p["module"], p["rev"], root=data.root())
+    if problems:
+        raise RecordError(f"{p['module']} {p['rev']}: doğrulama başarısız: " + "; ".join(problems))
+    return f"{p['module']} {p['rev']}: çıktı özetleri (sha256) kayıtla aynı."
+
+
+def reset_diff() -> None:
+    for k in ("rev_a", "rev_b"):
+        st.session_state.pop(k, None)
+
+
+def show_module_diff(module: str, rev_a: str, rev_b: str) -> None:
+    st.session_state.update(rev_module=module, rev_a=rev_a, rev_b=rev_b)
+
+
+TYPE_TR = {"design": "tasarım", "maintenance": "bakım"}
+
 widgets.page_title("Revizyonlar")
+widgets.flash()
 if not started:
     st.info("Henüz kayıtlı revizyon yok.")
     st.stop()
 
-module = st.selectbox("Modül", started, format_func=lambda m: f"{m} {data.NAMES_TR[m]}", key="rev_module")
+module = st.selectbox("Modül", started, format_func=lambda m: f"{m} {data.NAMES_TR[m]}", key="rev_module",
+                      on_change=reset_diff)
 manifests = snap["revisions"][module]
 revs = [m["revision"] for m in manifests]
 
 widgets.section("Modül zaman çizelgesi")
 st.markdown(" → ".join(badge(f"{r} aktif", "blue") if r == active[module] else badge(r, "gray") for r in revs))
-st.dataframe(pd.DataFrame([
-    {"Revizyon": m["revision"] + (" (aktif)" if m["revision"] == active[module] else ""), "Tarih": m["date"],
-     "Özet": m["summary"], "Gerekçe": m["reason"], "CR": m["change_request"] or "-",
-     "Kod commit": (m["code_commit"] or "-")[:10]}
-    for m in reversed(manifests)
-]), hide_index=True, width="stretch")
+for m in reversed(manifests):
+    rev, is_active = m["revision"], m["revision"] == active[module]
+    with st.container(border=True):
+        info, act = st.columns([5, 2], vertical_alignment="center")
+        kind = TYPE_TR.get(m.get("revision_type"), "tür kayıtlı değil (REVIEW.md)")
+        info.markdown(f"{badge(rev + (' aktif' if is_active else ''), 'blue' if is_active else 'gray')} "
+                      f"{m['summary']}")
+        info.caption(f"{m['date']} · {kind} · CR {m['change_request'] or '-'} · commit "
+                     f"{(m['code_commit'] or '-')[:10]} · {m['reason']}")
+        b1, b2 = act.columns(2)
+        if b1.button("Bu revizyona dön", key=f"revert_{rev}", disabled=is_active, width="stretch"):
+            widgets.request("revert", f"{module}: {rev} aktif yapılsın mı?",
+                            [f"Şu an aktif: {active[module]} → yeni aktif: {rev}"], "Aktif yap",
+                            "core.records.revert: yalnızca records/ACTIVE ve bom.yaml değişir; kayıtlar silinmez. "
+                            "Analiz dosyaları (params, results.yaml, icd.yaml) ve aktif konsept değişmez.",
+                            module=module, rev=rev)
+        if b2.button("Doğrula", key=f"verify_{rev}", width="stretch"):
+            widgets.request("verify", f"{module} {rev} doğrulansın mı?",
+                            ["Kayıttaki çıktı dosyalarının sha256 özetleri yeniden hesaplanır (yalnızca okuma)."],
+                            "Doğrula", module=module, rev=rev)
 
 widgets.section("Fark görünümü")
 default_b = revs.index(active[module]) if active[module] in revs else len(revs) - 1
@@ -88,9 +131,13 @@ if len(concepts) >= 2:
     c_b = cb.selectbox("Konsept B", ids, index=len(ids) - 1, key="concept_b")
     c_a = ca.selectbox("Konsept A", ids, index=max(ids.index(c_b) - 1, 0), key="concept_a")
     rows = data.diff_concepts(c_a, c_b)
-    if rows:
-        st.dataframe(pd.DataFrame([{"Modül": r["module"], "A": r["old"] or "-", "B": r["new"] or "-"} for r in rows]),
-                     hide_index=True, width="stretch")
-    else:
+    for r in rows:
+        a, b, link = st.columns([1, 3, 2], vertical_alignment="center")
+        a.markdown(f"**{r['module']}**")
+        b.markdown(f"{r['old'] or '-'} → {r['new'] or '-'}")
+        link.button("Modül farkını göster", key=f"cdiff_{r['module']}", disabled=not (r["old"] and r["new"]),
+                    on_click=show_module_diff, args=(r["module"], r["old"], r["new"]), width="stretch")
+    if not rows:
         st.success("Sabitlenen revizyonlar aynı.")
-st.caption("Geri dönüş (Aktif yap) ve çıktı doğrulama bu aşamada yok; salt okunur.")
+
+widgets.confirm_pending({"revert": run_revert, "verify": run_verify})

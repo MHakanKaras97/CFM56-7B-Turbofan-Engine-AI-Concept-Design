@@ -3,7 +3,7 @@
 Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler.png` (bu klasörde). Karar: ADR-003 (Streamlit).
 
 ## 1. Temel kurallar
-- **Arayüz hiçbir dosyaya doğrudan yazmaz.** Bütün yazma işlemleri `core/` üzerinden yapılır: `core.requests` (decide, set_impact, apply), `core.records` (revert, revert_concept, create_concept). Okuma doğrudan dosyalardan yapılabilir.
+- **Arayüz hiçbir dosyaya doğrudan yazmaz.** Bütün yazma işlemleri `core/` üzerinden yapılır: `core.requests` (decide, apply), `core.records` (revert). Her yazma bir onay penceresinden geçer (`ui/widgets.py`: `request` → `confirm_pending`); "Vazgeç" veya pencereyi kapatmak hiçbir şey yazmaz. Sonuç sayfanın üstünde başarı/hata kutusuyla gösterilir. Okuma doğrudan dosyalardan yapılabilir.
 - Türetilmiş dosyalar (`results.yaml`, `icd.yaml`, `section.svg`, `engine_reference.svg`) yalnızca gösterilir; düzenleme alanı olmaz.
 - Gösterilen her sayının yanında etiketi ([K], [KS], [H], [G], [T]) ve kaynağı (ör. "kaynak rev005") bulunur. Etiketi [T] olan değerler turuncu rozetle vurgulanır.
 - Sayılar dosyalardan okunur; arayüz hesap yapmaz. Tek istisna birim dönüşümüdür (ör. kN gösterimi).
@@ -57,11 +57,11 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 - **Karar:** "Kararı kaydet" bir onay penceresi (`st.dialog`) açar: CR, onay/ret, seçenek ve not gösterilir. "Kaydet" yalnızca `core.requests.decide(cr, approve, note, option=..., decided_by="user (UI)")` çağırır; "Vazgeç" veya pencereyi kapatmak hiçbir şey yazmaz. Not boşsa düğme devre dışıdır (`decide` de boş notu reddeder). Kararda `decision.decided_by` kaydedilir.
   - Maketten farkı: (b) bir ret kararıdır, (a) onaydır. Bu yüzden "Onayla / Reddet" yerine tek bir **"Kararı kaydet"** düğmesi olur; onay mı ret mi olduğu seçilen seçenekten çıkar. Seçeneği olmayan CR'lerde Onayla ve Reddet düğmeleri kalır.
   - Etki analizi yoksa veya `impact.affected_modules` boşsa onay seçeneği devre dışıdır (`core.requests` zaten reddeder).
-- **Uygulama:** onaylanmış CR'de "Uygula" düğmesi `core.requests.apply` çağırır. Sonuçta oluşan revizyonlar ve yeniden üretilen dosyalar gösterilir. *Henüz yok (faz 3 yalnızca karar verir).*
+- **Uygulama:** onaylanmış CR'de "Uygula" düğmesi onay penceresini açar; onayda `core.requests.apply` çağrılır. Oluşan revizyonlar (her biri ADR-012 tasarım revizyonu, CR bağlantılı) başarı mesajında gösterilir.
 - Kapalı CR'ler karar (tarih, seçenek, not, `decided_by`) ve uygulanan revizyonlarla salt okunur listelenir. Her CR'de geçmiş (`history`) tablosu katlanabilir panelde.
 
 ### 4.5 Revizyonlar
-- **Modül zaman çizelgesi:** her modülün revizyonları (`records/revNNN/manifest.yaml`): tarih, özet, gerekçe, CR, kod commit'i; aktif olan işaretli.
+- **Modül zaman çizelgesi:** her revizyon bir satır (`records/revNNN/manifest.yaml`): kimlik rozeti (aktif mavi), özet, tarih, revizyon türü (ADR-012: tasarım / bakım; eski kayıtlarda "REVIEW.md"), CR, kod commit'i, gerekçe. Satırda "Bu revizyona dön" (aktif olanda devre dışı) ve "Doğrula" düğmeleri.
 - **Konsept zaman çizelgesi:** `conceptNNN` manifestleri ve sabitlenen modül revizyonları.
 - **Fark görünümü:** `core.diff.diff_revisions(modül, revA, revB)` sonucundan:
   - `params`: [{path, old, new}] (None = yok; eklenen/silinen anahtar),
@@ -69,11 +69,10 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
   - `bom`: {header, added, removed, changed: {parça kimliği: [{path, old, new}]}},
   - `outputs`: [{file, old, new}] (SHA-256 değişimi).
   Yollar noktalıdır (ör. `calibration.W2.value`); kimlik anahtarı olan listeler kimlikle yazılır (ör. `stations[2].W_kg_s`). Boş fark `core.diff.is_empty` ile anlaşılır. Biçimlendirme (ondalık virgül, birim) arayüzün işidir.
-- **Konsept farkı:** `core.diff.diff_concepts(cA, cB)` → [{module, old, new}] tablosu. (Satır seçilince o modül için `diff_revisions` gösterme henüz yok.)
+- **Konsept farkı:** `core.diff.diff_concepts(cA, cB)` → [{module, old, new}] satırları; "Modül farkını göster" o modülü ve A/B revizyonlarını fark görünümüne yükler (iki taraf da varsa).
 - Fark sekmeleri: Parametreler, Sonuçlar (fark ve %), BOM (eklenen/silinen/değişen), Çıktılar (sha256). Varsayılan B = aktif revizyon, A = bir önceki.
-- **Geri dönüş:** "Aktif yap" düğmesi `core.records.revert` (modül) veya `revert_concept` çağırır; önce onay penceresi açılır. Kayıtlar silinmez.
-- Doğrulama: `core.records.verify` ile çıktı özetleri kontrol edilir ve sonuç rozetle gösterilir.
-- *Geri dönüş ve doğrulama henüz yok (faz 3 salt okunur).*
+- **Geri dönüş:** "Bu revizyona dön" onay penceresinden sonra `core.records.revert` çağırır. Yalnızca `records/ACTIVE` ve `bom.yaml` değişir; kayıtlar silinmez. Analiz dosyaları (params, results.yaml, icd.yaml) ve aktif konsept değişmez; pencere bunu yazar. Konsept geri dönüşü (`revert_concept`) henüz yok.
+- **Doğrulama:** "Doğrula" onay penceresinden sonra `core.records.verify` çalışır (yalnızca okuma); sonuç başarı veya hata kutusunda (uyuşmayan dosyalar listelenir).
 
 ### 4.6 Öğrenme
 - `docs/learning/` ve `engine/*/learning/` altındaki `.md` dosyaları markdown olarak gösterilir; `.txt` dosyaları (ör. parça bilgi dokümanı) sabit genişlikli metin olarak gösterilir.
