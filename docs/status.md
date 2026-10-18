@@ -15,35 +15,28 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Çalışma döngüsü (her modül): ders -> araştırma -> rule book -> kod -> kabul testi. Testsiz sonraki modüle geçilmez.
 
 ## Son yapılanlar
-- M0 ICD ve modül bütçeleri: rules/icd.yaml (analysis/icd.py ile rev005'ten üretilir), station_ownership.md, core/budgets.py (check_budget), analysis/integration.py (entegrasyon kontrolü, sınır dışında taslak CR).
-- Belirsizlik bandı (bilgi): Δη kompresörlere / türbinlere / eşit -> T4 1659-1682 K, W2 ±0.6 kg/s, EGT 2.7 K yayılım.
-- Ders 02 (kalibrasyon, v1 -> rev005).
-- M0 rev005 (aktif): ICAO -7B27, benzerlik koşulu (ADR-009), Δη = 0.0171. Tüm kontroller geçti.
-- Parça bilgi dokümanı v0.2; Girão doğrulaması kabul edildi (18/19, P5 beklenen hata).
-- M0 v4.1 girdileri (Girão Şekil 4.9); v3 değişken cp (rev003); ADR-006/007/008.
+- **M0 v1 tamam.** concept001: M0 rev005, M1-M9 null. Kabul listesi 6/6 (analysis/acceptance_M0.md), kabul testleri 5/5.
+- Params CR'leri: core/requests.py `params` türü; apply() params'ı yazar, hesabı yeniden çalıştırır (analysis/calc.py), revizyon oluşturur, results.yaml ve icd.yaml'ı yeniden üretir. Bütçe CR'leri iki seçenek sunar: (a) M0 params, (b) modül yeniden tasarımı.
+- Entegrasyon kontrolü: varsayılan `thrust_held` (itki + W2 sabit), eski mod `operating_point`.
+- CLAUDE.md: türetilmiş dosyalar elle düzenlenmez.
+- M0 ICD ve bütçeler (icd.yaml, station_ownership.md, core/budgets.py); belirsizlik bandı; ders 02.
+- M0 rev005: ICAO -7B27, benzerlik koşulu (ADR-009), Δη = 0.0171; Girão doğrulaması 18/19 (P5 beklenen hata).
 
-## M0 rev005 sonucu [H]
-- Δη = 0.0171: η fan dış/iç 0.895/0.887, booster 0.907, HPC 0.853, HPT 0.897, LPT 0.934. FPR 1.765 [KS].
-- W2 = 345.4 kg/s, W2/A = 201.3, HPC PR = 10.85, T3 = 817.5 K.
-- T4 = 1670.7 K, T41 = 1629.2 K, W31 = 50.08 kg/s, SFC 10.574.
-- EGT model 844.9 °C (Girão 125.7 kN'de ~851), gösterilen 874.9 °C (TCDS 950, pay 75 K).
-- İdeal V18/V8 = 0.6036 (Girão 0.627). İtki tavanı 130.91 kN (W2 430), pay %7.8.
-- Kontroller: fan choke (HARD), W2/A, W2, ikincil hava, SFC, EGT sınırı geçti.
-- Δη taraması (bilgi): V18/V8, Δη = 0'da 0.849, 0.03'te 0.537; W2 372.0 -> 335.2.
-- Yedek yol (bilgi, kullanılmadı): Δη = 0 ve FPR serbest -> FPR 1.612, W2 381.7, T4 1608 K.
+## M0 v1 özeti (rev005) [H]
+- W2 345.4 kg/s, W2/A 201.3, FPR 1.765 [KS], HPC PR 10.85, T3 817.5 K, T4 1670.7 K, T41 1629.2 K.
+- W31 50.08 kg/s, SFC 10.574, EGT gösterilen 874.9 °C (pay 75 K), ideal V18/V8 0.6036, itki tavanına pay %7.8.
+- Belirsizlik bandı: T4 1659-1682 K (Δη'nın hangi gruba uygulandığına göre).
+- Verim -0.01 (itki sabit) ΔEGT, model / Martins: fan 3.1/4, booster 1.9/3, HPC 4.3/8, HPT 5.3/12, LPT 5.5/6 K.
 
 ## Açık konular
-- Δη = +0.017 sınanmamış bir varsayım; Girão ile ICAO arasındaki yaklaşık %5'lik SFC farkını kapatıyor.
-- Benzerlik hedefi modelin değeri (0.6036); Girão'nun 0.627'si ile fark −%3.7.
-- Bennett künyesi doğrulanmadı (büyük olasılıkla AIAA SciTech 2024).
-- Indriyati HPC havası 39.57 vs model çekirdek havası (tanım farkı).
-- Bütçe toleransları ve entegrasyon sınırları [T]; ICD bütçe CR'leri taslak olarak kalır.
+- HPC ve HPT verim kaybının EGT etkisi Martins'in yaklaşık yarısı (W2 sabit varsayımı, EGT formülü [T], farklı motor).
+- Δη = +0.017 sınanmamış bir varsayım; tolerans ve entegrasyon sınırları [T].
+- Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
 
 ## Sıradaki adımlar
-1. Kabul listesinin kalan maddeleri (parametre değişikliği, geri dönüş, çakışma testleri).
-2. ICD için CR uygulama yolu: bütçe CR'leri BOM yolu değil; apply() bunları uygulayamaz.
-3. Arayüz (Streamlit).
-4. M1 Inlet & Fan: ders + araştırma.
+1. Arayüz (Streamlit).
+2. M1 Inlet & Fan: ders + araştırma; icd.yaml'daki M1 bütçesinden başla.
+3. Seyir noktası (M0 v2).
 
 ## Çalışma kuralları
 - Görev sonu raporu: Commit / Done / Decisions for user / Tests (max 15 satır).

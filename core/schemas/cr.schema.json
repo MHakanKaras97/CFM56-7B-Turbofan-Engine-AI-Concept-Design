@@ -5,54 +5,121 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "id", "date", "from_module", "to_modules", "reason", "changes",
-    "impact", "status", "decision", "applied_revisions", "history"
+    "id",
+    "date",
+    "from_module",
+    "to_modules",
+    "reason",
+    "changes",
+    "impact",
+    "status",
+    "decision",
+    "applied_revisions",
+    "history"
   ],
   "properties": {
-    "id": {"type": "string", "pattern": "^CR-[0-9]{3}$"},
-    "date": {"$ref": "#/$defs/date"},
-    "from_module": {"$ref": "#/$defs/module_id"},
-    "to_modules": {
-      "type": "array", "minItems": 1, "uniqueItems": true,
-      "items": {"$ref": "#/$defs/module_id"}
+    "id": {
+      "type": "string",
+      "pattern": "^CR-[0-9]{3}$"
     },
-    "reason": {"type": "string", "minLength": 1},
-    "changes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/change"}},
+    "date": {
+      "$ref": "#/$defs/date"
+    },
+    "from_module": {
+      "$ref": "#/$defs/module_id"
+    },
+    "to_modules": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/module_id"
+      }
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changes": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "#/$defs/change"
+      }
+    },
     "impact": {
       "description": "Filled by M0 before a decision.",
       "oneOf": [
-        {"type": "null"},
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["affected_modules", "notes"],
+          "required": [
+            "affected_modules",
+            "notes"
+          ],
           "properties": {
-            "affected_modules": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/module_id"}},
-            "notes": {"type": "string"}
+            "affected_modules": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/module_id"
+              }
+            },
+            "notes": {
+              "type": "string"
+            }
           }
         }
       ]
     },
-    "status": {"$ref": "#/$defs/status"},
+    "status": {
+      "$ref": "#/$defs/status"
+    },
     "decision": {
       "oneOf": [
-        {"type": "null"},
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["date", "note"],
-          "properties": {"date": {"$ref": "#/$defs/date"}, "note": {"type": "string"}}
+          "required": [
+            "date",
+            "note"
+          ],
+          "properties": {
+            "date": {
+              "$ref": "#/$defs/date"
+            },
+            "note": {
+              "type": "string"
+            },
+            "option": {
+              "type": "string",
+              "pattern": "^[a-z]$"
+            }
+          }
         }
       ]
     },
     "applied_revisions": {
       "oneOf": [
-        {"type": "null"},
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "minProperties": 1,
-          "propertyNames": {"$ref": "#/$defs/module_id"},
-          "additionalProperties": {"type": "string", "pattern": "^rev[0-9]{3}$"}
+          "propertyNames": {
+            "$ref": "#/$defs/module_id"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^rev[0-9]{3}$"
+          }
         }
       ]
     },
@@ -63,59 +130,264 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["date", "from", "to"],
+        "required": [
+          "date",
+          "from",
+          "to"
+        ],
         "properties": {
-          "date": {"$ref": "#/$defs/date"},
-          "from": {"oneOf": [{"$ref": "#/$defs/status"}, {"type": "null"}]},
-          "to": {"$ref": "#/$defs/status"}
+          "date": {
+            "$ref": "#/$defs/date"
+          },
+          "from": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/status"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "to": {
+            "$ref": "#/$defs/status"
+          }
+        }
+      }
+    },
+    "options": {
+      "description": "Resolution options offered to the user (e.g. budget CRs); decide() records the pick.",
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description",
+          "applies_changes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "applies_changes": {
+            "type": "boolean"
+          }
         }
       }
     }
   },
   "allOf": [
     {
-      "if": {"properties": {"status": {"enum": ["approved", "rejected", "applied"]}}},
-      "then": {"properties": {"decision": {"type": "object"}}}
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "approved",
+              "rejected",
+              "applied"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "decision": {
+            "type": "object"
+          }
+        }
+      }
     },
     {
-      "if": {"properties": {"status": {"const": "applied"}}},
-      "then": {"properties": {"applied_revisions": {"type": "object"}}},
-      "else": {"properties": {"applied_revisions": {"type": "null"}}}
+      "if": {
+        "properties": {
+          "status": {
+            "const": "applied"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "applied_revisions": {
+            "type": "object"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "applied_revisions": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "required": [
+            "options"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "changes": {
+            "minItems": 1
+          }
+        }
+      }
     }
   ],
   "$defs": {
-    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
-    "module_id": {"type": "string", "pattern": "^M[0-9]$"},
-    "status": {"enum": ["open", "approved", "rejected", "applied"]},
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "module_id": {
+      "type": "string",
+      "pattern": "^M[0-9]$"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "approved",
+        "rejected",
+        "applied"
+      ]
+    },
     "quantity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["value", "unit", "tag"],
+      "required": [
+        "value",
+        "unit",
+        "tag"
+      ],
       "properties": {
-        "value": {"type": ["number", "null"]},
-        "unit": {"type": "string"},
-        "tag": {"enum": ["K", "KS", "H", "G", "T"]}
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "tag": {
+          "enum": [
+            "K",
+            "KS",
+            "H",
+            "G",
+            "T"
+          ]
+        }
       }
     },
     "change_value": {
       "description": "Any BOM value; numbers must be wrapped in a Quantity. null = absent (add/remove).",
-      "not": {"type": "number"},
-      "if": {"type": "object", "required": ["value"]},
-      "then": {"$ref": "#/$defs/quantity"}
+      "not": {
+        "type": "number"
+      },
+      "if": {
+        "type": "object",
+        "required": [
+          "value"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/quantity"
+      }
     },
     "change": {
+      "description": "BOM change (type omitted or 'bom') or params change (type 'params').",
+      "if": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "const": "params"
+          }
+        }
+      },
+      "then": {
+        "$ref": "#/$defs/params_change"
+      },
+      "else": {
+        "$ref": "#/$defs/bom_change"
+      }
+    },
+    "bom_change": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["module", "path", "old", "new"],
+      "required": [
+        "module",
+        "path",
+        "old",
+        "new"
+      ],
       "properties": {
-        "module": {"$ref": "#/$defs/module_id"},
+        "module": {
+          "$ref": "#/$defs/module_id"
+        },
         "path": {
           "description": "Header field (e.g. module_name) or parts[<id>] optionally followed by .field.subfield",
           "type": "string",
           "pattern": "^(parts\\[M[0-9](\\.[0-9]+)+\\](\\.[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*)$"
         },
-        "old": {"$ref": "#/$defs/change_value"},
-        "new": {"$ref": "#/$defs/change_value"}
+        "old": {
+          "$ref": "#/$defs/change_value"
+        },
+        "new": {
+          "$ref": "#/$defs/change_value"
+        },
+        "type": {
+          "const": "bom"
+        }
+      }
+    },
+    "params_change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "module",
+        "file",
+        "path",
+        "old",
+        "new"
+      ],
+      "properties": {
+        "type": {
+          "const": "params"
+        },
+        "module": {
+          "$ref": "#/$defs/module_id"
+        },
+        "file": {
+          "description": "File in engine/<module>/analysis/",
+          "type": "string",
+          "pattern": "^[a-z0-9_]+_params\\.yaml$"
+        },
+        "path": {
+          "description": "Dotted key path, e.g. components.eta_hpc",
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        "old": {
+          "$ref": "#/$defs/change_value"
+        },
+        "new": {
+          "$ref": "#/$defs/change_value"
+        }
       }
     }
   }

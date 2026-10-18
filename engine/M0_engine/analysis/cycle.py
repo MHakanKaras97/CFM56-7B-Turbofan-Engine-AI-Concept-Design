@@ -128,9 +128,12 @@ def _dig(data: dict, dotted: str):
     return data
 
 
-def load_inputs(params_file: Path = PARAMS_FILE, root: Path = ROOT):
-    """Return (Params, Targets, initial guess dict, raw params yaml, reference values)."""
-    raw = read_yaml(params_file)
+def load_inputs(params_file: Path = PARAMS_FILE, root: Path = ROOT, raw: dict | None = None):
+    """Return (Params, Targets, initial guess dict, raw params yaml, reference values).
+
+    `raw` replaces the params file content (used to evaluate a params change before writing it).
+    """
+    raw = read_yaml(params_file) if raw is None else raw
     refs = raw["reference_data"]
 
     tcds = read_yaml(root / refs["thrust_to"]["file"])
@@ -485,6 +488,12 @@ def with_delta_eta(p: Params, delta_eta: float, names: tuple[str, ...] = ETA) ->
     return replace(p, **{n: getattr(p, n) + delta_eta for n in names})
 
 
+def delta_eta_group(raw: dict) -> tuple[str, ...]:
+    """Efficiencies shifted by delta_eta: all except those fixed by accepted module values."""
+    excluded = set(raw["rated_case"].get("delta_eta_exclude", []))
+    return tuple(n for n in ETA if n not in excluded)
+
+
 def uncertainty_band(p: Params, t: Targets, initial: dict, raw: dict, tol: float) -> list[dict]:
     """Similarity solve (thrust, fuel, ideal V18/V8) with delta_eta on each efficiency group (info only)."""
     rows = []
@@ -548,6 +557,7 @@ def similarity_solve(p: Params, t: Targets, initial: dict, raw: dict, refs: dict
     Returns (attempts, chosen result or None, chosen iterations).
     """
     limit = raw["rated_case"]["delta_eta_limit"]["value"]
+    group = delta_eta_group(raw)
     tries = [("delta_eta", dict(initial, delta_eta=0.0)), ("FPR", dict(initial, FPR=p.FPR))]
     attempts, chosen, chosen_it = [], None, 0
     for name, guess in tries:
@@ -555,13 +565,14 @@ def similarity_solve(p: Params, t: Targets, initial: dict, raw: dict, refs: dict
             break
         entry = {"third_unknown": name}
         try:
-            r, it = calibrate(p, t, guess, tol=tol, unknowns=(*UNKNOWNS, name), targets=SIMILARITY_TARGETS)
+            r, it = calibrate(p, t, guess, tol=tol, unknowns=(*UNKNOWNS, name), targets=SIMILARITY_TARGETS,
+                              eta_group=group)
         except ArithmeticError as exc:
             attempts.append(dict(entry, solvable=False, message=str(exc)))
             continue
         pp = r["params"]
         hard = all(c["result"] == "pass" for c in build_checks(r, pp, raw, refs) if c.get("hard"))
-        value = pp.eta_hpc - p.eta_hpc if name == "delta_eta" else pp.FPR
+        value = getattr(pp, group[0]) - getattr(p, group[0]) if name == "delta_eta" else pp.FPR
         ok = hard and (name != "delta_eta" or value <= limit + 1e-12)
         attempts.append(dict(entry, solvable=True, value=_r(value, 5), hard_checks_passed=hard,
                              W2_kg_s=_r(r["W2"], 5), T4_K=_r(r["T4"], 5), accepted=ok,
@@ -714,6 +725,47 @@ def build_results(r: dict, p: Params, t: Targets, raw: dict, refs: dict, iterati
     return results
 
 
+def solve_rated(p: Params, t: Targets, initial: dict, raw: dict, refs: dict, tol: float):
+    """Rated case with the similarity condition (ADR-009); no files written.
+
+    Returns (results, result dict or None, Params used, iterations, attempts, delta_eta sweep).
+    """
+    vr = validation_velocity_ratio(p, refs, initial, tol)
+    refs["validation_velocity_ratio"] = vr
+    t = replace(t, velocity_ratio=vr)
+    sweep = delta_eta_sweep(p, t, initial, raw, refs, tol)
+    attempts, r, iterations = similarity_solve(p, t, initial, raw, refs, tol)
+    if r is None:
+        results = infeasible_results(p, t, "no similarity solution with all HARD checks passed", sweep)
+        results["similarity_attempts"] = attempts
+        return results, None, p, 0, attempts, sweep
+    group = delta_eta_group(raw)
+    p0, p = p, r["params"]
+    delta_eta = getattr(p, group[0]) - getattr(p0, group[0])
+    ceiling = max(thrust_envelope(p, t), key=lambda e: e["thrust_kN"])
+    rated = {
+        "description": "ICAO -7B27 rating with the similarity condition (ADR-009)",
+        "similarity_target": {
+            "V18_V8_ideal": _q(vr, "-", "T"),
+            "basis": "our model's ideal V18/V8 at the Girão validation point (same family, take-off)",
+            "girao_reported": _value(refs["girao"]["info_refs"]["velocity_ratio_ideal_takeoff"]),
+        },
+        "attempts": attempts,
+        "delta_eta": _q(delta_eta, "-", "H"),
+        **({"delta_eta_excluded": [n for n in ETA if n not in group]} if len(group) < len(ETA) else {}),
+        "FPR": _q(p.FPR, "-", "KS" if p.FPR == p0.FPR else "H"),
+        "efficiencies_used": {n: _q(getattr(p, n), "-", "H") for n in ETA},
+        "thrust_ceiling": {"value": ceiling["thrust_kN"], "unit": "kN", "tag": "H",
+                           "at_W2_kg_s": ceiling["W2_kg_s"],
+                           "margin": _r(ceiling["thrust_kN"] / (t.thrust / 1000.0) - 1.0, 4),
+                           "note": "max thrust at the target fuel flow over W2"},
+        "delta_eta_sweep": {"method": "thrust and fuel only, delta_eta fixed per row (info)", "rows": sweep},
+        "validation": "Girão 125.73 kN design point, 18 of 19 items pass (analysis/validation_girao.md)",
+    }
+    sens = sensitivity(p, t, r, raw, tol)
+    return build_results(r, p, t, raw, refs, iterations, sens, rated), r, p, iterations, attempts, sweep
+
+
 def main(argv: list[str]) -> int:
     p, t, initial, raw, refs = load_inputs()
     tol = _value(raw["calibration"]["tolerance"])
@@ -734,43 +786,15 @@ def main(argv: list[str]) -> int:
         for s in sensitivity(pv, tv, r, raw, tol):
             print(f"  {s['case']:<24} dW2={s['dW2_kg_s']:>8} dT4={s['dT4_K']:>8} dEGT={s['dEGT_K']:>8}")
         return 0
-    vr = validation_velocity_ratio(p, refs, initial, tol)
-    refs["validation_velocity_ratio"] = vr
-    t = replace(t, velocity_ratio=vr)
-    sweep = delta_eta_sweep(p, t, initial, raw, refs, tol)
-    attempts, r, iterations = similarity_solve(p, t, initial, raw, refs, tol)
+    results, r, p, iterations, attempts, sweep = solve_rated(p, t, initial, raw, refs, tol)
+    write_yaml(RESULTS_FILE, results)
     for row in sweep + attempts:
         print("  " + "  ".join(f"{k}={v}" for k, v in row.items()))
     if r is None:
-        results = infeasible_results(p, t, "no similarity solution with all HARD checks passed", sweep)
-        results["similarity_attempts"] = attempts
-        write_yaml(RESULTS_FILE, results)
         print("INFEASIBLE: no similarity solution")
         return 1
-    p0, p = p, r["params"]
-    delta_eta = p.eta_hpc - p0.eta_hpc
-    ceiling = max(thrust_envelope(p, t), key=lambda e: e["thrust_kN"])
-    rated = {
-        "description": "ICAO -7B27 rating with the similarity condition (ADR-009)",
-        "similarity_target": {
-            "V18_V8_ideal": _q(vr, "-", "T"),
-            "basis": "our model's ideal V18/V8 at the Girão validation point (same family, take-off)",
-            "girao_reported": _value(refs["girao"]["info_refs"]["velocity_ratio_ideal_takeoff"]),
-        },
-        "attempts": attempts,
-        "delta_eta": _q(delta_eta, "-", "H"),
-        "FPR": _q(p.FPR, "-", "KS" if p.FPR == p0.FPR else "H"),
-        "efficiencies_used": {n: _q(getattr(p, n), "-", "H") for n in ETA},
-        "thrust_ceiling": {"value": ceiling["thrust_kN"], "unit": "kN", "tag": "H",
-                           "at_W2_kg_s": ceiling["W2_kg_s"],
-                           "margin": _r(ceiling["thrust_kN"] / (t.thrust / 1000.0) - 1.0, 4),
-                           "note": "max thrust at the target fuel flow over W2"},
-        "delta_eta_sweep": {"method": "thrust and fuel only, delta_eta fixed per row (info)", "rows": sweep},
-        "validation": "Girão 125.73 kN design point, 18 of 19 items pass (analysis/validation_girao.md)",
-    }
-    sens = sensitivity(p, t, r, raw, tol)
-    results = build_results(r, p, t, raw, refs, iterations, sens, rated)
-    write_yaml(RESULTS_FILE, results)
+    delta_eta = results["rated_case"]["delta_eta"]["value"]
+    sens = results["sensitivity"]["cases"]
     print(f"delta_eta={delta_eta:.5f}  W2={r['W2']:.2f} kg/s  T4={r['T4']:.1f} K  T41={r['T41']:.1f} K  FPR={p.FPR:.4f}  ({iterations} it)")
     for c in results["checks"]:
         print(f"  [{c['result']:>4}] {c['name']}: {c['value']} (ref {c['reference']})")

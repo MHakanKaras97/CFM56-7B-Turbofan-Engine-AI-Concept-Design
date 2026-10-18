@@ -1,0 +1,11 @@
+source:
+  document: 'Martins D., Off-Design Performance Prediction of the CFM56-3 Aircraft Engine, extended abstract, IST Lisbon, 2015'
+  tag: KS
+  note: 'CFM56-3, not -7B; magnitudes only, used as a plausibility reference; facts only, see docs/sources.md #12'
+egt_rise_per_point_efficiency_loss:
+  description: EGT rise for a 1 point (0.01) loss of component efficiency
+  fan: {value: 4.0, unit: K, tag: KS, model_item: eta_fan_outer}
+  booster: {value: 3.0, unit: K, tag: KS, model_item: eta_booster}
+  hpc: {value: 8.0, unit: K, tag: KS, model_item: eta_hpc}
+  hpt: {value: 12.0, unit: K, tag: KS, model_item: eta_hpt}
+  lpt: {value: 6.0, unit: K, tag: KS, model_item: eta_lpt}

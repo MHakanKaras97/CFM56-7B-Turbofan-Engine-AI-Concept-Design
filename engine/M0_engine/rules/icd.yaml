@@ -33,6 +33,13 @@ integration:
     W2: 345.396593827
     T4: 1670.65888058
     delta_eta: 0.0171296534835
+    delta_eta_group:
+    - eta_fan_outer
+    - eta_fan_inner
+    - eta_booster
+    - eta_hpc
+    - eta_hpt
+    - eta_lpt
     unit:
       W2: kg/s
       T4: K

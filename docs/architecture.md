@@ -40,8 +40,10 @@
 ## 8. Onay akışı
 1. Modül bir CR açar.
 2. M0 etki analizi yapar.
-3. Kullanıcı UI üzerinden onaylar veya reddeder.
+3. Kullanıcı UI üzerinden onaylar veya reddeder. Seçenekli CR'lerde (ör. bütçe CR'si) kullanıcı seçeneği seçer.
 4. Onaylanan değişiklik uygulanır.
+- CR değişiklik türleri: `bom` (bom.yaml) ve `params` (`engine/<M>/analysis/*_params.yaml`). Bir params değişikliği uygulanınca modül hesabı (`analysis/calc.py`) yeniden çalışır, yeni revizyon oluşur ve türetilmiş dosyalar (M0 için `results.yaml`, `icd.yaml`) yeniden üretilir.
+- Bütçe CR'si (M0 entegrasyon kontrolü sınırı aşınca) iki seçenek sunar: (a) ulaşılan değer M0 params'a yazılır ve çevrim yeniden dengelenir, (b) modül yeniden tasarlanır (M0 değişmez).
 - Çakışmada kullanıcı karar verir; karar kaydedilir.
 
 ## 9. Güven etiketleri

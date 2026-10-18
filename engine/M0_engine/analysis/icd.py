@@ -18,6 +18,7 @@ from core.util import read_yaml, write_yaml
 from engine.M0_engine.analysis.cycle import (
     ETA,
     ROOT,
+    delta_eta_group,
     egt_model_K,
     fan_face_area,
     load_inputs,
@@ -25,7 +26,11 @@ from engine.M0_engine.analysis.cycle import (
     validation_velocity_ratio,
 )
 
-ICD_FILE = module_dir("M0", ROOT) / "rules" / "icd.yaml"
+def icd_file(root: Path = ROOT) -> Path:
+    return module_dir("M0", root) / "rules" / "icd.yaml"
+
+
+ICD_FILE = icd_file()
 SIG_POINT = 12  # digits kept for the operating point, so the integration check reproduces it
 
 # station: (owner, consumers, note); owner = upstream module whose exit it is
@@ -69,10 +74,10 @@ def _q(value: float, unit: str, tag: str = "H", kind: str = "info", sig: int = 6
     return {"value": _r(value, sig), "unit": unit, "tag": tag, "kind": kind}
 
 
-def solve_revision(rev: str):
-    """Re-solve a recorded revision. Returns (Params, Targets, result, raw, refs)."""
-    rev_dir = module_dir("M0", ROOT) / "records" / rev
-    p, t, initial, raw, refs = load_inputs(rev_dir / "params.yaml")
+def solve_revision(rev: str, root: Path = ROOT):
+    """Re-solve a recorded revision. Returns (Params, Targets, result, raw, refs, base Params)."""
+    rev_dir = module_dir("M0", root) / "records" / rev
+    p, t, initial, raw, refs = load_inputs(rev_dir / "params.yaml", root)
     tol = float(raw["calibration"]["tolerance"]["value"])
     vr = validation_velocity_ratio(p, refs, initial, tol)
     refs["validation_velocity_ratio"] = vr
@@ -84,7 +89,7 @@ def solve_revision(rev: str):
     for key in ("W2", "T4"):
         if abs(r[key] / recorded[key]["value"] - 1.0) > 1e-5:
             raise ArithmeticError(f"{rev}: re-solved {key} {r[key]} differs from recorded {recorded[key]['value']}")
-    return r["params"], t, r, raw, refs
+    return r["params"], t, r, raw, refs, p
 
 
 def _station(r: dict, s: str) -> dict:
@@ -141,8 +146,9 @@ def module_budgets(p, r: dict, raw: dict) -> dict:
     }
 
 
-def build_icd(rev: str) -> dict:
-    p, t, r, raw, refs = solve_revision(rev)
+def build_icd(rev: str, root: Path = ROOT) -> dict:
+    p, t, r, raw, refs, p0 = solve_revision(rev, root)
+    group = delta_eta_group(raw)
     st = r["stations"]
     budgets = module_budgets(p, r, raw)
     speeds = refs["girao"]["spool_speeds"]
@@ -163,8 +169,8 @@ def build_icd(rev: str) -> dict:
         "integration": {
             "description": "cycle re-run at the operating point with achieved module values",
             "operating_point": {"W2": _r(r["W2"], SIG_POINT), "T4": _r(r["T4"], SIG_POINT),
-                                "delta_eta": _r(p.eta_hpc - load_inputs(module_dir("M0", ROOT) / "records" / rev
-                                                                       / "params.yaml")[0].eta_hpc, SIG_POINT),
+                                "delta_eta": _r(getattr(p, group[0]) - getattr(p0, group[0]), SIG_POINT),
+                                "delta_eta_group": list(group),
                                 "unit": {"W2": "kg/s", "T4": "K"}, "tag": "H"},
             "reference": {"thrust_kN": _r(r["thrust"] / 1000.0, 9), "sfc_g_kNs": _r(r["W_fuel"] / r["thrust"] * 1e6, 9),
                           "egt_model_K": _r(egt_model_K(r, raw), 9), "tag": "H"},
@@ -213,9 +219,15 @@ def build_icd(rev: str) -> dict:
     }
 
 
+def write_icd(rev: str, root: Path = ROOT) -> Path:
+    path = icd_file(root)
+    write_yaml(path, build_icd(rev, root))
+    return path
+
+
 def main(argv: list[str]) -> int:
     rev = argv[0] if argv else active_revision("M0")
-    write_yaml(ICD_FILE, build_icd(rev))
+    write_icd(rev)
     print(f"wrote {ICD_FILE.relative_to(ROOT).as_posix()} from {rev}")
     return 0
 

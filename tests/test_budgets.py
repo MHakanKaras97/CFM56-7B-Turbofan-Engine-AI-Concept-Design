@@ -9,7 +9,7 @@ from core.budgets import BudgetError, check_budget, load_icd
 from core.requests import load_cr
 from engine.M0_engine.analysis.cycle import load_inputs, uncertainty_band, validation_velocity_ratio
 from engine.M0_engine.analysis.icd import MODULES, STATIONS, build_icd
-from engine.M0_engine.analysis.integration import integration_check
+from engine.M0_engine.analysis.integration import MODES, efficiency_debits, integration_check
 
 ROOT = Path(__file__).resolve().parents[1]
 NO_RECORDS = shutil.ignore_patterns("rev[0-9][0-9][0-9]", "concept[0-9][0-9][0-9]", "CR-*.yaml")
@@ -77,29 +77,46 @@ def test_check_budget_rejects_unknown_items():
 
 def test_integration_within_budget_passes_without_cr(icd, repo):
     achieved = {"eta_hpc": budget_value(icd, "M3", "eta_hpc"), "hpc_pr": budget_value(icd, "M3", "hpc_pr")}
-    res = integration_check("M3", achieved, cr_root=repo)
-    assert all(r["result"] == "pass" for r in res["budget"])
-    assert res["passed"] and res["cr"] is None
+    for mode in MODES:
+        res = integration_check("M3", achieved, mode=mode, cr_root=repo)
+        assert all(r["result"] == "pass" for r in res["budget"])
+        assert res["passed"] and res["cr"] is None
 
 
 def test_integration_budget_miss_absorbed_by_cycle(icd, repo):
-    res = integration_check("M3", {"eta_hpc": budget_value(icd, "M3", "eta_hpc") - 0.008}, cr_root=repo)
+    res = integration_check("M3", {"eta_hpc": budget_value(icd, "M3", "eta_hpc") - 0.006}, cr_root=repo)
+    assert res["mode"] == "thrust_held"  # default
     assert res["budget"][0]["result"] == "fail"
     assert res["passed"] and res["cr"] is None
     assert not list((repo / "engine" / "M0_engine" / "requests").glob("CR-*.yaml"))
 
 
-def test_integration_out_of_tolerance_drafts_open_cr(icd, repo):
+def test_integration_out_of_tolerance_drafts_open_cr_with_options(icd, repo):
     eta = budget_value(icd, "M3", "eta_hpc")
     res = integration_check("M3", {"eta_hpc": eta - 0.03}, cr_root=repo)
     assert not res["passed"]
-    assert {m["name"] for m in res["metrics"] if m["result"] == "fail"} >= {"thrust"}
+    assert {m["name"] for m in res["metrics"] if m["result"] == "fail"} == {"sfc", "egt"}
     cr = load_cr(res["cr"], root=repo)
     assert (cr["status"], cr["from_module"], cr["to_modules"]) == ("open", "M3", ["M0"])
     assert cr["applied_revisions"] is None
-    assert cr["changes"][0]["path"] == "icd_M3_eta_hpc"
-    assert cr["changes"][0]["new"]["value"] == pytest.approx(eta - 0.03)
+    assert [o["id"] for o in cr["options"]] == ["a", "b"]
+    change = cr["changes"][0]
+    assert (change["type"], change["file"], change["path"]) == ("params", "cycle_params.yaml", "components.eta_hpc")
+    assert change["new"]["value"] == pytest.approx(eta - 0.03)
+    assert cr["changes"][1]["path"] == "rated_case.delta_eta_exclude"
     assert not list((ROOT / "engine" / "M0_engine" / "requests").glob("CR-*.yaml"))  # real folder untouched
+
+
+def test_operating_point_mode_checks_thrust(icd):
+    res = integration_check("M3", {"eta_hpc": budget_value(icd, "M3", "eta_hpc") - 0.03},
+                            mode="operating_point", draft_cr=False)
+    assert "thrust" in {m["name"] for m in res["metrics"] if m["result"] == "fail"}
+
+
+def test_efficiency_debits_have_martins_signs():
+    rows = {r["component"]: r for r in efficiency_debits()}
+    assert set(rows) == {"fan", "booster", "hpc", "hpt", "lpt"}
+    assert all(r["dEGT_K"] > 0 and r["dSFC"] > 0 for r in rows.values())
 
 
 # --- uncertainty band -----------------------------------------------------------------

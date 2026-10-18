@@ -25,4 +25,4 @@ Kural: alıntı veya şekil kopyalanmaz; yalnızca faktler kullanılır, kendi c
 | 21 | He, 2025, *Case Studies in Thermal Engineering*. DOI 10.1016/j.csite.2025.106616 | Henüz kullanılmadı | CC BY 4.0 |
 | 19 | Bennett vd., NASA; büyük olasılıkla AIAA SciTech 2024 (doğrulanmadı). | HPT verim kaybı: soğutma havasının her %1'i için %0.25-1.5 (tam künye tamamlanacak) | faktler, kendi cümlelerimizle |
 | 20 | Lee, 2023, MIT yüksek lisans tezi. | Yalnızca kaynakça taraması | faktler, kendi cümlelerimizle |
-| 12 | Martins D., *Off-Design Performance Prediction of the CFM56-3 Aircraft Engine*, genişletilmiş özet, Instituto Superior Técnico, Lizbon, 2015. | Yalnızca kalibrasyon yöntemi (Kurzke yaklaşımı); motor CFM56-3 | faktler, kendi cümlelerimizle |
+| 12 | Martins D., *Off-Design Performance Prediction of the CFM56-3 Aircraft Engine*, genişletilmiş özet, Instituto Superior Técnico, Lizbon, 2015. | Kalibrasyon yöntemi (Kurzke yaklaşımı); EGT formu; verim kaybı başına EGT artışı (yalnızca büyüklük karşılaştırması, `rules/martins_2015.yaml`); motor CFM56-3 | faktler, kendi cümlelerimizle |

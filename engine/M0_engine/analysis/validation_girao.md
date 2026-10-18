@@ -32,11 +32,5 @@ Sapması %1'i aşan ilk istasyon T4'tür (yanma odası çıkışı). Ondan önce
 - P5 (+%3.46) beklenen hata olarak kalıyor. Gerekçe: sıcak gaz özellik modeli ve yakıt tanımı GasTurb'den farklı. LHV, doğrulamayı geçirmek için ayarlanmadı (43.124 MJ/kg [T]).
 - Bilgi: LHV %0.3 düşürülürse (yaklaşık 43.0) P5 +%2.23'e iner. Bu ayar yapılmadı.
 
-## Kabul listesi (M0 çevrim)
-Liste `docs/architecture.md` bölüm 10'dan alındı.
-- [ ] Kural kontrolleri
-- [x] Hesap doğrulama: Girão 2023 karşılaştırması (bu belge)
-- [ ] Parametre değişikliği testi
-- [ ] Geri dönüş testi
-- [ ] Çakışma testi
-- [ ] M0 kontrolü
+## Kabul listesi
+Kabul listesinin tamamı ve sonuçları `acceptance_M0.md` dosyasında. Hesap doğrulama maddesinin kanıtı bu belgedir.
