@@ -71,6 +71,11 @@
             "notes": {
               "type": "string"
             },
+            "by": {
+              "description": "Producer of the impact, e.g. 'M0 set_impact' or 'M0 integration_check'.",
+              "type": "string",
+              "pattern": "^M0 [A-Za-z_][A-Za-z0-9_]*$"
+            },
             "metrics": {
               "description": "Optional structured impact, metric name -> Quantity (e.g. dSFC in %).",
               "type": "object",

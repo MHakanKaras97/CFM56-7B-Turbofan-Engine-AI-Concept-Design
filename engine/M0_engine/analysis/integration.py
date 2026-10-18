@@ -99,7 +99,8 @@ def impact(module: str, metrics: list[dict], mode: str) -> dict:
         name, unit, scale = IMPACT_METRICS[m["name"]]
         out[name] = {"value": round(m["deviation"] * scale, 6), "unit": unit, "tag": "H"}
     return {"affected_modules": sorted({"M0", module}),
-            "notes": f"M0 integration check ({mode}); deltas against the ICD design point", "metrics": out}
+            "notes": f"M0 integration check ({mode}); deltas against the ICD design point",
+            "by": "M0 integration_check", "metrics": out}
 
 
 def params_changes(module: str, achieved: dict[str, float], root: Path = ROOT) -> list[dict]:

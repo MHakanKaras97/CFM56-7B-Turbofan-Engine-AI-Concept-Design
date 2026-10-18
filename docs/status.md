@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- CR kuralı: impact.by (üretici) kaydedilir; onay için impact.affected_modules boş olmamalı. Önceden doldurulmuş etki yalnızca bütçe CR'lerinde (M0 integration_check); modül CR'leri M0 set_impact bekler.
 - UI faz 1: CR `impact.metrics` (isteğe bağlı; bütçe CR'leri dSFC %, dEGT K, dT41 K ile doldurur, onay için etki hazır). core/diff.py: diff_revisions, diff_concepts (saf veri). .cache/geometry/test_box.step üretildi (Fusion ilişkilendirme testi).
 - Araç yolları yapılandırması: core/toolpaths.py; ccx yapılandırılan yoldan çalıştı ("This is Version 2.22"; girdisiz: kullanım satırı).
 - UI spesifikasyonu (docs/design/ui_spec.md); ADR-011 (revizyonda section.svg, GLB/STEP önbellekte).

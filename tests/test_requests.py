@@ -149,3 +149,27 @@ def test_impact_metrics_optional(repo):
     assert load_cr(cr_id, root=repo)["impact"]["metrics"] == metrics
     with pytest.raises(CRError):
         set_impact(cr_id, ["M1"], "bad", root=repo, metrics={"dSFC": {"value": 0.4, "unit": "%", "tag": "X"}})
+
+
+def test_impact_records_producer_and_needs_affected_modules(repo):
+    cr_id = new_cr(repo)
+    set_impact(cr_id, [], "nothing affected?", root=repo)
+    assert load_cr(cr_id, root=repo)["impact"]["by"] == "M0 set_impact"
+    with pytest.raises(CRError, match="affected"):
+        decide(cr_id, approve=True, note="ok", root=repo)
+    set_impact(cr_id, ["M1"], "fan only", root=repo)
+    decide(cr_id, approve=True, note="ok", root=repo)
+
+
+def test_prefilled_impact_only_for_budget_crs(repo):
+    impact = {"affected_modules": ["M1"], "notes": "", "by": "M0 integration_check"}
+    with pytest.raises(CRError, match="budget"):  # module CR: M0 must use set_impact
+        create_cr("M2", ["M1"], "r", [BLADE_QTY_CHANGE], root=repo, impact=impact)
+    options = [{"id": "a", "description": "apply", "applies_changes": True},
+               {"id": "b", "description": "redesign", "applies_changes": False}]
+    with pytest.raises(CRError, match="by"):
+        create_cr("M2", ["M1"], "r", [BLADE_QTY_CHANGE], root=repo, options=options,
+                  impact={"affected_modules": ["M1"], "notes": ""})
+    cr_id = create_cr("M2", ["M1"], "r", [BLADE_QTY_CHANGE], root=repo, options=options, impact=impact)
+    decide(cr_id, approve=True, note="ok", option="a", root=repo)  # no set_impact needed
+    assert load_cr(cr_id, root=repo)["status"] == "approved"

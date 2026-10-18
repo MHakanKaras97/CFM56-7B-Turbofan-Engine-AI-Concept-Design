@@ -39,7 +39,7 @@
 
 ## 8. Onay akışı
 1. Modül bir CR açar.
-2. M0 etki analizi yapar.
+2. M0 etki analizi yapar (`impact`; üreticisi `impact.by` alanında). Modül CR'lerinde M0 bunu `set_impact` ile yazar. Bütçe CR'leri (seçenekli, M0 analizinin taslağı) etkiyle birlikte oluşturulabilir (`by: "M0 integration_check"`). Onay için `impact.affected_modules` boş olmamalı.
 3. Kullanıcı UI üzerinden onaylar veya reddeder. Seçenekli CR'lerde (ör. bütçe CR'si) kullanıcı seçeneği seçer.
 4. Onaylanan değişiklik uygulanır.
 - CR değişiklik türleri: `bom` (bom.yaml) ve `params` (`engine/<M>/analysis/*_params.yaml`). Bir params değişikliği uygulanınca modül hesabı (`analysis/calc.py`) yeniden çalışır, yeni revizyon oluşur ve türetilmiş dosyalar (M0 için `results.yaml`, `icd.yaml`) yeniden üretilir.

@@ -133,7 +133,7 @@ def test_uncertainty_band_groups_solve():
 def test_budget_cr_carries_structured_impact(icd, repo):
     res = integration_check("M3", {"eta_hpc": budget_value(icd, "M3", "eta_hpc") - 0.03}, cr_root=repo)
     impact = load_cr(res["cr"], root=repo)["impact"]
-    assert impact["affected_modules"] == ["M0", "M3"]
+    assert impact["affected_modules"] == ["M0", "M3"] and impact["by"] == "M0 integration_check"
     assert set(impact["metrics"]) == {"dSFC", "dEGT", "dT41"}
     rows = {m["name"]: m for m in res["metrics"]}
     assert impact["metrics"]["dSFC"] == {"value": pytest.approx(rows["sfc"]["deviation"] * 100.0), "unit": "%", "tag": "H"}

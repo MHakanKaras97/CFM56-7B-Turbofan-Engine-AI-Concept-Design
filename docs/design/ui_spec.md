@@ -46,13 +46,13 @@ Kaynak maketler: `ui_genel_bakis.png`, `ui_m0.png`, `ui_modul.png`, `ui_talepler
 
 ### 4.4 Talepler (`ui_talepler.png`)
 - Başlıkta açık ve kapalı CR sayıları. Liste `engine/M0_engine/requests/CR-*.yaml` dosyalarından okunur; açık CR'ler önce gelir.
-- **CR kartı:** kimlik, yön ("M3 → M0"), tür ("bütçe ihlali"), gerekçe, etki rozeti ("etki analizi hazır" = `impact` dolu).
+- **CR kartı:** kimlik, yön ("M3 → M0"), tür ("bütçe ihlali"), gerekçe, etki rozeti ("etki analizi hazır" = `impact` dolu ve `affected_modules` boş değil), yanında üretici (`impact.by`, ör. "M0 integration_check").
 - **Etki metrikleri:** ΔSFC, ΔEGT, ΔT41 kartları. Kaynak: CR'nin `impact.metrics` alanı (metrik adı → {value, unit, tag}); bütçe CR'lerinde `dSFC` [%], `dEGT` [K], `dT41` [K], operating_point modunda ayrıca `dThrust` [%]. Alan isteğe bağlıdır: `impact` boş ya da `metrics` yoksa kartlar gösterilmez, yalnızca `impact.notes` görünür.
 - **Seçenekler:** CR'deki `options` radyo düğmeleriyle gösterilir: (a) M0 değeri kabul etsin ve çevrimi yeniden dengelesin; (b) modül tasarımını düzeltsin.
 - **Karar notu:** zorunlu metin alanı.
 - **Karar:** yalnızca `core.requests.decide(cr, approve, note, option=...)` ile verilir.
   - Maketten farkı: (b) bir ret kararıdır, (a) onaydır. Bu yüzden "Onayla / Reddet" yerine tek bir **"Kararı kaydet"** düğmesi olur; onay mı ret mi olduğu seçilen seçenekten çıkar. Seçeneği olmayan CR'lerde Onayla ve Reddet düğmeleri kalır.
-  - Etki analizi yoksa onay seçeneği devre dışıdır (`core.requests` zaten reddeder).
+  - Etki analizi yoksa veya `impact.affected_modules` boşsa onay seçeneği devre dışıdır (`core.requests` zaten reddeder).
 - **Uygulama:** onaylanmış CR'de "Uygula" düğmesi `core.requests.apply` çağırır. Sonuçta oluşan revizyonlar ve yeniden üretilen dosyalar gösterilir.
 - Kapalı CR'ler geçmiş (`history`) ve kararla birlikte salt okunur listelenir.
 

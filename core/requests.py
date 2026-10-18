@@ -18,6 +18,11 @@ Change types:
 Options: a CR may offer resolution options (e.g. budget CRs: (a) accept the value in M0 params,
 (b) module redesign). decide() records the user's pick; only an option that applies changes
 can be approved.
+
+Impact: M0's impact analysis, recorded with its producer in `impact.by`. Module CRs get it
+through set_impact(). Budget CRs (CRs with options) drafted by an M0 analysis may carry it
+from creation (e.g. by: "M0 integration_check"). Approval needs a non-empty
+impact.affected_modules.
 """
 
 import copy
@@ -149,8 +154,11 @@ def create_cr(
 ) -> str:
     """Create an open CR and return its id. Invalid CRs are rejected and not written.
 
-    `impact` may be given when M0 itself drafts the CR from its own analysis (budget CRs).
+    `impact` may be pre-filled only for a budget CR (one with options) drafted by an M0 analysis;
+    it must name its producer in `by` ("M0 <function>").
     """
+    if impact is not None and (not options or "by" not in impact):
+        raise CRError("pre-filled impact is only for budget CRs (with options) and must record 'by'")
     cr_id = _next_cr_id(root)
     date = now_utc()
     cr = {
@@ -185,14 +193,14 @@ def set_impact(cr_id: str, affected_modules: list[str], notes: str, root: Path =
         raise CRError(f"{cr_id}: impact can only be set while open (status: {cr['status']})")
     if metrics is None:
         metrics = (cr["impact"] or {}).get("metrics")
-    cr["impact"] = {"affected_modules": list(affected_modules), "notes": notes}
+    cr["impact"] = {"affected_modules": list(affected_modules), "notes": notes, "by": "M0 set_impact"}
     if metrics is not None:
         cr["impact"]["metrics"] = copy.deepcopy(metrics)
     _save(cr, root)
 
 
 def decide(cr_id: str, approve: bool, note: str, root: Path = ROOT, option: str | None = None) -> None:
-    """User decision. Approval requires an impact analysis.
+    """User decision. Approval requires an impact analysis with at least one affected module.
 
     For a CR with options, `option` names the pick; it must apply changes when approving and
     must not when rejecting.
@@ -202,6 +210,8 @@ def decide(cr_id: str, approve: bool, note: str, root: Path = ROOT, option: str 
         raise CRError(f"{cr_id}: already decided (status: {cr['status']})")
     if approve and cr["impact"] is None:
         raise CRError(f"{cr_id}: cannot approve without an impact analysis")
+    if approve and not cr["impact"]["affected_modules"]:
+        raise CRError(f"{cr_id}: cannot approve, impact lists no affected modules")
     if approve and not cr["changes"]:
         raise CRError(f"{cr_id}: nothing to approve, the CR has no changes")
     options = {o["id"]: o for o in cr.get("options", [])}
