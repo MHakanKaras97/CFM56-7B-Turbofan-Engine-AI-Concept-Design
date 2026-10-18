@@ -8,6 +8,8 @@ from engine.M0_engine.analysis.cycle import (
     calibrate,
     fan_face_area,
     first_deviation,
+    similarity_solve,
+    validation_velocity_ratio,
     with_delta_eta,
     load_inputs,
     run,
@@ -292,3 +294,28 @@ def test_rated_case_solves_on_low_w2_branch(inputs):
     ceiling = max(thrust_envelope(p, t), key=lambda e: e["thrust_kN"])
     assert r["W2"] < ceiling["W2_kg_s"]
     assert r["W2"] / fan_face_area(raw) < choke_mass_flux(p.T0, p.P0, p.gas)  # HARD
+
+
+def test_ideal_velocity_is_fully_expanded():
+    n = nozzle(400.0, 1.5e5, 1e5, GAS)  # unchoked: exit-plane and fully expanded velocities agree
+    assert not n.choked and n.V_ideal == pytest.approx(n.V)
+    n = nozzle(1100.0, 3e5, 1e5, GAS, 0.02)  # choked: fully expanded velocity is higher
+    assert n.choked and n.V_ideal > n.V
+
+
+def test_similarity_solution_meets_three_targets(inputs):
+    p, t, initial, raw, refs = inputs
+    refs = dict(refs)
+    vr = validation_velocity_ratio(p, refs, initial, 1e-9)
+    refs["validation_velocity_ratio"] = vr
+    ts = replace(t, velocity_ratio=vr)
+    attempts, r, _ = similarity_solve(p, ts, initial, raw, refs, 1e-9)
+    assert attempts[0]["third_unknown"] == "delta_eta" and attempts[0]["accepted"]
+    assert len(attempts) == 1  # FPR fallback not needed
+    assert r["thrust"] == pytest.approx(ts.thrust, rel=1e-6)
+    assert r["W_fuel"] == pytest.approx(ts.fuel, rel=1e-6)
+    assert r["velocity_ratio_ideal"] == pytest.approx(vr, rel=1e-6)
+    d = r["params"].eta_hpc - p.eta_hpc
+    assert 0.0 < d <= raw["rated_case"]["delta_eta_limit"]["value"]
+    assert all(getattr(r["params"], n) - getattr(p, n) == pytest.approx(d) for n in ETA)
+    assert r["params"].FPR == p.FPR

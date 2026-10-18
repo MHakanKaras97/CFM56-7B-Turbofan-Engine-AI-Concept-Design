@@ -74,11 +74,14 @@ Girão'dan alınmayan varsayımlar: LHV 43.124 MJ/kg [T] (GasTurb genel yakıtı
 
 Girdiler: itki 125.73 kN, yakıt 1.4023 kg/s, BPR 4.80, OPR (P3/P2) 29.88. Referanslar (gaz yolu sırasıyla): W2 358.28 kg/s; T13 345.73 K, P13 177.088 kPa; T21 317.23 K; T25 395.08 K, P25 264.816 kPa; T3 838.0 K, P3 2997 kPa; W3 60.499, W31 53.708 kg/s; T4 1690.5 K; T41 1649.0 K; T43 1254.55 K; P44 705.1 kPa, T44 1231.30 K; T45 1220.9 K; T5 902.1 K, P5 171.1 kPa; EGT 1124.0 K. Doğrulama, sapması %1'i aşan ilk kalemi de raporlar. Geçme ölçütü: sıcaklıklar ±%2, W2 ve basınçlar ±%3. Veriler `girao_2023.yaml` dosyasında.
 
-## Nominal nokta (ICAO -7B27, rev004)
+## Nominal nokta (ICAO -7B27, rev005, ADR-009)
 
 - Hedefler: itki 121.43 kN, yakıt 1.284 kg/s; BPR 5.0, OPR 28.63 [K]. Girão FPR'si 1.765 ve çekirdek bölüşümü (1.344, 2.004, P25/P24 0.98) korunur; HPC PR = OPR / 2.64.
-- Bütün izentropik turbomakine verimlerine aynı Δη eklenir; 0 ile +0.03 arası 0.005 adımla taranır. Nominal, çözülen ve tüm HARD kontrollerden geçen en küçük Δη'dır. 0.03'ün üstü işaretlenir.
-- Sonuç: Δη = 0 [H]. Bu yakıtla itki tavanı 122.88 kN (W2 400); hedef bu tavanın %1.2 altında.
+- Benzerlik koşulu: üçüncü hedef ideal V18/V8 = 0.6036 [T]. Bu, modelin Girão noktasında hesapladığı değer (Girão 0.627).
+- Üçüncü bilinmeyen: bütün izentropik turbomakine verimlerine eklenen ortak Δη. Çözüm yoksa ya da Δη > 0.03 ise yedek yol: Δη = 0 ve FPR serbest.
+- Sonuç: Δη = 0.0171 [H], FPR 1.765. İtki tavanı 130.91 kN (+%7.8 pay).
+- Δη taraması (0-0.03, yalnızca itki ve yakıt) bilgi tablosu olarak `results.yaml` içinde; V18/V8 sütunu dahil.
+- rev004 (Δη = 0, iki hedef) yerini bu sonuca bıraktı: itki tavanına %1.2 yakın, ideal V18/V8'i yüksek (0.849) bir çözümdü.
 
 ## Bilgi referansları
 

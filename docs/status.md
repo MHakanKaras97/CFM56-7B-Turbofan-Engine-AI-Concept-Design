@@ -15,32 +15,32 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Çalışma döngüsü (her modül): ders -> araştırma -> rule book -> kod -> kabul testi. Testsiz sonraki modüle geçilmez.
 
 ## Son yapılanlar
-- M0 rev004 (aktif): ICAO -7B27 nominal noktası, Girão v4.1 girdileri, Δη = 0 [H]. HARD geçti.
-- Girão doğrulaması kabul edildi: 19 kalemden 18'i geçti, P5 +%3.46 beklenen hata (analysis/validation_girao.md). Kabul listesi: "hesap doğrulama" tamam.
-- M0 v4.1: izentropik verimler, iç fan + booster, lüle itki/debi katsayıları, HPC ara kademe kaçağı, 43/44 istasyonları.
-- Öğrenme notu: docs/learning/cfm56_7b_module_facts.md (fan 24 kanat, 20 yakıt memesi).
-- M0 cycle v3 (rev003): değişken cp(T, FAR), NASA 7 katsayılı polinomlar; ADR-007 (44.52 kontrol).
-- Sürekli entalpi (ADR-006); rev001 geçersiz. Ders: hedefleri tutturmak sonucu doğrulamaz.
+- M0 rev005 (aktif): ICAO -7B27, benzerlik koşulu (ADR-009). Üçüncü hedef ideal V18/V8 = 0.6036 [T], Δη = 0.0171 [H]. Tüm kontroller geçti.
+- rev004 yerini rev005'e bıraktı (Δη = 0 çözümü itki tavanına %1.2 yakındı, V18/V8 0.849).
+- Parça bilgi dokümanı v0.2: BPR/OPR, fan kanadı 24, yakıt memesi 20, T4 (model) çözüldü; Girão ve ICAO kaynaklara eklendi.
+- Girão doğrulaması kabul edildi: 19 kalemden 18'i geçti, P5 +%3.46 beklenen hata (analysis/validation_girao.md).
+- M0 v4.1: izentropik verimler, iç fan + booster, lüle katsayıları, HPC ara kademe kaçağı, 43/44 istasyonları.
+- M0 cycle v3 (rev003): değişken cp(T, FAR), NASA polinomları; ADR-006/007.
 
-## M0 rev004 sonucu (Δη = 0) [H]
-- W2 = 372.0 kg/s, W2/A = 216.8, FPR = 1.765 (Girão), HPC PR = 10.85, T3 = 830.0 K.
-- T4 = 1626.6 K, T41 = 1587.6 K, FAR 0.0238, W31 = 53.94 kg/s; SFC 10.574.
-- EGT model 793.2 °C, gösterilen 823.2 °C (TCDS sınırı 950). V18/V8 = 0.858 (Girão ideali 0.627).
-- Kontroller: fan choke (HARD), W2, ikincil hava, SFC, EGT sınırı geçti. W2/A 216.8 > 215 kaldı (yumuşak).
-- Bu yakıtla itki tavanı 122.88 kN (W2 400); hedef tavanın %1.2 altında, düşük W2 dalında.
-- Δη taraması 0 -> 0.03: W2 372.0 -> 335.2, W2/A 216.8 -> 195.4, T4 1627 -> 1686 K, T41 1588 -> 1644 K,
-  EGT (gösterilen) 823 -> 897 °C, W31 53.9 -> 48.6 kg/s. Hepsi çözülüyor; HARD hepsinde geçiyor.
-- W2/A bandı Δη ≥ 0.005'te sağlanıyor (210.2).
+## M0 rev005 sonucu [H]
+- Δη = 0.0171: η fan dış/iç 0.895/0.887, booster 0.907, HPC 0.853, HPT 0.897, LPT 0.934. FPR 1.765 [KS].
+- W2 = 345.4 kg/s, W2/A = 201.3, HPC PR = 10.85, T3 = 817.5 K.
+- T4 = 1670.7 K, T41 = 1629.2 K, W31 = 50.08 kg/s, SFC 10.574.
+- EGT model 844.9 °C (Girão 125.7 kN'de ~851), gösterilen 874.9 °C (TCDS 950, pay 75 K).
+- İdeal V18/V8 = 0.6036 (Girão 0.627). İtki tavanı 130.91 kN (W2 430), pay %7.8.
+- Kontroller: fan choke (HARD), W2/A, W2, ikincil hava, SFC, EGT sınırı geçti.
+- Δη taraması (bilgi): V18/V8, Δη = 0'da 0.849, 0.03'te 0.537; W2 372.0 -> 335.2.
+- Yedek yol (bilgi, kullanılmadı): Δη = 0 ve FPR serbest -> FPR 1.612, W2 381.7, T4 1608 K.
 
 ## Açık konular
-- W2/A 216.8 > 215 ve itki tavanına yakınlık: fan çapı/göbek oranı [T] ya da küçük bir Δη.
-- V18/V8 0.86, Girão idealinden (0.627) yüksek; çekirdek jeti yavaş.
-- He 2025 ve Bennett vd. künyeleri eksik (Bennett aramada bulunamadı).
+- Δη = +0.017 sınanmamış bir varsayım; Girão ile ICAO arasındaki yaklaşık %5'lik SFC farkını kapatıyor.
+- Benzerlik hedefi modelin değeri (0.6036); Girão'nun 0.627'si ile fark −%3.7.
+- Bennett künyesi doğrulanmadı (büyük olasılıkla AIAA SciTech 2024).
 - Indriyati HPC havası 39.57 vs model çekirdek havası (tanım farkı).
 
 ## Sıradaki adımlar
-1. W2/A kararı (fan geometrisi veya Δη), gerekirse rev005.
-2. M0 kapsamını tamamla: istasyon tablosu -> modül bütçeleri, arayüz sözleşmesi.
+1. M0 kapsamını tamamla: istasyon tablosu -> modül bütçeleri, arayüz sözleşmesi.
+2. Kabul listesinin kalan maddeleri (parametre değişikliği, geri dönüş, çakışma testleri).
 3. Arayüz (Streamlit).
 4. M1 Inlet & Fan: ders + araştırma.
 

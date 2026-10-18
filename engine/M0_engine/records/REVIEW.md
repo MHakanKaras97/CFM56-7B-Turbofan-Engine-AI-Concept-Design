@@ -23,3 +23,11 @@ rev003 superseded by rev004 (cycle v4.1, Girão 2023 inputs, ICAO -7B27 rating).
 - Combustor-air and cooling assumptions of rev003 replaced by Girão secondary air (0.13 of W25).
 - Validation against Girão: 18 of 19 items pass; P5 +3.46 % accepted (engine/M0_engine/analysis/validation_girao.md).
 - rev004 soft-check deviation: W2/A 216.8 > 215 (fan geometry is [T]); explained, user decision open.
+
+## 2026-10-18 rev004
+rev004 superseded by rev005 (ADR-009). Reason: two-target solution on the low-V18/V8 branch near the thrust ceiling.
+- rev004: delta_eta = 0, ideal V18/V8 0.849 (family take-off value about 0.60-0.63), thrust ceiling 122.88 kN, only 1.2 % above target; W2/A 216.8 > 215.
+- rev005: similarity condition (ideal V18/V8 = 0.6036 from the Girão validation point) as third target; delta_eta = 0.0171, all checks pass, ceiling margin 7.8 %.
+
+## 2026-10-18 rev004 (correction)
+Wording correction to the previous entry: rev004 was on the HIGH ideal-V18/V8 side (0.849 vs the family take-off value of about 0.60-0.63), near the thrust ceiling. The supersede decision stands.

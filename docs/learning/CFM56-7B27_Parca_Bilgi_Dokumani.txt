@@ -1,0 +1,708 @@
+================================================================================
+CFM56-7B27 SINIFI TURBOFAN MOTORU
+PARCA BILGI DOKUMANI (EGITIM AMACLI)
+Surum 0.2  |  18 Ekim 2026
+================================================================================
+
+
+BOLUM 0 - AMAC VE OKUMA REHBERI
+--------------------------------------------------------------------------------
+
+Bu dokuman, bir turbofan motorunun parcalarini ve bu parcalarin NEDEN o sekilde
+tasarlandigini ogretmek icin yazildi. Hedef motor: CFM56-7B27 sinifi (Boeing
+737NG'nin motor ailesi). Dokuman, motoru 10 sorumluluk bolgesine ayirir:
+
+  M0  Motor (genel konsept ve sistem seviyesi)
+  M1  Inlet & Fan
+  M2  Booster (dusuk basincli kompresor, LPC)
+  M3  HP Compressor (yuksek basincli kompresor, HPC)
+  M4  Combustor (yanma odasi)
+  M5  HP Turbine (yuksek basincli turbin, HPT)
+  M6  LP Turbine (dusuk basincli turbin, LPT)
+  M7  Nozzle (egzoz / nozul)
+  M8  Shaft & Bearing (miller ve yataklar)
+  M9  Secondary Air & Oil (ikincil hava ve yag sistemi)
+
+GUVEN ETIKETLERI
+Her bilginin yaninda kaynagini gosteren bir etiket var. Bir sayiya
+guvenmeden once etiketine bak:
+
+  [K]   Birincil kaynak. EASA Type Certificate Data Sheet E.004, Issue 07
+        (9 Ocak 2023). Resmi ve dogrulanabilir.
+  [KS]  Ikincil kaynak. Teknik yayin, ders notu vb. Faydali ama kendi basina
+        kesin kabul edilmemeli. Birbiriyle celisen kaynaklar olabilir.
+  [H]   Hesaplanmis. Yukaridaki kaynaklardan basit bir hesapla turetildi.
+  [G]   Genel muhendislik bilgisi. Sektorde yaygin pratik. CFM56'ya ozgu
+        kesin bilgi DEGILDIR.
+  [T]   Tahmin / dogrulanmasi gerek. Mantikli bir varsayim, kanit yok.
+
+UYARI
+Bu dokuman egitim ve konsept calismasi icindir. Ucus guvenligi, bakim, onarim
+veya sertifikasyon karari icin KULLANILAMAZ. Gercek motorun parca bazli
+tasarim verisi uretici tarafindan yayimlanmamistir; bu dokumandaki parca
+malzemeleri ve olculeri, [K] etiketi tasimadikca gercek motoru birebir
+temsil etmez.
+
+
+BOLUM 1 - TURBOFAN NASIL CALISIR (5 DAKIKADA)
+--------------------------------------------------------------------------------
+
+Her gaz turbini ayni dort isi tekrar eder: HAVA AL, SIKISTIR, YAKITLA YAK,
+GENISLETEREK HIZLANDIR (Brayton cevrimi). Kisaca: cek - sikistir - yak - ufle.
+
+Newton'un ucuncu yasasi: motor sicak gazi arkaya hizla atar (aksiyon), gaz
+motoru one iter (reaksiyon). Bu ileri kuvvete ITKI denir.
+
+Turbin, sikistiriciyi dondurecek kadar enerji ceker. Geri kalan enerji itkiye
+gider. Bu yuzden isleyis tek seferlik degil, surekli bir cevrimdir.
+
+Turbofan'da on taraftaki buyuk fan, havanin buyuk kismini cekirdegin DISINDAN
+gecirir. Buna BYPASS (yan gecis) denir.
+  Bypass orani (BPR) = bypass hava debisi / cekirdek hava debisi.
+Cok miktarda havayi yavas hizlandirmak, az miktarda havayi cok hizli
+hizlandirmaktan daha verimlidir. Yolcu ucaklarinda yuksek bypass orani bu
+yuzden kullanilir. [G]
+
+CFM56-7B IKI MILLI (dual rotor) bir motordur [K]:
+  - Dusuk basinc (LP) mili: LPT, fan ve boosteri dondurur.  Devri: N1
+  - Yuksek basinc (HP) mili: HPT, HPC'yi doner.              Devri: N2
+Iki mil bagimsiz doner; her bolge kendine uygun hizda calisir.
+N1 itki referansidir, N2 cekirdegin sagligini gosterir.
+
+
+BOLUM 2 - HEDEF MOTOR KIMLIK KARTI: CFM56-7B27
+--------------------------------------------------------------------------------
+
+Tip ve konfigurasyon
+  Tip ............ Cift rotorlu, eksenel akisli, yuksek bypass oranli
+                   turbofan [K]
+  Dizilim ........ 1 kademe fan, 3 kademe LPC, 9 kademe HPC, annular yanma
+                   odasi, 1 kademe HPT, 4 kademe LPT, cift kanalli FADEC [K]
+  Ureticiler ..... CFM International (Safran Aircraft Engines [eski SNECMA] ve
+                   GE Aviation ortakligi) [K]
+  Ilk sertifika .. 17 Aralik 1996 (SAC varyanti, 7B27 dahil) [K]
+
+Varyant ailesi [K]
+  SAC ... Single Annular Combustor (tek halkali yanma odasi)
+  DAC ... Dual Annular Combustor (cift halkali yanma odasi)
+  TI .... Tech Insertion: degistirilmis HPC, yanma odasi ve HPT
+  E ..... Enhanced: degistirilmis HPT ve LPT
+  Not: 7B27A, 7B27A/3, 7B27AE modelleri yalnizca askeri kullanim icindir.
+  Bizim hedefimiz sivil 7B27 sinifidir.
+
+Performans ve limitler
+  Kalkis itkisi ............ 12143 daN [K]  ->  yaklasik 121,4 kN [H]
+                             (yaklasik 27.300 lbf)
+  Maks. surekli itki ....... 11521 daN [K]
+  Kalkis itkisi suresi ..... En fazla 5 dk (cok motorlu ucakta motor arizasinda
+                             10 dk) [K]
+  Maks. N1 ................. 5382 rpm (%104) [K]  ->  %100 = ~5175 rpm [H]
+  Maks. N2 ................. 15183 rpm (%105) [K] ->  %100 = ~14460 rpm [H]
+  EGT (kalkis) ............. 950 C [K]
+  EGT (maks. surekli) ...... 925 C [K]
+  EGT (calistirma) ......... 725 C [K]
+  Gecici EGT asimi ......... 960 C, en fazla 20 sn, kalkista [K]
+  EGT olcum noktasi ........ T49.5 = LPT 2. kademe nozulu [K]
+
+Boyut ve agirlik
+  Uzunluk x Genislik x Yukseklik ... 2508 x 2118 x 1829 mm [K]
+  Kuru agirlik ..................... 2386 kg (SAC ve TI), 2395 kg (E) [K]
+
+Fan (ikincil kaynak) [KS]
+  Fan capi ........ yaklasik 61 inc (~1,55 m)
+  Fan kanadi ...... 24 adet, genis kordlu, titanyum
+  Ilk hizmet ...... 1997, Southwest Airlines, 737-700
+
+Yag ve yakit sinirlari [K]
+  Yag basinci (min. fark basinci) .... 90 kPa. Bunun altinda calisma en fazla
+                                       10 saniye.
+  Yag sicakligi (pompa cikisi) ....... Surekli maks. +150 C (rolantide), +140 C
+                                       (rolanti ustunde)
+  Yakit giris sicakligi .............. Min. -43 C, maks. +49 C (Jet B) veya
+                                       +54 C (Jet A)
+
+Hava alma (bleed) sinirlari [K]
+  Bypass kanali ........ N1'in %20'sinin ustunde, ikincil hava akisinin %2'si
+  HPC 5. kademe ........ N1'in %20'sinin ustunde, birincil akisin %10'u
+  HPC 9. kademe ........ Hiza gore %12'den %7'ye dogrusal azalan sinir
+  HPC 5+9 birlikte ..... Hiza gore %13'ten %10'a dogrusal azalan sinir
+  Not: Bleed bedava degildir. Cekilen hava itki uretemez, motor biraz daha
+  fazla caliir ve EGT yukselir.
+
+Aksesuar suruculeri [K]
+  Elektrik jeneratoru ... Disli orani 0,565 (HP rotor devrine gore), 135 kW
+  Hidrolik pompa ........ Disli orani 0,256, 17,5 daNm
+  Starter motorun tip tasariminin parcasidir.
+
+Ek hesap: fan ucu hizi [H]
+  Fan capi ~1,55 m [KS] ve N1 = 5382 rpm [K] ile
+  uc hizi = pi x D x n / 60  ~=  437 m/s
+  Bu hiz, kanat ucunda transonik rejime yakindir. Fan kanadi tasariminin neden
+  zor oldugunu gosteren bir ornektir: yuksek uc hizi daha fazla basinc verir
+  ama sok dalgasi, gurultu ve gerilmeyi artirir.
+
+
+BOLUM 3 - ISTASYON NUMARALANDIRMASI
+--------------------------------------------------------------------------------
+
+Motor icinde "hangi noktadan bahsediyoruz?" sorusunu cevaplamak icin gaz yolu
+boyunca istasyon numaralari kullanilir (genel kullanim SAE AS755 standardina
+dayanir). Basit bir ozet [G]:
+
+  St 2 ... Fan girisi
+  St 13 .. Bypass kanali (fan cikisi, bypass tarafi)
+  St 25 .. HPC girisi (booster cikisi)
+  St 3 ... HPC cikisi (yanma odasi girisi)
+  St 4 ... Yanma odasi cikisi / HPT girisi
+  St 45 .. HPT cikisi / LPT girisi
+  St 5 ... LPT cikisi
+  St 8 ... Nozul bogazi
+
+Uretici kendi isimlendirmesini de kullanir. Ornegin sertifika belgesindeki EGT
+olcumu "T49.5" olarak gecer (LPT 2. kademe nozulu) [K]. Bizim projede
+istasyonlar, agentlar arasi ortak dildir: her bolge kendi giris ve cikis
+istasyonundaki basinc, sicaklik, debi ve devir degerlerinin sahibidir.
+
+
+BOLUM 4 - MODULLER
+--------------------------------------------------------------------------------
+
+Her modulde ayni yapi kullanilir: Gorev, Parcalar, Hedef motordan bilgiler,
+Tipik malzemeler, Baglantilar, Yukler ve ariza modlari, Analizler, Ogretici
+not.
+
+================================================================================
+M1 - INLET & FAN
+================================================================================
+
+GOREV
+Havayi motora duzgun sekilde almak ve fan ile hizlandirmak. Fan, havanin
+buyuk kismini bypass kanalina, kucuk kismini cekirdege yollar. Yuksek bypass
+orani oldugu icin itkinin buyuk bolumunu fan uretir. [G]
+
+PARCALAR [G]
+  - Spinner (burun konisi)
+  - Fan kanatlari
+  - Fan diski
+  - Fan kasasi (kanat kopmasini tutan containment kasa)
+  - Fan cikis kilavuz kanatlari (OGV / stator)
+  - Fan cerceve (frame)
+  - Giris kaportasi (inlet cowl). Bu parca ucak/nacelle tarafindadir.
+
+HEDEF MOTORDAN BILGILER
+  - Tek kademe fan [K]
+  - 24 adet genis kordlu titanyum kanat [KS]
+  - Fan capi yaklasik 61 inc [KS]; uc hizi ~437 m/s [H]
+  - Maks. N1 5382 rpm [K]
+  - Sertifika gereksinimleri: kus yutma (CS-E 800), rotor butunlugu
+    (CS-E 840), titresim taramasi (CS-E 650) [K]
+
+TIPIK MALZEMELER
+  - Kanat ve disk: titanyum alasimi (ornegin Ti-6Al-4V) [G]
+  - Fan kasasi: alüminyum veya kompozit, kanat kopmasini tutacak sekilde
+    guclendirilmis [T]
+  - Spinner, OGV: alüminyum veya kompozit [T]
+
+BAGLANTILAR
+  - Kanat - disk: kirlangic kuyrugu (dovetail) gecmesi [G]
+  - Disk - LP mili: flans ve civata ile [T]
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: santrifuj kuvveti, aerodinamik basinc, titresim, kus carpmasi, buz.
+  Arizalar: yorulma catlagi (HCF), yabanci cisim hasari (FOD), kanat kopmasi
+  (blade-off), buzlanmadan kaynaklanan dengesizlik.
+
+ANALIZLER [G]
+  - Santrifuj gerilme (kabaca sigma ~ rho x omega^2 x r^2 mertebesi)
+  - Uc hizi limiti
+  - Campbell diyagrami (rezonans kontrolu)
+  - Flutter taramasi
+  - Kus carpmasi enerji kontrolu
+  - Disk LCF omru
+  - Kanat kopmasi icin kasa containment enerjisi
+
+OGRETICI NOT
+Fan neden titanyum? Titanyum hafif ve guclu, yorulmaya iyi dayanir. Kus
+carpmasinda kanadin yirtilmadan sekil degistirmesi gerekir. Fan buyudukce
+daha fazla hava hareket eder (verim artar), ama uc hizi ve agirlik de artar.
+Tasarimci bu dengeyi kurar.
+
+
+================================================================================
+M2 - BOOSTER (LPC)
+================================================================================
+
+GOREV
+Fanin cekirdege gonderdigi havayi, HPC'ye girmeden once on-sikistirmak.
+Fan ile ayni mil uzerinde ve ayni devirde calisir. [G]
+
+PARCALAR [G]
+  - Booster rotor kademeleri (kanat + disk/tambur)
+  - Booster stator kademeleri
+  - Degisken bleed vanasi (VBV). Booster cikisindaki fazla havayi bypass
+    kanalina bosaltarak stall marjini korur.
+
+HEDEF MOTORDAN BILGILER
+  - 3 kademe LPC [K]
+  - Bypass kanalindan bleed siniri: ikincil akisin %2'si [K]
+  - KAYNAK CELISKISI: bir ders notu booster'i 4 kademe olarak yaziyor [KS].
+    Resmi sertifika 3 kademe diyor [K]. Biz sertifikayi esas aliriz.
+
+TIPIK MALZEMELER [G / T]
+  Titanyum alasimi kanatlar, celik veya titanyum disk/tambur.
+
+BAGLANTILAR [T]
+  Booster rotoru fan diskine ve LP miline baglidir; ayni devirle doner.
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: santrifuj, aerodinamik, titresim, yabanci cisim.
+  Arizalar: stall, kanat hasari, buz birikimi.
+
+ANALIZLER [G]
+  Kademe basinc orani, stall marji, disk gerilmesi, VBV debi hesabi.
+
+OGRETICI NOT
+Booster fanla ayni yavas hizda dondugunden kademe basina basinc artisi
+sinirlidir. Asil buyuk sikistirma yuksek devirli HPC'de yapilir.
+
+
+================================================================================
+M3 - HP COMPRESSOR (HPC)
+================================================================================
+
+GOREV
+Havayi yanma icin gereken yuksek basinca cikarmak. Dis hava yolundan gelen
+havanin basincini ve sicakligini ciddi sekilde yukseltir. [G]
+
+PARCALAR [G]
+  - 9 kademe rotor (kanat + disk, birlesik tambur)
+  - Stator kademeleri ve giris kilavuz kanatlari
+  - Degisken stator kanatlari (VSV), on kademelerde
+  - Kompresor kasasi
+  - Bleed portlari (5. ve 9. kademeden)
+
+HEDEF MOTORDAN BILGILER
+  - 9 kademe HPC [K]
+  - Bleed 5. ve 9. kademeden alinabilir; sinirlar Bolum 2'de [K]
+  - Tech Insertion (TI) varyantinda HPC modifiye edilmistir [K]
+  - Maks. N2 15183 rpm [K]
+
+TIPIK MALZEMELER [G]
+  On kademeler: titanyum alasimi. Arka kademeler: nikel veya celik alasimi.
+  Neden? Hava sikistikca ISINIR. Cikisa dogru sicaklik, titanyumun dayanimini
+  korudugu sinirlari asabilir; ustelik cok yuksek sicaklikta titanyum yanma
+  riski tasir.
+
+BAGLANTILAR [T]
+  Kademe diskleri birbirine kaynak veya civata ile baglanarak tek bir rotor
+  tamburu olusturur.
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: santrifuj, termal, aerodinamik.
+  Arizalar: stall/surge, kanat ucu surtmesi (tip rub), disk LCF catlagi,
+  kirlenme ve erozyon.
+
+ANALIZLER [G]
+  Kademe yukleme, kanat ucu boslugu (tip clearance), disk LCF omru, termal
+  buyume, basinc orani dagilimi.
+
+OGRETICI NOT
+Stall bir "mekanik kirilma" degil, HAVA AKISI problemidir. Kanatlar kucuk
+kanatlar gibi calisir; hava duzgun gelmezse kanat yuzeyinden ayrilir ve
+basinc dusar. Yorulma ve yabanci cisim hasari akisi bozabilir, bozulan akis
+stall'a yol acabilir.
+
+
+================================================================================
+M4 - COMBUSTOR
+================================================================================
+
+GOREV
+Sikistirilmis havayi yakitla karistirip surekli yakmak ve gazin sicakligini
+turbin girisi icin istenen seviyeye getirmek. Yanma yaklasik sabit basincta
+olur. [G]
+
+PARCALAR [G]
+  - Dis kasa ve difuzor
+  - Liner (ic ve dis)
+  - Dome ve swirler (alevi tutan girdap yapicilar)
+  - Yakit nozullari
+  - Atesleyiciler (igniter)
+  - Sogutma ve seyreltme delikleri
+
+HEDEF MOTORDAN BILGILER
+  - Annular (halka seklinde) yanma odasi [K]
+  - SAC: tek halkali; DAC: cift halkali (dusuk NOx icin) [K]
+  - TI varyantinda yanma odasi modifiye edilmistir [K]
+  - Bazi konfigurasyonlarda "Burner Staging Valve" (BSV) secenegi vardir [K]
+
+TIPIK MALZEMELER [G]
+  Nikel/kobalt bazli alasimlar, ic yuzeyde isi bariyeri kaplamasi (TBC).
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: cok yuksek sicaklik, termal sok, basinc.
+  Arizalar: liner catlagi, sicak nokta, kaplama dokulmesi, yakit nozulu
+  tikanmasi, eşitsiz sicaklik dagilimi (pattern factor).
+
+ANALIZLER [G]
+  Hava dagilimi, liner duvar sicakligi, basinc kaybi, LCF omru, emisyon
+  tahmini, yanma odasi cikis sicaklik dagilimi.
+
+OGRETICI NOT
+Havanin yalnizca yaklasik %25'i yakitla yanar (birincil hava). Kalan yaklasik
+%75'i sogutma ve seyreltme icindir: duvari korur ve gazi turbinin
+dayanabilecegi sicakliga indirir. Alev sicakligi 2000 C'yi asabilir, bu hicbir
+metalin dogrudan dayanamayacagi bir degerdir. Sogutma, tasarimin kalbidir.
+
+
+================================================================================
+M5 - HP TURBINE (HPT)
+================================================================================
+
+GOREV
+Yanma odasindan cikan en sicak ve en yuksek basincli gazdan enerji cekip HP
+mili vasitasiyla HPC'yi dondurmek. [G]
+
+PARCALAR [G]
+  - Nozul kilavuz kanatlari (NGV)
+  - Rotor kanatlari
+  - Turbin diski
+  - Shroud (kanat ucu halkasi) ve tutucular
+  - Ic sogutma kanallari ve film sogutma delikleri
+
+HEDEF MOTORDAN BILGILER
+  - Tek kademe HPT [K]
+  - TI ve E varyantlarinda HPT modifiye edilmistir [K]
+  - EGT sinirlari: kalkis 950 C, maks. surekli 925 C [K]
+
+TIPIK MALZEMELER [G]
+  Kanat: tek kristal nikel super alasim + TBC kaplama. Disk: toz metalurjisi
+  nikel alasimi.
+
+BAGLANTILAR [G]
+  Kanat - disk: ladin agaci (fir-tree) kok gecmesi.
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: yuksek santrifuj, yuksek sicaklik, termal gradyan.
+  Arizalar: creep (sunme), termo-mekanik yorulma, oksidasyon, sogutma
+  deligi tikanmasi, kanat ucu yanmasi (tip burn).
+
+ANALIZLER [G]
+  Creep omru (Larson-Miller parametresi), sogutma etkinligi, disk LCF omru,
+  termal gradyan gerilmesi, kanat uc boslugu.
+
+OGRETICI NOT
+Gaz sicakligi, kanat alasiminin erime sicakligini asabilir. Kanatlar yine de
+erimez, cunku IC SOGUTMA (kanadin icinden gecen kompresor havasi) ve FILM
+SOGUTMA (yuzeydeki deliklerden cikan hava tabakasi) ile korunur. Tek kristal
+alasim, tane sinirlarini ortadan kaldirarak creep direncini arttirir.
+Metalurji bilgisinin motor tasariminda dogrudan degerli oldugu yer burasidir.
+
+
+================================================================================
+M6 - LP TURBINE (LPT)
+================================================================================
+
+GOREV
+HPT'den cikan gazdan kalan enerjiyi cekip LP mili vasitasiyla fani ve boosteri
+dondurmek. [G]
+
+PARCALAR [G]
+  - Kademe nozul kanatlari (stator)
+  - Rotor kanatlari (uc kisminda shroud'lu)
+  - Turbin diskleri
+  - LP mili baglantisi
+  - Turbin arka cercevesi (rear frame)
+
+HEDEF MOTORDAN BILGILER
+  - 4 kademe LPT [K]
+  - E varyantinda LPT modifiye edilmistir [K]
+  - EGT, LPT 2. kademe nozulunde (T49.5) olculur [K]
+
+TIPIK MALZEMELER [G]
+  Nikel alasimli kanatlar ve diskler. Daha yeni motorlarda bazi kademelerde
+  titanyum aluminid (TiAl) kullanilir; CFM56 icin dogrulanmamistir [T].
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: santrifuj, termal, titresim.
+  Arizalar: kanat titresim yorgunlugu, kanat ucu boslugu degisimi, disk LCF.
+
+ANALIZLER [G]
+  Kademe is dagilimi (Euler turbin denklemi), disk gerilmesi, kanat
+  titresimi, termal buyume ve uc boslugu.
+
+OGRETICI NOT
+LPT, fan icin gerekli buyuk gucu cekmek zorunda oldugundan ve yuksek bypass
+orani arttikca fan daha yavas dondugunden, daha cok kademeye ihtiyac duyar.
+Bu yuzden HPT tek kademe, LPT dort kademedir.
+
+
+================================================================================
+M7 - NOZZLE (EGZOZ)
+================================================================================
+
+GOREV
+Kalan basinc ve isiyi hiza cevirerek itki uretmek. Fan ve cekirdek akislari
+CFM56'da ayri nozullardan cikar. [G]
+
+PARCALAR [G]
+  - Cekirdek nozulu
+  - Egzoz konisi (plug)
+  - Fan nozulu (nacelle'in parcasi)
+  - Itki ters cevirici (thrust reverser). Bu parca ucak/nacelle tarafindadir.
+
+HEDEF MOTORDAN BILGILER
+  - Motor, Boeing itki ters cevirici sistemi P/N 315A2295 ile onaylidir [K]
+  - Kapsam notu: nacelle ve thrust reverser, motorun parcasi degil ucak
+    tarafi sayilir. M7 icin odak cekirdek nozulu ve egzoz konisidir.
+
+TIPIK MALZEMELER [T]
+  Nikel alasimli veya titanyum sac yapilar; plug'ta isiya dayanikli alasimlar.
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: sicaklik, basinc, titresim, akustik.
+  Arizalar: catlak, termal yorulma, akustik yorulma.
+
+ANALIZLER [G]
+  Nozul alani (tikali akis), itki hesabi:
+    F = m_dot x (V_cikis - V_ucus) + (P_cikis - P_cevre) x A_cikis
+  Egzoz sicakligi, titresim, akustik.
+
+OGRETICI NOT
+Nozulda basinc duser, hiz artar (Bernoulli). Nozul alani motorun calisma
+noktasini belirler: cok kucuk olursa motor "boguluyor", cok buyuk olursa itki
+kaybolur.
+
+
+================================================================================
+M8 - SHAFT & BEARING
+================================================================================
+
+GOREV
+Turbinlerin urettigi gucu kompresorlere ve fana tasimak; donen kismi sabit
+kisimlara gore dogru konumda tutmak. [G]
+
+PARCALAR [G]
+  - LP mili (uzun ve ince; LPT'den fan ve booster'a gider, HP milinin icinden
+    gecer)
+  - HP mili (HPT'den HPC'ye, LP milini cevreler)
+  - Ana yataklar (bilyali: eksenel yuk tasir; makarali: radyal yuk tasir)
+  - Contalar (labirent)
+  - Yag filmi damperleri
+
+HEDEF MOTORDAN BILGILER
+  - Cift rotorlu (iki mil) yapi [K]
+  - Maks. N1 5382 rpm, maks. N2 15183 rpm [K]
+  - Sertifika gereksinimi: kompresor/fan ve turbin millerinin butunlugu
+    (CS-E 850) [K]
+  - Ana yatak sayisi ve yerleri: dogrulanmali [T]
+
+TIPIK MALZEMELER [G / T]
+  Yuksek mukavemetli celik alasimlari (miller), yatak celigi (yataklar).
+
+YUKLER VE ARIZA MODLARI [G]
+  Yukler: burulma, egilme, eksenel itki, dengesizlik.
+  Arizalar: yatak yorulmasi, yag kaybi, kritik hizda rezonans, mil catlagi.
+
+ANALIZLER [G]
+  Kritik hiz (rotor dinamigi), burulma gerilmesi, yatak omru (L10),
+  eksenel yuk dengesi, dengesizlik tepkisi.
+
+OGRETICI NOT
+Iki mil neden? Fan yavas, HPC hizli donmeli. Tek mil olsa biri verimsiz
+calisirdi. Iki bagimsiz mil, her bolgeyi kendi ideal hizinda calistirir. Mil
+uzun ve ince oldugunda "kritik hiz" riski artar: belli bir devirde mil
+rezonansa girer. Tasarim bu hizlarin calisma araligindan uzakta kalmasini
+saglar.
+
+
+================================================================================
+M9 - SECONDARY AIR & OIL
+================================================================================
+
+GOREV
+Gaz yoluna girmeyen ama motorun yasamasi icin gerekli tum yardimci hava ve
+yag akislarini yonetmek: sogutma havasi, conta havasi, yatak haznesi
+basinclandirma, yag dolasimi. [G]
+
+PARCALAR [G]
+  Ikincil hava:
+  - Turbin sogutma hava borulari ve kanallari
+  - Conta basinclandirma devreleri
+  - Aktif boslug kontrolu (ACC) [T: CFM56-7B'de HPT ve LPT icin vardir, dogrula]
+  - Bleed valfleri ve portlari
+  Yag sistemi:
+  - Yag tanki, pompalar, filtreler, yag sogutucu
+  - Yatak haznesi (sump), geri toplama (scavenge) pompalari
+  - Aksesuar disli kutusu (AGB)
+
+HEDEF MOTORDAN BILGILER
+  - Bleed noktalari ve sinirlari: Bolum 2 [K]
+  - Yag basinci ve sicaklik limitleri: Bolum 2 [K]
+  - Aksesuar suruculeri: jenerator 0,565, hidrolik pompa 0,256 [K]
+  - Starter, motor tip tasariminin parcasidir [K]
+
+ANALIZLER [G]
+  Hava akis dengesi, yag isi yuku, basinc dususu, bleed'in EGT'ye etkisi.
+
+OGRETICI NOT
+Bleed bedava degildir. Kabin basinclandirma, buz onleme gibi ihtiyaclar icin
+cekilen hava itkiye donusemez; motor ayni itkiyi vermek icin daha cok yakit
+yakar. Bu yuzden modern ucaklar bazi bleed sistemlerini elektrikli
+sistemlerle degistirmektedir.
+Yag ayni anda iki is yapar: surtunmeyi azaltir (yaglama) ve yataklardan isi
+alir (sogutma). Yag basincinin aniden dusmesi motoru kisa surede tahrip
+edebilecek ciddi bir uyaridir; bu yuzden sertifika limiti 10 saniyedir [K].
+
+KAPSAM DISI (simdilik)
+FADEC, sensorler, atesleme, starter kontrolu, yakit sistemi ve yangin
+koruma. Bunlar motor agent'inda (M0) sinir kosulu olarak ele alinacak,
+detayli tasarimi yapilmayacak.
+
+
+================================================================================
+M0 - MOTOR (GENEL KONSEPT)
+================================================================================
+
+GOREV
+Motoru bir butun olarak tanimlamak: gereksinimler, cevrim, istasyon degerleri,
+modullere dagitilan butceler, arayuzler ve motor seviyesi kurallar.
+
+NEDEN AYRI BIR SORUMLULUK
+Hicbir modul tek basina "dogru" olamaz. Fan cok buyuk secilirse LPT, mil ve
+agirlik etkilenir. HPC cikis sicakligi degisirse yanma odasi ve HPT etkilenir.
+Motor seviyesi bu bagimliliklari tutar ve cakismalari yakalar.
+
+HEDEF MOTOR GEREKSINIMLERI (kimlik karti)
+  Bolum 2'deki [K] degerleri.
+
+BASLANGIC DEGERLERI (dogrulanacak) [T]
+  BPR yaklasik 5 ve OPR yaklasik 30 mertebesi. Bu degerler birincil kaynaktan
+  dogrulanmadan cevrim hesabinda kesin kabul edilmemelidir.
+
+
+BOLUM 5 - SERTIFIKASYON GEREKSINIMLERI TASARIMI NASIL SEKILLENDIRIR
+--------------------------------------------------------------------------------
+
+Motorun tasarimi sadece "calissin" diye yapilmaz; sertifikasyon kurallarinin
+her biri bir tasarim kisitidir. 7B ailesinin sertifika belgesinde yer alan
+ornek gereksinimler [K]:
+
+  CS-E 515  Kritik parcalarin butunlugu (omur limitli parcalar)
+  CS-E 650  Titresim taramalari
+  CS-E 745  Motor ivmelenmesi (devir artisi)
+  CS-E 790  Yagmur ve dolu yutma
+  CS-E 800  Kus yutma
+  CS-E 840  Rotor butunlugu (disk patlamasi / kontrol)
+  CS-E 850  Kompresor/fan ve turbin milleri
+  CS-E 890  Itki ters cevirici testleri
+  CS-E 1030 Zaman sinirli sevk (Time Limited Dispatch)
+
+Parcalarin omur limitleri, motorun "Engine Shop Manual" belgesinin 5.
+bolumunde (Airworthiness Limitations) tanimlidir ve halka acik degildir [K].
+Bu nedenle bizim omur hesaplarimiz tahmin niteligindedir.
+
+
+BOLUM 6 - KISA SOZLUK
+--------------------------------------------------------------------------------
+
+BPR ..... Bypass orani. Bypass havasi / cekirdek havasi.
+OPR ..... Toplam basinc orani. Kompresor cikis basinci / giris basinci.
+N1 ...... LP mil devri (fan, booster, LPT). Itki referansi.
+N2 ...... HP mil devri (HPC, HPT). Cekirdek sagligi gostergesi.
+EGT ..... Egzoz gazi sicakligi. Saglik ve guvenlik gostergesi.
+EGT marji .. Limit ile mevcut deger arasindaki fark. Motor yaslandikca azalir.
+TIT ..... Turbin giris sicakligi (yanma odasi cikisi).
+FADEC ... Motoru tam yetkiyle kontrol eden dijital bilgisayar.
+HCF ..... Yuksek devirli yorulma (cok sayida kucuk titresim).
+LCF ..... Dusuk devirli yorulma (az sayida buyuk yuk dongusu, orn. kalkis-inis).
+Creep ... Yuksek sicaklikta sabit yukun altinda zamanla yavas sekil degisimi.
+FOD ..... Yabanci cisim hasari.
+Stall ... Kanat uzerinde hava akisinin ayrilmasi.
+Surge ... Daha siddetli stall; kisa sureli ters akis.
+EFC ..... Esdeger ucus dongusu; omur limitlerinin sayildigi birim.
+Campbell diyagrami .. Devire gore uyarma frekanslarini ve kanat dogal
+                      frekanslarini gosterir; rezonans noktalarini bulmak icin.
+TBC ..... Isi bariyeri kaplamasi.
+VBV ..... Degisken bleed vanasi.
+VSV ..... Degisken stator kanatlari.
+SAC/DAC . Tek halkali / cift halkali yanma odasi.
+ACC ..... Aktif boslug kontrolu.
+
+
+BOLUM 7 - DOGRULANACAKLAR LISTESI
+--------------------------------------------------------------------------------
+
+Bu bilgiler henuz birincil kaynakla teyit edilmedi. Rule book'a girmeden once
+kontrol edilmeli:
+
+  1. BPR ve OPR (7B27 icin) degerleri
+     COZULDU: BPR 5.0, OPR 28.63 [K, ICAO EDB v32, UID 3CM034]
+  2. Turbin giris sicakligi (TIT) ve toplam hava debisi
+     COZULDU (model): T4 = 1670.7 K, W2 = 345.4 kg/s [H, M0 rev005]
+     Olcum degil, cevrim modelinden turetildi.
+  3. Fan capi (61 inc) ve fan kanat sayisi (24) icin birincil kaynak
+     COZULDU (kanat sayisi): 24 [KS, Girao 2023]. Fan capi hala [KS/T].
+  4. Booster kademe sayisi (3) ve kademe basinc orani; celiskili kaynak var
+  5. HPC'de hangi kademelerin degisken stator (VSV) oldugu
+  6. Yakit nozulu sayisi
+     COZULDU: 20 [KS, Girao 2023]
+  7. Ana yatak sayisi ve yerleri
+  8. Parca bazli malzemeler (hicbir halka acik birincil kaynak yok; genel
+     muhendislik pratigi ve E3 raporlari kullanilacak, [G]/[T] etiketli)
+  9. ACC'nin HPT ve LPT'de bulunup bulunmadigi
+ 10. Nozul konfigurasyonu (ayri/karisik akis)
+
+
+BOLUM 8 - KAYNAKLAR
+--------------------------------------------------------------------------------
+
+Birincil
+  EASA TCDS No. E.004, CFM56-7B series engines, Issue 07, 9 Ocak 2023
+    https://www.easa.europa.eu/en/downloads/7795/en
+
+  ICAO Aircraft Engine Emissions Databank (EASA), v32, 03/2026
+    UID 3CM034 (CFM56-7B27): BPR, OPR, LTO yakit debileri
+    https://www.easa.europa.eu/en/domains/environment/icao-aircraft-engine-emissions-databank
+
+Ikincil
+  Girao B.P., Development of a Prediction Model for the CFM56-7B Engine,
+    yuksek lisans tezi, Universidade da Beira Interior (UBI), 2023
+    Bolum 3: modul bilgileri; Sekil 4.9-4.10: GasTurb tasarim noktasi
+  Aircraft Commerce, CFM56-7B Specifications / Guide (Issue 58)
+    https://www.aircraft-commerce.com/wp-content/uploads/aircraft-commerce-docs1/Aircraft%20guides/CFM56-7B/ISSUE58_CFM56_7B_GUIDE.pdf
+  Universite ders notu: Technologie des Turboreacteurs II (CFM56-7B)
+    https://di.univ-blida.dz/jspui/bitstream/123456789/35939/1/Cours%20technologie%20GTR%20system.doc.pdf
+
+Parca/yontem bilgisi icin kutuphane (referans motor degil)
+  NASA/GE Energy Efficient Engine (E3) raporlari, NTRS
+    Fan detayli tasarim raporu ..... https://ntrs.nasa.gov/api/citations/19830008070/downloads/19830008070.pdf
+    Cekirdek tasarim ve performans .. https://ntrs.nasa.gov/api/citations/19900019243/downloads/19900019243.pdf
+    Yanma odasi raporu .............. https://ntrs.nasa.gov/api/citations/19900019239/downloads/19900019239.pdf
+    Ucus tahrik sistemi (FPS) ....... https://ntrs.nasa.gov/api/citations/19840003102/downloads/19840003102.pdf
+    Ön tasarim ve analiz ............ https://ntrs.nasa.gov/api/citations/19810009532/downloads/19810009532.pdf
+
+Parca hiyerarsisi iskeleti
+  BOMwiki, Turbofan Jet Engine (dogrulanmamis, genel sablon)
+    https://bomwiki.com/item/turbofan-jet-engine/
+
+Egitim sunumu
+  "Gas Turbine Engine - Study Review" (kullanicinin sundugu sunum): Newton,
+  Brayton, motor tipleri, cekirdek bolumleri, yardimci sistemler, kontrol.
+
+
+BOLUM 9 - BU DOKUMAN NASIL GUNCELLENIR
+--------------------------------------------------------------------------------
+
+1. Yeni bir bilgi eklerken mutlaka kaynak etiketini ([K], [KS], [H], [G], [T])
+   yaz.
+2. [T] etiketli bir bilgi dogrulandiginda etiketini degistir ve kaynagi
+   Bolum 8'e ekle.
+3. Iki kaynak celisirse ikisini de yaz ve hangisini esas aldigini nedeniyle
+   birlikte belirt (ornek: Booster kademe sayisi).
+4. Sayilar degisirse Bolum 7'deki listeden ilgili maddeyi sil.
+5. Surum numarasini ve tarihi basta guncelle.
+
+================================================================================
+SON
+================================================================================

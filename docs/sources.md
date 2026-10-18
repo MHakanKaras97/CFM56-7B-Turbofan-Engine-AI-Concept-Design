@@ -22,7 +22,7 @@ Kural: alıntı veya şekil kopyalanmaz; yalnızca faktler kullanılır, kendi c
 | 16 | Yılmaz İ., *Proc. IMechE Part G*, 2009. DOI 10.1243/09544100JAERO474 | Yalnızca FN, N1, N2, PS3/P2 (birimler tutarsız); kalkış N1/N2 ortalamaları M8 bilgi referansı | faktler, kendi cümlelerimizle |
 | 17 | Guynn M.D. vd., NASA/TM-2009-215784, 2009. | Yalnızca ileri teknoloji sınırları | ABD hükümeti eseri, kamu malı |
 | 18 | Yang vd., *Chinese Journal of Aeronautics* 36(1), 2023. DOI 10.1016/j.cja.2022.06.018 | AGTF30 ikincil hava sistemi: kalkışta toplam soğutma yaklaşık %17 (karşılaştırma) | CC BY-NC-ND 4.0; faktler, kendi cümlelerimizle |
-| 21 | He, 2025. | Henüz kullanılmadı (tam künye tamamlanacak) | CC BY 4.0 |
-| 19 | Bennett vd., AIAA SciTech, NASA. | HPT verim kaybı: soğutma havasının her %1'i için %0.25-1.5 (tam künye tamamlanacak) | faktler, kendi cümlelerimizle |
+| 21 | He, 2025, *Case Studies in Thermal Engineering*. DOI 10.1016/j.csite.2025.106616 | Henüz kullanılmadı | CC BY 4.0 |
+| 19 | Bennett vd., NASA; büyük olasılıkla AIAA SciTech 2024 (doğrulanmadı). | HPT verim kaybı: soğutma havasının her %1'i için %0.25-1.5 (tam künye tamamlanacak) | faktler, kendi cümlelerimizle |
 | 20 | Lee, 2023, MIT yüksek lisans tezi. | Yalnızca kaynakça taraması | faktler, kendi cümlelerimizle |
 | 12 | Martins D., *Off-Design Performance Prediction of the CFM56-3 Aircraft Engine*, genişletilmiş özet, Instituto Superior Técnico, Lizbon, 2015. | Yalnızca kalibrasyon yöntemi (Kurzke yaklaşımı); motor CFM56-3 | faktler, kendi cümlelerimizle |

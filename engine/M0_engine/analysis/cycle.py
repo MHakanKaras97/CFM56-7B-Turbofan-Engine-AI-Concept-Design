@@ -15,11 +15,12 @@ the HPT rotor and does HPT work; HPT rotor cooling (HPC exit) mixes at station 4
 leaves the HPC at a fraction of its enthalpy rise and returns at station 45.
 
 FPR is an input (ADR-008). Calibration (Newton, finite-difference Jacobian) solves W2 and T4
-against thrust and fuel flow. V18/V8 is reported for information only.
+against thrust and fuel flow; optionally a third unknown (delta_eta or FPR) against the ideal
+V18/V8 (fully expanded isentropic jet velocities).
 
-Rated case (ICAO -7B27): the Girão efficiencies (validated at 125.73 kN) cannot reach the ICAO
-SFC, so one uniform delta_eta is added to all isentropic turbomachinery efficiencies and swept;
-the nominal is the smallest delta_eta that solves and passes all HARD checks.
+Rated case (ICAO -7B27, ADR-009): similarity condition. The ideal V18/V8 of the Girão validation
+point is imposed as a third target; the third unknown is a uniform delta_eta added to all
+isentropic turbomachinery efficiencies, or (fallback) FPR with delta_eta = 0.
 
 Usage:
     python -m engine.M0_engine.analysis.cycle              # writes analysis/results.yaml
@@ -51,6 +52,8 @@ INCH = 0.0254
 STATIONS = ("0", "2", "13", "18", "21", "24", "25", "3", "31", "4", "41", "43", "44", "45", "5", "8")
 UNKNOWNS = ("W2", "T4")
 TARGETS = ("thrust", "fuel")
+SIMILARITY_TARGETS = (*TARGETS, "velocity_ratio")
+STEP_FLOOR = {"W2": 1.0, "T4": 100.0, "delta_eta": 0.05, "FPR": 1.0}  # damping scale near zero
 ETA = ("eta_fan_outer", "eta_fan_inner", "eta_booster", "eta_hpc", "eta_hpt", "eta_lpt")
 COMPONENTS = ("inlet_recovery", "FPR", *ETA, "pr_fan_inner", "pr_booster", "duct_25_24", "burner_eta",
               "burner_pr", "duct_45_44", "duct_6_5", "bypass_duct", "mech_eff", "cfg_18", "cfg_8", "cd_18",
@@ -108,6 +111,7 @@ class Params:
 class Targets:
     thrust: float  # N
     fuel: float    # kg/s
+    velocity_ratio: float | None = None  # ideal V18/V8, similarity condition
 
 
 # --- inputs ---------------------------------------------------------------------
@@ -241,6 +245,7 @@ def run(p: Params, W2: float, T4: float) -> dict:
         "P_fan": P_fan, "P_boost": P_boost, "P_hpc": P_hpc, "P_hpt": P_hpt, "P_lpt": P_lpt,
         "n18": n18, "n8": n8, "F_byp": F_byp, "F_core": F_core, "thrust": thrust,
         "velocity_ratio": n18.V / n8.V,
+        "velocity_ratio_ideal": n18.V_ideal / n8.V_ideal,
     }
 
 
@@ -270,33 +275,53 @@ def _residual(name: str, r: dict, t: Targets) -> float:
         return r["thrust"] / t.thrust - 1.0
     if name == "fuel":
         return r["W_fuel"] / t.fuel - 1.0
+    if name == "velocity_ratio":
+        return r["velocity_ratio_ideal"] / t.velocity_ratio - 1.0
     raise KeyError(name)
 
 
-def calibrate(p: Params, t: Targets, initial: dict, tol: float = 1e-9, max_iter: int = 50):
-    """Newton iteration for W2, T4 against thrust and fuel flow. Returns (result dict, iterations)."""
-    state = {k: initial[k] for k in UNKNOWNS}
+def _apply(p: Params, s: dict) -> Params:
+    """Params with the optional third unknown (delta_eta or FPR) applied."""
+    if "delta_eta" in s:
+        p = with_delta_eta(p, s["delta_eta"])
+    if "FPR" in s:
+        p = replace(p, FPR=s["FPR"])
+    return p
+
+
+def calibrate(p: Params, t: Targets, initial: dict, tol: float = 1e-9, max_iter: int = 50,
+              unknowns: tuple[str, ...] = UNKNOWNS, targets: tuple[str, ...] = TARGETS):
+    """Newton iteration; default W2, T4 against thrust and fuel flow.
+
+    A third unknown (delta_eta or FPR) is applied to p before each evaluation.
+    Returns (result dict, iterations); the result holds the applied Params under "params".
+    """
+    if len(unknowns) != len(targets):
+        raise ValueError("number of unknowns must equal number of targets")
+    state = {k: initial[k] for k in unknowns}
 
     def evaluate(s):
-        r = run(p, s["W2"], s["T4"])
-        return r, [_residual(name, r, t) for name in TARGETS]
+        pp = _apply(p, s)
+        r = run(pp, s["W2"], s["T4"])
+        r["params"] = pp
+        return r, [_residual(name, r, t) for name in targets]
 
     for it in range(max_iter + 1):
         r, res = evaluate(state)
         if max(abs(v) for v in res) < tol:
             return r, it
-        J = [[0.0] * len(UNKNOWNS) for _ in TARGETS]
-        for j, name in enumerate(UNKNOWNS):
-            h = 1e-6 * abs(state[name])
+        J = [[0.0] * len(unknowns) for _ in targets]
+        for j, name in enumerate(unknowns):
+            h = 1e-6 * max(abs(state[name]), STEP_FLOOR[name] * 1e-2)
             _, res_p = evaluate(dict(state, **{name: state[name] + h}))
-            for i in range(len(TARGETS)):
+            for i in range(len(targets)):
                 J[i][j] = (res_p[i] - res[i]) / h
         dx = _solve(J, [-v for v in res])
-        # damping: at most 30 % change per variable
-        scale = min([1.0] + [0.3 * abs(state[n]) / abs(d) for n, d in zip(UNKNOWNS, dx) if d])
+        # damping: at most 30 % change per variable (relative to a floor near zero)
+        scale = min([1.0] + [0.3 * max(abs(state[n]), STEP_FLOOR[n]) / abs(d) for n, d in zip(unknowns, dx) if d])
         # backtrack if the step leaves the physical domain (e.g. nozzle Pt < P0)
         for _ in range(20):
-            trial = {n: state[n] + scale * d for n, d in zip(UNKNOWNS, dx)}
+            trial = {n: state[n] + scale * d for n, d in zip(unknowns, dx)}
             try:
                 evaluate(trial)
                 break
@@ -457,26 +482,18 @@ def with_delta_eta(p: Params, delta_eta: float) -> Params:
     return replace(p, **{n: getattr(p, n) + delta_eta for n in ETA})
 
 
-def delta_eta_sweep(p: Params, t: Targets, initial: dict, raw: dict, refs: dict, tol: float):
-    """Calibrate W2, T4 at each delta_eta of the configured sweep.
-
-    The sweep continues past its end (up to `extend_to`) only while no nominal is found.
-    Returns (rows, nominal) with nominal = (delta_eta, Params, result, iterations) or None.
-    """
+def delta_eta_sweep(p: Params, t: Targets, initial: dict, raw: dict, refs: dict, tol: float) -> list[dict]:
+    """Calibrate W2, T4 (thrust, fuel only) at each delta_eta of the configured sweep; info table."""
     cfg = raw["rated_case"]["delta_eta_sweep"]
-    lo, hi, step, extend_to = cfg["min"], cfg["max"], cfg["step"], cfg["extend_to"]
+    n = int(round((cfg["max"] - cfg["min"]) / cfg["step"]))
     A_fan = fan_face_area(raw)
     guess = {k: initial[k] for k in UNKNOWNS}
-    rows, nominal = [], None
-    i = 0
-    while True:
-        d = round(lo + i * step, 10)
-        if d > extend_to + 1e-12 or (d > hi + 1e-12 and nominal is not None):
-            break
-        i += 1
+    rows = []
+    for i in range(n + 1):
+        d = round(cfg["min"] + i * cfg["step"], 10)
         pd = with_delta_eta(p, d)
         try:
-            r, it = calibrate(pd, t, guess, tol=tol)
+            r, _ = calibrate(pd, t, guess, tol=tol)
         except ArithmeticError:
             best = max(thrust_envelope(pd, t), key=lambda e: e["thrust_kN"])
             rows.append({"delta_eta": d, "solvable": False, "max_thrust_kN": best["thrust_kN"]})
@@ -491,10 +508,48 @@ def delta_eta_sweep(p: Params, t: Targets, initial: dict, raw: dict, refs: dict,
             "EGT_displayed_C": _r(egt_displayed_C(r, raw, refs), 4),
             "combustor_air_kg_s": _r(r["W_comb"], 4),
             "sfc_g_kNs": _r(r["W_fuel"] / r["thrust"] * 1e6, 5),
+            "V18_V8_ideal": _r(r["velocity_ratio_ideal"], 4),
         })
-        if nominal is None and hard:
-            nominal = (d, pd, r, it)
-    return rows, nominal
+    return rows
+
+
+def validation_velocity_ratio(p: Params, refs: dict, initial: dict, tol: float) -> float:
+    """Ideal V18/V8 of our own model at the Girão validation point (similarity target)."""
+    pv, tv = validation_case(p, refs)
+    r, _ = calibrate(pv, tv, initial, tol=tol)
+    return r["velocity_ratio_ideal"]
+
+
+def similarity_solve(p: Params, t: Targets, initial: dict, raw: dict, refs: dict, tol: float):
+    """ADR-009: thrust, fuel and ideal V18/V8 as targets.
+
+    Attempt 1: unknowns W2, T4, delta_eta. Accepted if it solves, delta_eta <= limit and HARD passes.
+    Attempt 2 (only if 1 is not accepted): delta_eta = 0, unknowns W2, T4, FPR.
+    Returns (attempts, chosen result or None, chosen iterations).
+    """
+    limit = raw["rated_case"]["delta_eta_limit"]["value"]
+    tries = [("delta_eta", dict(initial, delta_eta=0.0)), ("FPR", dict(initial, FPR=p.FPR))]
+    attempts, chosen, chosen_it = [], None, 0
+    for name, guess in tries:
+        if chosen is not None:
+            break
+        entry = {"third_unknown": name}
+        try:
+            r, it = calibrate(p, t, guess, tol=tol, unknowns=(*UNKNOWNS, name), targets=SIMILARITY_TARGETS)
+        except ArithmeticError as exc:
+            attempts.append(dict(entry, solvable=False, message=str(exc)))
+            continue
+        pp = r["params"]
+        hard = all(c["result"] == "pass" for c in build_checks(r, pp, raw, refs) if c.get("hard"))
+        value = pp.eta_hpc - p.eta_hpc if name == "delta_eta" else pp.FPR
+        ok = hard and (name != "delta_eta" or value <= limit + 1e-12)
+        attempts.append(dict(entry, solvable=True, value=_r(value, 5), hard_checks_passed=hard,
+                             W2_kg_s=_r(r["W2"], 5), T4_K=_r(r["T4"], 5), accepted=ok,
+                             **({} if ok or name != "delta_eta" else
+                                {"flag": f"delta_eta > {limit:g}: another assumption is likely wrong"})))
+        if ok:
+            chosen, chosen_it = r, it
+    return attempts, chosen, chosen_it
 
 
 # --- outputs ------------------------------------------------------------------------
@@ -543,10 +598,11 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
         {"name": "Combustor air W31 vs references", "value": _r(r["W_comb"], 4), "reference": air_refs,
          "unit": "kg/s", "deviation": {k: _r(r["W_comb"] / v - 1.0, 3) for k, v in air_refs.items()},
          "criterion": "info only (Lopez-Pintor modeled, ADR-007; Girão at 125.73 kN)", "result": "info"},
-        {"name": "V18/V8", "value": _r(r["velocity_ratio"], 4),
+        {"name": "V18/V8 ideal", "value": _r(r["velocity_ratio_ideal"], 4),
          "reference": {"girao_ideal_takeoff": vr_ideal,
-                       "eta_fan_outer_x_eta_lpt": _r(p.eta_fan_outer * p.eta_lpt, 4)},
-         "unit": "-", "criterion": "info only (ADR-008)", "result": "info"},
+                       **({"model_at_girao_point": _r(refs["validation_velocity_ratio"], 4)}
+                          if "validation_velocity_ratio" in refs else {})},
+         "unit": "-", "criterion": "info only (similarity target, ADR-009)", "result": "info"},
         {"name": "T4 vs references", "value": _r(r["T4"], 5), "reference": T4_refs, "unit": "K",
          "deviation": {k: _r(r["T4"] / v - 1.0, 3) for k, v in T4_refs.items()},
          "criterion": "info only", "result": "info"},
@@ -556,7 +612,7 @@ def build_checks(r: dict, p: Params, raw: dict, refs: dict) -> list[dict]:
     ]
 
 
-MODEL = ("M0 cycle v4.1, two-spool separate-flow, CFM56-7B inputs (Girão 2023), secondary air from HPC exit, "
+MODEL = ("M0 cycle v4.2, two-spool separate-flow, CFM56-7B inputs (Girão 2023), secondary air from HPC exit, "
          "isentropic component efficiencies, variable cp(T, FAR) NASA 7-coefficient polynomials "
          "(ADR-006, ADR-007, ADR-008)")
 
@@ -653,35 +709,44 @@ def main(argv: list[str]) -> int:
         for s in sensitivity(pv, tv, r, raw, tol):
             print(f"  {s['case']:<24} dW2={s['dW2_kg_s']:>8} dT4={s['dT4_K']:>8} dEGT={s['dEGT_K']:>8}")
         return 0
-    rows, nominal = delta_eta_sweep(p, t, initial, raw, refs, tol)
-    for row in rows:
+    vr = validation_velocity_ratio(p, refs, initial, tol)
+    refs["validation_velocity_ratio"] = vr
+    t = replace(t, velocity_ratio=vr)
+    sweep = delta_eta_sweep(p, t, initial, raw, refs, tol)
+    attempts, r, iterations = similarity_solve(p, t, initial, raw, refs, tol)
+    for row in sweep + attempts:
         print("  " + "  ".join(f"{k}={v}" for k, v in row.items()))
-    if nominal is None:
-        results = infeasible_results(p, t, "no delta_eta in the sweep solves with all HARD checks passed", rows)
+    if r is None:
+        results = infeasible_results(p, t, "no similarity solution with all HARD checks passed", sweep)
+        results["similarity_attempts"] = attempts
         write_yaml(RESULTS_FILE, results)
-        print(f"INFEASIBLE up to delta_eta {raw['rated_case']['delta_eta_sweep']['extend_to']}")
+        print("INFEASIBLE: no similarity solution")
         return 1
-    delta_eta, p, r, iterations = nominal
-    flag_limit = raw["rated_case"]["delta_eta_sweep"]["max"]
+    p0, p = p, r["params"]
+    delta_eta = p.eta_hpc - p0.eta_hpc
+    ceiling = max(thrust_envelope(p, t), key=lambda e: e["thrust_kN"])
     rated = {
-        "description": "ICAO -7B27 rating; uniform delta_eta added to all isentropic turbomachinery efficiencies",
-        "delta_eta": _q(delta_eta, "-", "H"),
-        "efficiencies_used": {n: _q(getattr(p, n), "-", "H") for n in ETA},
-        "selection": "smallest delta_eta that solves and passes all HARD checks",
-        **({"flag": f"delta_eta > {flag_limit:g}: another assumption is likely wrong"}
-           if delta_eta > flag_limit + 1e-12 else {}),
-        "thrust_ceiling": {
-            **(lambda b: {"value": b["thrust_kN"], "unit": "kN", "tag": "H", "at_W2_kg_s": b["W2_kg_s"]})(
-                max(thrust_envelope(p, t), key=lambda e: e["thrust_kN"])),
-            "note": "max thrust at the target fuel flow over W2; the solution is on the low-W2 branch",
+        "description": "ICAO -7B27 rating with the similarity condition (ADR-009)",
+        "similarity_target": {
+            "V18_V8_ideal": _q(vr, "-", "T"),
+            "basis": "our model's ideal V18/V8 at the Girão validation point (same family, take-off)",
+            "girao_reported": _value(refs["girao"]["info_refs"]["velocity_ratio_ideal_takeoff"]),
         },
-        "sweep": rows,
+        "attempts": attempts,
+        "delta_eta": _q(delta_eta, "-", "H"),
+        "FPR": _q(p.FPR, "-", "KS" if p.FPR == p0.FPR else "H"),
+        "efficiencies_used": {n: _q(getattr(p, n), "-", "H") for n in ETA},
+        "thrust_ceiling": {"value": ceiling["thrust_kN"], "unit": "kN", "tag": "H",
+                           "at_W2_kg_s": ceiling["W2_kg_s"],
+                           "margin": _r(ceiling["thrust_kN"] / (t.thrust / 1000.0) - 1.0, 4),
+                           "note": "max thrust at the target fuel flow over W2"},
+        "delta_eta_sweep": {"method": "thrust and fuel only, delta_eta fixed per row (info)", "rows": sweep},
         "validation": "Girão 125.73 kN design point, 18 of 19 items pass (analysis/validation_girao.md)",
     }
     sens = sensitivity(p, t, r, raw, tol)
     results = build_results(r, p, t, raw, refs, iterations, sens, rated)
     write_yaml(RESULTS_FILE, results)
-    print(f"delta_eta={delta_eta:g}  W2={r['W2']:.2f} kg/s  T4={r['T4']:.1f} K  T41={r['T41']:.1f} K  FPR={p.FPR:.4f}  ({iterations} it)")
+    print(f"delta_eta={delta_eta:.5f}  W2={r['W2']:.2f} kg/s  T4={r['T4']:.1f} K  T41={r['T41']:.1f} K  FPR={p.FPR:.4f}  ({iterations} it)")
     for c in results["checks"]:
         print(f"  [{c['result']:>4}] {c['name']}: {c['value']} (ref {c['reference']})")
     for s in sens:

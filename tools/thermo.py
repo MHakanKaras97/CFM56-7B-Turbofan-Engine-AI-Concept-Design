@@ -228,6 +228,7 @@ class Nozzle:
     choked: bool
     p_exit: float     # exit static pressure [Pa]
     F_per_W: float    # gross thrust per unit mass flow [N per kg/s]
+    V_ideal: float    # isentropic velocity fully expanded to ambient pressure [m/s]
 
 
 def _static(Tt: float, Pt: float, p: float, gas, f: float) -> tuple[float, float]:
@@ -267,7 +268,7 @@ def nozzle(Tt: float, Pt: float, P0: float, gas, f: float = 0.0, cfg: float = 1.
     T_exit, V_is = _static(Tt, Pt, p_exit, gas, f)
     A_eff = 1.0 / (p_exit / (gas.R(f) * T_exit) * V_is)
     return Nozzle(V=cfg * V_is, A=A_eff / cd, choked=choked, p_exit=p_exit,
-                  F_per_W=cfg * (V_is + A_eff * (p_exit - P0)))
+                  F_per_W=cfg * (V_is + A_eff * (p_exit - P0)), V_ideal=_static(Tt, Pt, P0, gas, f)[1])
 
 
 def choke_mass_flux(Tt: float, Pt: float, gas, f: float = 0.0) -> float:
