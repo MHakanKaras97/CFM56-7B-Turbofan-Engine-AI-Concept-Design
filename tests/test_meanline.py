@@ -122,3 +122,18 @@ def test_tip_loss_only_in_tip_region_and_breakdown_adds_up():
     b = loss_breakdown(r)
     assert all(b[k]["loss"] > 0 for k in ("profile", "shock", "endwall", "tip"))
     assert sum(v["delta_eta"] for v in b.values()) == pytest.approx(1 - r.efficiency)
+
+
+@pytest.mark.parametrize("mach, recovery", [(1.2, 0.9928), (1.3, 0.9794), (1.4, 0.9582), (1.5, 0.9298)])
+def test_normal_shock_recovery_textbook(mach, recovery):
+    # gamma 1.4 normal-shock tables (NACA Report 1135) [G]
+    assert normal_shock_pt_ratio(mach, GAS) == pytest.approx(recovery, abs=1e-4)
+
+
+def test_shock_loss_only_when_passage_is_supersonic_and_follows_the_expansion_angle():
+    slow = solve_tube(tube(), 3.0, 1000.0, 288.15, 101325.0)
+    assert slow.M1rel < 0.8 and slow.loss_shock == 0.0 and slow.M_passage == slow.M1rel
+    linear = solve_tube(tube(), 3.0, 1700.0, 288.15, 101325.0)
+    flat = solve_tube(tube(ss_turn=0.0), 3.0, 1700.0, 288.15, 101325.0)  # straight suction surface to the shock
+    assert linear.M1rel > 1.0 and flat.loss_shock < linear.loss_shock
+    assert flat.M_passage >= flat.M1rel  # at most the incidence expansion is left

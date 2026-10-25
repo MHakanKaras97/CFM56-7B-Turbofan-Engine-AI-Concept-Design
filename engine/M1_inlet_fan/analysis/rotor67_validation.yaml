@@ -12,28 +12,28 @@ checks:
   deviation_type: relative
   result: pass
 - item: design point PR
-  model: 1.6015
+  model: 1.6501
   measured: 1.63
-  deviation: -0.0175
+  deviation: 0.0123
   limit: 0.02
   deviation_type: relative
   result: pass
 - item: near peak efficiency PR
-  model: 1.5368
+  model: 1.5507
   measured: 1.642
-  deviation: -0.0641
+  deviation: -0.0556
   limit: 0.02
   deviation_type: relative
   result: fail
   expected_failure: near choke (99% of 34.96 kg/s), meanline limit; the design point
     is the acceptance criterion
 - item: near peak efficiency eta
-  model: 0.8998
+  model: 0.9135
   measured: 0.928
-  deviation: -0.0282
+  deviation: -0.0145
   limit: 0.02
   deviation_type: absolute
-  result: fail
+  result: pass
   expected_failure: near choke (99% of 34.96 kg/s), meanline limit; the design point
     is the acceptance criterion
 endwall_blockage:
@@ -58,50 +58,50 @@ radial_profile_near_peak:
   - streamline: 1
     r2_cm: 23.2258
     measured_Pt_ratio: 1.6664
-    model_Pt_ratio: 1.3975
-    difference: -0.2689
+    model_Pt_ratio: 1.4266
+    difference: -0.2398
     measured_flagged: false
   - streamline: 2
     r2_cm: 22.032
     measured_Pt_ratio: 1.6549
-    model_Pt_ratio: 1.3561
-    difference: -0.2988
+    model_Pt_ratio: 1.3691
+    difference: -0.2858
     measured_flagged: false
   - streamline: 3
     r2_cm: 20.828
     measured_Pt_ratio: 1.6501
-    model_Pt_ratio: 1.4431
-    difference: -0.207
+    model_Pt_ratio: 1.4803
+    difference: -0.1698
     measured_flagged: false
   - streamline: 4
     r2_cm: 19.6164
     measured_Pt_ratio: 1.6426
-    model_Pt_ratio: 1.5588
-    difference: -0.0838
+    model_Pt_ratio: 1.5706
+    difference: -0.072
     measured_flagged: false
   - streamline: 5
     r2_cm: 18.3947
     measured_Pt_ratio: 1.6277
-    model_Pt_ratio: 1.6158
-    difference: -0.0119
+    model_Pt_ratio: 1.6219
+    difference: -0.0058
     measured_flagged: false
   - streamline: 6
     r2_cm: 17.1526
     measured_Pt_ratio: 1.6202
-    model_Pt_ratio: 1.6361
-    difference: 0.0159
+    model_Pt_ratio: 1.638
+    difference: 0.0178
     measured_flagged: false
   - streamline: 7
     r2_cm: 15.8902
     measured_Pt_ratio: 1.6572
-    model_Pt_ratio: 1.6487
-    difference: -0.0085
+    model_Pt_ratio: 1.6481
+    difference: -0.0091
     measured_flagged: true
   - streamline: 8
     r2_cm: 14.6126
     measured_Pt_ratio: 1.6406
-    model_Pt_ratio: 1.6712
-    difference: 0.0306
+    model_Pt_ratio: 1.6721
+    difference: 0.0315
     measured_flagged: false
   - streamline: 9
     r2_cm: 13.3299
@@ -109,44 +109,44 @@ radial_profile_near_peak:
     model_Pt_ratio: 1.7436
     difference: 0.135
     measured_flagged: false
-  rms_difference_unflagged: 0.1699
+  rms_difference_unflagged: 0.1552
   note: measured Pt/Pref with Pt1 = Pref; rows flagged in rotor67_survey.yaml excluded
     from the rms
 angle_sensitivity:
   point: design
-  base_PR: 1.6015
-  base_eta: 0.9032
+  base_PR: 1.6501
+  base_eta: 0.917
   perturbation_deg: 0.22
   cases:
   - angles: LE
     delta_deg: 0.22
-    delta_PR: -0.001
-    delta_eta: 0.0007
+    delta_PR: -0.0036
+    delta_eta: 0.0001
     delta_tip_M1rel: 0.0
   - angles: LE
     delta_deg: -0.22
-    delta_PR: 0.001
-    delta_eta: -0.0007
+    delta_PR: 0.0035
+    delta_eta: -0.0001
     delta_tip_M1rel: 0.0
   - angles: TE
     delta_deg: 0.22
-    delta_PR: -0.0066
-    delta_eta: 0.0002
+    delta_PR: -0.0142
+    delta_eta: -0.0006
     delta_tip_M1rel: 0.0
   - angles: TE
     delta_deg: -0.22
-    delta_PR: 0.0064
-    delta_eta: -0.0002
+    delta_PR: 0.0127
+    delta_eta: 0.0005
     delta_tip_M1rel: 0.0
   - angles: LE and TE
     delta_deg: 0.22
-    delta_PR: -0.0077
-    delta_eta: 0.0009
+    delta_PR: -0.0185
+    delta_eta: -0.0006
     delta_tip_M1rel: 0.0
   - angles: LE and TE
     delta_deg: -0.22
-    delta_PR: 0.0073
-    delta_eta: -0.0009
+    delta_PR: 0.0159
+    delta_eta: 0.0004
     delta_tip_M1rel: 0.0
   note: '[H] all sections shifted together; tag of the perturbation size [T] (largest
     residual last-digit OCR error in the angle columns)'
@@ -154,76 +154,76 @@ losses_on_diagnostic:
   note: '[H] diagnostic, not an acceptance check: endwall (Howell) + tip clearance
     (Lakshminarayana) losses on [G]; tip tubes choke at the exit without radial equilibrium'
   design_point:
-    PR_off: 1.6015
-    PR_on: 1.5109
-    eta_off: 0.9032
-    eta_on: 0.8518
+    PR_off: 1.6501
+    PR_on: 1.5262
+    eta_off: 0.917
+    eta_on: 0.8659
     choked_tubes_on:
     - streamline 1
     - streamline 2
-    PR_vs_measured_on: -0.073
+    PR_vs_measured_on: -0.0637
   near_peak_efficiency_point:
-    PR_off: 1.5368
-    PR_on: 1.4715
-    eta_off: 0.8998
-    eta_on: 0.8483
+    PR_off: 1.5507
+    PR_on: 1.4902
+    eta_off: 0.9135
+    eta_on: 0.8641
     choked_tubes_on:
     - streamline 1
     - streamline 2
     radial_profile:
     - streamline: 1
       measured: 1.6664
-      'off': 1.3975
-      'on': 1.2364
-      change: -0.1611
+      'off': 1.4266
+      'on': 1.264
+      change: -0.1626
       loss_endwall: 0.06145
       loss_tip: 0.02759
     - streamline: 2
       measured: 1.6549
-      'off': 1.3561
-      'on': 1.242
-      change: -0.1141
+      'off': 1.3691
+      'on': 1.2623
+      change: -0.1068
       loss_endwall: 0.0334
-      loss_tip: 0.02316
+      loss_tip: 0.02396
     - streamline: 3
       measured: 1.6501
-      'off': 1.4431
-      'on': 1.3385
-      change: -0.1046
+      'off': 1.4803
+      'on': 1.4062
+      change: -0.0741
       loss_endwall: 0.01612
       loss_tip: 0.0
     - streamline: 4
       measured: 1.6426
-      'off': 1.5588
-      'on': 1.547
-      change: -0.0118
+      'off': 1.5706
+      'on': 1.5589
+      change: -0.0117
       loss_endwall: 0.00533
       loss_tip: 0.0
     - streamline: 5
       measured: 1.6277
-      'off': 1.6158
-      'on': 1.6151
-      change: -0.0007
+      'off': 1.6219
+      'on': 1.6213
+      change: -0.0006
       loss_endwall: 0.00045
       loss_tip: 0.0
     - streamline: 6
       measured: 1.6202
-      'off': 1.6361
-      'on': 1.6351
+      'off': 1.638
+      'on': 1.637
       change: -0.001
       loss_endwall: 0.00089
       loss_tip: 0.0
     - streamline: 7
       measured: 1.6572
-      'off': 1.6487
-      'on': 1.6427
+      'off': 1.6481
+      'on': 1.6421
       change: -0.006
       loss_endwall: 0.00669
       loss_tip: 0.0
     - streamline: 8
       measured: 1.6406
-      'off': 1.6712
-      'on': 1.6581
+      'off': 1.6721
+      'on': 1.659
       change: -0.0131
       loss_endwall: 0.01874
       loss_tip: 0.0
@@ -240,244 +240,243 @@ radial_equilibrium_diagnostic:
     clearance terms. Not tuned'
   design_point:
   - case: no RE, no losses (acceptance run)
-    PR: 1.6015
-    PR_deviation: -0.0175
+    PR: 1.6501
+    PR_deviation: 0.0123
     tip_M1rel_deviation: 0.0184
-    eta: 0.9032
-    exit_choked:
-    - streamline 1
+    eta: 0.917
+    exit_choked: []
     converged: null
     A1_design_point: pass
   - case: no RE, losses on
-    PR: 1.5109
-    PR_deviation: -0.073
+    PR: 1.5262
+    PR_deviation: -0.0637
     tip_M1rel_deviation: 0.0184
-    eta: 0.8518
+    eta: 0.8659
     exit_choked:
     - streamline 1
     - streamline 2
     converged: null
     A1_design_point: fail
   - case: RE, no losses
-    PR: 1.6516
-    PR_deviation: 0.0132
+    PR: 1.6726
+    PR_deviation: 0.0261
     tip_M1rel_deviation: 0.0184
-    eta: 0.9059
+    eta: 0.9183
     exit_choked: []
     converged: true
-    A1_design_point: pass
+    A1_design_point: fail
   - case: RE, losses on
-    PR: 1.534
-    PR_deviation: -0.0589
+    PR: 1.5606
+    PR_deviation: -0.0426
     tip_M1rel_deviation: 0.0184
-    eta: 0.8368
+    eta: 0.8528
     exit_choked: []
     converged: true
     A1_design_point: fail
   near_peak_radial_profile:
   - streamline: 1
     measured: 1.6664
-    no_RE_no_losses: 1.3975
-    RE_losses_on: 1.4152
-    r2_cm_RE: 23.4642
+    no_RE_no_losses: 1.4266
+    RE_losses_on: 1.4577
+    r2_cm_RE: 23.4845
     exit_choked_RE: false
   - streamline: 2
     measured: 1.6549
-    no_RE_no_losses: 1.3561
-    RE_losses_on: 1.3883
-    r2_cm_RE: 21.8137
+    no_RE_no_losses: 1.3691
+    RE_losses_on: 1.4276
+    r2_cm_RE: 21.8621
     exit_choked_RE: false
   - streamline: 3
     measured: 1.6501
-    no_RE_no_losses: 1.4431
-    RE_losses_on: 1.3927
-    r2_cm_RE: 20.4789
+    no_RE_no_losses: 1.4803
+    RE_losses_on: 1.4293
+    r2_cm_RE: 20.5385
     exit_choked_RE: false
   - streamline: 4
     measured: 1.6426
-    no_RE_no_losses: 1.5588
-    RE_losses_on: 1.4111
-    r2_cm_RE: 19.1915
+    no_RE_no_losses: 1.5706
+    RE_losses_on: 1.445
+    r2_cm_RE: 19.2579
     exit_choked_RE: false
   - streamline: 5
     measured: 1.6277
-    no_RE_no_losses: 1.6158
-    RE_losses_on: 1.4392
-    r2_cm_RE: 17.9385
+    no_RE_no_losses: 1.6219
+    RE_losses_on: 1.47
+    r2_cm_RE: 18.0069
     exit_choked_RE: false
   - streamline: 6
     measured: 1.6202
-    no_RE_no_losses: 1.6361
-    RE_losses_on: 1.4728
-    r2_cm_RE: 16.7102
+    no_RE_no_losses: 1.638
+    RE_losses_on: 1.4992
+    r2_cm_RE: 16.7753
     exit_choked_RE: false
   - streamline: 7
     measured: 1.6572
-    no_RE_no_losses: 1.6487
-    RE_losses_on: 1.5168
-    r2_cm_RE: 15.4935
+    no_RE_no_losses: 1.6481
+    RE_losses_on: 1.5369
+    r2_cm_RE: 15.5486
     exit_choked_RE: false
   - streamline: 8
     measured: 1.6406
-    no_RE_no_losses: 1.6712
-    RE_losses_on: 1.5799
-    r2_cm_RE: 14.2759
+    no_RE_no_losses: 1.6721
+    RE_losses_on: 1.593
+    r2_cm_RE: 14.3155
     exit_choked_RE: false
   - streamline: 9
     measured: 1.6086
     no_RE_no_losses: 1.7436
-    RE_losses_on: 1.6656
-    r2_cm_RE: 12.8597
+    RE_losses_on: 1.6666
+    r2_cm_RE: 12.876
     exit_choked_RE: false
   near_peak_RE_losses_on:
-    PR: 1.4632
-    eta: 0.8363
+    PR: 1.4928
+    eta: 0.8538
     converged: true
 loss_review:
   note: '[H] radial equilibrium + profile, shock, endwall and tip clearance losses
     (tip loss only above 80 % span, Zanoni p. 7); delta_eta = share of 1 - eta split
     in proportion to the loss coefficients; not tuned'
   design_point:
-    PR: 1.534
-    eta: 0.8368
+    PR: 1.5606
+    eta: 0.8528
     delta_eta_mass_averaged:
-      profile: 0.0275
-      shock: 0.0679
-      endwall: 0.0301
+      profile: 0.0279
+      shock: 0.0544
+      endwall: 0.0296
       tip: 0.0243
     tubes:
     - name: streamline 1
-      Pt_ratio: 1.526
-      efficiency: 0.6542
+      Pt_ratio: 1.563
+      efficiency: 0.6926
       profile:
-        loss: 0.02687
-        delta_eta: 0.03476
+        loss: 0.02676
+        delta_eta: 0.03425
       shock:
-        loss: 0.10946
-        delta_eta: 0.14161
+        loss: 0.08222
+        delta_eta: 0.10524
       endwall:
         loss: 0.06651
-        delta_eta: 0.08604
+        delta_eta: 0.08514
       tip:
-        loss: 0.06447
-        delta_eta: 0.08341
+        loss: 0.06462
+        delta_eta: 0.08272
     - name: streamline 2
-      Pt_ratio: 1.4846
-      efficiency: 0.7253
+      Pt_ratio: 1.5206
+      efficiency: 0.7483
       profile:
-        loss: 0.02767
-        delta_eta: 0.03849
+        loss: 0.02872
+        delta_eta: 0.03866
       shock:
-        loss: 0.08003
-        delta_eta: 0.11132
+        loss: 0.06593
+        delta_eta: 0.08875
       endwall:
         loss: 0.03584
-        delta_eta: 0.04985
+        delta_eta: 0.04824
       tip:
-        loss: 0.05397
-        delta_eta: 0.07508
+        loss: 0.05648
+        delta_eta: 0.07602
     - name: streamline 3
-      Pt_ratio: 1.479
-      efficiency: 0.8502
+      Pt_ratio: 1.5125
+      efficiency: 0.8674
       profile:
-        loss: 0.02436
-        delta_eta: 0.03561
+        loss: 0.02535
+        delta_eta: 0.03562
       shock:
-        loss: 0.06087
-        delta_eta: 0.08899
+        loss: 0.05179
+        delta_eta: 0.07276
       endwall:
         loss: 0.0172
-        delta_eta: 0.02515
+        delta_eta: 0.02417
       tip:
         loss: 0.0
         delta_eta: 0.0
     - name: streamline 4
-      Pt_ratio: 1.4899
-      efficiency: 0.8954
+      Pt_ratio: 1.5211
+      efficiency: 0.9055
       profile:
-        loss: 0.02317
-        delta_eta: 0.03171
+        loss: 0.02438
+        delta_eta: 0.03199
       shock:
-        loss: 0.04761
-        delta_eta: 0.06517
+        loss: 0.04197
+        delta_eta: 0.05507
       endwall:
         loss: 0.00567
-        delta_eta: 0.00777
+        delta_eta: 0.00744
       tip:
         loss: 0.0
         delta_eta: 0.0
     - name: streamline 5
-      Pt_ratio: 1.5092
-      efficiency: 0.9255
+      Pt_ratio: 1.5377
+      efficiency: 0.9319
       profile:
-        loss: 0.02182
-        delta_eta: 0.02695
+        loss: 0.02315
+        delta_eta: 0.02748
       shock:
-        loss: 0.03803
-        delta_eta: 0.04698
+        loss: 0.03374
+        delta_eta: 0.04005
       endwall:
         loss: 0.00047
-        delta_eta: 0.00058
+        delta_eta: 0.00056
       tip:
         loss: 0.0
         delta_eta: 0.0
     - name: streamline 6
-      Pt_ratio: 1.5317
-      efficiency: 0.9411
+      Pt_ratio: 1.5561
+      efficiency: 0.9434
       profile:
-        loss: 0.02075
-        delta_eta: 0.02252
+        loss: 0.02231
+        delta_eta: 0.02337
       shock:
-        loss: 0.0326
-        delta_eta: 0.03538
+        loss: 0.03082
+        delta_eta: 0.03228
       endwall:
         loss: 0.00094
-        delta_eta: 0.00102
+        delta_eta: 0.00099
       tip:
         loss: 0.0
         delta_eta: 0.0
     - name: streamline 7
-      Pt_ratio: 1.5621
-      efficiency: 0.9501
+      Pt_ratio: 1.5807
+      efficiency: 0.9493
       profile:
-        loss: 0.01975
-        delta_eta: 0.01828
+        loss: 0.02154
+        delta_eta: 0.01939
       shock:
-        loss: 0.02713
-        delta_eta: 0.02511
+        loss: 0.02775
+        delta_eta: 0.02499
       endwall:
         loss: 0.00703
-        delta_eta: 0.0065
+        delta_eta: 0.00633
       tip:
         loss: 0.0
         delta_eta: 0.0
     - name: streamline 8
-      Pt_ratio: 1.6081
-      efficiency: 0.9615
+      Pt_ratio: 1.6202
+      efficiency: 0.9616
       profile:
-        loss: 0.01872
-        delta_eta: 0.01435
+        loss: 0.02044
+        delta_eta: 0.01542
       shock:
-        loss: 0.01197
-        delta_eta: 0.00917
+        loss: 0.01097
+        delta_eta: 0.00828
       endwall:
         loss: 0.01955
-        delta_eta: 0.01498
+        delta_eta: 0.01474
       tip:
         loss: 0.0
         delta_eta: 0.0
     - name: streamline 9
-      Pt_ratio: 1.6663
-      efficiency: 0.9616
+      Pt_ratio: 1.6674
+      efficiency: 0.9606
       profile:
-        loss: 0.01917
-        delta_eta: 0.01179
+        loss: 0.02095
+        delta_eta: 0.01285
       shock:
         loss: 0.0
         delta_eta: 0.0
       endwall:
         loss: 0.04326
-        delta_eta: 0.0266
+        delta_eta: 0.02653
       tip:
         loss: 0.0
         delta_eta: 0.0
@@ -486,14 +485,14 @@ loss_review:
     near_stall: 0.901
     design: not stated in TP-2879 (doğrulanmadı)
   near_stall:
-    PR: 1.571
-    eta: 0.8343
+    PR: 1.5976
+    eta: 0.8499
     converged: true
   checks:
   - item: design point PR
-    model: 1.534
+    model: 1.5606
     measured: 1.63
-    deviation: -0.0589
+    deviation: -0.0426
     limit: 0.02
     result: fail
   - item: design point tip M1rel
@@ -503,24 +502,58 @@ loss_review:
     limit: 0.02
     result: pass
   - item: near stall PR
-    model: 1.571
+    model: 1.5976
     measured: 1.728
-    deviation: -0.0909
+    deviation: -0.0754
     limit: 0.02
     result: fail
   - item: near stall eta
-    model: 0.8343
+    model: 0.8499
     measured: 0.901
-    deviation: -0.0667
+    deviation: -0.0511
     limit: 0.02
     result: fail
   result: fail
+passage_mach_comparison:
+  note: '[H] model vs [KS read from plot]; near peak efficiency; suction-surface expansion
+    from the blade surface 1 angle at the covered-passage entrance (M1 step 4c)'
+  spans:
+  - span_from_tip: 0.1
+    model_M1rel: 1.342
+    model_M_pass: 1.434
+    model_M_ss: 1.526
+    measured_upstream_M1rel:
+    - 1.33
+    - 1.37
+    measured_pre_shock_mean: 1.385
+    measured_pre_shock_max: 1.42
+    M_pass_minus_measured_mean: 0.049
+    M_ss_minus_measured_max: 0.106
+  - span_from_tip: 0.3
+    model_M1rel: 1.192
+    model_M_pass: 1.332
+    model_M_ss: 1.473
+    measured_upstream_M1rel:
+    - 1.18
+    - 1.25
+    measured_pre_shock_mean: 1.398
+    measured_pre_shock_max: 1.43
+    M_pass_minus_measured_mean: -0.066
+    M_ss_minus_measured_max: 0.043
+  - span_from_tip: 0.7
+    model_M1rel: 0.909
+    model_M_pass: 1.271
+    model_M_ss: 1.542
+    measured_upstream_M1rel:
+    - 0.93
+    - 0.95
+    measured: no passage shock (leading-edge spike only, max 1.22)
 design_point:
   mass_flow: 33.25
   tip_M1rel: 1.4054189047275236
-  Tt_ratio: 1.1594448934647508
-  Pt_ratio: 1.6014550731881223
-  efficiency: 0.9032450926334691
+  Tt_ratio: 1.1677578723836464
+  Pt_ratio: 1.650097359858337
+  efficiency: 0.9170359627948373
   streamlines:
   - name: streamline 1
     r2_cm: 23.2258
@@ -529,33 +562,31 @@ design_point:
     deviation_deg: 2.96
     beta1_deg: 66.87
     beta2_deg: 55.87
-    diffusion_factor: 0.3
-    D_eq: 1.4691
-    loss_profile: 0.01698
-    loss_shock: 0.10946
+    diffusion_factor: 0.3954
+    D_eq: 1.6198
+    loss_profile: 0.02219
+    loss_shock: 0.08222
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.5055
-    Pt_ratio: 1.3979
-    Tt_ratio: 1.13
-    efficiency: 0.7723
+    M_passage: 1.446
+    Pt_ratio: 1.5905
+    Tt_ratio: 1.1669
+    efficiency: 0.8496
     mass_flow: 6.0555
     loss_breakdown:
       profile:
-        loss: 0.01698
-        delta_eta: 0.03058
+        loss: 0.02219
+        delta_eta: 0.03197
       shock:
-        loss: 0.10946
-        delta_eta: 0.19712
+        loss: 0.08222
+        delta_eta: 0.11843
       endwall:
         loss: 0.0
         delta_eta: 0.0
       tip:
         loss: 0.0
         delta_eta: 0.0
-    notes:
-    - 'exit choked: required mass flow above the tube''s maximum; exit at the choke
-      point'
+    notes: []
   - name: streamline 2
     r2_cm: 22.032
     M1rel: 1.265
@@ -563,24 +594,24 @@ design_point:
     deviation_deg: 2.46
     beta1_deg: 65.46
     beta2_deg: 54.2
-    diffusion_factor: 0.3921
-    D_eq: 1.6366
-    loss_profile: 0.02528
-    loss_shock: 0.08003
+    diffusion_factor: 0.4162
+    D_eq: 1.6819
+    loss_profile: 0.02744
+    loss_shock: 0.06593
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.4305
-    Pt_ratio: 1.5763
-    Tt_ratio: 1.162
-    efficiency: 0.8568
+    M_passage: 1.3967
+    Pt_ratio: 1.6298
+    Tt_ratio: 1.1704
+    efficiency: 0.8788
     mass_flow: 4.0393
     loss_breakdown:
       profile:
-        loss: 0.02528
-        delta_eta: 0.03437
+        loss: 0.02744
+        delta_eta: 0.03562
       shock:
-        loss: 0.08003
-        delta_eta: 0.10879
+        loss: 0.06593
+        delta_eta: 0.08559
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -595,24 +626,24 @@ design_point:
     deviation_deg: 2.34
     beta1_deg: 63.95
     beta2_deg: 51.56
-    diffusion_factor: 0.4002
-    D_eq: 1.6709
-    loss_profile: 0.02757
-    loss_shock: 0.06087
+    diffusion_factor: 0.4111
+    D_eq: 1.6926
+    loss_profile: 0.02868
+    loss_shock: 0.05179
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.3744
-    Pt_ratio: 1.5909
-    Tt_ratio: 1.1598
-    efficiency: 0.888
+    M_passage: 1.3504
+    Pt_ratio: 1.6153
+    Tt_ratio: 1.1631
+    efficiency: 0.9001
     mass_flow: 3.8263
     loss_breakdown:
       profile:
-        loss: 0.02757
-        delta_eta: 0.03491
+        loss: 0.02868
+        delta_eta: 0.0356
       shock:
-        loss: 0.06087
-        delta_eta: 0.07708
+        loss: 0.05179
+        delta_eta: 0.06429
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -627,24 +658,24 @@ design_point:
     deviation_deg: 2.64
     beta1_deg: 62.2
     beta2_deg: 47.41
-    diffusion_factor: 0.4308
-    D_eq: 1.7543
-    loss_profile: 0.03077
-    loss_shock: 0.04761
+    diffusion_factor: 0.4353
+    D_eq: 1.7644
+    loss_profile: 0.03134
+    loss_shock: 0.04197
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.3293
-    Pt_ratio: 1.6369
-    Tt_ratio: 1.1657
-    efficiency: 0.9124
+    M_passage: 1.3131
+    Pt_ratio: 1.6476
+    Tt_ratio: 1.1669
+    efficiency: 0.9186
     mass_flow: 3.6046
     loss_breakdown:
       profile:
-        loss: 0.03077
-        delta_eta: 0.03441
+        loss: 0.03134
+        delta_eta: 0.0348
       shock:
-        loss: 0.04761
-        delta_eta: 0.05324
+        loss: 0.04197
+        delta_eta: 0.0466
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -659,24 +690,24 @@ design_point:
     deviation_deg: 3.11
     beta1_deg: 60.16
     beta2_deg: 42.06
-    diffusion_factor: 0.4555
-    D_eq: 1.8312
-    loss_profile: 0.03327
-    loss_shock: 0.03803
+    diffusion_factor: 0.458
+    D_eq: 1.8374
+    loss_profile: 0.03366
+    loss_shock: 0.03374
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.2918
-    Pt_ratio: 1.6647
-    Tt_ratio: 1.1687
-    efficiency: 0.929
+    M_passage: 1.2784
+    Pt_ratio: 1.6707
+    Tt_ratio: 1.1693
+    efficiency: 0.9331
     mass_flow: 3.3898
     loss_breakdown:
       profile:
-        loss: 0.03327
-        delta_eta: 0.03315
+        loss: 0.03366
+        delta_eta: 0.03342
       shock:
-        loss: 0.03803
-        delta_eta: 0.03789
+        loss: 0.03374
+        delta_eta: 0.0335
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -691,24 +722,24 @@ design_point:
     deviation_deg: 3.65
     beta1_deg: 57.78
     beta2_deg: 35.47
-    diffusion_factor: 0.4636
-    D_eq: 1.869
-    loss_profile: 0.03369
-    loss_shock: 0.0326
+    diffusion_factor: 0.4644
+    D_eq: 1.8711
+    loss_profile: 0.03382
+    loss_shock: 0.03082
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.2731
-    Pt_ratio: 1.6672
-    Tt_ratio: 1.1672
-    efficiency: 0.9403
+    M_passage: 1.2672
+    Pt_ratio: 1.6692
+    Tt_ratio: 1.1674
+    efficiency: 0.9419
     mass_flow: 3.1993
     loss_breakdown:
       profile:
-        loss: 0.03369
-        delta_eta: 0.03032
+        loss: 0.03382
+        delta_eta: 0.03042
       shock:
-        loss: 0.0326
-        delta_eta: 0.02934
+        loss: 0.03082
+        delta_eta: 0.02771
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -723,24 +754,24 @@ design_point:
     deviation_deg: 4.21
     beta1_deg: 54.9
     beta2_deg: 26.96
-    diffusion_factor: 0.4627
-    D_eq: 1.8794
-    loss_profile: 0.03298
-    loss_shock: 0.02713
+    diffusion_factor: 0.4625
+    D_eq: 1.8788
+    loss_profile: 0.03294
+    loss_shock: 0.02775
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.2958
-    Pt_ratio: 1.6701
+    M_passage: 1.2985
+    Pt_ratio: 1.6696
     Tt_ratio: 1.1658
-    efficiency: 0.9518
+    efficiency: 0.9513
     mass_flow: 3.0018
     loss_breakdown:
       profile:
-        loss: 0.03298
-        delta_eta: 0.02644
+        loss: 0.03294
+        delta_eta: 0.02641
       shock:
-        loss: 0.02713
-        delta_eta: 0.02175
+        loss: 0.02775
+        delta_eta: 0.02225
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -755,24 +786,24 @@ design_point:
     deviation_deg: 5.01
     beta1_deg: 51.36
     beta2_deg: 15.77
-    diffusion_factor: 0.4376
-    D_eq: 1.8175
-    loss_profile: 0.02967
-    loss_shock: 0.01197
+    diffusion_factor: 0.4379
+    D_eq: 1.8184
+    loss_profile: 0.02972
+    loss_shock: 0.01097
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.3044
-    Pt_ratio: 1.6851
+    M_passage: 1.2941
+    Pt_ratio: 1.6857
     Tt_ratio: 1.1656
-    efficiency: 0.9709
+    efficiency: 0.9716
     mass_flow: 2.8216
     loss_breakdown:
       profile:
-        loss: 0.02967
-        delta_eta: 0.02072
+        loss: 0.02972
+        delta_eta: 0.02075
       shock:
-        loss: 0.01197
-        delta_eta: 0.00836
+        loss: 0.01097
+        delta_eta: 0.00766
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -815,9 +846,9 @@ design_point:
 near_peak_efficiency_point:
   mass_flow: 34.575
   tip_M1rel: 1.4214476695068468
-  Tt_ratio: 1.1451732845562674
-  Pt_ratio: 1.5368111828074527
-  efficiency: 0.8998147773347123
+  Tt_ratio: 1.1461872276832001
+  Pt_ratio: 1.5507073459704923
+  efficiency: 0.9134905311495992
   streamlines:
   - name: streamline 1
     r2_cm: 23.2258
@@ -829,21 +860,21 @@ near_peak_efficiency_point:
     diffusion_factor: 0.3063
     D_eq: 1.4779
     loss_profile: 0.01892
-    loss_shock: 0.1064
+    loss_shock: 0.0797
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.5017
-    Pt_ratio: 1.3975
+    M_passage: 1.4423
+    Pt_ratio: 1.4266
     Tt_ratio: 1.13
-    efficiency: 0.7717
+    efficiency: 0.8216
     mass_flow: 6.2968
     loss_breakdown:
       profile:
         loss: 0.01892
-        delta_eta: 0.03447
+        delta_eta: 0.03422
       shock:
-        loss: 0.1064
-        delta_eta: 0.19385
+        loss: 0.0797
+        delta_eta: 0.14416
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -863,21 +894,21 @@ near_peak_efficiency_point:
     diffusion_factor: 0.2541
     D_eq: 1.4173
     loss_profile: 0.01881
-    loss_shock: 0.077
+    loss_shock: 0.06326
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.4259
-    Pt_ratio: 1.3561
+    M_passage: 1.3921
+    Pt_ratio: 1.3691
     Tt_ratio: 1.1113
-    efficiency: 0.8166
+    efficiency: 0.8434
     mass_flow: 4.2003
     loss_breakdown:
       profile:
         loss: 0.01881
-        delta_eta: 0.036
+        delta_eta: 0.03588
       shock:
-        loss: 0.077
-        delta_eta: 0.14739
+        loss: 0.06326
+        delta_eta: 0.12068
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -894,24 +925,24 @@ near_peak_efficiency_point:
     deviation_deg: 2.34
     beta1_deg: 62.68
     beta2_deg: 51.56
-    diffusion_factor: 0.2998
-    D_eq: 1.4956
-    loss_profile: 0.02201
-    loss_shock: 0.05779
+    diffusion_factor: 0.3212
+    D_eq: 1.53
+    loss_profile: 0.02339
+    loss_shock: 0.04899
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.3688
-    Pt_ratio: 1.4431
-    Tt_ratio: 1.1264
-    efficiency: 0.8742
+    M_passage: 1.3447
+    Pt_ratio: 1.4803
+    Tt_ratio: 1.1331
+    efficiency: 0.8911
     mass_flow: 3.9787
     loss_breakdown:
       profile:
-        loss: 0.02201
-        delta_eta: 0.0347
+        loss: 0.02339
+        delta_eta: 0.03518
       shock:
-        loss: 0.05779
-        delta_eta: 0.0911
+        loss: 0.04899
+        delta_eta: 0.07368
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -926,24 +957,24 @@ near_peak_efficiency_point:
     deviation_deg: 2.64
     beta1_deg: 60.87
     beta2_deg: 47.41
-    diffusion_factor: 0.3732
-    D_eq: 1.6378
-    loss_profile: 0.02713
-    loss_shock: 0.04433
+    diffusion_factor: 0.3791
+    D_eq: 1.6491
+    loss_profile: 0.02769
+    loss_shock: 0.03893
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.3223
-    Pt_ratio: 1.5588
-    Tt_ratio: 1.1485
-    efficiency: 0.9106
+    M_passage: 1.306
+    Pt_ratio: 1.5706
+    Tt_ratio: 1.1501
+    efficiency: 0.9175
     mass_flow: 3.7482
     loss_breakdown:
       profile:
-        loss: 0.02713
-        delta_eta: 0.03394
+        loss: 0.02769
+        delta_eta: 0.0343
       shock:
-        loss: 0.04433
-        delta_eta: 0.05545
+        loss: 0.03893
+        delta_eta: 0.04821
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -958,24 +989,24 @@ near_peak_efficiency_point:
     deviation_deg: 3.11
     beta1_deg: 58.78
     beta2_deg: 42.06
-    diffusion_factor: 0.4139
-    D_eq: 1.7379
-    loss_profile: 0.03042
-    loss_shock: 0.03435
+    diffusion_factor: 0.4168
+    D_eq: 1.7442
+    loss_profile: 0.03077
+    loss_shock: 0.03032
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.2827
-    Pt_ratio: 1.6158
-    Tt_ratio: 1.1579
-    efficiency: 0.9303
+    M_passage: 1.2693
+    Pt_ratio: 1.6219
+    Tt_ratio: 1.1586
+    efficiency: 0.9345
     mass_flow: 3.5249
     loss_breakdown:
       profile:
-        loss: 0.03042
-        delta_eta: 0.03275
+        loss: 0.03077
+        delta_eta: 0.03299
       shock:
-        loss: 0.03435
-        delta_eta: 0.03697
+        loss: 0.03032
+        delta_eta: 0.0325
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -990,24 +1021,24 @@ near_peak_efficiency_point:
     deviation_deg: 3.65
     beta1_deg: 56.34
     beta2_deg: 35.47
-    diffusion_factor: 0.4304
-    D_eq: 1.7905
-    loss_profile: 0.03146
-    loss_shock: 0.02768
+    diffusion_factor: 0.4313
+    D_eq: 1.7927
+    loss_profile: 0.03158
+    loss_shock: 0.02602
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.2515
-    Pt_ratio: 1.6361
-    Tt_ratio: 1.1601
-    efficiency: 0.9434
+    M_passage: 1.2456
+    Pt_ratio: 1.638
+    Tt_ratio: 1.1603
+    efficiency: 0.9449
     mass_flow: 3.3267
     loss_breakdown:
       profile:
-        loss: 0.03146
-        delta_eta: 0.03013
+        loss: 0.03158
+        delta_eta: 0.03022
       shock:
-        loss: 0.02768
-        delta_eta: 0.02652
+        loss: 0.02602
+        delta_eta: 0.02489
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -1022,24 +1053,24 @@ near_peak_efficiency_point:
     deviation_deg: 4.21
     beta1_deg: 53.39
     beta2_deg: 26.96
-    diffusion_factor: 0.4335
-    D_eq: 1.8095
-    loss_profile: 0.03111
-    loss_shock: 0.02471
+    diffusion_factor: 0.4333
+    D_eq: 1.8089
+    loss_profile: 0.03107
+    loss_shock: 0.02534
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.2704
-    Pt_ratio: 1.6487
-    Tt_ratio: 1.1612
-    efficiency: 0.9527
+    M_passage: 1.2731
+    Pt_ratio: 1.6481
+    Tt_ratio: 1.1611
+    efficiency: 0.9522
     mass_flow: 3.1214
     loss_breakdown:
       profile:
-        loss: 0.03111
-        delta_eta: 0.02634
+        loss: 0.03107
+        delta_eta: 0.02631
       shock:
-        loss: 0.02471
-        delta_eta: 0.02092
+        loss: 0.02534
+        delta_eta: 0.02146
       endwall:
         loss: 0.0
         delta_eta: 0.0
@@ -1054,24 +1085,24 @@ near_peak_efficiency_point:
     deviation_deg: 5.01
     beta1_deg: 49.81
     beta2_deg: 15.77
-    diffusion_factor: 0.41
-    D_eq: 1.7548
-    loss_profile: 0.02824
-    loss_shock: 0.01398
+    diffusion_factor: 0.4104
+    D_eq: 1.756
+    loss_profile: 0.0283
+    loss_shock: 0.0127
     loss_endwall: 0.0
     loss_tip: 0.0
-    M_passage: 1.2781
-    Pt_ratio: 1.6712
+    M_passage: 1.2678
+    Pt_ratio: 1.6721
     Tt_ratio: 1.1631
-    efficiency: 0.969
+    efficiency: 0.9699
     mass_flow: 2.9341
     loss_breakdown:
       profile:
-        loss: 0.02824
-        delta_eta: 0.02075
+        loss: 0.0283
+        delta_eta: 0.02079
       shock:
-        loss: 0.01398
-        delta_eta: 0.01027
+        loss: 0.0127
+        delta_eta: 0.00933
       endwall:
         loss: 0.0
         delta_eta: 0.0

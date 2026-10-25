@@ -11,6 +11,10 @@ Inputs, all from learning/ [KS] unless noted:
   section number. Section k sits at span fraction (k - 1) / 13 between hub (1) and casing (14)
   [T, LE radii are evenly spaced].
 - solidity: hub 3.11 and tip 1.29 (Strazisar p. 2), linear in span fraction [T].
+- shock expansion angle: suction surface = blade surface 1 (BETA1; the camber angle atan(r dtheta/dm) > 0 puts
+  the relative flow toward +theta, so the blade turns toward -theta and its -theta face, surface 2, is the
+  pressure side) [H]; its angle at the covered-passage entrance is interpolated along each section's
+  meridional length and then in span (M1 step 4c).
 - covered-passage entrance at meridional distance pitch x sin(kappa1) x cos(kappa1) from the leading
   edge, as a fraction of the meridional chord [T]; the camber angle is taken as linear along the chord [T].
 - inlet: standard day, Tt 288.15 K, Pt 101325 Pa, no swirl (Table III reference conditions).
@@ -30,7 +34,8 @@ import math
 from pathlib import Path
 
 from core.util import dump_yaml, read_yaml, write_yaml
-from tools.meanline import Endwall, Gas, Tube, loss_breakdown, mass_averaged, solve_rotor, solve_rotor_re
+from tools.meanline import (Endwall, Gas, LossMultipliers, Tube, loss_breakdown, mass_averaged, solve_rotor,
+                            solve_rotor_re)
 
 M1 = Path(__file__).resolve().parents[1]
 REFERENCE = M1 / "learning" / "rotor67_reference.yaml"
@@ -75,8 +80,24 @@ def interpolate(points: list[tuple[float, float]], f: float) -> float:
     return y0 + (y1 - y0) * (f - x0) / (x1 - x0)
 
 
+def suction_surface_angle(geometry: dict, f: float, fraction: float) -> float:
+    """Suction-surface angle (deg, BETA1) at `fraction` of the meridional length of the blade section,
+    interpolated linearly in span fraction f between the sections."""
+    cols = geometry["points"]["columns"]
+    iz, ir, ib = cols.index("Z"), cols.index("R"), cols.index("BETA1")
+    points = []
+    for n, sec in enumerate(geometry["points"]["sections"], 1):
+        rows = sec["rows"]
+        m = [0.0]
+        for a, b in zip(rows, rows[1:]):
+            m.append(m[-1] + math.hypot(b[iz] - a[iz], b[ir] - a[ir]))
+        pts = [(mm / m[-1], r[ib]) for mm, r in zip(m, rows) if r[ib] is not None]
+        points.append(((n - 1) / (N_SECTIONS - 1), interpolate(pts, fraction)))
+    return interpolate(points, f)
+
+
 def build_tubes(reference: dict | None = None, geometry: dict | None = None,
-                losses: bool = ENDWALL_LOSSES) -> list[Tube]:
+                losses: bool = ENDWALL_LOSSES, multipliers: LossMultipliers = LossMultipliers()) -> list[Tube]:
     ref = reference or read_yaml(REFERENCE)
     geo = geometry or read_yaml(GEOMETRY)
     st1 = ref["survey_stations"]["station_1_upstream"]
@@ -100,7 +121,9 @@ def build_tubes(reference: dict | None = None, geometry: dict | None = None,
         tubes.append(Tube(name=f"streamline {j}", r1=r1 * CM, r2=r2 * CM, A1=A1 * CM2, A2=A2 * CM2,
                           kappa1=kappa1, kappa2=kappa2, solidity=sig_hub + (sig_tip - sig_hub) * f,
                           covered_fraction=covered,
-                          endwall=Endwall(f, height, interpolate(chord, f) * CM, clearance) if losses else None))
+                          endwall=Endwall(f, height, interpolate(chord, f) * CM, clearance) if losses else None,
+                          ss_turn=kappa1 - math.radians(suction_surface_angle(geo, f, covered)),
+                          multipliers=multipliers))
     return tubes
 
 
@@ -115,10 +138,11 @@ def tip_relative_mach(ref: dict, results, gas: Gas) -> float:
 
 
 def run(mass_flow: float, reference: dict | None = None, geometry: dict | None = None, gas: Gas = Gas(),
-        losses: bool = ENDWALL_LOSSES, equilibrium: bool = RADIAL_EQUILIBRIUM) -> dict:
+        losses: bool = ENDWALL_LOSSES, equilibrium: bool = RADIAL_EQUILIBRIUM,
+        multipliers: LossMultipliers = LossMultipliers()) -> dict:
     ref = reference or read_yaml(REFERENCE)
     omega = ref["design"]["rotational_speed"]["value"] * 2 * math.pi / 60
-    tubes = build_tubes(ref, geometry, losses)
+    tubes = build_tubes(ref, geometry, losses, multipliers)
     extra = {}
     if equilibrium:
         st2 = ref["survey_stations"]["station_2_downstream"]
@@ -252,6 +276,38 @@ def radial_equilibrium_diagnostic(ref: dict, survey: dict) -> dict:
                                        "converged": on["equilibrium"]["converged"]}}
 
 
+def passage_mach_comparison(ref: dict) -> dict:
+    """Model passage-shock Mach numbers at the near peak point against the TP-2879 laser readings
+    (rotor67_reference.yaml measured_passage_mach). M_ss = suction-surface Mach after the Prandtl-Meyer
+    expansion, M_pass = mean of max(M1rel, 1) and M_ss; interpolated in span fraction between the tubes."""
+    st1 = ref["survey_stations"]["station_1_upstream"]
+    r_hub, r_tip = st1["hub_radius"]["value"], st1["shroud_radius"]["value"]
+    r = run(ref["measured"]["near_peak_efficiency"]["mass_flow_table_III"]["value"], ref)
+    rows = []
+    for r1, s in zip(ref["design_streamline_radii"]["station_1"], r["streamlines"]):
+        f = (r1 - r_hub) / (r_tip - r_hub)
+        m_up = max(s["M1rel"], 1.0)
+        rows.append((f, s["M1rel"], s["M_passage"], 2 * s["M_passage"] - m_up if s["M1rel"] > 0.8 else None))
+    out = []
+    for span in ref["measured_passage_mach"]["spans"]:
+        f = 1 - span["span_from_tip"]
+        m1 = interpolate([(x[0], x[1]) for x in rows], f)
+        mp = interpolate([(x[0], x[2]) for x in rows], f)
+        mss = interpolate([(x[0], x[3]) for x in rows if x[3] is not None], f)
+        meas = span["pre_shock_by_pitch"]
+        entry = {"span_from_tip": span["span_from_tip"], "model_M1rel": round(m1, 3), "model_M_pass": round(mp, 3),
+                 "model_M_ss": round(mss, 3), "measured_upstream_M1rel": span["upstream_M1rel"]}
+        if meas:
+            mean, top = sum(meas.values()) / len(meas), max(meas.values())
+            entry.update({"measured_pre_shock_mean": round(mean, 3), "measured_pre_shock_max": top,
+                          "M_pass_minus_measured_mean": round(mp - mean, 3), "M_ss_minus_measured_max": round(mss - top, 3)})
+        else:
+            entry["measured"] = "no passage shock (leading-edge spike only, max %.2f)" % max(span["leading_edge_peak_by_pitch"].values())
+        out.append(entry)
+    return {"note": "[H] model vs [KS read from plot]; near peak efficiency; suction-surface expansion from the blade "
+                    "surface 1 angle at the covered-passage entrance (M1 step 4c)", "spans": out}
+
+
 def loss_review(ref: dict) -> dict:
     """M1 step 4b: loss breakdown per stream tube at the design point (radial equilibrium, all losses on),
     the mass-averaged share of each mechanism in the efficiency deficit, and the A-1 checks: design point
@@ -358,6 +414,7 @@ def compare(ref: dict, survey: dict) -> dict:
         "losses_on_diagnostic": losses_on_diagnostic(ref, survey),
         "radial_equilibrium_diagnostic": radial_equilibrium_diagnostic(ref, survey),
         "loss_review": loss_review(ref),
+        "passage_mach_comparison": passage_mach_comparison(ref),
         "design_point": design_run,
         "near_peak_efficiency_point": peak_run,
     }
@@ -394,6 +451,8 @@ def main() -> None:
     for row in re["near_peak_radial_profile"]:
         print(f"  near peak {row['streamline']}: measured {row['measured']} old {row['no_RE_no_losses']} "
               f"RE+losses {row['RE_losses_on']}")
+    for row in result["passage_mach_comparison"]["spans"]:
+        print("passage Mach", row)
     review = result["loss_review"]
     print("loss review: design eta", review["design_point"]["eta"], "deficit shares", review["design_point"]["delta_eta_mass_averaged"])
     for c in review["checks"]:

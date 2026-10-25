@@ -1,6 +1,6 @@
 # ADR-014: Kayıp mekanizması çarpanlarıyla kalibrasyon (TASLAK, önerilen)
 
-Durum: **önerildi, uygulanmadı.** Kullanıcı onayı bekliyor (M1 adım 4b). Kod değişikliği yok.
+Durum: **seçenek (a) denendi (M1 adım 4c), koşul sağlanmadı, uygulanmadı.** Kullanıcı (a)'yı 0.5-2 sınırı koşuluyla onayladı.
 
 ## Bağlam
 - M1 adım 4b kayıp modeli incelemesi (`engine/M1_inlet_fan/analysis/rotor67_validation.yaml`, `loss_review`) [H]: radyal denge + profil, şok, uç duvar ve uç boşluğu kayıplarıyla Rotor 67 A-1'i geçmiyor.
@@ -34,4 +34,9 @@ TP-2879, tasarım noktası için yalnızca PR'yi (1.63) ve uç Mrel'i veriyor. T
 - Şok çarpanı büyük olasılıkla 1'in çok altına iner. Bu, geçit şoku Mach tahmininin, yani Prandtl-Meyer genişlemesi ve örtülü geçit girişi varsayımının [T], fazla yüksek olduğunu gösterebilir. Bu ayrı incelenmeli.
 
 ## Karar
-Bekliyor. Onaydan önce hiçbir çarpan uygulanmaz.
+- M1 adım 4c: kullanıcı (a)'yı seçti, koşul: her çarpan 0.5 ile 2 arasında [T], dışındaysa uygulanmaz ve model biçimi sorunu olarak raporlanır.
+- Önce şok modeli ölçülen geçit Mach'ına göre düzeltildi: emme yüzeyi genişlemesi artık geometriden. Sonra kalibrasyon yapıldı (`engine/M1_inlet_fan/analysis/loss_calibration.py`, sonuç `loss_calibration.yaml`) [H].
+  - Çarpanlar: profil 0.48, şok 0.05, uç duvar 1.01, uç 0.57.
+  - Profil ve şok sınır dışında, bu yüzden **uygulanmadı**.
+  - Bu çarpanlarla bile stall yakını η 0.936 (ölçülen 0.901, +3.5 puan) kalıyor; PR +%1.1.
+- Yorum: veri neredeyse sıfır şok kaybı ve yarı profil kaybı istiyor. Sorun ölçekte değil, biçimde: şok hâlâ fazla güçlü, alt-sesüstü kademeli şok kuralı ölçümde olmayan şok kaybı ekliyor, profil korelasyonu bu kanada uymuyor. Çarpanlar tasarımda kullanılmaz (`rotor67.build_tubes` varsayılanı 1).

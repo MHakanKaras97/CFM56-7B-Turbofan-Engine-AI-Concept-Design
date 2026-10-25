@@ -56,13 +56,13 @@ def test_design_point_pressure_ratio(validation):
 NEAR_CHOKE = "near choke (99% of 34.96 kg/s), meanline limit"
 
 
-@pytest.mark.xfail(strict=True, reason=f"{NEAR_CHOKE}: PR -6.4 %, the two tip stream tubes choke at the exit")
+@pytest.mark.xfail(strict=True, reason=f"{NEAR_CHOKE}: PR -5.6 % (model 1.551 vs 1.642)")
 def test_near_peak_pressure_ratio(validation):
     assert check(validation, "near peak efficiency PR")["result"] == "pass"
 
 
-@pytest.mark.xfail(strict=True, reason=f"{NEAR_CHOKE}: eta -2.8 points (model 0.900 vs 0.928)")
 def test_near_peak_efficiency(validation):
+    """Passes since the suction-surface expansion comes from the blade geometry (M1 step 4c): -1.5 points."""
     assert check(validation, "near peak efficiency eta")["result"] == "pass"
 
 
@@ -128,11 +128,13 @@ def test_overrides_are_applied_and_logged():
 
 
 def test_angle_sensitivity_is_small(validation):
-    """+-0.22 deg on all metal angles moves the design point PR by under 1 % and eta by under 0.5 point."""
+    """+-0.22 deg on all metal angles (same sign at every section, an upper bound of random OCR errors) moves the
+    design point PR by under 1.5 % and eta by under 0.5 point. Was under 1 % until M1 step 4c: since the tip tube
+    no longer chokes at the exit, its work follows the trailing edge angle (TE alone now -0.86 %/+0.77 %)."""
     sens = validation["angle_sensitivity"]
     assert len(sens["cases"]) == 6
     for c in sens["cases"]:
-        assert abs(c["delta_PR"]) / sens["base_PR"] < 0.01 and abs(c["delta_eta"]) < 0.005, c
+        assert abs(c["delta_PR"]) / sens["base_PR"] < 0.015 and abs(c["delta_eta"]) < 0.005, c
 
 
 def test_diffusion_factor_reference_is_current():
@@ -176,6 +178,28 @@ def test_loss_review_reports_breakdown_and_checks(validation):
     assert checks["design point PR"]["result"] == "fail" and checks["near stall eta"]["result"] == "fail"
     assert review["result"] == "fail" and review["near_stall"]["converged"]
     assert len(review["design_point"]["tubes"]) == 9
+
+
+def test_passage_mach_against_laser_readings(validation):
+    """M1 step 4c: model passage-shock Mach vs TP-2879 laser readings (10 and 30 % span from the tip)."""
+    ref = read_yaml(rotor67.REFERENCE)
+    spans = ref["measured_passage_mach"]["spans"]
+    assert [s["span_from_tip"] for s in spans] == [0.1, 0.3, 0.7] and ref["measured_passage_mach"]["tag"] == "KS"
+    rows = {r["span_from_tip"]: r for r in validation["passage_mach_comparison"]["spans"]}
+    for span in (0.1, 0.3):
+        assert abs(rows[span]["M_pass_minus_measured_mean"]) < 0.1
+        assert rows[span]["M_ss_minus_measured_max"] < 0.12
+    assert "no passage shock" in rows[0.7]["measured"]
+
+
+def test_suction_surface_is_blade_surface_1():
+    geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
+    tip = geo["points"]["sections"][12]["rows"]
+    cols = geo["points"]["columns"]
+    # surface 1 lies at larger theta and has the larger angle at the leading edge (the -theta face is the pressure side)
+    assert tip[4][cols.index("THSP1")] > tip[4][cols.index("THSP2")]
+    assert tip[4][cols.index("BETA1")] > tip[4][cols.index("BETA2")]
+    assert rotor67.suction_surface_angle(geo, 12 / 13, 0.0) == pytest.approx(tip[0][cols.index("BETA1")], abs=1e-9)
 
 
 def test_digital_copy_agrees_with_unflagged_ocr():

@@ -246,6 +246,35 @@ flowpath:
   page: 33
   table: II
   extracted_to: learning/rotor67_geometry.yaml
+measured_passage_mach:
+  description: relative Mach number just upstream of the passage shock, read by eye from the TP-2879 laser anemometer streamwise plots (relative Mach along constant-pitch lines; 0 % pitch = suction surface of one blade), near peak efficiency
+  tag: KS
+  method: read from plot (page scans extracted at 300 dpi, viewed at half scale); value = highest point before the drop through the passage shock on each pitch line
+  uncertainty: '+-0.02 at 10 % span (gridlines 0.1 apart), +-0.03 at 30 and 70 % span (gridlines 0.15 apart); laser data are ensemble averages over many passages, so the shock is smeared and the true pre-shock peak may be slightly higher'
+  span_convention: percent span from the tip (TP-2879); span fraction from the hub = 1 - span_from_tip
+  spans:
+  - span_from_tip: 0.10
+    figure: 18
+    pdf_pages: [58, 59]
+    printed_pages: [54, 55]
+    upstream_M1rel: [1.33, 1.37]
+    pre_shock_by_pitch: {0.1: 1.42, 0.2: 1.40, 0.3: 1.40, 0.4: 1.37, 0.5: 1.36, 0.6: 1.36}
+    note: passage shock drop between about 40 and 60 % chord; 70-90 % pitch (PDF p. 60) not read
+  - span_from_tip: 0.30
+    figure: 22
+    pdf_pages: [84, 85]
+    printed_pages: [80, 81]
+    upstream_M1rel: [1.18, 1.25]
+    pre_shock_by_pitch: {0.1: 1.42, 0.2: 1.43, 0.3: 1.43, 0.4: 1.40, 0.5: 1.39, 0.6: 1.32}
+    note: strong acceleration over the front suction surface from about 1.25 to 1.43 before the shock; 70-90 % pitch (PDF p. 86) not read
+  - span_from_tip: 0.70
+    figure: 30
+    pdf_pages: [122, 123]
+    printed_pages: [116, 117]
+    upstream_M1rel: [0.93, 0.95]
+    pre_shock_by_pitch: null
+    leading_edge_peak_by_pitch: {0.1: 1.12, 0.2: 1.20, 0.3: 1.21, 0.4: 1.22, 0.5: 1.12, 0.6: 1.07}
+    note: no passage shock; a short supersonic spike just behind the leading edge, then smooth deceleration to about 0.62 at the trailing edge
 computed_diffusion_factor:
   tag: H
   point: design (Table 1 mass flow and speed)
@@ -259,50 +288,50 @@ computed_diffusion_factor:
   streamlines:
   - streamline: 1
     span_fraction: 0.9154
-    diffusion_factor: 0.3
-    D_eq: 1.4691
+    diffusion_factor: 0.3954
+    D_eq: 1.6198
     M1rel: 1.3378
-    exit_choked: true
+    exit_choked: false
   - streamline: 2
     span_fraction: 0.8203
-    diffusion_factor: 0.3921
-    D_eq: 1.6366
+    diffusion_factor: 0.4162
+    D_eq: 1.6819
     M1rel: 1.265
     exit_choked: false
   - streamline: 3
     span_fraction: 0.7301
-    diffusion_factor: 0.4002
-    D_eq: 1.6709
+    diffusion_factor: 0.4111
+    D_eq: 1.6926
     M1rel: 1.1967
     exit_choked: false
   - streamline: 4
     span_fraction: 0.6361
-    diffusion_factor: 0.4308
-    D_eq: 1.7543
+    diffusion_factor: 0.4353
+    D_eq: 1.7644
     M1rel: 1.1265
     exit_choked: false
   - streamline: 5
     span_fraction: 0.5402
-    diffusion_factor: 0.4555
-    D_eq: 1.8312
+    diffusion_factor: 0.458
+    D_eq: 1.8374
     M1rel: 1.0562
     exit_choked: false
   - streamline: 6
     span_fraction: 0.4419
-    diffusion_factor: 0.4636
-    D_eq: 1.869
+    diffusion_factor: 0.4644
+    D_eq: 1.8711
     M1rel: 0.9857
     exit_choked: false
   - streamline: 7
     span_fraction: 0.3388
-    diffusion_factor: 0.4627
-    D_eq: 1.8794
+    diffusion_factor: 0.4625
+    D_eq: 1.8788
     M1rel: 0.9138
     exit_choked: false
   - streamline: 8
     span_fraction: 0.231
-    diffusion_factor: 0.4376
-    D_eq: 1.8175
+    diffusion_factor: 0.4379
+    D_eq: 1.8184
     M1rel: 0.8415
     exit_choked: false
   - streamline: 9

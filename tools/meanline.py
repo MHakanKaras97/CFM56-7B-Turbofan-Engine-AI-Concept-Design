@@ -15,6 +15,10 @@ Correlations (tags as used here):
 - Shock loss: normal shock at the passage Mach number = mean of inlet relative Mach and the suction-
   surface Mach after a Prandtl-Meyer expansion to the covered-passage entrance (Schwenk / Miller-
   Lewis-Hartmann type) [KS, Sjögren p. 24; Visentin p. 32]; taper 0.8 < M1rel < 1.0 [KS, Sjögren p. 24].
+  Expansion angle = inlet relative flow angle minus the suction-surface angle at the covered-passage
+  entrance: from the blade geometry when the tube gives `ss_turn` (kappa1 minus that suction-surface angle),
+  otherwise incidence + covered fraction x camber (camber taken as linear along the chord [T]). M1 step 4c:
+  the linear-camber estimate over-predicts the measured pre-shock Mach of Rotor 67 (TP-2879 laser data).
 - Endwall loss (only for tubes given `Endwall` data): Howell's annulus drag C_Da = 0.020 s/h and secondary
   drag C_Ds = 0.018 C_L^2, with the cascade lift coefficient C_L = 2 cos(beta_m) (tan beta1 - tan beta2) / sigma
   (profile drag term neglected), turned into a total pressure loss coefficient on the inlet dynamic head,
@@ -120,6 +124,15 @@ def diffusion_factor(W1: float, W2: float, r1: float, r2: float, Wt1: float, Wt2
 
 
 @dataclass(frozen=True)
+class LossMultipliers:
+    """One multiplier per loss mechanism (ADR-014); 1.0 = the correlation as written."""
+    profile: float = 1.0
+    shock: float = 1.0
+    endwall: float = 1.0
+    tip: float = 1.0
+
+
+@dataclass(frozen=True)
 class Endwall:
     """Blade-row data for the endwall and tip clearance losses of one tube: span fraction of the tube centre
     (0 hub, 1 casing), blade height h, chord c and running tip clearance tau of the row (m)."""
@@ -172,6 +185,8 @@ class Tube:
     solidity: float
     covered_fraction: float
     endwall: Endwall | None = None  # None: no endwall or tip clearance loss
+    ss_turn: float | None = None  # kappa1 - suction-surface angle at the covered-passage entrance (geometry)
+    multipliers: LossMultipliers = LossMultipliers()
 
 
 @dataclass
@@ -230,12 +245,15 @@ def solve_tube(tube: Tube, mass_flow: float, omega: float, Tt1: float, Pt1: floa
     loss_shock, M_pass = 0.0, M1rel
     if M1rel > 0.8:
         M_up = max(M1rel, 1.0)
-        turn = max(incidence, 0.0) + tube.covered_fraction * (tube.kappa1 - tube.kappa2)
+        if tube.ss_turn is None:
+            turn = max(incidence, 0.0) + tube.covered_fraction * (tube.kappa1 - tube.kappa2)
+        else:
+            turn = max(incidence + tube.ss_turn, 0.0)
         M_ss = mach_from_prandtl_meyer(prandtl_meyer(M_up, gas) + turn, gas)
         M_pass = (M_up + M_ss) / 2
         pt_ratio = normal_shock_pt_ratio(M_pass, gas)
         taper = min(1.0, (M1rel - 0.8) / 0.2)
-        loss_shock = taper * (1 - pt_ratio) * Pt1rel / (Pt1rel - p1)
+        loss_shock = tube.multipliers.shock * taper * (1 - pt_ratio) * Pt1rel / (Pt1rel - p1)
 
     # Exit: meridional velocity from continuity, on the subsonic branch of the mass flux curve
     U2 = omega * tube.r2
@@ -246,8 +264,8 @@ def solve_tube(tube: Tube, mass_flow: float, omega: float, Tt1: float, Pt1: floa
     loss_ew = 0.0
     if ew is not None:
         pitch = ew.chord / tube.solidity
-        loss_ew = endwall_weight(ew.span_fraction) * howell_endwall_loss(beta1, beta2, tube.solidity, pitch,
-                                                                           ew.blade_height)
+        loss_ew = tube.multipliers.endwall * endwall_weight(ew.span_fraction) * howell_endwall_loss(
+            beta1, beta2, tube.solidity, pitch, ew.blade_height)
 
     def tip_loss(Vm2):
         """Loss coefficient of the tip clearance efficiency debit at this exit state."""
@@ -256,7 +274,7 @@ def solve_tube(tube: Tube, mass_flow: float, omega: float, Tt1: float, Pt1: floa
         work = U2 * (U2 - Vm2 * math.tan(beta2))  # Euler work, no inlet swirl
         if work <= 0:
             return 0.0
-        d_eta = tip_weight(ew.span_fraction) * tip_clearance_debit(beta1, beta2, work / (U2 * U2), ew)
+        d_eta = tube.multipliers.tip * tip_weight(ew.span_fraction) * tip_clearance_debit(beta1, beta2, work / (U2 * U2), ew)
         Tt2 = Tt1 + work / gas.cp
         ds = gas.cp * d_eta * (Tt2 - Tt1) / Tt2
         return (1 - math.exp(-ds / gas.R)) * Pt2rel_ideal / (Pt1rel - p1)
@@ -265,7 +283,7 @@ def solve_tube(tube: Tube, mass_flow: float, omega: float, Tt1: float, Pt1: floa
         Wt2 = Vm2 * math.tan(beta2)
         W2 = math.hypot(Vm2, Wt2)
         deq = lieblein_deq(beta1, beta2, W1, W2, tube.solidity)
-        loss_p = profile_loss(beta1, beta2, deq, tube.solidity)
+        loss_p = tube.multipliers.profile * profile_loss(beta1, beta2, deq, tube.solidity)
         loss_t = tip_loss(Vm2)
         Pt2rel = Pt2rel_ideal - (loss_p + loss_shock + loss_ew + loss_t) * (Pt1rel - p1)
         T2 = Tt2rel - W2 * W2 / (2 * gas.cp)
