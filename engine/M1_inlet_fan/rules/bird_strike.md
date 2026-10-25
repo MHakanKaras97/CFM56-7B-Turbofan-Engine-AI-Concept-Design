@@ -5,9 +5,11 @@ Summary of `learning/sources/bird_strike/`. Values are what each study used, not
 ## Certification requirement: CS-E 800 [K]
 Source: EASA Easy Access Rules for Engines (CS-E), Amendment 5, CS-E 800 (ED Decision 2018/014/R), pp. 180-187 (`learning/sources/regulation/easa_cs-e_easy_access_amdt5.pdf`). Summary in our words; the regulation text governs.
 
-Which basis applies: EASA TCDS E.004 lists, for the CFM56-7B27 "SAC" build, JAR-E Change 8 plus Special Condition No. 1 "Bird strikes" [K]; later builds (/3, E) list CS-E 800 (CS-E dated 24 Oct 2003) [K]. The special condition text was not read (doğrulanmadı). M1 designs to current CS-E 800 (Amdt 5) as the requirement (decision for user, see status).
+Which basis applies: EASA TCDS E.004 lists, for the CFM56-7B27 "SAC" build, JAR-E Change 8 plus Special Condition No. 1 "Bird strikes" [K]; later builds (/3, E) list CS-E 800 (CS-E dated 24 Oct 2003) [K]. The special condition text was not read (doğrulanmadı). M1 designs to current CS-E 800 (Amdt 5) (user decision, M1 step 2b).
 
-The bird mass and number depend on the engine inlet throat area A, which the applicant declares as an installation limitation (CS-E 800(g)(8)). A for the CFM56-7B: doğrulanmadı.
+The bird mass and number depend on the engine inlet throat area A, which the applicant declares as an installation limitation (CS-E 800(g)(8)). A for the CFM56-7B: doğrulanmadı. The nacelle is out of scope, so the fan face area from the ICD is the proxy [T].
+
+M1 bird class (`analysis/bird_class.py` -> `analysis/bird_class.yaml`; tables in `rules/cs_e_800_birds.yaml` [K]): with A = 1.716 m2 [T], large single bird 2.75 kg; large flocking bird not required (A < 2.50 m2); medium birds 1 x 1.15 + 4 x 0.70 kg (integrity 1 x 1.15 kg); small birds 16 x 85 g; core flocking bird 1.15 kg. The proxy is 0.9 % above the 1.70 m2 medium band edge: a throat area that much smaller drops the medium set to 1 x 1.15 + 3 x 0.70 kg. The large-bird class holds for A from 1.35 to 3.90 m2.
 
 | Test | Engine condition | Bird | Speed | Pass criterion |
 |---|---|---|---|---|
@@ -53,4 +55,4 @@ Earlier summary (kept for context): Wang 2024 (p. 2) [KS] recounts the FAA FAR 3
 ## M1 rules
 - R-BS.1 Bird strike is analysed on the rotating blade at take-off speed, with impact positions at least at root, mid span and tip [G].
 - R-BS.2 Use SPH or ALE with a Gruneisen EOS and a Johnson-Cook Ti-6Al-4V model; validate the bird on a rigid-plate case first [KS methods].
-- R-BS.3 Bird masses, speeds and pass criteria are those of CS-E 800 above [K]; the size class follows from the inlet throat area, which is open until M0/the user fix it.
+- R-BS.3 Bird masses, speeds and pass criteria are those of CS-E 800 above [K]; the size class comes from `analysis/bird_class.py` with the fan face area as throat area proxy [T] until the nacelle defines it.

@@ -219,6 +219,21 @@ stream_tube_areas:
   note: area of the stream tube around each design streamline (tip to hub); covers only part of the span (about 1.5 % hub and 1.26 % tip endwall blockage assumed by the authors)
   station_1: [324.789, 216.650, 205.222, 193.331, 181.811, 171.592, 161.001, 151.339, 177.631]
   station_2: [241.362, 165.832, 158.120, 150.038, 142.327, 134.895, 126.813, 117.615, 138.240]
+endwall_blockage:
+  page: 36
+  table: IV
+  tag: KS
+  note: Table IV header; the authors assumed these blockages when sizing the stream tube areas above, so the areas are already net of them; the OCR layer prints the tip value as '1,26'
+  hub:
+    value: 0.015
+    unit: '-'
+    tag: KS
+    note: approximately 1.5 percent
+  tip:
+    value: 0.0126
+    unit: '-'
+    tag: KS
+    note: approximately 1.26 percent
 blade_sections:
   page: 18-32
   table: I

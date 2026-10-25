@@ -10,6 +10,7 @@
 | `failure_modes.md` | FM-1..FM-6, incl. CFM56-7B dovetail LCF case (Fox 2023) |
 | `bird_strike.md` | Bird models, speeds, methods; certification numbers status |
 | `aero_method.md` | Meanline method steps and loss models (diffusion factor, profile, shock, endwall) |
+| `cs_e_800_birds.yaml` | CS-E 800 bird tables by inlet throat area (data for `analysis/bird_class.py`) |
 
 Reference data: `learning/rotor67_reference.yaml` (NASA Rotor 67, validation case for A-1).
 
@@ -19,4 +20,4 @@ Workflow (M1 agent):
 3. Check results with `core.budgets.check_budget("M1", ...)`.
 4. Cross-module needs: CR to M0 via `core/requests.py`, user approval required.
 
-Status: step 1 (rule book, sources). No meanline code or geometry yet.
+Status: step 2b. Meanline validated on Rotor 67 at the design point (A-1); Rotor 67 geometry from a digital copy plus repaired OCR; CS-E 800 bird class (A-7 input). No CFM56-7B fan geometry yet.

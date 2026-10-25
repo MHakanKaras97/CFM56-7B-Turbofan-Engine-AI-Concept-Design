@@ -1,8 +1,8 @@
 """M1 analysis A-1: Rotor 67 table extraction and meanline validation.
 
-Acceptance [T] (rules/analyses.md A-1): tip M1rel and PR within 2 %, efficiency within 2 points.
-Checks that do not meet it are strict xfail with the deviation in the reason: the model is not tuned
-to pass, and a strict xfail turns red when a later model change makes the check pass.
+Acceptance [T] (rules/analyses.md A-1): design point tip M1rel and PR within 2 %. The near peak efficiency
+point (PR 2 %, efficiency 2 points) is an expected failure near choke: strict xfail with the deviation in
+the reason, so it turns red when a later model change makes it pass. The model is not tuned to pass.
 """
 
 from pathlib import Path
@@ -24,7 +24,8 @@ def pdf_available() -> bool:
         tool_path("pdftotext")
     except ToolPathError:
         return False
-    return rotor67_tables.PDF.is_file()
+    return rotor67_tables.PDF.is_file() and all((rotor67_tables.DIGITAL / name).is_file()
+                                                for name, _ in rotor67_tables.DIGITAL_FILES.values())
 
 
 @pytest.fixture(scope="module")
@@ -52,14 +53,29 @@ def test_design_point_pressure_ratio(validation):
     assert check(validation, "design point PR")["result"] == "pass"
 
 
-@pytest.mark.xfail(strict=True, reason="near peak efficiency PR -5.8 %: the two tip stream tubes choke at the exit")
+NEAR_CHOKE = "near choke (99% of 34.96 kg/s), meanline limit"
+
+
+@pytest.mark.xfail(strict=True, reason=f"{NEAR_CHOKE}: PR -6.4 %, the two tip stream tubes choke at the exit")
 def test_near_peak_pressure_ratio(validation):
     assert check(validation, "near peak efficiency PR")["result"] == "pass"
 
 
-@pytest.mark.xfail(strict=True, reason="near peak efficiency eta -2.7 points (model 0.901 vs 0.928)")
+@pytest.mark.xfail(strict=True, reason=f"{NEAR_CHOKE}: eta -2.8 points (model 0.900 vs 0.928)")
 def test_near_peak_efficiency(validation):
     assert check(validation, "near peak efficiency eta")["result"] == "pass"
+
+
+def test_near_peak_failures_are_marked_expected(validation):
+    for item in ("near peak efficiency PR", "near peak efficiency eta"):
+        assert check(validation, item)["expected_failure"].startswith(NEAR_CHOKE)
+
+
+def test_endwall_blockage_is_in_table_iv_areas(validation):
+    blockage = validation["endwall_blockage"]
+    assert (blockage["hub"], blockage["tip"]) == (0.015, 0.0126)
+    assert abs(blockage["station_2"]["sum_vs_net"]) < 0.005  # areas are net of the stated blockage
+    assert blockage["station_2"]["sum_vs_annulus"] < -0.02
 
 
 def test_radial_profile_is_reported(validation):
@@ -68,22 +84,59 @@ def test_radial_profile_is_reported(validation):
     assert all({"measured_Pt_ratio", "model_Pt_ratio", "difference"} <= set(r) for r in rows)
 
 
-def test_streamline_count_and_flagged_values_unused():
+def test_all_sections_used_and_flagged_values_unused():
     geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
-    tubes = rotor67.build_tubes(geometry=geo)
-    assert 3 <= len(tubes) <= 9
-    used = rotor67.section_values(geo, "le_metal_angle")
-    flagged = {s["section"] for s in geo["sections"] if s["le_metal_angle"]["flagged"]}
-    assert flagged and all((k - 1) / 13 not in [f for f, _ in used] for k in flagged)
+    assert len(rotor67.build_tubes(geometry=geo)) == 9
+    for key in ("le_metal_angle", "te_metal_angle", "meridional_chord"):
+        assert len(rotor67.section_values(geo, key)) == 14, key
+    geo["sections"][6]["le_metal_angle"]["flagged"] = True
+    assert 6 / 13 not in [f for f, _ in rotor67.section_values(geo, "le_metal_angle")]
 
 
-def test_geometry_flags_known_ocr_errors():
+def section(geo, n):
+    return geo["sections"][n - 1]
+
+
+def test_geometry_matches_user_checked_values():
+    """Values checked by the user against the TP-2879 scan (M1 step 2b)."""
     geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
-    hit = [f for f in geo["flags"] if f.get("section") == 1 and f.get("field") == "Z" and f.get("K") == 15]
-    assert hit and 3.79207 in hit[0]["ocr_candidates"]  # 5.79207 printed, Z must increase by about 0.27
+    assert round(section(geo, 4)["le_radius"]["value"], 2) == 13.27
+    assert round(section(geo, 5)["le_radius"]["value"], 2) == 14.50
+    assert round(section(geo, 12)["le_radius"]["value"], 2) == 23.09
+    assert round(section(geo, 13)["te_radius"]["value"], 2) == 23.78
+    assert section(geo, 4)["le_metal_angle"]["value"] == 43.42
+    t_max = section(geo, 9)["max_thickness"]
+    # The user's check reads 0.42157; the page image and the coordinate-derived reference (0.42139) give
+    # 0.42137, the last-digit pass repairs the OCR 5 to 3. Location K=20 agrees.
+    assert t_max["at_K"] == 20 and abs(t_max["value"] - 0.42157) <= 0.0002
+    s9 = {e["K"]: e for e in geo["value_log"] if e.get("section") == 9 and e["field"] == "TNPC"}
+    assert s9[14]["read"] == 0.57605 and s9[14]["value"] == 0.37605  # 0.576 misread of 0.376, not the max
+
+
+def test_digital_copy_agrees_with_unflagged_ocr():
+    geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
+    unflagged = geo["digital_vs_ocr"]["by_ocr_status"]["unflagged"]
+    assert unflagged["compared"] > 1700 and unflagged["other"] == 0  # every difference is a 3/5, 4/6, 8/3 digit
+    assert unflagged["equal_fraction"] > 0.85
+    assert geo["digital_vs_ocr"]["unflagged_other_mismatches"] == []
+
+
+def test_flowpath_ocr_repairs():
+    geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
+    z = {p["K"]: p["Z"] for p in geo["flowpath"]["points"]}
+    assert (z[1], z[2], z[5], z[6], z[7]) == (-18.05981, -17.38257, -15.35085, -14.67361, -13.99657)
+    assert z[15] is None  # unreadable, left open
     assert len(geo["sections"]) == 14 and len(geo["flowpath"]["points"]) == 80
     survey = read_yaml(LEARNING / "rotor67_survey.yaml")
     assert {f["row"] for f in survey["flags"] if f["check"] == "radius_vs_table_IV"} == {1, 5, 8, 9}
+
+
+def test_repair_value_prefers_fewest_substitutions():
+    assert rotor67_tables.repair_value(63.42, 43.62, 0.6, 2) == (43.42, "repaired")  # not the 2-digit 43.62
+    assert rotor67_tables.repair_value(42.0, 42.3, 0.6, 2) == (42.0, "as_read")
+    assert rotor67_tables.repair_value(588.87, 38.42, 0.6, 2)[1] == "unresolved"
+    assert rotor67_tables.fine_repair(0.42157, 0.42139, 0.00015, 0.004, 5) == (0.42137, "repaired_last_digit")
+    assert rotor67_tables.fine_repair(43.42, 43.62, 0.015, 0.05, 2) == (43.42, "as_read")  # beyond the ceiling
 
 
 @pytest.mark.skipif(not pdf_available(), reason="TP-2879 PDF or pdftotext not on this machine")

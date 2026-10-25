@@ -4,18 +4,33 @@ The PDF is a scan with an OCR text layer. `pdftotext -table` (xpdf) keeps table 
 the OCR splits decimals ("0 71202"), breaks rows over two lines, misplaces the K labels, reads letters for
 digits (l, I, O, Z, B) and misreads digits (most often 3 as 5). This module:
 - parses Table I (blade sections), Table II (flowpath) and Table III(b) station 2 (survey profile),
-- repairs only layout damage (split decimals, letters for digits) and lists every repair,
-- runs plausibility checks and flags suspected misread values; flagged values are kept exactly as read.
-  For a flagged value it lists single-digit OCR substitutions that would pass the check, as review hints.
+- repairs layout damage (split decimals, letters for digits) and lists every repair,
+- runs plausibility checks and flags suspected misread values.
+
+Table I geometry (rotor67_geometry.yaml) is then built as follows:
+- Z, R, THSP1, THSP2 and the edge circle data come from a clean digital transcription of the same
+  TP-2879 PDF (BladeAtlas, pinned commit, sha256-checked), after it is compared with every OCR value
+  that passed the plausibility checks (agreement statistics in the output) [KS].
+- TNPC, BETA, BETA1, BETA2 are not in the digital copy. They are read from the OCR layer and checked
+  against values computed from the clean coordinates (normal thickness, camber and surface angles) [H].
+  A value off that reference gets OCR digit substitutions (3<->5, 4<->6, 8<->3, up to two); the one
+  with the fewest substitutions that lands within the tolerance is used, marked "repaired". Otherwise the
+  value stays as read and flagged. A second pass replaces a last-digit misread when a one-digit
+  substitution is much closer to the reference ("repaired_last_digit").
+- Table II (flowpath) has no digital copy: flagged values get the same substitutions against the robust
+  smooth-column fit; repaired values are marked.
 
 Run: python -m engine.M1_inlet_fan.analysis.rotor67_tables  (writes learning/rotor67_geometry.yaml
-and learning/rotor67_survey.yaml; needs the PDF and pdftotext in config/tools.local.yaml).
+and learning/rotor67_survey.yaml; needs the PDF, the digital copy and pdftotext in config/tools.local.yaml).
 """
 
+import csv
+import hashlib
+import json
 import math
 import re
 import subprocess
-from itertools import combinations
+from itertools import combinations, product
 from pathlib import Path
 
 from core.toolpaths import tool_path
@@ -47,6 +62,42 @@ SECTION_LIMIT = {"le_radius": 0.15, "te_radius": 0.15, "le_metal_angle": 1.5, "t
                  "meridional_chord": 0.3, "chord": 0.3, "max_thickness": 0.05}
 THICKNESS_MAX_FRACTION = 0.15  # max thickness / meridional chord upper bound [T]
 EDGE_MATCH = 0.003  # cm: LE circle centre meridional coordinate equals the LE circle radius [T]
+
+# Clean digital copy of Table I (Z, R, THSP1, THSP2 and edge circles), see docs/sources.md
+DIGITAL = M1 / "learning" / "sources" / "aero" / "bladeatlas_rotor67"
+DIGITAL_FILES = {
+    "table": ("rotor67_tp2879_table1.csv", "81d84a82d9fcecfcebd20478ace1a705e1f745141fa9d776977a4958a70ed936"),
+    "edges": ("rotor67_tp2879_edge_circles.csv", "eb513c30121ada06afc52a550b696c24d4b8a4027e518fda4ffdb5ae0af99a22"),
+}
+DIGITAL_SOURCE = {
+    "name": "BladeAtlas (naoyamd/BladeAtlas), src/turbinebladegen/data/rotor67_tp2879_*.csv",
+    "url": "https://github.com/naoyamd/BladeAtlas",
+    "commit": "ec4097351164333b6f544e710cc0964257841dd8",
+    "transcribed_from": "NASA TP-2879 PDF, NTRS 19900001929, sha256 f570c421...0d2e1 (same file as ours)",
+    "license": "data: US Government work, public use permitted (NTRS); repository code: MIT",
+    "columns": "Z, R, THSP1, THSP2 per point; edge circle radius and centre coordinates",
+}
+DIGITAL_FIELDS = ("Z", "R", "THSP1", "THSP2")
+EDGE_FIELDS = {"radius": "radius_cm", "radial": "center_radial_cm", "axial": "center_axial_cm",
+               "meridional": "center_meridional_cm", "angular": "center_angular_rad"}
+
+# OCR repair: digit substitutions tried on a value off its reference (user rule, M1 step 2b)
+REPAIR_SWAPS = {"3": "58", "5": "3", "4": "6", "6": "4", "8": "3"}
+MAX_SWAPS = 2
+# Tolerance of an OCR value against the value computed from the clean coordinates [T]; the reference is
+# a three-point derivative (angles) or r x dtheta x cos(beta) (thickness), good to about the p95 spread
+# of the agreeing values (0.2 deg, 0.001 cm), with margin at the blade edges.
+DERIVED_TOL = {"TNPC": 0.004, "BETA": 0.6, "BETA1": 0.6, "BETA2": 0.6}
+DERIVED_FIELDS = ("TNPC", "BETA", "BETA1", "BETA2")
+# Last-digit pass [T]: a value FINE_FLOOR to FINE_CEILING off the reference is replaced by a one-digit
+# substitution that is FINE_RATIO times closer to it (the reference is good to about 0.0001 cm and 0.01 deg
+# inside the blade; a 3/5 misread in the last digits moves a value by 0.0002 cm or 0.02 deg). Larger
+# angle differences are left alone: at the blade edges the one-sided reference is off by up to 0.2 deg.
+FINE_FLOOR = {"TNPC": 0.00015, "BETA": 0.015, "BETA1": 0.015, "BETA2": 0.015}
+FINE_CEILING = {"TNPC": 0.004, "BETA": 0.05, "BETA1": 0.05, "BETA2": 0.05}
+FINE_RATIO = 3.0
+# Table II repair limits [T]: Z is printed at an even spacing, so a straight line fits it to the last digit
+FLOWPATH_LIMIT = {"Z": 0.001, "R_hub": 0.02, "R_shroud": 0.02}
 
 
 def page_text(page: int, pdf: Path = PDF) -> str:
@@ -335,6 +386,185 @@ def check_across_sections(sections: list[dict]) -> list[dict]:
     return flags
 
 
+def read_digital(folder: Path = DIGITAL) -> tuple[dict, dict]:
+    """Digital copy: ({section: [row dict of DIGITAL_FIELDS] x 35}, {section: edge dict as _edge_data}).
+    Refused if a file differs from the pinned sha256."""
+    paths = {}
+    for key, (name, sha) in DIGITAL_FILES.items():
+        paths[key] = folder / name
+        if hashlib.sha256(paths[key].read_bytes()).hexdigest() != sha:
+            raise ValueError(f"{name}: sha256 differs from the pinned copy")
+    rows: dict[int, list[dict]] = {}
+    with paths["table"].open(newline="") as f:
+        for r in csv.DictReader(f):
+            rows.setdefault(int(r["surface"]), []).append(
+                dict(zip(DIGITAL_FIELDS, (float(r[c]) for c in ("z_cm", "r_cm", "thsp1_rad", "thsp2_rad")))))
+    edges: dict[int, dict] = {}
+    with paths["edges"].open(newline="") as f:
+        for r in csv.DictReader(f):
+            edge = edges.setdefault(int(r["surface"]), {k: {} for k in EDGE_FIELDS})
+            for key, column in EDGE_FIELDS.items():
+                edge[key][r["edge"].lower()] = float(r[column])
+    return rows, edges
+
+
+def ocr_variants(value: float, decimals: int, max_swaps: int = MAX_SWAPS) -> list[tuple[float, int]]:
+    """(value, number of substituted digits) for every way of applying up to max_swaps REPAIR_SWAPS."""
+    text = f"{value:.{decimals}f}"
+    spots = [i for i, ch in enumerate(text) if ch in REPAIR_SWAPS]
+    out = []
+    for n in range(1, max_swaps + 1):
+        for pos in combinations(spots, n):
+            for repl in product(*(REPAIR_SWAPS[text[i]] for i in pos)):
+                chars = list(text)
+                for i, ch in zip(pos, repl):
+                    chars[i] = ch
+                out.append((float("".join(chars)), n))
+    return out
+
+
+def ocr_explained(read: float, true: float, decimals: int) -> bool:
+    """True if `read` is `true` with some digits misread as in REPAIR_SWAPS (read from true)."""
+    a, b = f"{read:.{decimals}f}", f"{true:.{decimals}f}"
+    return len(a) == len(b) and all(x == y or x in REPAIR_SWAPS.get(y, "") or y in REPAIR_SWAPS.get(x, "")
+                                    for x, y in zip(a, b))
+
+
+def compare_with_digital(ocr: list[dict], ocr_flags: list[list[dict]], rows: dict, edges: dict) -> dict:
+    """Agreement of the digital copy with the OCR values, split by whether the OCR value passed the
+    plausibility checks. A mismatch is 'ocr_digit' when the digits differ only by REPAIR_SWAPS pairs."""
+    stats = {s: {"compared": 0, "equal": 0, "ocr_digit": 0, "other": 0} for s in ("unflagged", "flagged")}
+    other = []
+    for n, (sec, flags) in enumerate(zip(ocr, ocr_flags), 1):
+        flagged = {(f.get("field"), f.get("K")) for f in flags}
+        edge_flagged = any(f.get("field") == "edge" for f in flags)
+        pairs = [(f, k, row[f], rows[n][k - 1][f], (f, k) in flagged, 5)
+                 for k, row in enumerate(sec["rows"], 1) for f in DIGITAL_FIELDS]
+        pairs += [(f"edge {key} {side}", 0, sec["edge"].get(key, {}).get(side), edges[n][key][side], edge_flagged, 5)
+                  for key in EDGE_FIELDS for side in ("le", "te")]
+        for field, k, read, true, is_flagged, d in pairs:
+            s = stats["flagged" if is_flagged or read is None else "unflagged"]
+            s["compared"] += 1
+            if read is not None and round(read, d) == round(true, d):
+                s["equal"] += 1
+            elif read is not None and ocr_explained(read, true, d):
+                s["ocr_digit"] += 1
+            else:
+                s["other"] += 1
+                if not is_flagged and read is not None:
+                    other.append({"section": n, "field": field, "K": k, "ocr": read, "digital": true})
+    for s in stats.values():
+        s["equal_fraction"] = round(s["equal"] / s["compared"], 4)
+    return {"by_ocr_status": stats, "unflagged_other_mismatches": other,
+            "note": "flagged = failed an OCR plausibility check or unreadable; ocr_digit = digits differ only "
+                    "by 3/5, 4/6, 8/3 confusions; other = any remaining difference"}
+
+
+def _derivative(xs: list[float], ys: list[float], i: int) -> float:
+    """dy/dx at xs[i] from the quadratic through three neighbouring points (one-sided at the ends)."""
+    j = min(max(i - 1, 0), len(xs) - 3)
+    (x0, x1, x2), (y0, y1, y2), x = xs[j:j + 3], ys[j:j + 3], xs[i]
+    return (y0 * (2 * x - x1 - x2) / ((x0 - x1) * (x0 - x2)) + y1 * (2 * x - x0 - x2) / ((x1 - x0) * (x1 - x2))
+            + y2 * (2 * x - x0 - x1) / ((x2 - x0) * (x2 - x1)))
+
+
+def derived_columns(rows: list[dict]) -> dict[str, list[float]]:
+    """TNPC, BETA, BETA1, BETA2 computed from the clean coordinates [H]: angles = atan(r dtheta/dm) along
+    the meridional distance m of the section, for the mean camber line (theta1 + theta2) / 2 and both
+    surfaces; normal thickness = r (theta1 - theta2) cos(BETA)."""
+    m = [0.0]
+    for a, b in zip(rows, rows[1:]):
+        m.append(m[-1] + math.hypot(b["Z"] - a["Z"], b["R"] - a["R"]))
+    r = [p["R"] for p in rows]
+    curves = {"BETA": [(p["THSP1"] + p["THSP2"]) / 2 for p in rows], "BETA1": [p["THSP1"] for p in rows],
+              "BETA2": [p["THSP2"] for p in rows]}
+    out = {f: [math.degrees(math.atan(r[i] * _derivative(m, th, i))) for i in range(len(rows))]
+           for f, th in curves.items()}
+    out["TNPC"] = [r[i] * (p["THSP1"] - p["THSP2"]) * math.cos(math.radians(out["BETA"][i]))
+                   for i, p in enumerate(rows)]
+    return out
+
+
+def repair_value(read: float | None, reference: float, tol: float, decimals: int) -> tuple[float | None, str]:
+    """(value, status): 'as_read' within tol of the reference; 'repaired' when an OCR substitution lands
+    within tol (fewest substituted digits first, then closest to the reference); else 'unresolved'
+    (kept as read). Within tol the reference cannot tell close candidates apart, so the smallest edit wins."""
+    if read is None:
+        return None, "unresolved"
+    if abs(read - reference) <= tol:
+        return read, "as_read"
+    fits = [(n, abs(v - reference), v) for v, n in ocr_variants(read, decimals) if abs(v - reference) <= tol]
+    if not fits:
+        return read, "unresolved"
+    return min(fits)[2], "repaired"
+
+
+def fine_repair(read: float, reference: float, floor: float, ceiling: float, decimals: int) -> tuple[float, str]:
+    """Last-digit pass on an 'as_read' or 'repaired' value: (value, 'as_read' or 'repaired_last_digit')."""
+    off = abs(read - reference)
+    if not floor <= off <= ceiling:
+        return read, "as_read"
+    best = min(((abs(v - reference), v) for v, _ in ocr_variants(read, decimals, 1)), default=None)
+    if best is None or best[0] * FINE_RATIO >= off:
+        return read, "as_read"
+    return best[1], "repaired_last_digit"
+
+
+def merge_section(n: int, ocr: dict, digital_rows: list[dict], digital_edge: dict) -> tuple[dict, list, list]:
+    """Section with digital coordinates and checked / repaired OCR columns. Returns the section in the
+    parse_section layout, the repair log and flags for unresolved values."""
+    ref = derived_columns(digital_rows)
+    rows, log, flags = [], [], []
+    for k, (clean, read) in enumerate(zip(digital_rows, ocr["rows"]), 1):
+        row = dict(clean)
+        for f in DERIVED_FIELDS:
+            d = ROW_DECIMALS[ROW_FIELDS.index(f)]
+            value, status = repair_value(read[f], ref[f][k - 1], DERIVED_TOL[f], d)
+            if status != "unresolved":
+                value, fine = fine_repair(value, ref[f][k - 1], FINE_FLOOR[f], FINE_CEILING[f], d)
+                status = fine if status == "as_read" else status
+            row[f] = value
+            if status != "as_read":
+                entry = {"section": n, "K": k, "field": f, "read": read[f], "value": value,
+                         "reference": round(ref[f][k - 1], d + 1), "status": status}
+                log.append(entry)
+                if status == "unresolved":
+                    flags.append({"check": "off_derived_reference", **entry})
+        rows.append(row)
+    return {"edge": digital_edge, "rows": rows}, log, flags
+
+
+def flowpath_repairs(points: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Table II values that are not smooth get OCR substitutions against the robust column fit. One
+    value at a time, the one furthest off its fit first, then the column is re-checked, so a misread
+    value does not drag the fit of its correct neighbours. Outliers left without a fitting
+    substitution, and unreadable values, are 'unresolved'."""
+    out = [dict(p) for p in points]
+    log = []
+    for field, lim in FLOWPATH_LIMIT.items():
+        values = [p[field] for p in points]
+        done: set[int] = set()
+        while True:
+            outliers = {i: fit for i, fit in robust_outliers(values, lim).items() if i not in done}
+            fixes = [(abs(values[i] - fit), i, fit) for i, fit in outliers.items()
+                     if repair_value(values[i], fit, lim, 5)[1] == "repaired"]
+            if not fixes:
+                break
+            _, i, fit = max(fixes)
+            value = repair_value(values[i], fit, lim, 5)[0]
+            log.append({"table": "II", "K": points[i]["K"], "field": field, "read": values[i], "value": value,
+                        "reference": round(fit, 5), "status": "repaired"})
+            values[i] = out[i][field] = value
+            done.add(i)
+        for i, fit in sorted(robust_outliers(values, lim).items()):
+            if i not in done:
+                log.append({"table": "II", "K": points[i]["K"], "field": field, "read": values[i], "value": values[i],
+                            "reference": round(fit, 5), "status": "unresolved"})
+        log += [{"table": "II", "K": points[i]["K"], "field": field, "read": None, "value": None, "reference": None,
+                 "status": "unresolved"} for i, v in enumerate(values) if v is None]
+    return out, log
+
+
 def parse_flowpath(text: str) -> tuple[list[dict], list[str]]:
     """Table II: K, Z, R hub, R shroud in two column groups (K 1-40 left, 41-80 right)."""
     lines = text.splitlines()
@@ -362,15 +592,6 @@ def parse_flowpath(text: str) -> tuple[list[dict], list[str]]:
             points.append({"K": k, "Z": vals[0], "R_hub": vals[1], "R_shroud": vals[2]})
             repairs += [f"K={k}: {r}" for r in rep]
     return points, repairs
-
-
-def check_flowpath(points: list[dict]) -> list[dict]:
-    flags = []
-    if [p["K"] for p in points] != list(range(1, N_FLOWPATH + 1)):
-        flags.append({"check": "point_numbers", "found": [p["K"] for p in points]})
-    for field in ("Z", "R_hub", "R_shroud"):
-        flags += check_column([p[field] for p in points], 0.02, 5, lambda i: {"field": field, "K": points[i]["K"]})
-    return flags
 
 
 def parse_survey_station2(text: str) -> tuple[list[dict], list[str]]:
@@ -405,29 +626,56 @@ def check_survey(rows: list[dict], streamline_radii: list[float]) -> list[dict]:
     return flags
 
 
-def extract(pdf: Path = PDF) -> tuple[dict, dict]:
-    sections, flags_out, repairs_out = [], [], []
+def extract(pdf: Path = PDF, digital: Path = DIGITAL) -> tuple[dict, dict]:
+    digital_rows, digital_edges = read_digital(digital)
+    ocr, ocr_flags, layout_repairs = [], [], []
     for n, page in enumerate(SECTION_PAGES, 1):
         sec = parse_section(page_text(page, pdf))
-        flags = check_section(sec)
-        summary = {"section": n, "page": page - PRINTED_OFFSET, **section_summary(sec, flags)}
-        sections.append(summary)
-        flags_out += [dict(f, section=n) for f in flags]
-        repairs_out += [f"section {n}: {r}" for r in sec["repairs"]]
+        ocr.append(sec)
+        ocr_flags.append(check_section(sec))
+        layout_repairs += [f"section {n}: {r}" for r in sec["repairs"]]
+    sections, points, value_log, flags_out = [], [], [], []
+    for n, (page, sec) in enumerate(zip(SECTION_PAGES, ocr), 1):
+        merged, log, flags = merge_section(n, sec, digital_rows[n], digital_edges[n])
+        sections.append({"section": n, "page": page - PRINTED_OFFSET, **section_summary(merged, flags)})
+        points.append({"section": n, "rows": [[k] + [row[f] for f in ROW_FIELDS] for k, row in enumerate(merged["rows"], 1)]})
+        value_log += log
+        flags_out += flags
     flags_out += check_across_sections(sections)
-    flow, rep = parse_flowpath(page_text(FLOWPATH_PAGE, pdf))
-    repairs_out += [f"flowpath {r}" for r in rep]
+    flow_read, rep = parse_flowpath(page_text(FLOWPATH_PAGE, pdf))
+    layout_repairs += [f"flowpath {r}" for r in rep]
+    flow, flow_log = flowpath_repairs(flow_read)
+    value_log += flow_log
+    flags_out += [dict(f, check="flowpath_unresolved") for f in flow_log if f["status"] == "unresolved"]
+    status = {}
+    for e in value_log:
+        key = f"{'flowpath' if e.get('table') == 'II' else 'table_I'} {e['status']}"
+        status[key] = status.get(key, 0) + 1
     geometry = {
         "description": "NASA Rotor 67 blade sections (Table I) and flowpath (Table II); generated by "
                        "engine/M1_inlet_fan/analysis/rotor67_tables.py, do not edit",
         "source": {"primary": "Strazisar et al., NASA TP-2879, 1989, Table I (pp. 18-32), Table II (p. 33)",
+                   "digital_copy": DIGITAL_SOURCE,
                    "tag": "KS", "license": "US Government work; facts only"},
+        "provenance": {
+            "Z R THSP1 THSP2 edge_circles": "digital copy, verified against the unflagged TP-2879 OCR values [KS]",
+            "TNPC BETA BETA1 BETA2": "TP-2879 OCR, checked against values computed from the digital coordinates; "
+                                     "off values repaired by OCR digit substitution (status 'repaired', "
+                                     "'repaired_last_digit') [KS]",
+            "flowpath": "TP-2879 OCR; not-smooth values repaired by OCR digit substitution against the column fit [KS]",
+            "derived_tolerance": DERIVED_TOL,
+            "last_digit_pass": {"floor": FINE_FLOOR, "ceiling": FINE_CEILING, "ratio": FINE_RATIO},
+        },
         "units": "cm, deg; Z = 0 at blade leading edge / hub; angles from the meridional direction",
-        "review": "flagged: true = failed a plausibility check, kept as read; ocr_candidates are hints, not used",
+        "review": "flagged: true = unresolved (no substitution fits), kept as read",
+        "digital_vs_ocr": compare_with_digital(ocr, ocr_flags, digital_rows, digital_edges),
+        "value_status_counts": status,
         "sections": sections,
+        "points": {"columns": ["K", *ROW_FIELDS], "sections": points},
         "flowpath": {"page": FLOWPATH_PAGE - PRINTED_OFFSET, "tag": "KS", "points": flow},
-        "flags": flags_out + [dict(f, table="II") for f in check_flowpath(flow)],
-        "ocr_repairs": repairs_out,
+        "value_log": value_log,
+        "flags": flags_out,
+        "ocr_layout_repairs": layout_repairs,
     }
     radii = read_yaml(REFERENCE)["design_streamline_radii"]["station_2"]
     rows, srep = parse_survey_station2(page_text(SURVEY_PAGE, pdf))
