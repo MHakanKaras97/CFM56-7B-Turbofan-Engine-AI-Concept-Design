@@ -97,7 +97,8 @@ def suction_surface_angle(geometry: dict, f: float, fraction: float) -> float:
 
 
 def build_tubes(reference: dict | None = None, geometry: dict | None = None,
-                losses: bool = ENDWALL_LOSSES, multipliers: LossMultipliers = LossMultipliers()) -> list[Tube]:
+                losses: bool = ENDWALL_LOSSES, multipliers: LossMultipliers = LossMultipliers(),
+                shock_taper: bool = True) -> list[Tube]:
     ref = reference or read_yaml(REFERENCE)
     geo = geometry or read_yaml(GEOMETRY)
     st1 = ref["survey_stations"]["station_1_upstream"]
@@ -123,7 +124,7 @@ def build_tubes(reference: dict | None = None, geometry: dict | None = None,
                           covered_fraction=covered,
                           endwall=Endwall(f, height, interpolate(chord, f) * CM, clearance) if losses else None,
                           ss_turn=kappa1 - math.radians(suction_surface_angle(geo, f, covered)),
-                          multipliers=multipliers))
+                          multipliers=multipliers, subsonic_shock_taper=shock_taper))
     return tubes
 
 
@@ -139,10 +140,10 @@ def tip_relative_mach(ref: dict, results, gas: Gas) -> float:
 
 def run(mass_flow: float, reference: dict | None = None, geometry: dict | None = None, gas: Gas = Gas(),
         losses: bool = ENDWALL_LOSSES, equilibrium: bool = RADIAL_EQUILIBRIUM,
-        multipliers: LossMultipliers = LossMultipliers()) -> dict:
+        multipliers: LossMultipliers = LossMultipliers(), shock_taper: bool = True) -> dict:
     ref = reference or read_yaml(REFERENCE)
     omega = ref["design"]["rotational_speed"]["value"] * 2 * math.pi / 60
-    tubes = build_tubes(ref, geometry, losses, multipliers)
+    tubes = build_tubes(ref, geometry, losses, multipliers, shock_taper)
     extra = {}
     if equilibrium:
         st2 = ref["survey_stations"]["station_2_downstream"]
@@ -308,41 +309,86 @@ def passage_mach_comparison(ref: dict) -> dict:
                     "surface 1 angle at the covered-passage entrance (M1 step 4c)", "spans": out}
 
 
-def loss_review(ref: dict) -> dict:
-    """M1 step 4b: loss breakdown per stream tube at the design point (radial equilibrium, all losses on),
-    the mass-averaged share of each mechanism in the efficiency deficit, and the A-1 checks: design point
-    (PR, tip M1rel) and the near stall point (PR, eta) as an independent check."""
+# Full model for the loss review and the calibration (M1 step 4d): radial equilibrium, all four loss
+# mechanisms, no shock loss for a subsonic inlet relative flow (B1, TP-2879 Fig. 30).
+FULL_MODEL = {"losses": True, "equilibrium": True, "shock_taper": False}
+LOSS_FORM_STEPS = (
+    ("M1 step 4c model (tapered subsonic shock, Lieblein profile)", {"losses": True, "equilibrium": True,
+                                                                     "shock_taper": True}),
+    ("B1: no shock loss for subsonic inlet flow", FULL_MODEL),
+)
+SKIPPED_STEPS = {
+    "B2: Koch-Smith profile loss": "doğrulanmadı: Abrisha (PDF pp. 38-39, eqs. 4.11-4.15) gives the circulation "
+    "parameter, area contraction, throat density and equivalent diffusion, but the DF-to-loss step only by "
+    "reference (Cetin et al.); Visentin p. 32 and Zanoni p. 20 only name the model; no Mach, Reynolds or "
+    "thickness correction is given in the source set; the throat density term 1 / (1 - M1^2) does not hold "
+    "for the supersonic tip tubes. Not implemented."}
+
+
+def pr_band(ref: dict, mass_flow: float, delta: float = ANGLE_PERTURBATION, **kw) -> list[float]:
+    """PR with all LE and TE metal angles shifted by -delta and +delta (geometry digitisation uncertainty)."""
+    geo = read_yaml(GEOMETRY)
+    keys = ("le_metal_angle", "te_metal_angle")
+    prs = [run(mass_flow, ref, perturbed(geo, keys, d), **kw)["Pt_ratio"] for d in (-delta, delta)]
+    return [round(min(prs), 4), round(max(prs), 4)]
+
+
+def validate(ref: dict, **kw) -> dict:
+    """Loss breakdown at the design point and the validation checks of one model form: design PR and tip
+    M1rel, near peak PR and eta, near stall PR and eta. Every PR carries the band from the geometry
+    digitisation uncertainty (all metal angles +-ANGLE_PERTURBATION)."""
     design, stall = ref["design"], ref["measured"]["near_stall"]
     peak = ref["measured"]["near_peak_efficiency"]
-    d = run(design["mass_flow"]["value"], ref, losses=True, equilibrium=True)
-    s = run(stall["mass_flow_orifice"]["value"], ref, losses=True, equilibrium=True)
+    points = {"design": design["mass_flow"]["value"], "near_peak": peak["mass_flow_table_III"]["value"],
+              "near_stall": stall["mass_flow_orifice"]["value"]}
+    runs = {k: run(m, ref, **kw) for k, m in points.items()}
+    bands = {k: pr_band(ref, m, **kw) for k, m in points.items()}
+    d = runs["design"]
     m = sum(t["mass_flow"] for t in d["streamlines"])
     shares = {k: round(sum(t["mass_flow"] * t["loss_breakdown"][k]["delta_eta"] for t in d["streamlines"]) / m, 4)
               for k in ("profile", "shock", "endwall", "tip")}
 
-    def check(name, model, measured, limit, relative):
+    def check(name, model, measured, limit, relative, band=None):
         dev = model / measured - 1 if relative else model - measured
-        return {"item": name, "model": round(model, 4), "measured": measured, "deviation": round(dev, 4),
-                "limit": limit, "result": "pass" if abs(dev) <= limit else "fail"}
+        out = {"item": name, "model": round(model, 4), "measured": measured, "deviation": round(dev, 4),
+               "limit": limit, "result": "pass" if abs(dev) <= limit else "fail"}
+        if band:
+            out["PR_band_geometry"] = band
+        return out
 
-    checks = [check("design point PR", d["Pt_ratio"], design["pressure_ratio"]["value"], LIMITS["pr_rel"], True),
+    checks = [check("design point PR", d["Pt_ratio"], design["pressure_ratio"]["value"], LIMITS["pr_rel"], True,
+                    bands["design"]),
               check("design point tip M1rel", d["tip_M1rel"], design["tip_relative_mach_inlet"]["value"],
                     LIMITS["tip_M1rel_rel"], True),
-              check("near stall PR", s["Pt_ratio"], stall["pressure_ratio"]["value"], LIMITS["pr_rel"], True),
-              check("near stall eta", s["efficiency"], stall["efficiency"]["value"], LIMITS["eta_abs"], False)]
-    return {"note": "[H] radial equilibrium + profile, shock, endwall and tip clearance losses (tip loss only above "
-                    "80 % span, Zanoni p. 7); delta_eta = share of 1 - eta split in proportion to the loss "
-                    "coefficients; not tuned",
+              check("near peak PR", runs["near_peak"]["Pt_ratio"], peak["pressure_ratio"]["value"], LIMITS["pr_rel"],
+                    True, bands["near_peak"]),
+              check("near peak eta", runs["near_peak"]["efficiency"], peak["efficiency"]["value"], LIMITS["eta_abs"],
+                    False),
+              check("near stall PR", runs["near_stall"]["Pt_ratio"], stall["pressure_ratio"]["value"], LIMITS["pr_rel"],
+                    True, bands["near_stall"]),
+              check("near stall eta", runs["near_stall"]["efficiency"], stall["efficiency"]["value"], LIMITS["eta_abs"],
+                    False)]
+    return {"model": {k: v for k, v in kw.items() if k != "multipliers"},
             "design_point": {"PR": round(d["Pt_ratio"], 4), "eta": round(d["efficiency"], 4),
                              "delta_eta_mass_averaged": shares,
                              "tubes": [{"name": t["name"], "Pt_ratio": t["Pt_ratio"], "efficiency": t["efficiency"],
                                         **t["loss_breakdown"]} for t in d["streamlines"]]},
-            "measured_eta": {"near_peak_efficiency": peak["efficiency"]["value"], "near_stall": stall["efficiency"]["value"],
-                             "design": "not stated in TP-2879 (doğrulanmadı)"},
-            "near_stall": {"PR": round(s["Pt_ratio"], 4), "eta": round(s["efficiency"], 4),
-                           "converged": s["equilibrium"]["converged"]},
+            "converged": {k: r.get("equilibrium", {}).get("converged") for k, r in runs.items()},
             "checks": checks,
             "result": "pass" if all(c["result"] == "pass" for c in checks) else "fail"}
+
+
+def loss_review(ref: dict) -> dict:
+    """Loss forms one at a time (M1 step 4d): breakdown and validation after each change."""
+    stall, peak = ref["measured"]["near_stall"], ref["measured"]["near_peak_efficiency"]
+    return {"note": "[H] radial equilibrium + profile, shock, endwall and tip clearance losses (tip loss only above "
+                    "80 % span, Zanoni p. 16); delta_eta = share of 1 - eta split in proportion to the loss "
+                    "coefficients; PR_band_geometry = PR with all metal angles -/+0.22 deg; not tuned",
+            "measured_eta": {"near_peak_efficiency": peak["efficiency"]["value"],
+                             "near_stall": stall["efficiency"]["value"],
+                             "design": "not stated in TP-2879 (doğrulanmadı)"},
+            "steps": [{"step": name, **validate(ref, **kw)} for name, kw in LOSS_FORM_STEPS],
+            "skipped": SKIPPED_STEPS}
 
 
 def diffusion_factor_reference(ref: dict, geometry: dict | None = None) -> dict:
@@ -392,9 +438,10 @@ def compare(ref: dict, survey: dict) -> dict:
     checks = [
         check("design point tip M1rel", design_run["tip_M1rel"], design["tip_relative_mach_inlet"]["value"],
               LIMITS["tip_M1rel_rel"], True),
-        check("design point PR", design_run["Pt_ratio"], design["pressure_ratio"]["value"], LIMITS["pr_rel"], True),
+        dict(check("design point PR", design_run["Pt_ratio"], design["pressure_ratio"]["value"], LIMITS["pr_rel"], True),
+             PR_band_geometry=pr_band(ref, design["mass_flow"]["value"])),
         dict(check("near peak efficiency PR", peak_run["Pt_ratio"], peak["pressure_ratio"]["value"], LIMITS["pr_rel"],
-                   True), expected_failure=near_choke),
+                   True), expected_failure=near_choke, PR_band_geometry=pr_band(ref, peak["mass_flow_table_III"]["value"])),
         dict(check("near peak efficiency eta", peak_run["efficiency"], peak["efficiency"]["value"], LIMITS["eta_abs"],
                    False), expected_failure=near_choke),
     ]
@@ -436,7 +483,8 @@ def main() -> None:
     write_yaml(OUT, result)
     for c in result["checks"]:
         expected = " (expected: " + c["expected_failure"] + ")" if "expected_failure" in c else ""
-        print(f"{c['result']:4} {c['item']}: model {c['model']} measured {c['measured']} deviation {c['deviation']}{expected}")
+        band = f" band {c['PR_band_geometry']}" if "PR_band_geometry" in c else ""
+        print(f"{c['result']:4} {c['item']}: model {c['model']} measured {c['measured']} deviation {c['deviation']}{band}{expected}")
     print("radial PR rms (unflagged rows):", result["radial_profile_near_peak"]["rms_difference_unflagged"])
     for c in result["angle_sensitivity"]["cases"]:
         print(f"{c['angles']:9} {c['delta_deg']:+.2f} deg: dPR {c['delta_PR']:+.4f} deta {c['delta_eta']:+.4f}")
@@ -453,10 +501,12 @@ def main() -> None:
               f"RE+losses {row['RE_losses_on']}")
     for row in result["passage_mach_comparison"]["spans"]:
         print("passage Mach", row)
-    review = result["loss_review"]
-    print("loss review: design eta", review["design_point"]["eta"], "deficit shares", review["design_point"]["delta_eta_mass_averaged"])
-    for c in review["checks"]:
-        print(f"  {c['result']:4} {c['item']}: model {c['model']} measured {c['measured']} deviation {c['deviation']}")
+    for step in result["loss_review"]["steps"]:
+        print("loss review:", step["step"], "| design eta", step["design_point"]["eta"], "shares",
+              step["design_point"]["delta_eta_mass_averaged"])
+        for c in step["checks"]:
+            print(f"  {c['result']:4} {c['item']}: model {c['model']} measured {c['measured']} deviation "
+                  f"{c['deviation']} band {c.get('PR_band_geometry', '')}")
     for row in ref["computed_diffusion_factor"]["streamlines"]:
         print(f"DF streamline {row['streamline']} span {row['span_fraction']}: {row['diffusion_factor']} "
               f"(M1rel {row['M1rel']})")

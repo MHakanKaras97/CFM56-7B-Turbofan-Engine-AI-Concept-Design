@@ -40,3 +40,8 @@ TP-2879, tasarım noktası için yalnızca PR'yi (1.63) ve uç Mrel'i veriyor. T
   - Profil ve şok sınır dışında, bu yüzden **uygulanmadı**.
   - Bu çarpanlarla bile stall yakını η 0.936 (ölçülen 0.901, +3.5 puan) kalıyor; PR +%1.1.
 - Yorum: veri neredeyse sıfır şok kaybı ve yarı profil kaybı istiyor. Sorun ölçekte değil, biçimde: şok hâlâ fazla güçlü, alt-sesüstü kademeli şok kuralı ölçümde olmayan şok kaybı ekliyor, profil korelasyonu bu kanada uymuyor. Çarpanlar tasarımda kullanılmaz (`rotor67.build_tubes` varsayılanı 1).
+- M1 adım 4d: B1 modeliyle (ses altı giriş akışında şok kaybı yok) yeniden kalibrasyon yapıldı: profil 0.66, şok 0.38, uç duvar 0.80, uç 0.05.
+  - Şok ve uç 0.5-2 dışında, bu yüzden uygulanmadı.
+  - Bu çarpanlarla stall yakını η 0.938 (+3.7 puan).
+  - Çarpanlar adım 4c'dekinden çok farklı: veri dört çarpanı belirleyemiyor.
+  - Durma kuralı uygulanıyor: ADR-015 (bütçe verimi dalı).

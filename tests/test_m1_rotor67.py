@@ -167,17 +167,26 @@ def test_radial_equilibrium_diagnostic(validation):
     assert abs(hub["RE_losses_on"] - hub["measured"]) < abs(hub["no_RE_no_losses"] - hub["measured"])
 
 
-def test_loss_review_reports_breakdown_and_checks(validation):
-    """M1 step 4b: with radial equilibrium and all losses on, A-1 still fails (design PR, near stall PR and eta);
-    the calibration proposal (ADR-014) is not applied, so the acceptance run is unchanged."""
+def test_loss_review_steps_report_breakdown_checks_and_bands(validation):
+    """M1 step 4d: loss forms one at a time (4c model, then B1 without the subsonic shock taper); each step has the
+    design point breakdown and the checks, every PR with its geometry band. B2 (Koch-Smith) is not implementable
+    from the source set and is recorded as skipped."""
     review = validation["loss_review"]
-    shares = review["design_point"]["delta_eta_mass_averaged"]
-    assert set(shares) == {"profile", "shock", "endwall", "tip"} and max(shares, key=shares.get) == "shock"
-    checks = {c["item"]: c for c in review["checks"]}
-    assert checks["design point tip M1rel"]["result"] == "pass"
-    assert checks["design point PR"]["result"] == "fail" and checks["near stall eta"]["result"] == "fail"
-    assert review["result"] == "fail" and review["near_stall"]["converged"]
-    assert len(review["design_point"]["tubes"]) == 9
+    steps = review["steps"]
+    assert [s["model"]["shock_taper"] for s in steps] == [True, False]
+    for step in steps:
+        shares = step["design_point"]["delta_eta_mass_averaged"]
+        assert set(shares) == {"profile", "shock", "endwall", "tip"} and max(shares, key=shares.get) == "shock"
+        checks = {c["item"]: c for c in step["checks"]}
+        assert {"design point PR", "near peak eta", "near stall PR", "near stall eta"} <= set(checks)
+        for item in ("design point PR", "near peak PR", "near stall PR"):
+            lo, hi = checks[item]["PR_band_geometry"]
+            assert lo <= checks[item]["model"] <= hi
+        assert all(step["converged"].values())
+    b1 = {c["item"]: c for c in steps[1]["checks"]}
+    assert b1["near stall eta"]["result"] == "fail"  # not tuned; see the calibration (ADR-014) and ADR-015
+    assert steps[1]["design_point"]["delta_eta_mass_averaged"]["shock"] < steps[0]["design_point"]["delta_eta_mass_averaged"]["shock"]
+    assert "Koch-Smith" in " ".join(review["skipped"]) and "doğrulanmadı" in " ".join(review["skipped"].values())
 
 
 def test_passage_mach_against_laser_readings(validation):

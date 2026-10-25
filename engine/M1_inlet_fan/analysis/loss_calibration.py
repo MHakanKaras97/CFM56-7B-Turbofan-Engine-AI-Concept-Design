@@ -1,7 +1,7 @@
 """ADR-014 option (a): one multiplier per loss mechanism (profile, shock, endwall, tip), calibrated on Rotor 67.
 
-Model: tools/meanline.py with radial equilibrium and all four loss mechanisms (analysis/rotor67.py run with
-losses=True, equilibrium=True). Calibration data [KS] (rotor67_reference.yaml, rotor67_survey.yaml):
+Model: tools/meanline.py with radial equilibrium and all four loss mechanisms, no shock loss for a subsonic inlet
+relative flow (analysis/rotor67.py FULL_MODEL; M1 step 4d). Calibration data [KS] (rotor67_reference.yaml, rotor67_survey.yaml):
 - design point PR 1.63 (TP-2879 gives no design efficiency),
 - near peak efficiency point: PR 1.642, eta 0.928 and the Table III(b) radial PR profile (survey rows flagged
   'local_efficiency_implausible' or 'unreadable' excluded, as in the A-1 rms).
@@ -32,7 +32,7 @@ MAX_ITER = 25
 
 
 def _run(ref: dict, mass_flow: float, k: list[float]) -> dict:
-    return R.run(mass_flow, ref, losses=True, equilibrium=True, multipliers=LossMultipliers(*k))
+    return R.run(mass_flow, ref, multipliers=LossMultipliers(*k), **R.FULL_MODEL)
 
 
 def residuals(k: list[float], ref: dict, survey: dict) -> tuple[list[float], list[str]]:
@@ -115,6 +115,7 @@ def run() -> dict:
                        "engine/M1_inlet_fan/analysis/loss_calibration.py, do not edit",
         "tag": "H",
         "data": "design PR; near peak PR, eta and radial PR profile (unflagged rows) [KS]; near stall not used",
+        "model": R.FULL_MODEL,
         "multipliers": {n: round(v, 4) for n, v in zip(NAMES, k)},
         "at_lower_clamp": [n for n, v in zip(NAMES, k) if v <= MIN_MULTIPLIER + 1e-3],
         "bounds": list(BOUNDS),

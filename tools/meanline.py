@@ -19,6 +19,8 @@ Correlations (tags as used here):
   entrance: from the blade geometry when the tube gives `ss_turn` (kappa1 minus that suction-surface angle),
   otherwise incidence + covered fraction x camber (camber taken as linear along the chord [T]). M1 step 4c:
   the linear-camber estimate over-predicts the measured pre-shock Mach of Rotor 67 (TP-2879 laser data).
+  With `subsonic_shock_taper` False (M1 step 4d) there is no shock loss for a subsonic inlet relative flow
+  (M1rel <= 1): TP-2879 Fig. 30 shows no passage shock at 70 % span from the tip, M1rel about 0.93.
 - Endwall loss (only for tubes given `Endwall` data): Howell's annulus drag C_Da = 0.020 s/h and secondary
   drag C_Ds = 0.018 C_L^2, with the cascade lift coefficient C_L = 2 cos(beta_m) (tan beta1 - tan beta2) / sigma
   (profile drag term neglected), turned into a total pressure loss coefficient on the inlet dynamic head,
@@ -187,6 +189,7 @@ class Tube:
     endwall: Endwall | None = None  # None: no endwall or tip clearance loss
     ss_turn: float | None = None  # kappa1 - suction-surface angle at the covered-passage entrance (geometry)
     multipliers: LossMultipliers = LossMultipliers()
+    subsonic_shock_taper: bool = True  # shock loss tapered in for 0.8 < M1rel < 1 (Sjögren p. 24); False: M1rel > 1 only
 
 
 @dataclass
@@ -243,7 +246,7 @@ def solve_tube(tube: Tube, mass_flow: float, omega: float, Tt1: float, Pt1: floa
 
     # Shock loss (independent of exit state)
     loss_shock, M_pass = 0.0, M1rel
-    if M1rel > 0.8:
+    if M1rel > (0.8 if tube.subsonic_shock_taper else 1.0):
         M_up = max(M1rel, 1.0)
         if tube.ss_turn is None:
             turn = max(incidence, 0.0) + tube.covered_fraction * (tube.kappa1 - tube.kappa2)

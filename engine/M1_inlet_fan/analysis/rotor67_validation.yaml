@@ -18,6 +18,9 @@ checks:
   limit: 0.02
   deviation_type: relative
   result: pass
+  PR_band_geometry:
+  - 1.6316
+  - 1.666
 - item: near peak efficiency PR
   model: 1.5507
   measured: 1.642
@@ -27,6 +30,9 @@ checks:
   result: fail
   expected_failure: near choke (99% of 34.96 kg/s), meanline limit; the design point
     is the acceptance criterion
+  PR_band_geometry:
+  - 1.5419
+  - 1.5671
 - item: near peak efficiency eta
   model: 0.9135
   measured: 0.928
@@ -334,186 +340,421 @@ radial_equilibrium_diagnostic:
     converged: true
 loss_review:
   note: '[H] radial equilibrium + profile, shock, endwall and tip clearance losses
-    (tip loss only above 80 % span, Zanoni p. 7); delta_eta = share of 1 - eta split
-    in proportion to the loss coefficients; not tuned'
-  design_point:
-    PR: 1.5606
-    eta: 0.8528
-    delta_eta_mass_averaged:
-      profile: 0.0279
-      shock: 0.0544
-      endwall: 0.0296
-      tip: 0.0243
-    tubes:
-    - name: streamline 1
-      Pt_ratio: 1.563
-      efficiency: 0.6926
-      profile:
-        loss: 0.02676
-        delta_eta: 0.03425
-      shock:
-        loss: 0.08222
-        delta_eta: 0.10524
-      endwall:
-        loss: 0.06651
-        delta_eta: 0.08514
-      tip:
-        loss: 0.06462
-        delta_eta: 0.08272
-    - name: streamline 2
-      Pt_ratio: 1.5206
-      efficiency: 0.7483
-      profile:
-        loss: 0.02872
-        delta_eta: 0.03866
-      shock:
-        loss: 0.06593
-        delta_eta: 0.08875
-      endwall:
-        loss: 0.03584
-        delta_eta: 0.04824
-      tip:
-        loss: 0.05648
-        delta_eta: 0.07602
-    - name: streamline 3
-      Pt_ratio: 1.5125
-      efficiency: 0.8674
-      profile:
-        loss: 0.02535
-        delta_eta: 0.03562
-      shock:
-        loss: 0.05179
-        delta_eta: 0.07276
-      endwall:
-        loss: 0.0172
-        delta_eta: 0.02417
-      tip:
-        loss: 0.0
-        delta_eta: 0.0
-    - name: streamline 4
-      Pt_ratio: 1.5211
-      efficiency: 0.9055
-      profile:
-        loss: 0.02438
-        delta_eta: 0.03199
-      shock:
-        loss: 0.04197
-        delta_eta: 0.05507
-      endwall:
-        loss: 0.00567
-        delta_eta: 0.00744
-      tip:
-        loss: 0.0
-        delta_eta: 0.0
-    - name: streamline 5
-      Pt_ratio: 1.5377
-      efficiency: 0.9319
-      profile:
-        loss: 0.02315
-        delta_eta: 0.02748
-      shock:
-        loss: 0.03374
-        delta_eta: 0.04005
-      endwall:
-        loss: 0.00047
-        delta_eta: 0.00056
-      tip:
-        loss: 0.0
-        delta_eta: 0.0
-    - name: streamline 6
-      Pt_ratio: 1.5561
-      efficiency: 0.9434
-      profile:
-        loss: 0.02231
-        delta_eta: 0.02337
-      shock:
-        loss: 0.03082
-        delta_eta: 0.03228
-      endwall:
-        loss: 0.00094
-        delta_eta: 0.00099
-      tip:
-        loss: 0.0
-        delta_eta: 0.0
-    - name: streamline 7
-      Pt_ratio: 1.5807
-      efficiency: 0.9493
-      profile:
-        loss: 0.02154
-        delta_eta: 0.01939
-      shock:
-        loss: 0.02775
-        delta_eta: 0.02499
-      endwall:
-        loss: 0.00703
-        delta_eta: 0.00633
-      tip:
-        loss: 0.0
-        delta_eta: 0.0
-    - name: streamline 8
-      Pt_ratio: 1.6202
-      efficiency: 0.9616
-      profile:
-        loss: 0.02044
-        delta_eta: 0.01542
-      shock:
-        loss: 0.01097
-        delta_eta: 0.00828
-      endwall:
-        loss: 0.01955
-        delta_eta: 0.01474
-      tip:
-        loss: 0.0
-        delta_eta: 0.0
-    - name: streamline 9
-      Pt_ratio: 1.6674
-      efficiency: 0.9606
-      profile:
-        loss: 0.02095
-        delta_eta: 0.01285
-      shock:
-        loss: 0.0
-        delta_eta: 0.0
-      endwall:
-        loss: 0.04326
-        delta_eta: 0.02653
-      tip:
-        loss: 0.0
-        delta_eta: 0.0
+    (tip loss only above 80 % span, Zanoni p. 16); delta_eta = share of 1 - eta split
+    in proportion to the loss coefficients; PR_band_geometry = PR with all metal angles
+    -/+0.22 deg; not tuned'
   measured_eta:
     near_peak_efficiency: 0.928
     near_stall: 0.901
     design: not stated in TP-2879 (doğrulanmadı)
-  near_stall:
-    PR: 1.5976
-    eta: 0.8499
-    converged: true
-  checks:
-  - item: design point PR
-    model: 1.5606
-    measured: 1.63
-    deviation: -0.0426
-    limit: 0.02
+  steps:
+  - step: M1 step 4c model (tapered subsonic shock, Lieblein profile)
+    model:
+      losses: true
+      equilibrium: true
+      shock_taper: true
+    design_point:
+      PR: 1.5606
+      eta: 0.8528
+      delta_eta_mass_averaged:
+        profile: 0.0279
+        shock: 0.0544
+        endwall: 0.0296
+        tip: 0.0243
+      tubes:
+      - name: streamline 1
+        Pt_ratio: 1.563
+        efficiency: 0.6926
+        profile:
+          loss: 0.02676
+          delta_eta: 0.03425
+        shock:
+          loss: 0.08222
+          delta_eta: 0.10524
+        endwall:
+          loss: 0.06651
+          delta_eta: 0.08514
+        tip:
+          loss: 0.06462
+          delta_eta: 0.08272
+      - name: streamline 2
+        Pt_ratio: 1.5206
+        efficiency: 0.7483
+        profile:
+          loss: 0.02872
+          delta_eta: 0.03866
+        shock:
+          loss: 0.06593
+          delta_eta: 0.08875
+        endwall:
+          loss: 0.03584
+          delta_eta: 0.04824
+        tip:
+          loss: 0.05648
+          delta_eta: 0.07602
+      - name: streamline 3
+        Pt_ratio: 1.5125
+        efficiency: 0.8674
+        profile:
+          loss: 0.02535
+          delta_eta: 0.03562
+        shock:
+          loss: 0.05179
+          delta_eta: 0.07276
+        endwall:
+          loss: 0.0172
+          delta_eta: 0.02417
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 4
+        Pt_ratio: 1.5211
+        efficiency: 0.9055
+        profile:
+          loss: 0.02438
+          delta_eta: 0.03199
+        shock:
+          loss: 0.04197
+          delta_eta: 0.05507
+        endwall:
+          loss: 0.00567
+          delta_eta: 0.00744
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 5
+        Pt_ratio: 1.5377
+        efficiency: 0.9319
+        profile:
+          loss: 0.02315
+          delta_eta: 0.02748
+        shock:
+          loss: 0.03374
+          delta_eta: 0.04005
+        endwall:
+          loss: 0.00047
+          delta_eta: 0.00056
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 6
+        Pt_ratio: 1.5561
+        efficiency: 0.9434
+        profile:
+          loss: 0.02231
+          delta_eta: 0.02337
+        shock:
+          loss: 0.03082
+          delta_eta: 0.03228
+        endwall:
+          loss: 0.00094
+          delta_eta: 0.00099
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 7
+        Pt_ratio: 1.5807
+        efficiency: 0.9493
+        profile:
+          loss: 0.02154
+          delta_eta: 0.01939
+        shock:
+          loss: 0.02775
+          delta_eta: 0.02499
+        endwall:
+          loss: 0.00703
+          delta_eta: 0.00633
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 8
+        Pt_ratio: 1.6202
+        efficiency: 0.9616
+        profile:
+          loss: 0.02044
+          delta_eta: 0.01542
+        shock:
+          loss: 0.01097
+          delta_eta: 0.00828
+        endwall:
+          loss: 0.01955
+          delta_eta: 0.01474
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 9
+        Pt_ratio: 1.6674
+        efficiency: 0.9606
+        profile:
+          loss: 0.02095
+          delta_eta: 0.01285
+        shock:
+          loss: 0.0
+          delta_eta: 0.0
+        endwall:
+          loss: 0.04326
+          delta_eta: 0.02653
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+    converged:
+      design: true
+      near_peak: true
+      near_stall: true
+    checks:
+    - item: design point PR
+      model: 1.5606
+      measured: 1.63
+      deviation: -0.0426
+      limit: 0.02
+      result: fail
+      PR_band_geometry:
+      - 1.5503
+      - 1.5707
+    - item: design point tip M1rel
+      model: 1.4054
+      measured: 1.38
+      deviation: 0.0184
+      limit: 0.02
+      result: pass
+    - item: near peak PR
+      model: 1.4928
+      measured: 1.642
+      deviation: -0.0909
+      limit: 0.02
+      result: fail
+      PR_band_geometry:
+      - 1.4794
+      - 1.5056
+    - item: near peak eta
+      model: 0.8538
+      measured: 0.928
+      deviation: -0.0742
+      limit: 0.02
+      result: fail
+    - item: near stall PR
+      model: 1.5976
+      measured: 1.728
+      deviation: -0.0754
+      limit: 0.02
+      result: fail
+      PR_band_geometry:
+      - 1.5886
+      - 1.6065
+    - item: near stall eta
+      model: 0.8499
+      measured: 0.901
+      deviation: -0.0511
+      limit: 0.02
+      result: fail
     result: fail
-  - item: design point tip M1rel
-    model: 1.4054
-    measured: 1.38
-    deviation: 0.0184
-    limit: 0.02
-    result: pass
-  - item: near stall PR
-    model: 1.5976
-    measured: 1.728
-    deviation: -0.0754
-    limit: 0.02
+  - step: 'B1: no shock loss for subsonic inlet flow'
+    model:
+      losses: true
+      equilibrium: true
+      shock_taper: false
+    design_point:
+      PR: 1.5675
+      eta: 0.8577
+      delta_eta_mass_averaged:
+        profile: 0.0282
+        shock: 0.048
+        endwall: 0.0293
+        tip: 0.0245
+      tubes:
+      - name: streamline 1
+        Pt_ratio: 1.5717
+        efficiency: 0.6933
+        profile:
+          loss: 0.02739
+          delta_eta: 0.03473
+        shock:
+          loss: 0.08222
+          delta_eta: 0.10425
+        endwall:
+          loss: 0.06651
+          delta_eta: 0.08434
+        tip:
+          loss: 0.06575
+          delta_eta: 0.08338
+      - name: streamline 2
+        Pt_ratio: 1.5277
+        efficiency: 0.7483
+        profile:
+          loss: 0.02944
+          delta_eta: 0.03927
+        shock:
+          loss: 0.06593
+          delta_eta: 0.08795
+        endwall:
+          loss: 0.03584
+          delta_eta: 0.0478
+        tip:
+          loss: 0.05745
+          delta_eta: 0.07664
+      - name: streamline 3
+        Pt_ratio: 1.5182
+        efficiency: 0.8677
+        profile:
+          loss: 0.02587
+          delta_eta: 0.0361
+        shock:
+          loss: 0.05179
+          delta_eta: 0.07225
+        endwall:
+          loss: 0.0172
+          delta_eta: 0.024
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 4
+        Pt_ratio: 1.5256
+        efficiency: 0.9053
+        profile:
+          loss: 0.02494
+          delta_eta: 0.03255
+        shock:
+          loss: 0.04197
+          delta_eta: 0.05478
+        endwall:
+          loss: 0.00567
+          delta_eta: 0.0074
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 5
+        Pt_ratio: 1.5407
+        efficiency: 0.9314
+        profile:
+          loss: 0.02377
+          delta_eta: 0.02813
+        shock:
+          loss: 0.03374
+          delta_eta: 0.03994
+        endwall:
+          loss: 0.00047
+          delta_eta: 0.00056
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 6
+        Pt_ratio: 1.5673
+        efficiency: 0.9763
+        profile:
+          loss: 0.02145
+          delta_eta: 0.02272
+        shock:
+          loss: 0.0
+          delta_eta: 0.0
+        endwall:
+          loss: 0.00094
+          delta_eta: 0.001
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 7
+        Pt_ratio: 1.594
+        efficiency: 0.9748
+        profile:
+          loss: 0.02086
+          delta_eta: 0.01882
+        shock:
+          loss: 0.0
+          delta_eta: 0.0
+        endwall:
+          loss: 0.00703
+          delta_eta: 0.00634
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 8
+        Pt_ratio: 1.6283
+        efficiency: 0.9698
+        profile:
+          loss: 0.0206
+          delta_eta: 0.01548
+        shock:
+          loss: 0.0
+          delta_eta: 0.0
+        endwall:
+          loss: 0.01955
+          delta_eta: 0.01469
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+      - name: streamline 9
+        Pt_ratio: 1.6678
+        efficiency: 0.9602
+        profile:
+          loss: 0.02162
+          delta_eta: 0.01325
+        shock:
+          loss: 0.0
+          delta_eta: 0.0
+        endwall:
+          loss: 0.04326
+          delta_eta: 0.02651
+        tip:
+          loss: 0.0
+          delta_eta: 0.0
+    converged:
+      design: true
+      near_peak: true
+      near_stall: true
+    checks:
+    - item: design point PR
+      model: 1.5675
+      measured: 1.63
+      deviation: -0.0383
+      limit: 0.02
+      result: fail
+      PR_band_geometry:
+      - 1.5573
+      - 1.5775
+    - item: design point tip M1rel
+      model: 1.4054
+      measured: 1.38
+      deviation: 0.0184
+      limit: 0.02
+      result: pass
+    - item: near peak PR
+      model: 1.4971
+      measured: 1.642
+      deviation: -0.0882
+      limit: 0.02
+      result: fail
+      PR_band_geometry:
+      - 1.4839
+      - 1.5098
+    - item: near peak eta
+      model: 0.8567
+      measured: 0.928
+      deviation: -0.0713
+      limit: 0.02
+      result: fail
+    - item: near stall PR
+      model: 1.6038
+      measured: 1.728
+      deviation: -0.0719
+      limit: 0.02
+      result: fail
+      PR_band_geometry:
+      - 1.5949
+      - 1.6126
+    - item: near stall eta
+      model: 0.8545
+      measured: 0.901
+      deviation: -0.0465
+      limit: 0.02
+      result: fail
     result: fail
-  - item: near stall eta
-    model: 0.8499
-    measured: 0.901
-    deviation: -0.0511
-    limit: 0.02
-    result: fail
-  result: fail
+  skipped:
+    'B2: Koch-Smith profile loss': 'doğrulanmadı: Abrisha (PDF pp. 38-39, eqs. 4.11-4.15)
+      gives the circulation parameter, area contraction, throat density and equivalent
+      diffusion, but the DF-to-loss step only by reference (Cetin et al.); Visentin
+      p. 32 and Zanoni p. 20 only name the model; no Mach, Reynolds or thickness correction
+      is given in the source set; the throat density term 1 / (1 - M1^2) does not
+      hold for the supersonic tip tubes. Not implemented.'
 passage_mach_comparison:
   note: '[H] model vs [KS read from plot]; near peak efficiency; suction-surface expansion
     from the blade surface 1 angle at the covered-passage entrance (M1 step 4c)'
