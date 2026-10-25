@@ -49,11 +49,17 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
 - Deviation: Carter's rule (m = 0.23 (2a/c)^2 + kappa2/500, a/c = 0.5) [G], at the reference incidence only.
 - Profile loss: Lieblein D_eq [KS] with the wake momentum fit theta/c = 0.004 (1 + 3.1 (D_eq - 1)^2 + 0.4 (D_eq - 1)^8) [G, Aungier 2003, not in the source set].
 - Shock loss: normal shock at the mean of inlet relative Mach and the suction-surface Mach after a Prandtl-Meyer expansion to the covered-passage entrance [KS method, geometry assumption T].
-- Not yet modelled: endwall and tip clearance loss, radial equilibrium, incidence-dependent deviation and loss.
+- Endwall and tip clearance loss (M1 step 3b, `Endwall` data per tube; off when absent). No source in the set gives a closed form with coefficients (Abrisha p. 40 gives the structure but not the polynomial coefficients; Sjögren eq. 2.12 leaves the Wright-Miller function f(D, tau/c) to its reference), so general correlations are used:
+  - endwall: Howell annulus drag C_Da = 0.020 s/h + secondary drag C_Ds = 0.018 C_L^2, loss = sigma C_D cos^2(beta1) / cos^3(beta_m) [G; Howell is SATURN's secondary model, Visentin p. 32];
+  - tip clearance: Lakshminarayana efficiency debit 0.7 (tau/h) psi / cos(beta_m) (1 + 10 sqrt((tau/c) AR / (psi cos(beta_m)))) [G], applied as the matching total pressure loss;
+  - spanwise weights [T]: endwall 3 (2f - 1)^2 (both walls, after the parabolic distribution of SC90C, Sjögren p. 22), tip 3 f^2; both average 1 over the span.
+- Rotor 67 with these losses on (analysis/rotor67_validation.yaml `losses_on_diagnostic`) [H]: design PR 1.516, -7.0 % (A-1 limit 2 %); the two tip tubes choke at the exit; hub PR near peak 1.744 -> 1.721 against 1.609 measured. The hub excess is a work/deviation issue, not a loss issue. The losses therefore stay OFF in the acceptance run and in the fan design until radial equilibrium is in (user decision, M1 step 3b).
+- Rotor 67 DF per design streamline at the design point (rotor67_reference.yaml `computed_diffusion_factor`) [H from KS geometry]: 0.39 (hub, span 0.11) rising to 0.46 at mid span, falling to 0.39-0.40 at span 0.73-0.82; tip streamline 0.30 is at exit choke. Lieblein DF is less meaningful in the supersonic tip flow (M1rel > 1 above span about 0.45).
+- Not yet modelled: radial equilibrium, incidence-dependent deviation and loss.
 
 ## M1 rules
 - R-AM.1 The first M1 meanline code implements steps 1-7 at design point, then off-design (step 8).
-- R-AM.2 Loss set for version 1: Lieblein D_eq profile loss, Schwenk-type normal shock at passage Mach; Wright-Miller-type endwall loss is the next addition. Alternatives are kept as options, not mixed silently.
+- R-AM.2 Loss set for version 1: Lieblein D_eq profile loss, Schwenk-type normal shock at passage Mach. Endwall (Howell) and tip clearance (Lakshminarayana) terms are implemented [G] but switched on only after radial equilibrium passes A-1 with them. Alternatives are kept as options, not mixed silently.
 - R-AM.3 Validation case: NASA Rotor 67 (`learning/rotor67_reference.yaml`). Pass criterion in `analyses.md` A-1.
 - R-AM.4 Meanline results are compared with the M1 budget only through `core.budgets.check_budget` (see `budget.md`).
 
@@ -62,3 +68,4 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
 - R-AM.6 Metal angles: kappa1 = beta1 - design incidence (3 deg [T]); kappa2 iterated until the tube pressure ratio equals its stream target (outer FPR, inner pr_fan_inner from `read_icd`).
 - R-AM.7 Splitter at the inlet radius whose inner area share equals W21/W2 (uniform inlet, `solve_rotor` splits by area); tubes of equal inlet area within each stream.
 - R-AM.8 Until endwall and tip clearance losses are in the tool, design efficiencies are optimistic and are reported as such, not tuned.
+- R-AM.9 (proposed for the redesign, M1 step 3b) DF limit per stream tube: not above the Rotor 67 DF at the same relative span (linear interpolation in `computed_diffusion_factor`, tubes at exit choke excluded) [H from KS]; replaces the Abrisha 0.6/0.3 band of R-AM.5 once the redesign runs. In the supersonic part of the span the limit is a loading reference only.

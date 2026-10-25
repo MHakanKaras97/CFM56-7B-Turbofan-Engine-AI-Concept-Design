@@ -1,0 +1,14 @@
+revision: rev003
+parent_revision: rev002
+revision_type: maintenance
+date: '2026-10-25T17:01:30Z'
+summary: 'M1 step 3b: rev002 with a code_commit that contains the code'
+reason: 'Maintenance: rev002 code_commit predates fan_design.py (REVIEW.md); same
+  numbers'
+change_request: null
+code_commit: 091135c150cc7469042a087bcfdf71b3de99b663
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 7355893a855ab6f23a60cb4087afe10b7bed0a9bf976000d1dcf421bd7dbd693
+- file: analysis/results.yaml
+  sha256: dc4b38033db8edc60db6d881fe97ffdcefeb55edf5dd1d7e1e4a9aa2d153306e

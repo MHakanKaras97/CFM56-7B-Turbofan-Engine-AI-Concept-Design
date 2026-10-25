@@ -14,15 +14,23 @@ Inputs, all from learning/ [KS] unless noted:
 - covered-passage entrance at meridional distance pitch x sin(kappa1) x cos(kappa1) from the leading
   edge, as a fraction of the meridional chord [T]; the camber angle is taken as linear along the chord [T].
 - inlet: standard day, Tt 288.15 K, Pt 101325 Pa, no swirl (Table III reference conditions).
+- endwall and tip clearance losses (tools/meanline.py `Endwall`): blade height = mean of the station 1 and 2
+  annulus heights [T], chord = section chord interpolated in span, running tip clearance 1.0 mm (p. 2) [KS].
+  Off for the acceptance checks (ENDWALL_LOSSES): with them on, the tip tubes choke at the exit and the design
+  PR fails A-1 (user decision M1 step 3b: radial equilibrium first). The losses-on run is reported as a diagnostic.
+- diffusion factor per stream tube at the design point is written to rotor67_reference.yaml
+  (`computed_diffusion_factor`, [H] from the [KS] geometry) as the loading reference for the M1 fan.
 
-Run: python -m engine.M1_inlet_fan.analysis.rotor67  (writes analysis/rotor67_validation.yaml).
+Run: python -m engine.M1_inlet_fan.analysis.rotor67  (writes analysis/rotor67_validation.yaml and the
+computed_diffusion_factor block of learning/rotor67_reference.yaml).
+
 """
 
 import math
 from pathlib import Path
 
-from core.util import read_yaml, write_yaml
-from tools.meanline import Gas, Tube, mass_averaged, solve_rotor
+from core.util import dump_yaml, read_yaml, write_yaml
+from tools.meanline import Endwall, Gas, Tube, mass_averaged, solve_rotor
 
 M1 = Path(__file__).resolve().parents[1]
 REFERENCE = M1 / "learning" / "rotor67_reference.yaml"
@@ -39,6 +47,8 @@ CM2 = 1e-4
 LIMITS = {"tip_M1rel_rel": 0.02, "pr_rel": 0.02, "eta_abs": 0.02}
 # Blade angle perturbation [T]: the largest last-digit OCR error left in the angle columns (status.md, M1 step 2b)
 ANGLE_PERTURBATION = 0.22  # deg
+ENDWALL_LOSSES = False  # endwall + tip clearance loss terms of tools/meanline.py; off until radial equilibrium
+MM = 0.001
 
 
 def section_values(geometry: dict, key: str) -> list[tuple[float, float]]:
@@ -64,7 +74,8 @@ def interpolate(points: list[tuple[float, float]], f: float) -> float:
     return y0 + (y1 - y0) * (f - x0) / (x1 - x0)
 
 
-def build_tubes(reference: dict | None = None, geometry: dict | None = None) -> list[Tube]:
+def build_tubes(reference: dict | None = None, geometry: dict | None = None,
+                losses: bool = ENDWALL_LOSSES) -> list[Tube]:
     ref = reference or read_yaml(REFERENCE)
     geo = geometry or read_yaml(GEOMETRY)
     st1 = ref["survey_stations"]["station_1_upstream"]
@@ -73,6 +84,10 @@ def build_tubes(reference: dict | None = None, geometry: dict | None = None) -> 
     sig_hub, sig_tip = ref["design"]["solidity_hub"]["value"], ref["design"]["solidity_tip"]["value"]
     k1, k2 = section_values(geo, "le_metal_angle"), section_values(geo, "te_metal_angle")
     chord_m = section_values(geo, "meridional_chord")
+    chord = section_values(geo, "chord")
+    st2 = ref["survey_stations"]["station_2_downstream"]
+    height = ((r_tip - r_hub) + (st2["shroud_radius"]["value"] - st2["hub_radius"]["value"])) / 2 * CM
+    clearance = ref["design"]["tip_clearance_running"]["value"] * MM
     tubes = []
     radii, areas = ref["design_streamline_radii"], ref["stream_tube_areas"]
     for j, (r1, r2, A1, A2) in enumerate(zip(radii["station_1"], radii["station_2"],
@@ -83,7 +98,8 @@ def build_tubes(reference: dict | None = None, geometry: dict | None = None) -> 
         covered = min(1.0, pitch * math.sin(kappa1) * math.cos(kappa1) / interpolate(chord_m, f))
         tubes.append(Tube(name=f"streamline {j}", r1=r1 * CM, r2=r2 * CM, A1=A1 * CM2, A2=A2 * CM2,
                           kappa1=kappa1, kappa2=kappa2, solidity=sig_hub + (sig_tip - sig_hub) * f,
-                          covered_fraction=covered))
+                          covered_fraction=covered,
+                          endwall=Endwall(f, height, interpolate(chord, f) * CM, clearance) if losses else None))
     return tubes
 
 
@@ -97,10 +113,12 @@ def tip_relative_mach(ref: dict, results, gas: Gas) -> float:
     return math.hypot(outer.V1, omega * r_tip) / math.sqrt(gas.gamma * gas.R * T1)
 
 
-def run(mass_flow: float, reference: dict | None = None, geometry: dict | None = None, gas: Gas = Gas()) -> dict:
+def run(mass_flow: float, reference: dict | None = None, geometry: dict | None = None, gas: Gas = Gas(),
+        losses: bool = ENDWALL_LOSSES) -> dict:
     ref = reference or read_yaml(REFERENCE)
     omega = ref["design"]["rotational_speed"]["value"] * 2 * math.pi / 60
-    results = solve_rotor(build_tubes(ref, geometry), mass_flow, omega, T_REF, P_REF, gas)
+    tubes = build_tubes(ref, geometry, losses)
+    results = solve_rotor(tubes, mass_flow, omega, T_REF, P_REF, gas)
     avg = mass_averaged(results, gas)
     return {"mass_flow": mass_flow, "tip_M1rel": tip_relative_mach(ref, results, gas), **avg,
             "streamlines": [{
@@ -109,9 +127,10 @@ def run(mass_flow: float, reference: dict | None = None, geometry: dict | None =
                 "beta1_deg": round(math.degrees(r.beta1), 2), "beta2_deg": round(math.degrees(r.beta2), 2),
                 "diffusion_factor": round(r.diffusion_factor, 4), "D_eq": round(r.deq, 4),
                 "loss_profile": round(r.loss_profile, 5), "loss_shock": round(r.loss_shock, 5),
+                "loss_endwall": round(r.loss_endwall, 5), "loss_tip": round(r.loss_tip, 5),
                 "M_passage": round(r.M_passage, 4), "Pt_ratio": round(r.Pt_ratio, 4), "Tt_ratio": round(r.Tt_ratio, 4),
                 "efficiency": round(r.efficiency, 4), "notes": r.notes}
-                for r, t in zip(results, build_tubes(ref, geometry))]}
+                for r, t in zip(results, tubes)]}
 
 
 def endwall_blockage(ref: dict) -> dict:
@@ -165,6 +184,49 @@ def angle_sensitivity(ref: dict, geometry: dict | None = None, delta: float = AN
                     "last-digit OCR error in the angle columns)"}
 
 
+def losses_on_diagnostic(ref: dict, survey: dict) -> dict:
+    """Design and near-peak points with the endwall and tip clearance losses on, against the acceptance run
+    (losses off) and the measured radial PR profile (near peak efficiency)."""
+    design, peak = ref["design"], ref["measured"]["near_peak_efficiency"]
+    out = {"note": "[H] diagnostic, not an acceptance check: endwall (Howell) + tip clearance (Lakshminarayana) "
+                   "losses on [G]; tip tubes choke at the exit without radial equilibrium"}
+    for name, m in (("design_point", design["mass_flow"]["value"]),
+                    ("near_peak_efficiency_point", peak["mass_flow_table_III"]["value"])):
+        off, on = run(m, ref, losses=False), run(m, ref, losses=True)
+        out[name] = {"PR_off": round(off["Pt_ratio"], 4), "PR_on": round(on["Pt_ratio"], 4),
+                     "eta_off": round(off["efficiency"], 4), "eta_on": round(on["efficiency"], 4),
+                     "choked_tubes_on": [s["name"] for s in on["streamlines"] if s["notes"]]}
+        if name == "design_point":
+            out[name]["PR_vs_measured_on"] = round(on["Pt_ratio"] / design["pressure_ratio"]["value"] - 1, 4)
+        else:
+            out[name]["radial_profile"] = [
+                {"streamline": j, "measured": row["Pt_ratio"], "off": a["Pt_ratio"], "on": b["Pt_ratio"],
+                 "change": round(b["Pt_ratio"] - a["Pt_ratio"], 4),
+                 "loss_endwall": b["loss_endwall"], "loss_tip": b["loss_tip"]}
+                for j, (row, a, b) in enumerate(zip(survey["station_2"], off["streamlines"], on["streamlines"]), 1)]
+    return out
+
+
+def diffusion_factor_reference(ref: dict, geometry: dict | None = None) -> dict:
+    """Lieblein DF per design streamline at the design point (acceptance configuration), with its span
+    fraction at the rotor inlet, for the M1 fan loading limits."""
+    geo = geometry or read_yaml(GEOMETRY)
+    st1 = ref["survey_stations"]["station_1_upstream"]
+    r_hub, r_tip = st1["hub_radius"]["value"], st1["shroud_radius"]["value"]
+    r = run(ref["design"]["mass_flow"]["value"], ref, geo)
+    rows = [{"streamline": j, "span_fraction": round((r1 - r_hub) / (r_tip - r_hub), 4),
+             "diffusion_factor": s["diffusion_factor"], "D_eq": s["D_eq"], "M1rel": s["M1rel"],
+             "exit_choked": bool(s["notes"])}
+            for j, (r1, s) in enumerate(zip(ref["design_streamline_radii"]["station_1"], r["streamlines"]), 1)]
+    return {"tag": "H", "point": "design (Table 1 mass flow and speed)",
+            "generated_by": "engine/M1_inlet_fan/analysis/rotor67.py (diffusion_factor_reference), do not edit",
+            "basis": "tools/meanline.py as validated in A-1 (design point within 2 %), KS geometry from "
+                     "rotor67_geometry.yaml; span_fraction 0 = hub, 1 = casing at station 1",
+            "caution": "Lieblein DF is a subsonic cascade loading measure; in the supersonic tip region (M1rel > 1) "
+                       "the diffusion is set largely by the passage shock, so DF there is less meaningful",
+            "streamlines": rows}
+
+
 def compare(ref: dict, survey: dict) -> dict:
     """Design and near-peak-efficiency points against the measured values; radial PR profile against
     Table III(b) station 2 (rows whose survey flags concern the Pt/Tt pair are reported, not compared)."""
@@ -211,13 +273,25 @@ def compare(ref: dict, survey: dict) -> dict:
         "radial_profile_near_peak": {"rows": profile, "rms_difference_unflagged": round(rms, 4),
                                      "note": "measured Pt/Pref with Pt1 = Pref; rows flagged in rotor67_survey.yaml excluded from the rms"},
         "angle_sensitivity": angle_sensitivity(ref),
+        "losses_on_diagnostic": losses_on_diagnostic(ref, survey),
         "design_point": design_run,
         "near_peak_efficiency_point": peak_run,
     }
 
 
+def write_generated_block(path: Path, key: str, value: dict) -> None:
+    """Replace (or append) the top-level `key` block at the end of a hand-kept YAML file, leaving the rest of
+    the text as written."""
+    text = path.read_text(encoding="utf-8")
+    head = text.split(f"\n{key}:", 1)[0].rstrip("\n") + "\n"
+    path.write_text(head + dump_yaml({key: value}), encoding="utf-8", newline="\n")
+
+
 def main() -> None:
-    result = compare(read_yaml(REFERENCE), read_yaml(SURVEY))
+    ref = read_yaml(REFERENCE)
+    ref["computed_diffusion_factor"] = diffusion_factor_reference(ref)
+    write_generated_block(REFERENCE, "computed_diffusion_factor", ref["computed_diffusion_factor"])
+    result = compare(ref, read_yaml(SURVEY))
     write_yaml(OUT, result)
     for c in result["checks"]:
         expected = " (expected: " + c["expected_failure"] + ")" if "expected_failure" in c else ""
@@ -225,6 +299,13 @@ def main() -> None:
     print("radial PR rms (unflagged rows):", result["radial_profile_near_peak"]["rms_difference_unflagged"])
     for c in result["angle_sensitivity"]["cases"]:
         print(f"{c['angles']:9} {c['delta_deg']:+.2f} deg: dPR {c['delta_PR']:+.4f} deta {c['delta_eta']:+.4f}")
+    d = result["losses_on_diagnostic"]
+    print("losses on, design point:", {k: v for k, v in d["design_point"].items()})
+    for row in d["near_peak_efficiency_point"]["radial_profile"]:
+        print(f"  near peak streamline {row['streamline']}: measured {row['measured']} off {row['off']} on {row['on']}")
+    for row in ref["computed_diffusion_factor"]["streamlines"]:
+        print(f"DF streamline {row['streamline']} span {row['span_fraction']}: {row['diffusion_factor']} "
+              f"(M1rel {row['M1rel']})")
 
 
 if __name__ == "__main__":

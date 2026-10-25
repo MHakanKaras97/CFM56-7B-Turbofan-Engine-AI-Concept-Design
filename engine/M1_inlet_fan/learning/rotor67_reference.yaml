@@ -246,3 +246,68 @@ flowpath:
   page: 33
   table: II
   extracted_to: learning/rotor67_geometry.yaml
+computed_diffusion_factor:
+  tag: H
+  point: design (Table 1 mass flow and speed)
+  generated_by: engine/M1_inlet_fan/analysis/rotor67.py (diffusion_factor_reference),
+    do not edit
+  basis: tools/meanline.py as validated in A-1 (design point within 2 %), KS geometry
+    from rotor67_geometry.yaml; span_fraction 0 = hub, 1 = casing at station 1
+  caution: Lieblein DF is a subsonic cascade loading measure; in the supersonic tip
+    region (M1rel > 1) the diffusion is set largely by the passage shock, so DF there
+    is less meaningful
+  streamlines:
+  - streamline: 1
+    span_fraction: 0.9154
+    diffusion_factor: 0.3
+    D_eq: 1.4691
+    M1rel: 1.3378
+    exit_choked: true
+  - streamline: 2
+    span_fraction: 0.8203
+    diffusion_factor: 0.3921
+    D_eq: 1.6366
+    M1rel: 1.265
+    exit_choked: false
+  - streamline: 3
+    span_fraction: 0.7301
+    diffusion_factor: 0.4002
+    D_eq: 1.6709
+    M1rel: 1.1967
+    exit_choked: false
+  - streamline: 4
+    span_fraction: 0.6361
+    diffusion_factor: 0.4308
+    D_eq: 1.7543
+    M1rel: 1.1265
+    exit_choked: false
+  - streamline: 5
+    span_fraction: 0.5402
+    diffusion_factor: 0.4555
+    D_eq: 1.8312
+    M1rel: 1.0562
+    exit_choked: false
+  - streamline: 6
+    span_fraction: 0.4419
+    diffusion_factor: 0.4636
+    D_eq: 1.869
+    M1rel: 0.9857
+    exit_choked: false
+  - streamline: 7
+    span_fraction: 0.3388
+    diffusion_factor: 0.4627
+    D_eq: 1.8794
+    M1rel: 0.9138
+    exit_choked: false
+  - streamline: 8
+    span_fraction: 0.231
+    diffusion_factor: 0.4376
+    D_eq: 1.8175
+    M1rel: 0.8415
+    exit_choked: false
+  - streamline: 9
+    span_fraction: 0.1128
+    diffusion_factor: 0.3908
+    D_eq: 1.6931
+    M1rel: 0.7667
+    exit_choked: false

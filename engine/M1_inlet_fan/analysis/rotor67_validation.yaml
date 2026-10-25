@@ -150,6 +150,91 @@ angle_sensitivity:
     delta_tip_M1rel: 0.0
   note: '[H] all sections shifted together; tag of the perturbation size [T] (largest
     residual last-digit OCR error in the angle columns)'
+losses_on_diagnostic:
+  note: '[H] diagnostic, not an acceptance check: endwall (Howell) + tip clearance
+    (Lakshminarayana) losses on [G]; tip tubes choke at the exit without radial equilibrium'
+  design_point:
+    PR_off: 1.6015
+    PR_on: 1.516
+    eta_off: 0.9032
+    eta_on: 0.8515
+    choked_tubes_on:
+    - streamline 1
+    - streamline 2
+    PR_vs_measured_on: -0.0699
+  near_peak_efficiency_point:
+    PR_off: 1.5368
+    PR_on: 1.4728
+    eta_off: 0.8998
+    eta_on: 0.8491
+    choked_tubes_on:
+    - streamline 1
+    - streamline 2
+    - streamline 3
+    radial_profile:
+    - streamline: 1
+      measured: 1.6664
+      'off': 1.3975
+      'on': 1.2767
+      change: -0.1208
+      loss_endwall: 0.06145
+      loss_tip: 0.01527
+    - streamline: 2
+      measured: 1.6549
+      'off': 1.3561
+      'on': 1.2879
+      change: -0.0682
+      loss_endwall: 0.0334
+      loss_tip: 0.01071
+    - streamline: 3
+      measured: 1.6501
+      'off': 1.4431
+      'on': 1.2792
+      change: -0.1639
+      loss_endwall: 0.01612
+      loss_tip: 0.00742
+    - streamline: 4
+      measured: 1.6426
+      'off': 1.5588
+      'on': 1.5203
+      change: -0.0385
+      loss_endwall: 0.00533
+      loss_tip: 0.0117
+    - streamline: 5
+      measured: 1.6277
+      'off': 1.6158
+      'on': 1.5992
+      change: -0.0166
+      loss_endwall: 0.00045
+      loss_tip: 0.0103
+    - streamline: 6
+      measured: 1.6202
+      'off': 1.6361
+      'on': 1.6261
+      change: -0.01
+      loss_endwall: 0.00089
+      loss_tip: 0.0077
+    - streamline: 7
+      measured: 1.6572
+      'off': 1.6487
+      'on': 1.6382
+      change: -0.0105
+      loss_endwall: 0.00669
+      loss_tip: 0.00505
+    - streamline: 8
+      measured: 1.6406
+      'off': 1.6712
+      'on': 1.6562
+      change: -0.015
+      loss_endwall: 0.01874
+      loss_tip: 0.00267
+    - streamline: 9
+      measured: 1.6086
+      'off': 1.7436
+      'on': 1.7213
+      change: -0.0223
+      loss_endwall: 0.04193
+      loss_tip: 0.00082
 design_point:
   mass_flow: 33.25
   tip_M1rel: 1.4054189047275236
@@ -168,6 +253,8 @@ design_point:
     D_eq: 1.4691
     loss_profile: 0.01698
     loss_shock: 0.10946
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.5055
     Pt_ratio: 1.3979
     Tt_ratio: 1.13
@@ -186,6 +273,8 @@ design_point:
     D_eq: 1.6366
     loss_profile: 0.02528
     loss_shock: 0.08003
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.4305
     Pt_ratio: 1.5763
     Tt_ratio: 1.162
@@ -202,6 +291,8 @@ design_point:
     D_eq: 1.6709
     loss_profile: 0.02757
     loss_shock: 0.06087
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.3744
     Pt_ratio: 1.5909
     Tt_ratio: 1.1598
@@ -218,6 +309,8 @@ design_point:
     D_eq: 1.7543
     loss_profile: 0.03077
     loss_shock: 0.04761
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.3293
     Pt_ratio: 1.6369
     Tt_ratio: 1.1657
@@ -234,6 +327,8 @@ design_point:
     D_eq: 1.8312
     loss_profile: 0.03327
     loss_shock: 0.03803
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.2918
     Pt_ratio: 1.6647
     Tt_ratio: 1.1687
@@ -250,6 +345,8 @@ design_point:
     D_eq: 1.869
     loss_profile: 0.03369
     loss_shock: 0.0326
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.2731
     Pt_ratio: 1.6672
     Tt_ratio: 1.1672
@@ -266,6 +363,8 @@ design_point:
     D_eq: 1.8794
     loss_profile: 0.03298
     loss_shock: 0.02713
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.2958
     Pt_ratio: 1.6701
     Tt_ratio: 1.1658
@@ -282,6 +381,8 @@ design_point:
     D_eq: 1.8175
     loss_profile: 0.02967
     loss_shock: 0.01197
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.3044
     Pt_ratio: 1.6851
     Tt_ratio: 1.1656
@@ -298,6 +399,8 @@ design_point:
     D_eq: 1.6931
     loss_profile: 0.02741
     loss_shock: 0.0
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 0.7667
     Pt_ratio: 1.7433
     Tt_ratio: 1.1748
@@ -321,6 +424,8 @@ near_peak_efficiency_point:
     D_eq: 1.4779
     loss_profile: 0.01892
     loss_shock: 0.1064
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.5017
     Pt_ratio: 1.3975
     Tt_ratio: 1.13
@@ -339,6 +444,8 @@ near_peak_efficiency_point:
     D_eq: 1.4173
     loss_profile: 0.01881
     loss_shock: 0.077
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.4259
     Pt_ratio: 1.3561
     Tt_ratio: 1.1113
@@ -357,6 +464,8 @@ near_peak_efficiency_point:
     D_eq: 1.4956
     loss_profile: 0.02201
     loss_shock: 0.05779
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.3688
     Pt_ratio: 1.4431
     Tt_ratio: 1.1264
@@ -373,6 +482,8 @@ near_peak_efficiency_point:
     D_eq: 1.6378
     loss_profile: 0.02713
     loss_shock: 0.04433
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.3223
     Pt_ratio: 1.5588
     Tt_ratio: 1.1485
@@ -389,6 +500,8 @@ near_peak_efficiency_point:
     D_eq: 1.7379
     loss_profile: 0.03042
     loss_shock: 0.03435
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.2827
     Pt_ratio: 1.6158
     Tt_ratio: 1.1579
@@ -405,6 +518,8 @@ near_peak_efficiency_point:
     D_eq: 1.7905
     loss_profile: 0.03146
     loss_shock: 0.02768
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.2515
     Pt_ratio: 1.6361
     Tt_ratio: 1.1601
@@ -421,6 +536,8 @@ near_peak_efficiency_point:
     D_eq: 1.8095
     loss_profile: 0.03111
     loss_shock: 0.02471
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.2704
     Pt_ratio: 1.6487
     Tt_ratio: 1.1612
@@ -437,6 +554,8 @@ near_peak_efficiency_point:
     D_eq: 1.7548
     loss_profile: 0.02824
     loss_shock: 0.01398
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 1.2781
     Pt_ratio: 1.6712
     Tt_ratio: 1.1631
@@ -453,6 +572,8 @@ near_peak_efficiency_point:
     D_eq: 1.6444
     loss_profile: 0.02657
     loss_shock: 0.0
+    loss_endwall: 0.0
+    loss_tip: 0.0
     M_passage: 0.79
     Pt_ratio: 1.7436
     Tt_ratio: 1.1749

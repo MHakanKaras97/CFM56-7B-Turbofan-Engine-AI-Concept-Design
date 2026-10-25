@@ -49,6 +49,10 @@ an M0 engine agent coordinating M1-M9 module agents.
 - Do not add dependencies without asking.
 - Do not add root-level `.py` files without asking.
 
+## Commits
+- Run the full test suite before every commit; never commit with failing tests.
+- Commit code before recording a revision: `create_revision` refuses uncommitted code (core/, tools/, engine/*/analysis/*.py).
+
 ## Session status
 - Session start: read docs/status.md. Task end: update it (keep under 70 lines, newest first in 'Son yapılanlar').
 

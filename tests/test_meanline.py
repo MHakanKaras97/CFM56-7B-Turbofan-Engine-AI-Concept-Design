@@ -58,3 +58,28 @@ def test_mass_average_of_identical_tubes():
     avg = mass_averaged([r, r])
     assert avg["Pt_ratio"] == pytest.approx(r.Pt_ratio)
     assert avg["efficiency"] == pytest.approx(r.efficiency)
+
+
+def test_endwall_and_tip_losses_lower_efficiency():
+    from tools.meanline import Endwall
+    base = solve_tube(tube(), 4.0, 1500.0, 288.15, 101325.0)
+    assert base.loss_endwall == 0.0 and base.loss_tip == 0.0  # off without Endwall data
+    tip = solve_tube(tube(endwall=Endwall(0.9, 0.1, 0.05, 0.001)), 4.0, 1500.0, 288.15, 101325.0)
+    mid = solve_tube(tube(endwall=Endwall(0.5, 0.1, 0.05, 0.001)), 4.0, 1500.0, 288.15, 101325.0)
+    assert tip.loss_endwall > 0 and tip.loss_tip > 0 and tip.efficiency < base.efficiency
+    assert mid.loss_endwall == 0.0  # parabolic endwall weight vanishes at mid span
+    assert mid.loss_tip < tip.loss_tip
+
+
+def test_loss_weights_average_to_one_over_the_span():
+    from tools.meanline import endwall_weight, tip_weight
+    n = 10000
+    for w in (endwall_weight, tip_weight):
+        assert sum(w((i + 0.5) / n) for i in range(n)) / n == pytest.approx(1.0, abs=1e-6)
+    assert tip_weight(0.0) == 0.0 and endwall_weight(0.0) == endwall_weight(1.0) == 3.0
+
+
+def test_howell_endwall_loss_textbook_form():
+    from tools.meanline import howell_endwall_loss
+    # no turning: C_L = 0, only annulus drag 0.020 s/h; beta1 = beta2 = 0 -> sigma * C_D
+    assert howell_endwall_loss(0.0, 0.0, 1.5, 0.05, 0.10) == pytest.approx(1.5 * 0.020 * 0.5)

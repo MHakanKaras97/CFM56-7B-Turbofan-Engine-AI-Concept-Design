@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -14,8 +15,10 @@ from core.records import (
     create_revision,
     revert,
     revert_concept,
+    uncommitted_code,
     verify,
 )
+from core.util import read_yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
@@ -239,3 +242,34 @@ def test_accepted_module_needs_cr_for_design_revision(repo):
     assert create_revision("M1", "text", "maintenance", root=repo, kind="maintenance") == "rev004"
     with pytest.raises(RecordError):
         records.mark_accepted("M1", "rev099", root=repo)
+
+
+def _git(repo: Path, *args: str) -> None:
+    subprocess.run(["git", "-C", str(repo), "-c", "user.name=test", "-c", "user.email=test@example.com", *args],
+                   check=True, capture_output=True)
+
+
+def test_uncommitted_code_blocks_revision(repo):
+    (repo / "core").mkdir()
+    (repo / "core" / "calc.py").write_text("X = 1\n")
+    _git(repo, "init", "-q")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    assert uncommitted_code(repo) == []
+    (repo / "core" / "calc.py").write_text("X = 2\n")
+    analysis = repo / "engine" / "M1_inlet_fan" / "analysis" / "new_design.py"
+    analysis.write_text("Y = 1\n")
+    assert sorted(uncommitted_code(repo)) == ["core/calc.py", "engine/M1_inlet_fan/analysis/new_design.py"]
+    with pytest.raises(RecordError, match="uncommitted code"):
+        create_revision("M1", "Initial", "Baseline", root=repo)
+    assert not (repo / "engine" / "M1_inlet_fan" / "records" / "rev001").exists()
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "code")
+    edit_bom(repo, 25)  # data changes are not code: allowed
+    rev = create_revision("M1", "Initial", "Baseline", root=repo)
+    head = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    assert read_yaml(rev_dir(repo, rev) / "manifest.yaml")["code_commit"] == head
+
+
+def test_guard_ignores_non_git_root(repo):
+    assert uncommitted_code(repo) == []

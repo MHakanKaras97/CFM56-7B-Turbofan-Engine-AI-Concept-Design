@@ -135,6 +135,22 @@ def test_angle_sensitivity_is_small(validation):
         assert abs(c["delta_PR"]) / sens["base_PR"] < 0.01 and abs(c["delta_eta"]) < 0.005, c
 
 
+def test_diffusion_factor_reference_is_current():
+    ref = read_yaml(rotor67.REFERENCE)
+    stored = ref.pop("computed_diffusion_factor")
+    assert stored == read_yaml_roundtrip(rotor67.diffusion_factor_reference(ref))
+    assert stored["tag"] == "H" and len(stored["streamlines"]) == 9
+    assert "supersonic" in stored["caution"]
+
+
+def test_losses_on_diagnostic_is_reported_not_accepted(validation):
+    """Endwall + tip clearance losses stay off in the acceptance run until radial equilibrium is in."""
+    assert rotor67.ENDWALL_LOSSES is False
+    d = validation["losses_on_diagnostic"]
+    assert d["design_point"]["PR_on"] < d["design_point"]["PR_off"]
+    assert len(d["near_peak_efficiency_point"]["radial_profile"]) == 9
+
+
 def test_digital_copy_agrees_with_unflagged_ocr():
     geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
     unflagged = geo["digital_vs_ocr"]["by_ocr_status"]["unflagged"]

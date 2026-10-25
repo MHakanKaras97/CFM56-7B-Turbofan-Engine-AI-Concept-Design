@@ -8,6 +8,10 @@ the active concept.
 
 Records are written once and never rewritten. Only ACTIVE / ACTIVE_CONCEPT change.
 
+Reproducibility guard: create_revision refuses while code (core/, tools/, engine/*/analysis/*.py) has
+uncommitted changes in git, so the recorded code_commit always contains the code that made the record.
+Outside a git work tree (e.g. test copies) the guard does not apply.
+
 Revision types (ADR-012):
   design       numbers, params values or geometry change. Once the module is accepted
                (records/ACCEPTED names the accepted revision) it needs an approved CR.
@@ -56,6 +60,21 @@ def _code_commit(root: Path) -> str | None:
     except (OSError, subprocess.CalledProcessError):
         return None
     return out.stdout.strip() or None
+
+
+CODE_PATH_RE = re.compile(r"^(core/|tools/|engine/[^/]+/analysis/[^/]+\.py$)")
+
+
+def uncommitted_code(root: Path) -> list[str]:
+    """Code paths (CODE_PATH_RE) that git reports as modified, added, deleted or untracked; [] outside
+    a git work tree."""
+    try:
+        out = subprocess.run(["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"],
+                             capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return []
+    paths = [line[3:].split(" -> ")[-1].strip('"') for line in out.splitlines()]
+    return [p for p in paths if CODE_PATH_RE.match(p)]
 
 
 def _check_schema(name: str, data) -> None:
@@ -158,6 +177,10 @@ def create_revision(
 
     if kind not in REVISION_TYPES:
         raise RecordError(f"revision type {kind!r}; one of {REVISION_TYPES}")
+    dirty_code = uncommitted_code(root)
+    if dirty_code:
+        raise RecordError(f"{mdir.name}: uncommitted code changes, commit them first so code_commit reproduces "
+                          f"the record: " + ", ".join(dirty_code[:5]))
     errors = bom_io.validate(bom_path)
     if errors:
         raise RecordError(f"{bom_path} is invalid: " + "; ".join(errors))

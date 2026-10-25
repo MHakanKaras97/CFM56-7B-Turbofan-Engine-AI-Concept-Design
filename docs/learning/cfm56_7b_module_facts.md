@@ -3,7 +3,9 @@
 Kaynak: Girão 2023, Bölüm 3 [KS] (`docs/sources.md` #15). Bilgiler kendi cümlelerimizle özetlenmiştir; metin veya şekil kopyalanmamıştır.
 
 ## Fan ve giriş (M1)
-- Fanda 24 kanat var [KS].
+- Fanda 24 kanat var [KS] (Girão 2023; Fox 2023: NTSB incelemesindeki iki üretim motorunun 24 kanadı). CFM'in 1997 makalesi 22 diyor [K]; daha erken bir tasarımı anlatıyor olabilir (açık konu).
+- Fan çapı 61 in [K] (CFM 1997 makalesi, docs/sources.md #42).
+- 24 fan kanadının toplam kütlesi 118 kg [KS, zayıf: öğrenci tezi, Mirghani 2023 Tablo 3]; yalnızca kontrol değeri.
 - Fan kanatlarında orta açıklık bileziği (midspan shroud) yok [KS].
 - Fan çerçevesi alüminyumdan; değişken boşaltma vanaları (VBV) bu çerçevenin içinde [KS].
 

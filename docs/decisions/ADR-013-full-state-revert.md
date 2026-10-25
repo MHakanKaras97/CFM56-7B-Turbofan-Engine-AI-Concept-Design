@@ -13,6 +13,18 @@
 - `core.records.revert_concept` her sabitlenmiş modül için aynı tam durum geri dönüşünü yapar.
 - Modüle özgü işler hesap eklentisindedir (`engine/<M>/analysis/calc.py`): `restore`, `rerun`, `affected_modules`.
 
+## Genel modül hesap arayüzü (2026-10-25, M1 adım 3b)
+Her modülün hesap eklentisi `engine/<M>/analysis/calc.py` aynı arayüzü sunar (M0 ve M1 uygular; diğer modüller aynısını izler). `core.records` ve `core.requests` modüle özgü kodu yalnızca bu arayüzden çağırır:
+- `PARAMS_FILE`: kayda giren params dosyasının adı (`analysis/` altında).
+- `recalculate(root, params_files) -> {"params", "results"}`: params CR'si uygulanırken yeni params ile hesap; olanaksız tasarım `ValueError` ile reddedilir, bütçe dışı sonuç ret değildir.
+- `write_outputs(root, out)`: sonuçları `analysis/results.yaml`'a yazar.
+- `regenerate(root, revision)`: türetilmiş dosyaları üretir (M0: `rules/icd.yaml`; M1: yok).
+- `rerun(root, params) -> results`: güncel kodla kayıtlı params üzerinde yeniden hesap (geri dönüş doğrulaması).
+- `restore(root, revision, params, results) -> uyarılar`: params ve sonuçları kayıttan geri yazar.
+- `reproducible(root, revision) -> None | neden`: kayda dönülebilir mi.
+- Eklentisi olmayan modül yalnızca bom.yaml geri getirir ve her zaman yeniden üretilebilirdir.
+- Yeniden üretilebilirlik koruması: `create_revision`, kod (core/, tools/, engine/*/analysis/*.py) commit edilmeden kaydı reddeder; böylece `code_commit` kaydı üreten kodu içerir. M1 rev002 bu korumadan önce kaydedildi (`code_commit` fan_design.py'den önce): REVIEW.md'de işaretli, yerine rev003 (bakım, aynı sayılar).
+
 ## Revert CR'si
 - Arayüzden geri dönüş bir CR üzerinden yapılır: değişiklik türü `revert` ({module, from, to}); konsept geri dönüşünde CR'de `concept` alanı vardır ve bütün modülleri listeler.
 - Etki M0 tarafından doldurulur: `impact.by = "M0 revert"`, `affected_modules` = geri dönen modüller + ICD bütçesi değişen modüller (başlamamış olsalar da listelenir).
