@@ -26,7 +26,7 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
 ### Diffusion factor (blade loading)
 - Lieblein diffusion factor DF = 1 - W2/W1 + |delta Vt| / (2 sigma W1) (Sjögren eq. 2.13; Abrisha eq. 4.10) [KS].
 - Equivalent diffusion ratio D_eq (Lieblein) gives the wake momentum thickness and hence profile loss (Sjögren eq. 2.10-2.11) [KS].
-- Abrisha caps DF at 0.7 in the Koch-Smith model (p. 38) and cites 0.3-0.6 as a working range (p. 38) [KS].
+- Abrisha caps DF at 0.7 in the Koch-Smith model (p. 38) and gives 0.3-0.6 as a practical design criterion, 0.3 at the tip and 0.6 at the hub (p. 38, printed p. 26) [KS].
 
 ### Profile loss
 - Lieblein: loss from wake momentum thickness vs D_eq and inlet Mach (Sjögren p. 23) [KS].
@@ -56,3 +56,9 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
 - R-AM.2 Loss set for version 1: Lieblein D_eq profile loss, Schwenk-type normal shock at passage Mach; Wright-Miller-type endwall loss is the next addition. Alternatives are kept as options, not mixed silently.
 - R-AM.3 Validation case: NASA Rotor 67 (`learning/rotor67_reference.yaml`). Pass criterion in `analyses.md` A-1.
 - R-AM.4 Meanline results are compared with the M1 budget only through `core.budgets.check_budget` (see `budget.md`).
+
+## Fan design (M1 step 3, `analysis/fan_design.py`)
+- R-AM.5 Blade loading: DF limit 0.6 at the hub and 0.3 at the tip (Abrisha p. 38) [KS], linear in inlet span fraction [T]; each tube gets the lowest solidity that keeps DF at its local limit, within the search bounds 1.0-3.2 [T]. A tube at the upper solidity bound with DF above its limit is reported as a failed DF check.
+- R-AM.6 Metal angles: kappa1 = beta1 - design incidence (3 deg [T]); kappa2 iterated until the tube pressure ratio equals its stream target (outer FPR, inner pr_fan_inner from `read_icd`).
+- R-AM.7 Splitter at the inlet radius whose inner area share equals W21/W2 (uniform inlet, `solve_rotor` splits by area); tubes of equal inlet area within each stream.
+- R-AM.8 Until endwall and tip clearance losses are in the tool, design efficiencies are optimistic and are reported as such, not tuned.

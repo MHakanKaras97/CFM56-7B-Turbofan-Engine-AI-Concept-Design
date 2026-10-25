@@ -93,6 +93,7 @@ def test_integration_budget_miss_absorbed_by_cycle(icd, repo):
 
 def test_integration_out_of_tolerance_drafts_open_cr_with_options(icd, repo):
     eta = budget_value(icd, "M3", "eta_hpc")
+    real = sorted((ROOT / "engine" / "M0_engine" / "requests").glob("CR-*.yaml"))
     res = integration_check("M3", {"eta_hpc": eta - 0.03}, cr_root=repo)
     assert not res["passed"]
     assert {m["name"] for m in res["metrics"] if m["result"] == "fail"} == {"sfc", "egt"}
@@ -104,7 +105,7 @@ def test_integration_out_of_tolerance_drafts_open_cr_with_options(icd, repo):
     assert (change["type"], change["file"], change["path"]) == ("params", "cycle_params.yaml", "components.eta_hpc")
     assert change["new"]["value"] == pytest.approx(eta - 0.03)
     assert cr["changes"][1]["path"] == "rated_case.delta_eta_exclude"
-    assert not list((ROOT / "engine" / "M0_engine" / "requests").glob("CR-*.yaml"))  # real folder untouched
+    assert sorted((ROOT / "engine" / "M0_engine" / "requests").glob("CR-*.yaml")) == real  # real folder untouched
 
 
 def test_operating_point_mode_checks_thrust(icd):

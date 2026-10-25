@@ -1,0 +1,13 @@
+revision: rev002
+parent_revision: rev001
+revision_type: design
+date: '2026-10-25T16:26:04Z'
+summary: 'M1 step 3: first fan design'
+reason: Development revision before acceptance; no CR (ADR-012)
+change_request: null
+code_commit: 45549cddffbc200d8dea43ab8661c0947901968c
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 7355893a855ab6f23a60cb4087afe10b7bed0a9bf976000d1dcf421bd7dbd693
+- file: analysis/results.yaml
+  sha256: dc4b38033db8edc60db6d881fe97ffdcefeb55edf5dd1d7e1e4a9aa2d153306e

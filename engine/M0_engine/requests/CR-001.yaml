@@ -1,0 +1,96 @@
+id: CR-001
+date: '2026-10-25T16:30:15Z'
+from_module: M1
+to_modules:
+- M0
+reason: 'Integration check (thrust_held) out of tolerance: sfc -0.00517, egt -6'
+changes:
+- type: params
+  module: M0
+  file: cycle_params.yaml
+  path: components.FPR
+  old:
+    value: 1.765
+    unit: '-'
+    tag: KS
+  new:
+    value: 1.765
+    unit: '-'
+    tag: H
+- type: params
+  module: M0
+  file: cycle_params.yaml
+  path: components.eta_fan_outer
+  old:
+    value: 0.878
+    unit: '-'
+    tag: KS
+  new:
+    value: 0.890615
+    unit: '-'
+    tag: H
+- type: params
+  module: M0
+  file: cycle_params.yaml
+  path: components.pr_fan_inner
+  old:
+    value: 1.344
+    unit: '-'
+    tag: KS
+  new:
+    value: 1.344
+    unit: '-'
+    tag: H
+- type: params
+  module: M0
+  file: cycle_params.yaml
+  path: components.eta_fan_inner
+  old:
+    value: 0.87
+    unit: '-'
+    tag: KS
+  new:
+    value: 0.978257
+    unit: '-'
+    tag: H
+- type: params
+  module: M0
+  file: cycle_params.yaml
+  path: rated_case.delta_eta_exclude
+  old: null
+  new:
+  - eta_fan_inner
+  - eta_fan_outer
+impact:
+  affected_modules:
+  - M0
+  - M1
+  notes: M0 integration check (thrust_held); deltas against the ICD design point
+  by: M0 integration_check
+  metrics:
+    dSFC:
+      value: -0.516963
+      unit: '%'
+      tag: H
+    dEGT:
+      value: -5.999719
+      unit: K
+      tag: H
+    dT41:
+      value: -9.053398
+      unit: K
+      tag: H
+status: open
+decision: null
+applied_revisions: null
+history:
+- date: '2026-10-25T16:30:15Z'
+  from: null
+  to: open
+options:
+- id: a
+  applies_changes: true
+  description: 'M0 params change: accept the achieved values and re-balance the cycle'
+- id: b
+  applies_changes: false
+  description: M1 redesign to meet its budget; M0 unchanged
