@@ -80,13 +80,21 @@ impact:
       value: -9.053398
       unit: K
       tag: H
-status: open
-decision: null
+status: rejected
+decision:
+  date: '2026-10-25T18:00:56Z'
+  note: Model endwall ve uç boşluğu kayıplarını içermiyor; iç verim 0,978 gerçekçi
+    değil. M1 radyal denge ve kayıp modelini ekleyip yeniden tasarlayacak
+  option: b
+  decided_by: user (UI)
 applied_revisions: null
 history:
 - date: '2026-10-25T16:30:15Z'
   from: null
   to: open
+- date: '2026-10-25T18:00:56Z'
+  from: open
+  to: rejected
 options:
 - id: a
   applies_changes: true

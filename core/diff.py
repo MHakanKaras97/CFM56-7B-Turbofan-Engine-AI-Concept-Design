@@ -5,6 +5,7 @@ mappings that share a unique identity key (id, station, name, path) is keyed by 
 stations[3].Tt_K, other lists are compared as one value.
 """
 
+import re
 from pathlib import Path
 
 from core.records import REV_RE, ROOT, RecordError, module_dir, read_concept
@@ -138,11 +139,16 @@ def numeric_changes(diff: dict) -> list[dict]:
     """Changes that alter a number, a part or a geometry output (ADR-012).
 
     Counted: a numeric value changed or removed (params, results, BOM), a part added or removed,
-    an output sha256 changed. Not counted: text, added keys (schema/metadata additions), and a
-    params number that only moved to another path with the same value (reported as "moved").
+    an output sha256 changed. Not counted: text, added keys (schema/metadata additions), a
+    params number that only moved to another path with the same value (reported as "moved"), and a
+    results `assumptions[P]` entry that left the [T] assumptions list because params P was retagged
+    from T with its value unchanged (reported as "retagged").
     """
     out = []
     removed, added = [], []
+    retagged = {c["path"][:-len(".tag")] for c in diff["params"]
+                if c["path"].endswith(".tag") and c["old"] == "T" and c["new"] not in (None, "T")}
+    value_changed = {c["path"][:-len(".value")] for c in diff["params"] if c["path"].endswith(".value")}
     for section, key in (("params", "path"), ("results", "key")):
         for c in diff[section]:
             path, old, new = c[key], c["old"], c["new"]
@@ -158,7 +164,10 @@ def numeric_changes(diff: dict) -> list[dict]:
                 out.append({"kind": "changed", "section": section, "path": path, "old": old, "new": new})
     for section, path, value in removed:
         match = next((a for a in added if a[0] == section and float(a[2]) == float(value)), None)
-        if section == "params" and match:
+        param = _assumption_param(path) if section == "results" else None
+        if param in retagged and param not in value_changed:
+            out.append({"kind": "retagged", "section": section, "path": path, "value": value})
+        elif section == "params" and match:
             added.remove(match)
             out.append({"kind": "moved", "section": section, "path": path, "to": match[1], "value": value})
         else:
@@ -173,12 +182,22 @@ def numeric_changes(diff: dict) -> list[dict]:
                             "old": c["old"], "new": c["new"]})
     out += [{"kind": "output", "section": "outputs", "path": o["file"], "old": o["old"], "new": o["new"]}
             for o in diff["outputs"]]
-    return [c for c in out if c["kind"] != "moved"] + [c for c in out if c["kind"] == "moved"]
+    return ([c for c in out if c["kind"] not in NON_BLOCKING] + [c for c in out if c["kind"] == "moved"]
+            + [c for c in out if c["kind"] == "retagged"])
+
+
+NON_BLOCKING = ("moved", "retagged")
+
+
+def _assumption_param(key: str) -> str | None:
+    """'geometry.fan_diameter' for the results key 'assumptions[geometry.fan_diameter].value'."""
+    m = re.match(r"^assumptions\[([^\]]+)\]\.value$", key)
+    return m.group(1) if m else None
 
 
 def blocking(changes: list[dict]) -> list[dict]:
-    """Numeric changes that a maintenance revision may not contain (moves are allowed)."""
-    return [c for c in changes if c["kind"] != "moved"]
+    """Numeric changes that a maintenance revision may not contain (moves and retags are allowed)."""
+    return [c for c in changes if c["kind"] not in NON_BLOCKING]
 
 
 def _leaves(x):

@@ -127,3 +127,18 @@ def test_text_change_inside_keyed_list_is_not_numeric():
     d = diff_data(a, b)
     assert [c["key"] for c in d["results"]] == ["assumptions[x].note"]
     assert numeric_changes(d) == []
+
+
+def test_retag_from_t_drops_assumption_without_blocking():
+    """A params value retagged T -> K leaves the results' [T] assumptions list: not a numeric change."""
+    from core.diff import blocking, diff_data, numeric_changes
+    old = {"params": {"g": {"d": {"value": 61.0, "unit": "in", "tag": "T"}}},
+           "results": {"assumptions": [{"path": "g.d", "value": 61.0, "unit": "in"}]}, "bom": {}, "outputs": []}
+    new = {"params": {"g": {"d": {"value": 61.0, "unit": "in", "tag": "K", "source": "#42"}}},
+           "results": {"assumptions": []}, "bom": {}, "outputs": []}
+    changes = numeric_changes(diff_data(old, new))
+    assert [c["kind"] for c in changes] == ["retagged"] and blocking(changes) == []
+    changed = {**new, "params": {"g": {"d": {"value": 62.0, "unit": "in", "tag": "K"}}}}
+    assert {c["kind"] for c in blocking(numeric_changes(diff_data(old, changed)))} == {"changed", "removed"}
+    untouched = {**new, "params": old["params"]}  # tag still T, entry gone: a real removal
+    assert [c["kind"] for c in blocking(numeric_changes(diff_data(old, untouched)))] == ["removed"]
