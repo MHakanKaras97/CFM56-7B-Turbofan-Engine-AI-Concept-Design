@@ -39,5 +39,100 @@ class:
     number: 16
     mass_kg: 0.085
   core_flocking_bird_kg: 1.15
+candidates:
+- area_m2: 1.71577
+  class:
+    large_single:
+      birds:
+      - number: 1
+        mass_kg: 2.75
+      speed_kn: 200
+      to_lower_edge: -0.2132
+      to_upper_edge: 1.273
+    large_flocking:
+      birds: []
+      applies: false
+      speed_kn: 200
+      to_lower_edge: null
+      to_upper_edge: 0.4571
+    medium_flocking:
+      engine_test:
+      - number: 1
+        mass_kg: 1.15
+      - number: 4
+        mass_kg: 0.7
+      integrity:
+      - number: 1
+        mass_kg: 1.15
+      to_lower_edge: -0.0092
+      to_upper_edge: 0.2239
+    small:
+      number: 16
+      mass_kg: 0.085
+    core_flocking_bird_kg: 1.15
+- area_m2: 1.699999
+  class:
+    large_single:
+      birds:
+      - number: 1
+        mass_kg: 2.75
+      speed_kn: 200
+      to_lower_edge: -0.2059
+      to_upper_edge: 1.2941
+    large_flocking:
+      birds: []
+      applies: false
+      speed_kn: 200
+      to_lower_edge: null
+      to_upper_edge: 0.4706
+    medium_flocking:
+      engine_test:
+      - number: 1
+        mass_kg: 1.15
+      - number: 3
+        mass_kg: 0.7
+      integrity:
+      - number: 1
+        mass_kg: 1.15
+      to_lower_edge: -0.2059
+      to_upper_edge: 0.0
+    small:
+      number: 16
+      mass_kg: 0.085
+    core_flocking_bird_kg: 1.15
+envelope:
+  large_single.birds:
+    birds:
+    - number: 1
+      mass_kg: 2.75
+    from_candidate: 0
+    total_mass_kg: 2.75
+  large_flocking.birds:
+    birds: []
+    from_candidate: 0
+    total_mass_kg: 0
+  medium_flocking.engine_test:
+    birds:
+    - number: 1
+      mass_kg: 1.15
+    - number: 4
+      mass_kg: 0.7
+    from_candidate: 0
+    total_mass_kg: 3.95
+  medium_flocking.integrity:
+    birds:
+    - number: 1
+      mass_kg: 1.15
+    from_candidate: 0
+    total_mass_kg: 1.15
+  small:
+    number: 16
+    mass_kg: 0.085
+    from_candidate: 0
+  core_flocking_bird_kg:
+    value: 1.15
+    from_candidate: 0
+envelope_note: 'design class [T]: per test the more demanding of the candidate classes;
+  candidates are the proxy and the band across every edge within 5% of it'
 margin_note: to_lower_edge / to_upper_edge = relative change of the throat area that
   moves it into the next band

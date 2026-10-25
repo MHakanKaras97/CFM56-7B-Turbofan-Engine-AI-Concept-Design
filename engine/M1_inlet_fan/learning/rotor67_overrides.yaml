@@ -1,0 +1,18 @@
+description: Manual overrides of Rotor 67 Table I values, checked against the TP-2879 page image; applied
+  by rotor67_tables.py after the OCR repair passes and logged in rotor67_geometry.yaml (status 'override')
+source: Strazisar et al., NASA TP-2879, 1989, Table I (scan page images)
+tag: KS
+overrides:
+- section: 7
+  K: 1
+  field: BETA
+  value: 51.41
+  evidence: printed p. 25 (PDF p. 29), section 7, K=1 BETA; page image reads 51.41, the OCR layer 51.61
+  verified_by: user (page image check, M1 step 2b/3)
+- section: 9
+  K: 20
+  field: TNPC
+  value: 0.42137
+  evidence: printed p. 27 (PDF p. 31), section 9, K=20 TNPC (max thickness); page image reads 0.42137, OCR
+    0.42157, coordinate reference 0.42139
+  verified_by: user (page image check, M1 step 2b)

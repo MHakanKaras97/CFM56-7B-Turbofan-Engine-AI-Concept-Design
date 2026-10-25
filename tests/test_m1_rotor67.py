@@ -106,11 +106,33 @@ def test_geometry_matches_user_checked_values():
     assert round(section(geo, 13)["te_radius"]["value"], 2) == 23.78
     assert section(geo, 4)["le_metal_angle"]["value"] == 43.42
     t_max = section(geo, 9)["max_thickness"]
-    # The user's check reads 0.42157; the page image and the coordinate-derived reference (0.42139) give
-    # 0.42137, the last-digit pass repairs the OCR 5 to 3. Location K=20 agrees.
-    assert t_max["at_K"] == 20 and abs(t_max["value"] - 0.42157) <= 0.0002
+    # Page image 0.42137 (override; OCR 0.42157, coordinate reference 0.42139). Location K=20 agrees.
+    assert t_max["at_K"] == 20 and t_max["value"] == 0.42137
+    assert section(geo, 7)["le_metal_angle"]["value"] == 51.41  # printed value, OCR 51.61
     s9 = {e["K"]: e for e in geo["value_log"] if e.get("section") == 9 and e["field"] == "TNPC"}
     assert s9[14]["read"] == 0.57605 and s9[14]["value"] == 0.37605  # 0.576 misread of 0.376, not the max
+
+
+def test_overrides_are_applied_and_logged():
+    geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
+    overrides = read_yaml(rotor67_tables.OVERRIDES)["overrides"]
+    logged = {(e["section"], e["K"], e["field"]): e for e in geo["value_log"] if e["status"] == "override"}
+    assert len(logged) == len(overrides) == 2
+    for o in overrides:
+        assert {"value", "evidence", "verified_by"} <= set(o)
+        e = logged[(o["section"], o["K"], o["field"])]
+        assert e["value"] == o["value"] and e["evidence"] == o["evidence"]
+        column = 1 + rotor67_tables.ROW_FIELDS.index(o["field"])
+        assert geo["points"]["sections"][o["section"] - 1]["rows"][o["K"] - 1][column] == o["value"]
+    assert sum(1 for e in geo["value_log"] if (e.get("section"), e["K"], e["field"]) == (9, 20, "TNPC")) == 1
+
+
+def test_angle_sensitivity_is_small(validation):
+    """+-0.22 deg on all metal angles moves the design point PR by under 1 % and eta by under 0.5 point."""
+    sens = validation["angle_sensitivity"]
+    assert len(sens["cases"]) == 6
+    for c in sens["cases"]:
+        assert abs(c["delta_PR"]) / sens["base_PR"] < 0.01 and abs(c["delta_eta"]) < 0.005, c
 
 
 def test_digital_copy_agrees_with_unflagged_ocr():

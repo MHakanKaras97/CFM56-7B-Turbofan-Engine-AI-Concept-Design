@@ -12,7 +12,7 @@ checks:
   deviation_type: relative
   result: pass
 - item: design point PR
-  model: 1.6014
+  model: 1.6015
   measured: 1.63
   deviation: -0.0175
   limit: 0.02
@@ -28,9 +28,9 @@ checks:
   expected_failure: near choke (99% of 34.96 kg/s), meanline limit; the design point
     is the acceptance criterion
 - item: near peak efficiency eta
-  model: 0.8999
+  model: 0.8998
   measured: 0.928
-  deviation: -0.0281
+  deviation: -0.0282
   limit: 0.02
   deviation_type: absolute
   result: fail
@@ -88,8 +88,8 @@ radial_profile_near_peak:
   - streamline: 6
     r2_cm: 17.1526
     measured_Pt_ratio: 1.6202
-    model_Pt_ratio: 1.6359
-    difference: 0.0157
+    model_Pt_ratio: 1.6361
+    difference: 0.0159
     measured_flagged: false
   - streamline: 7
     r2_cm: 15.8902
@@ -112,12 +112,50 @@ radial_profile_near_peak:
   rms_difference_unflagged: 0.1699
   note: measured Pt/Pref with Pt1 = Pref; rows flagged in rotor67_survey.yaml excluded
     from the rms
+angle_sensitivity:
+  point: design
+  base_PR: 1.6015
+  base_eta: 0.9032
+  perturbation_deg: 0.22
+  cases:
+  - angles: LE
+    delta_deg: 0.22
+    delta_PR: -0.001
+    delta_eta: 0.0007
+    delta_tip_M1rel: 0.0
+  - angles: LE
+    delta_deg: -0.22
+    delta_PR: 0.001
+    delta_eta: -0.0007
+    delta_tip_M1rel: 0.0
+  - angles: TE
+    delta_deg: 0.22
+    delta_PR: -0.0066
+    delta_eta: 0.0002
+    delta_tip_M1rel: 0.0
+  - angles: TE
+    delta_deg: -0.22
+    delta_PR: 0.0064
+    delta_eta: -0.0002
+    delta_tip_M1rel: 0.0
+  - angles: LE and TE
+    delta_deg: 0.22
+    delta_PR: -0.0077
+    delta_eta: 0.0009
+    delta_tip_M1rel: 0.0
+  - angles: LE and TE
+    delta_deg: -0.22
+    delta_PR: 0.0073
+    delta_eta: -0.0009
+    delta_tip_M1rel: 0.0
+  note: '[H] all sections shifted together; tag of the perturbation size [T] (largest
+    residual last-digit OCR error in the angle columns)'
 design_point:
   mass_flow: 33.25
   tip_M1rel: 1.4054189047275236
-  Tt_ratio: 1.159434815995002
-  Pt_ratio: 1.6014447210248546
-  efficiency: 0.9032889319272557
+  Tt_ratio: 1.1594448934647508
+  Pt_ratio: 1.6014550731881223
+  efficiency: 0.9032450926334691
   streamlines:
   - name: streamline 1
     r2_cm: 23.2258
@@ -204,18 +242,18 @@ design_point:
   - name: streamline 6
     r2_cm: 17.1526
     M1rel: 0.9857
-    incidence_deg: 6.92
-    deviation_deg: 3.68
+    incidence_deg: 7.07
+    deviation_deg: 3.65
     beta1_deg: 57.78
-    beta2_deg: 35.5
-    diffusion_factor: 0.4634
-    D_eq: 1.8686
-    loss_profile: 0.0337
-    loss_shock: 0.03205
-    M_passage: 1.2713
-    Pt_ratio: 1.6671
-    Tt_ratio: 1.1671
-    efficiency: 0.9408
+    beta2_deg: 35.47
+    diffusion_factor: 0.4636
+    D_eq: 1.869
+    loss_profile: 0.03369
+    loss_shock: 0.0326
+    M_passage: 1.2731
+    Pt_ratio: 1.6672
+    Tt_ratio: 1.1672
+    efficiency: 0.9403
     notes: []
   - name: streamline 7
     r2_cm: 15.8902
@@ -268,9 +306,9 @@ design_point:
 near_peak_efficiency_point:
   mass_flow: 34.575
   tip_M1rel: 1.4214476695068468
-  Tt_ratio: 1.1451622598964277
-  Pt_ratio: 1.5367949939070544
-  efficiency: 0.8998596735836912
+  Tt_ratio: 1.1451732845562674
+  Pt_ratio: 1.5368111828074527
+  efficiency: 0.8998147773347123
   streamlines:
   - name: streamline 1
     r2_cm: 23.2258
@@ -359,18 +397,18 @@ near_peak_efficiency_point:
   - name: streamline 6
     r2_cm: 17.1526
     M1rel: 1.0051
-    incidence_deg: 5.47
-    deviation_deg: 3.68
+    incidence_deg: 5.62
+    deviation_deg: 3.65
     beta1_deg: 56.34
-    beta2_deg: 35.5
-    diffusion_factor: 0.4302
-    D_eq: 1.7901
-    loss_profile: 0.03147
-    loss_shock: 0.02717
-    M_passage: 1.2497
-    Pt_ratio: 1.6359
-    Tt_ratio: 1.16
-    efficiency: 0.9438
+    beta2_deg: 35.47
+    diffusion_factor: 0.4304
+    D_eq: 1.7905
+    loss_profile: 0.03146
+    loss_shock: 0.02768
+    M_passage: 1.2515
+    Pt_ratio: 1.6361
+    Tt_ratio: 1.1601
+    efficiency: 0.9434
     notes: []
   - name: streamline 7
     r2_cm: 15.8902

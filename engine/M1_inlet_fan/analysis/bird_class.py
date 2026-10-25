@@ -6,7 +6,9 @@ Change 8 plus Special Condition No. 1 "Bird strikes" (EASA TCDS E.004) [K]; M1 d
 The bird masses and numbers depend on the engine inlet throat area, an installation limitation set by
 the applicant. The nacelle is out of scope, so the fan face area from the ICD stands in for it [T].
 The output lists how far the proxy sits from the edges of its bands, i.e. how much the real throat area
-may differ before the class changes.
+may differ before the class changes. Every band edge within PROXY_UNCERTAINTY of the proxy gives a second
+candidate class (the band just across that edge); the design class is the envelope: per test type the
+more demanding requirement of the candidates (larger total bird mass, then more birds).
 
 Run: python -m engine.M1_inlet_fan.analysis.bird_class  (writes analysis/bird_class.yaml).
 """
@@ -20,6 +22,10 @@ from core.util import read_yaml, write_yaml
 M1 = Path(__file__).resolve().parents[1]
 TABLES = M1 / "rules" / "cs_e_800_birds.yaml"
 OUT = M1 / "analysis" / "bird_class.yaml"
+
+PROXY_UNCERTAINTY = 0.05  # [T] relative uncertainty of the fan face area as throat area proxy
+TESTS = (("large_single", "birds"), ("large_flocking", "birds"), ("medium_flocking", "engine_test"),
+         ("medium_flocking", "integrity"))
 
 
 def band(bands: list[dict], area: float) -> dict:
@@ -55,6 +61,36 @@ def classify(area: float, tables: dict) -> dict:
     }
 
 
+def candidate_areas(area: float, tables: dict, uncertainty: float = PROXY_UNCERTAINTY) -> list[float]:
+    """The proxy area plus, for every band edge within the uncertainty, an area just across that edge
+    (bands are lower <= A < upper, so just below an edge is the edge minus a small step)."""
+    edges = {b["lower"] for name in ("large_single", "large_flocking", "medium_flocking")
+             for b in tables[name]["bands"] if b["lower"] > 0}
+    out = [area]
+    for e in sorted(edges):
+        if abs(e / area - 1) <= uncertainty:
+            out.append(round(e - 1e-6, 6) if e <= area else e)
+    return out
+
+
+def demand(birds_: list[dict]) -> tuple[float, int]:
+    return (round(sum(b["number"] * b["mass_kg"] for b in birds_), 6), sum(b["number"] for b in birds_))
+
+
+def envelope(classes: list[dict]) -> dict:
+    """Per test type the requirement of the most demanding candidate class, with the candidate index."""
+    out = {}
+    for test, key in TESTS:
+        i = max(range(len(classes)), key=lambda j: demand(classes[j][test][key]))
+        out[f"{test}.{key}"] = {"birds": classes[i][test][key], "from_candidate": i,
+                                "total_mass_kg": demand(classes[i][test][key])[0]}
+    i = max(range(len(classes)), key=lambda j: classes[j]["small"]["number"])
+    out["small"] = {**classes[i]["small"], "from_candidate": i}
+    i = max(range(len(classes)), key=lambda j: classes[j]["core_flocking_bird_kg"] or 0)
+    out["core_flocking_bird_kg"] = {"value": classes[i]["core_flocking_bird_kg"], "from_candidate": i}
+    return out
+
+
 def run() -> dict:
     icd = read_icd("M1 bird class")
     proxy = icd["fan_face_area"]
@@ -69,6 +105,10 @@ def run() -> dict:
                               "note": "proxy: fan face area from the ICD (M0 active revision); the real throat "
                                       "area is a nacelle limitation, out of scope"},
         "class": classify(proxy["value"], tables),
+        "candidates": [{"area_m2": a, "class": classify(a, tables)} for a in candidate_areas(proxy["value"], tables)],
+        "envelope": envelope([classify(a, tables) for a in candidate_areas(proxy["value"], tables)]),
+        "envelope_note": f"design class [T]: per test the more demanding of the candidate classes; candidates are "
+                         f"the proxy and the band across every edge within {PROXY_UNCERTAINTY:.0%} of it",
         "margin_note": "to_lower_edge / to_upper_edge = relative change of the throat area that moves it into "
                        "the next band",
     }
@@ -81,6 +121,9 @@ def main() -> None:
     print(f"A = {result['inlet_throat_area']['value']} m2 [T]: large {c['large_single']['birds']}, "
           f"flocking applies {c['large_flocking']['applies']}, medium {c['medium_flocking']['engine_test']} "
           f"(lower edge {c['medium_flocking']['to_lower_edge']}), small {c['small']['number']}")
+    print("candidate areas:", [x["area_m2"] for x in result["candidates"]])
+    for test, req in result["envelope"].items():
+        print(f"envelope {test}: {req}")
 
 
 if __name__ == "__main__":

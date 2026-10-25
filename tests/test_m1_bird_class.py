@@ -41,3 +41,23 @@ def test_m1_fan_class():
     assert not c["large_flocking"]["applies"]
     assert c["medium_flocking"]["engine_test"] == [{"number": 1, "mass_kg": 1.15}, {"number": 4, "mass_kg": 0.70}]
     assert c["small"]["number"] == 16
+
+
+def test_candidates_and_envelope():
+    """The proxy sits 0.9 % above the 1.70 m2 medium band edge: both bands are candidates and the design
+    class takes the more demanding one per test."""
+    result = bird_class.run()
+    assert [c["area_m2"] for c in result["candidates"]] == [1.71577, 1.699999]
+    below = result["candidates"][1]["class"]["medium_flocking"]["engine_test"]
+    assert below == [{"number": 1, "mass_kg": 1.15}, {"number": 3, "mass_kg": 0.70}]
+    env = result["envelope"]
+    assert env["medium_flocking.engine_test"]["birds"] == [{"number": 1, "mass_kg": 1.15}, {"number": 4, "mass_kg": 0.70}]
+    assert env["large_single.birds"]["birds"] == [{"number": 1, "mass_kg": 2.75}]
+    assert env["small"]["number"] == 16 and env["core_flocking_bird_kg"]["value"] == 1.15
+
+
+def test_envelope_takes_larger_requirement_per_test():
+    t = tables()
+    env = bird_class.envelope([bird_class.classify(a, t) for a in (1.36, 1.34)])
+    assert env["large_single.birds"]["birds"] == [{"number": 1, "mass_kg": 2.75}]  # from the 1.36 candidate
+    assert env["medium_flocking.engine_test"]["from_candidate"] == 0

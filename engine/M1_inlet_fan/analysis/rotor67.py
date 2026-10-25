@@ -37,6 +37,8 @@ CM2 = 1e-4
 
 # Acceptance limits [T], rules/analyses.md A-1
 LIMITS = {"tip_M1rel_rel": 0.02, "pr_rel": 0.02, "eta_abs": 0.02}
+# Blade angle perturbation [T]: the largest last-digit OCR error left in the angle columns (status.md, M1 step 2b)
+ANGLE_PERTURBATION = 0.22  # deg
 
 
 def section_values(geometry: dict, key: str) -> list[tuple[float, float]]:
@@ -132,6 +134,37 @@ def endwall_blockage(ref: dict) -> dict:
     return out
 
 
+def perturbed(geometry: dict, keys: tuple[str, ...], delta: float) -> dict:
+    """Copy of the geometry with every section's `keys` metal angles shifted by delta (deg)."""
+    out = {**geometry, "sections": [dict(s) for s in geometry["sections"]]}
+    for s in out["sections"]:
+        for key in keys:
+            if s[key]["value"] is not None:
+                s[key] = {**s[key], "value": s[key]["value"] + delta}
+    return out
+
+
+def angle_sensitivity(ref: dict, geometry: dict | None = None, delta: float = ANGLE_PERTURBATION) -> dict:
+    """Design-point PR and efficiency change when all LE, all TE, or all LE and TE metal angles are shifted
+    by +-delta at every section (same sign at every section: an upper bound of a random OCR error)."""
+    geo = geometry or read_yaml(GEOMETRY)
+    mass_flow = ref["design"]["mass_flow"]["value"]
+    base = run(mass_flow, ref, geo)
+    cases = []
+    for name, keys in (("LE", ("le_metal_angle",)), ("TE", ("te_metal_angle",)),
+                       ("LE and TE", ("le_metal_angle", "te_metal_angle"))):
+        for sign in (1, -1):
+            r = run(mass_flow, ref, perturbed(geo, keys, sign * delta))
+            cases.append({"angles": name, "delta_deg": sign * delta,
+                          "delta_PR": round(r["Pt_ratio"] - base["Pt_ratio"], 4),
+                          "delta_eta": round(r["efficiency"] - base["efficiency"], 4),
+                          "delta_tip_M1rel": round(r["tip_M1rel"] - base["tip_M1rel"], 4)})
+    return {"point": "design", "base_PR": round(base["Pt_ratio"], 4), "base_eta": round(base["efficiency"], 4),
+            "perturbation_deg": delta, "cases": cases,
+            "note": "[H] all sections shifted together; tag of the perturbation size [T] (largest residual "
+                    "last-digit OCR error in the angle columns)"}
+
+
 def compare(ref: dict, survey: dict) -> dict:
     """Design and near-peak-efficiency points against the measured values; radial PR profile against
     Table III(b) station 2 (rows whose survey flags concern the Pt/Tt pair are reported, not compared)."""
@@ -177,6 +210,7 @@ def compare(ref: dict, survey: dict) -> dict:
         "endwall_blockage": endwall_blockage(ref),
         "radial_profile_near_peak": {"rows": profile, "rms_difference_unflagged": round(rms, 4),
                                      "note": "measured Pt/Pref with Pt1 = Pref; rows flagged in rotor67_survey.yaml excluded from the rms"},
+        "angle_sensitivity": angle_sensitivity(ref),
         "design_point": design_run,
         "near_peak_efficiency_point": peak_run,
     }
@@ -189,6 +223,8 @@ def main() -> None:
         expected = " (expected: " + c["expected_failure"] + ")" if "expected_failure" in c else ""
         print(f"{c['result']:4} {c['item']}: model {c['model']} measured {c['measured']} deviation {c['deviation']}{expected}")
     print("radial PR rms (unflagged rows):", result["radial_profile_near_peak"]["rms_difference_unflagged"])
+    for c in result["angle_sensitivity"]["cases"]:
+        print(f"{c['angles']:9} {c['delta_deg']:+.2f} deg: dPR {c['delta_PR']:+.4f} deta {c['delta_eta']:+.4f}")
 
 
 if __name__ == "__main__":

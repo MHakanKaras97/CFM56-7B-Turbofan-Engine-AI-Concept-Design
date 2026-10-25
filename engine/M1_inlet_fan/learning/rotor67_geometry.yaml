@@ -19,7 +19,8 @@ provenance:
     OCR values [KS]
   TNPC BETA BETA1 BETA2: TP-2879 OCR, checked against values computed from the digital
     coordinates; off values repaired by OCR digit substitution (status 'repaired',
-    'repaired_last_digit') [KS]
+    'repaired_last_digit') [KS]; manual overrides from rotor67_overrides.yaml (status
+    'override', page-image evidence) [KS]
   flowpath: TP-2879 OCR; not-smooth values repaired by OCR digit substitution against
     the column fit [KS]
   derived_tolerance:
@@ -60,8 +61,9 @@ digital_vs_ocr:
     differ only by 3/5, 4/6, 8/3 confusions; other = any remaining difference
 value_status_counts:
   table_I repaired: 154
-  table_I repaired_last_digit: 103
+  table_I repaired_last_digit: 102
   table_I unresolved: 6
+  table_I override: 2
   flowpath repaired: 4
   flowpath unresolved: 1
 sections:
@@ -416,7 +418,7 @@ sections:
     flagged: false
     note: radial coordinate of the trailing edge circle centre
   le_metal_angle:
-    value: 51.61
+    value: 51.41
     flagged: false
     unit: deg
     tag: KS
@@ -2771,7 +2773,7 @@ points:
       - -0.01805
       - -0.02397
       - 0.06251
-      - 51.61
+      - 51.41
       - 55.68
       - 46.16
     - - 2
@@ -6716,6 +6718,17 @@ value_log:
   value: 40.06
   reference: 40.056
   status: repaired_last_digit
+- section: 7
+  K: 1
+  field: BETA
+  read: 51.61
+  value: 51.41
+  reference: 51.515
+  status: override
+  replaces: as_read
+  evidence: printed p. 25 (PDF p. 29), section 7, K=1 BETA; page image reads 51.41,
+    the OCR layer 51.61
+  verified_by: user (page image check, M1 step 2b/3)
 - section: 8
   K: 9
   field: BETA2
@@ -6829,13 +6842,6 @@ value_log:
   reference: 49.845
   status: repaired_last_digit
 - section: 9
-  K: 20
-  field: TNPC
-  read: 0.42157
-  value: 0.42137
-  reference: 0.421388
-  status: repaired_last_digit
-- section: 9
   K: 21
   field: BETA2
   read: 49.75
@@ -6891,6 +6897,17 @@ value_log:
   value: 43.65
   reference: 43.607
   status: repaired
+- section: 9
+  K: 20
+  field: TNPC
+  read: 0.42157
+  value: 0.42137
+  reference: 0.421388
+  status: override
+  replaces: repaired_last_digit
+  evidence: printed p. 27 (PDF p. 31), section 9, K=20 TNPC (max thickness); page
+    image reads 0.42137, OCR 0.42157, coordinate reference 0.42139
+  verified_by: user (page image check, M1 step 2b)
 - section: 10
   K: 1
   field: TNPC

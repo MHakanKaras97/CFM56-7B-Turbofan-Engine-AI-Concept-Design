@@ -11,6 +11,8 @@ The bird mass and number depend on the engine inlet throat area A, which the app
 
 M1 bird class (`analysis/bird_class.py` -> `analysis/bird_class.yaml`; tables in `rules/cs_e_800_birds.yaml` [K]): with A = 1.716 m2 [T], large single bird 2.75 kg; large flocking bird not required (A < 2.50 m2); medium birds 1 x 1.15 + 4 x 0.70 kg (integrity 1 x 1.15 kg); small birds 16 x 85 g; core flocking bird 1.15 kg. The proxy is 0.9 % above the 1.70 m2 medium band edge: a throat area that much smaller drops the medium set to 1 x 1.15 + 3 x 0.70 kg. The large-bird class holds for A from 1.35 to 3.90 m2.
 
+Design class = envelope of the candidate classes (M0 decision, M1 step 3): the area proxy is [T] and only 0.9 % above the 1.70 m2 band edge, so the classes on both sides of every band edge within 5 % of the proxy [T] are candidates (here A = 1.716 and A just below 1.70 m2). Per test type the more demanding requirement is used (larger total bird mass, then more birds). Result (`bird_class.yaml` `envelope`): large single 1 x 2.75 kg; large flocking none; medium engine test 1 x 1.15 + 4 x 0.70 kg; medium integrity 1 x 1.15 kg; small 16 x 85 g; core flocking 1.15 kg. Every item comes from the upper candidate; the lower one only drops one 0.70 kg medium bird. If the nacelle throat area is defined later, rerun `bird_class.py`; the envelope stays valid while the area stays within the candidate bands.
+
 | Test | Engine condition | Bird | Speed | Pass criterion |
 |---|---|---|---|---|
 | (b) Single large bird | >= 100 % take-off thrust; account for hot-day sea level take-off | min. 1.85 kg (A < 1.35 m2), 2.75 kg (1.35 <= A < 3.90), 3.65 kg (A >= 3.90); aimed at the most critical exposed location of the first-stage rotor blades | 200 kn (aeroplane) | No Hazardous Engine Effect; no power lever movement for 15 s |
@@ -55,4 +57,4 @@ Earlier summary (kept for context): Wang 2024 (p. 2) [KS] recounts the FAA FAR 3
 ## M1 rules
 - R-BS.1 Bird strike is analysed on the rotating blade at take-off speed, with impact positions at least at root, mid span and tip [G].
 - R-BS.2 Use SPH or ALE with a Gruneisen EOS and a Johnson-Cook Ti-6Al-4V model; validate the bird on a rigid-plate case first [KS methods].
-- R-BS.3 Bird masses, speeds and pass criteria are those of CS-E 800 above [K]; the size class comes from `analysis/bird_class.py` with the fan face area as throat area proxy [T] until the nacelle defines it.
+- R-BS.3 Bird masses, speeds and pass criteria are those of CS-E 800 above [K]; the size class comes from `analysis/bird_class.py` with the fan face area as throat area proxy [T] until the nacelle defines it. Design to the `envelope` (per test the more demanding candidate class), not to the proxy class alone.

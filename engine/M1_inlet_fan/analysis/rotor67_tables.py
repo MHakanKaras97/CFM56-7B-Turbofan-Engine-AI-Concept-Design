@@ -17,6 +17,8 @@ Table I geometry (rotor67_geometry.yaml) is then built as follows:
   with the fewest substitutions that lands within the tolerance is used, marked "repaired". Otherwise the
   value stays as read and flagged. A second pass replaces a last-digit misread when a one-digit
   substitution is much closer to the reference ("repaired_last_digit").
+- Manual overrides (learning/rotor67_overrides.yaml: value, page-image evidence, verified_by) are applied
+  last and logged with status "override".
 - Table II (flowpath) has no digital copy: flagged values get the same substitutions against the robust
   smooth-column fit; repaired values are marked.
 
@@ -41,6 +43,7 @@ PDF = M1 / "learning" / "sources" / "aero" / "strazisar_1989_nasa_tp2879_rotor67
 GEOMETRY_OUT = M1 / "learning" / "rotor67_geometry.yaml"
 SURVEY_OUT = M1 / "learning" / "rotor67_survey.yaml"
 REFERENCE = M1 / "learning" / "rotor67_reference.yaml"
+OVERRIDES = M1 / "learning" / "rotor67_overrides.yaml"
 
 SECTION_PAGES = range(23, 37)  # PDF pages of Table I, one blade section per page, hub (1) to casing (14)
 FLOWPATH_PAGE = 37  # Table II
@@ -534,6 +537,24 @@ def merge_section(n: int, ocr: dict, digital_rows: list[dict], digital_edge: dic
     return {"edge": digital_edge, "rows": rows}, log, flags
 
 
+def apply_overrides(n: int, merged: dict, ocr: dict, log: list[dict], overrides: list[dict]) -> list[dict]:
+    """Set the overridden values of section n in `merged` (after the OCR passes). Returns the section log
+    with each overridden point's earlier entry replaced by an 'override' entry (earlier status kept)."""
+    log = list(log)
+    ref = derived_columns(merged["rows"])
+    for o in (o for o in overrides if o["section"] == n):
+        k, f = o["K"], o["field"]
+        d = ROW_DECIMALS[ROW_FIELDS.index(f)]
+        earlier = next((e for e in log if e["K"] == k and e["field"] == f), None)
+        log = [e for e in log if e is not earlier]
+        log.append({"section": n, "K": k, "field": f, "read": ocr["rows"][k - 1][f], "value": o["value"],
+                    "reference": round(ref[f][k - 1], d + 1), "status": "override",
+                    "replaces": earlier["status"] if earlier else "as_read",
+                    "evidence": o["evidence"], "verified_by": o["verified_by"]})
+        merged["rows"][k - 1][f] = o["value"]
+    return log
+
+
 def flowpath_repairs(points: list[dict]) -> tuple[list[dict], list[dict]]:
     """Table II values that are not smooth get OCR substitutions against the robust column fit. One
     value at a time, the one furthest off its fit first, then the column is re-checked, so a misread
@@ -628,6 +649,7 @@ def check_survey(rows: list[dict], streamline_radii: list[float]) -> list[dict]:
 
 def extract(pdf: Path = PDF, digital: Path = DIGITAL) -> tuple[dict, dict]:
     digital_rows, digital_edges = read_digital(digital)
+    overrides = read_yaml(OVERRIDES)["overrides"]
     ocr, ocr_flags, layout_repairs = [], [], []
     for n, page in enumerate(SECTION_PAGES, 1):
         sec = parse_section(page_text(page, pdf))
@@ -637,6 +659,9 @@ def extract(pdf: Path = PDF, digital: Path = DIGITAL) -> tuple[dict, dict]:
     sections, points, value_log, flags_out = [], [], [], []
     for n, (page, sec) in enumerate(zip(SECTION_PAGES, ocr), 1):
         merged, log, flags = merge_section(n, sec, digital_rows[n], digital_edges[n])
+        log = apply_overrides(n, merged, sec, log, overrides)
+        flags = [f for f in flags if not any(o["section"] == n and o["K"] == f["K"] and o["field"] == f["field"]
+                                             for o in overrides)]
         sections.append({"section": n, "page": page - PRINTED_OFFSET, **section_summary(merged, flags)})
         points.append({"section": n, "rows": [[k] + [row[f] for f in ROW_FIELDS] for k, row in enumerate(merged["rows"], 1)]})
         value_log += log
@@ -661,7 +686,8 @@ def extract(pdf: Path = PDF, digital: Path = DIGITAL) -> tuple[dict, dict]:
             "Z R THSP1 THSP2 edge_circles": "digital copy, verified against the unflagged TP-2879 OCR values [KS]",
             "TNPC BETA BETA1 BETA2": "TP-2879 OCR, checked against values computed from the digital coordinates; "
                                      "off values repaired by OCR digit substitution (status 'repaired', "
-                                     "'repaired_last_digit') [KS]",
+                                     "'repaired_last_digit') [KS]; manual overrides from "
+                                     "rotor67_overrides.yaml (status 'override', page-image evidence) [KS]",
             "flowpath": "TP-2879 OCR; not-smooth values repaired by OCR digit substitution against the column fit [KS]",
             "derived_tolerance": DERIVED_TOL,
             "last_digit_pass": {"floor": FINE_FLOOR, "ceiling": FINE_CEILING, "ratio": FINE_RATIO},
@@ -699,6 +725,9 @@ def main() -> None:
     print(f"{len(geometry['sections'])} sections, {len(geometry['flowpath']['points'])} flowpath points, "
           f"{len(geometry['flags'])} geometry flags, {len(survey['station_2'])} survey rows, "
           f"{len(survey['flags'])} survey flags")
+    for e in (e for e in geometry["value_log"] if e["status"] == "override"):
+        print(f"override section {e['section']} K={e['K']} {e['field']}: {e['read']} -> {e['value']} "
+              f"(was {e['replaces']}; {e['verified_by']})")
 
 
 if __name__ == "__main__":
