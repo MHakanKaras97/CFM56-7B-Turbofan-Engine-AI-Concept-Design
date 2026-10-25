@@ -83,3 +83,33 @@ def test_howell_endwall_loss_textbook_form():
     from tools.meanline import howell_endwall_loss
     # no turning: C_L = 0, only annulus drag 0.020 s/h; beta1 = beta2 = 0 -> sigma * C_D
     assert howell_endwall_loss(0.0, 0.0, 1.5, 0.05, 0.10) == pytest.approx(1.5 * 0.020 * 0.5)
+
+
+def test_radial_equilibrium_uniform_flow_keeps_uniform_velocity():
+    """Uniform h0 and s and no swirl (omega = 0, no turning): equilibrium needs a uniform Vm, so each tube's
+    exit area is mass / (rho Vm) with the same Vm, whatever the initial split."""
+    from dataclasses import replace
+    from tools.meanline import area_centre_radii, solve_rotor_re
+    base = tube(kappa1=0.0, kappa2=0.0, A1=0.02, A2=0.02)
+    tubes = [replace(base, name=f"t{i}", r1=r, r2=r, A2=a) for i, (r, a) in enumerate(((0.15, 0.025), (0.25, 0.015)))]
+    sol = solve_rotor_re(tubes, 8.0, 0.0, 288.15, 101325.0, exit_hub=0.1, exit_tip=0.3)
+    assert sol.converged
+    assert sol.results[0].Vm2 == pytest.approx(sol.results[1].Vm2, rel=1e-3)  # within the area tolerance
+    assert sol.tubes[0].A2 == pytest.approx(sol.tubes[1].A2, rel=1e-3)
+    assert sum(t.A2 for t in sol.tubes) == pytest.approx(0.04)
+    assert area_centre_radii([1.0, 1.0], 0.0, 1.0) == pytest.approx([0.5, math.sqrt(0.75)])
+
+
+def test_radial_equilibrium_balances_swirl_gradient():
+    """Rotor tubes at two radii: the converged exit state satisfies the discrete equilibrium relation."""
+    from dataclasses import replace
+    from tools.meanline import exit_state, solve_rotor_re
+    tubes = [replace(tube(), name="hub", r1=0.15, r2=0.16, A1=0.02, A2=0.017),
+             replace(tube(), name="tip", r1=0.25, r2=0.25, A1=0.02, A2=0.017)]
+    sol = solve_rotor_re(tubes, 7.0, 1500.0, 288.15, 101325.0, exit_hub=0.12, exit_tip=0.29)
+    assert sol.converged
+    (h, t), (a, b) = sol.results, [exit_state(r, 288.15, 101325.0) for r in sol.results]
+    r_h, r_t = sol.tubes[0].r2, sol.tubes[1].r2
+    lhs = (t.Vm2 ** 2 - h.Vm2 ** 2) / 2
+    rhs = (b["h0"] - a["h0"]) - (a["T"] + b["T"]) / 2 * (b["s"] - a["s"]) - (h.Vt2 + t.Vt2) / (r_h + r_t) * (r_t * t.Vt2 - r_h * h.Vt2)
+    assert lhs == pytest.approx(rhs, rel=1e-3, abs=1.0)

@@ -156,7 +156,7 @@ def mismatched(tmp_path) -> Path:
 
 
 def test_read_icd_refuses_mismatched_source(mismatched):
-    with pytest.raises(BudgetError, match="M3 budget check: icd.yaml is from rev007 but the active M0 revision is rev005"):
+    with pytest.raises(BudgetError, match=r"M3 budget check: icd.yaml is from rev\d{3} but the active M0 revision is rev005"):
         check_budget("M3", {"eta_hpc": 0.85}, root=mismatched)
     with pytest.raises(BudgetError, match="M1 agent"):
         read_icd("M1 agent", mismatched)

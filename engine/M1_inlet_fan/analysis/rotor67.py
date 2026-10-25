@@ -30,7 +30,7 @@ import math
 from pathlib import Path
 
 from core.util import dump_yaml, read_yaml, write_yaml
-from tools.meanline import Endwall, Gas, Tube, mass_averaged, solve_rotor
+from tools.meanline import Endwall, Gas, Tube, mass_averaged, solve_rotor, solve_rotor_re
 
 M1 = Path(__file__).resolve().parents[1]
 REFERENCE = M1 / "learning" / "rotor67_reference.yaml"
@@ -47,7 +47,8 @@ CM2 = 1e-4
 LIMITS = {"tip_M1rel_rel": 0.02, "pr_rel": 0.02, "eta_abs": 0.02}
 # Blade angle perturbation [T]: the largest last-digit OCR error left in the angle columns (status.md, M1 step 2b)
 ANGLE_PERTURBATION = 0.22  # deg
-ENDWALL_LOSSES = False  # endwall + tip clearance loss terms of tools/meanline.py; off until radial equilibrium
+ENDWALL_LOSSES = False  # endwall + tip clearance loss terms of tools/meanline.py; off until A-1 passes with them
+RADIAL_EQUILIBRIUM = False  # simple radial equilibrium (solve_rotor_re); off until A-1 passes with the losses on
 MM = 0.001
 
 
@@ -114,13 +115,22 @@ def tip_relative_mach(ref: dict, results, gas: Gas) -> float:
 
 
 def run(mass_flow: float, reference: dict | None = None, geometry: dict | None = None, gas: Gas = Gas(),
-        losses: bool = ENDWALL_LOSSES) -> dict:
+        losses: bool = ENDWALL_LOSSES, equilibrium: bool = RADIAL_EQUILIBRIUM) -> dict:
     ref = reference or read_yaml(REFERENCE)
     omega = ref["design"]["rotational_speed"]["value"] * 2 * math.pi / 60
     tubes = build_tubes(ref, geometry, losses)
-    results = solve_rotor(tubes, mass_flow, omega, T_REF, P_REF, gas)
+    extra = {}
+    if equilibrium:
+        st2 = ref["survey_stations"]["station_2_downstream"]
+        sol = solve_rotor_re(tubes, mass_flow, omega, T_REF, P_REF, st2["hub_radius"]["value"] * CM,
+                             st2["shroud_radius"]["value"] * CM, gas)
+        tubes, results = sol.tubes, sol.results
+        extra = {"equilibrium": {"converged": sol.converged, "iterations": sol.iterations,
+                                 "residual": float(f"{sol.residual:.2e}")}}
+    else:
+        results = solve_rotor(tubes, mass_flow, omega, T_REF, P_REF, gas)
     avg = mass_averaged(results, gas)
-    return {"mass_flow": mass_flow, "tip_M1rel": tip_relative_mach(ref, results, gas), **avg,
+    return {"mass_flow": mass_flow, "tip_M1rel": tip_relative_mach(ref, results, gas), **avg, **extra,
             "streamlines": [{
                 "name": r.name, "r2_cm": round(t.r2 / CM, 4), "M1rel": round(r.M1rel, 4),
                 "incidence_deg": round(math.degrees(r.incidence), 2), "deviation_deg": round(math.degrees(r.deviation), 2),
@@ -207,6 +217,38 @@ def losses_on_diagnostic(ref: dict, survey: dict) -> dict:
     return out
 
 
+def radial_equilibrium_diagnostic(ref: dict, survey: dict) -> dict:
+    """A-1 with simple radial equilibrium (M1 step 4): design point PR and tip M1rel against the A-1 limits
+    for radial equilibrium with and without the endwall + tip clearance losses (and each loss alone), and
+    the near peak efficiency radial PR profile against Table III(b)."""
+    design, peak = ref["design"], ref["measured"]["near_peak_efficiency"]
+    m_design, m_peak = design["mass_flow"]["value"], peak["mass_flow_table_III"]["value"]
+    pr_ref, mrel_ref = design["pressure_ratio"]["value"], design["tip_relative_mach_inlet"]["value"]
+    cases = []
+    for name, kw in (("no RE, no losses (acceptance run)", {"losses": False, "equilibrium": False}),
+                     ("no RE, losses on", {"losses": True, "equilibrium": False}),
+                     ("RE, no losses", {"losses": False, "equilibrium": True}),
+                     ("RE, losses on", {"losses": True, "equilibrium": True})):
+        r = run(m_design, ref, **kw)
+        dev_pr, dev_m = r["Pt_ratio"] / pr_ref - 1, r["tip_M1rel"] / mrel_ref - 1
+        cases.append({"case": name, "PR": round(r["Pt_ratio"], 4), "PR_deviation": round(dev_pr, 4),
+                      "tip_M1rel_deviation": round(dev_m, 4), "eta": round(r["efficiency"], 4),
+                      "exit_choked": [s["name"] for s in r["streamlines"] if s["notes"]],
+                      "converged": r.get("equilibrium", {}).get("converged"),
+                      "A1_design_point": "pass" if abs(dev_pr) <= LIMITS["pr_rel"] and abs(dev_m) <= LIMITS["tip_M1rel_rel"]
+                      else "fail"})
+    off = run(m_peak, ref, losses=False, equilibrium=False)
+    on = run(m_peak, ref, losses=True, equilibrium=True)
+    profile = [{"streamline": j, "measured": row["Pt_ratio"], "no_RE_no_losses": a["Pt_ratio"], "RE_losses_on": b["Pt_ratio"],
+                "r2_cm_RE": b["r2_cm"], "exit_choked_RE": bool(b["notes"])}
+               for j, (row, a, b) in enumerate(zip(survey["station_2"], off["streamlines"], on["streamlines"]), 1)]
+    return {"note": "[H] simple radial equilibrium at rotor inlet (uniform) and exit, streamline curvature "
+                    "neglected; losses are the [G] Howell endwall and Lakshminarayana tip clearance terms. Not tuned",
+            "design_point": cases, "near_peak_radial_profile": profile,
+            "near_peak_RE_losses_on": {"PR": round(on["Pt_ratio"], 4), "eta": round(on["efficiency"], 4),
+                                       "converged": on["equilibrium"]["converged"]}}
+
+
 def diffusion_factor_reference(ref: dict, geometry: dict | None = None) -> dict:
     """Lieblein DF per design streamline at the design point (acceptance configuration), with its span
     fraction at the rotor inlet, for the M1 fan loading limits."""
@@ -274,6 +316,7 @@ def compare(ref: dict, survey: dict) -> dict:
                                      "note": "measured Pt/Pref with Pt1 = Pref; rows flagged in rotor67_survey.yaml excluded from the rms"},
         "angle_sensitivity": angle_sensitivity(ref),
         "losses_on_diagnostic": losses_on_diagnostic(ref, survey),
+        "radial_equilibrium_diagnostic": radial_equilibrium_diagnostic(ref, survey),
         "design_point": design_run,
         "near_peak_efficiency_point": peak_run,
     }
@@ -303,6 +346,13 @@ def main() -> None:
     print("losses on, design point:", {k: v for k, v in d["design_point"].items()})
     for row in d["near_peak_efficiency_point"]["radial_profile"]:
         print(f"  near peak streamline {row['streamline']}: measured {row['measured']} off {row['off']} on {row['on']}")
+    re = result["radial_equilibrium_diagnostic"]
+    for c in re["design_point"]:
+        print(f"{c['case']:34} PR {c['PR']} ({c['PR_deviation']:+.4f}) eta {c['eta']} choked {c['exit_choked']} "
+              f"A-1 {c['A1_design_point']}")
+    for row in re["near_peak_radial_profile"]:
+        print(f"  near peak {row['streamline']}: measured {row['measured']} old {row['no_RE_no_losses']} "
+              f"RE+losses {row['RE_losses_on']}")
     for row in ref["computed_diffusion_factor"]["streamlines"]:
         print(f"DF streamline {row['streamline']} span {row['span_fraction']}: {row['diffusion_factor']} "
               f"(M1rel {row['M1rel']})")

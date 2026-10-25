@@ -151,6 +151,20 @@ def test_losses_on_diagnostic_is_reported_not_accepted(validation):
     assert len(d["near_peak_efficiency_point"]["radial_profile"]) == 9
 
 
+def test_radial_equilibrium_diagnostic(validation):
+    """M1 step 4: RE removes the tip exit choke; with the losses on the design PR still fails A-1, so RE and
+    losses stay out of the acceptance run (user rule: stop, report, do not tune)."""
+    assert rotor67.RADIAL_EQUILIBRIUM is False
+    d = validation["radial_equilibrium_diagnostic"]
+    cases = {c["case"]: c for c in d["design_point"]}
+    assert cases["no RE, no losses (acceptance run)"]["A1_design_point"] == "pass"
+    assert cases["RE, no losses"]["converged"] and cases["RE, losses on"]["converged"]
+    assert cases["RE, losses on"]["exit_choked"] == [] and cases["RE, losses on"]["A1_design_point"] == "fail"
+    assert d["near_peak_RE_losses_on"]["converged"]
+    hub = d["near_peak_radial_profile"][-1]
+    assert abs(hub["RE_losses_on"] - hub["measured"]) < abs(hub["no_RE_no_losses"] - hub["measured"])
+
+
 def test_digital_copy_agrees_with_unflagged_ocr():
     geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
     unflagged = geo["digital_vs_ocr"]["by_ocr_status"]["unflagged"]

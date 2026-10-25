@@ -235,6 +235,105 @@ losses_on_diagnostic:
       change: -0.0223
       loss_endwall: 0.04193
       loss_tip: 0.00082
+radial_equilibrium_diagnostic:
+  note: '[H] simple radial equilibrium at rotor inlet (uniform) and exit, streamline
+    curvature neglected; losses are the [G] Howell endwall and Lakshminarayana tip
+    clearance terms. Not tuned'
+  design_point:
+  - case: no RE, no losses (acceptance run)
+    PR: 1.6015
+    PR_deviation: -0.0175
+    tip_M1rel_deviation: 0.0184
+    eta: 0.9032
+    exit_choked:
+    - streamline 1
+    converged: null
+    A1_design_point: pass
+  - case: no RE, losses on
+    PR: 1.516
+    PR_deviation: -0.0699
+    tip_M1rel_deviation: 0.0184
+    eta: 0.8515
+    exit_choked:
+    - streamline 1
+    - streamline 2
+    converged: null
+    A1_design_point: fail
+  - case: RE, no losses
+    PR: 1.6516
+    PR_deviation: 0.0132
+    tip_M1rel_deviation: 0.0184
+    eta: 0.9059
+    exit_choked: []
+    converged: true
+    A1_design_point: pass
+  - case: RE, losses on
+    PR: 1.5568
+    PR_deviation: -0.0449
+    tip_M1rel_deviation: 0.0184
+    eta: 0.8495
+    exit_choked: []
+    converged: true
+    A1_design_point: fail
+  near_peak_radial_profile:
+  - streamline: 1
+    measured: 1.6664
+    no_RE_no_losses: 1.3975
+    RE_losses_on: 1.4428
+    r2_cm_RE: 23.4841
+    exit_choked_RE: false
+  - streamline: 2
+    measured: 1.6549
+    no_RE_no_losses: 1.3561
+    RE_losses_on: 1.4167
+    r2_cm_RE: 21.8707
+    exit_choked_RE: false
+  - streamline: 3
+    measured: 1.6501
+    no_RE_no_losses: 1.4431
+    RE_losses_on: 1.4143
+    r2_cm_RE: 20.5485
+    exit_choked_RE: false
+  - streamline: 4
+    measured: 1.6426
+    no_RE_no_losses: 1.5588
+    RE_losses_on: 1.4306
+    r2_cm_RE: 19.2536
+    exit_choked_RE: false
+  - streamline: 5
+    measured: 1.6277
+    no_RE_no_losses: 1.6158
+    RE_losses_on: 1.4563
+    r2_cm_RE: 17.9933
+    exit_choked_RE: false
+  - streamline: 6
+    measured: 1.6202
+    no_RE_no_losses: 1.6361
+    RE_losses_on: 1.4873
+    r2_cm_RE: 16.7567
+    exit_choked_RE: false
+  - streamline: 7
+    measured: 1.6572
+    no_RE_no_losses: 1.6487
+    RE_losses_on: 1.5279
+    r2_cm_RE: 15.5303
+    exit_choked_RE: false
+  - streamline: 8
+    measured: 1.6406
+    no_RE_no_losses: 1.6712
+    RE_losses_on: 1.5865
+    r2_cm_RE: 14.3011
+    exit_choked_RE: false
+  - streamline: 9
+    measured: 1.6086
+    no_RE_no_losses: 1.7436
+    RE_losses_on: 1.6658
+    r2_cm_RE: 12.8696
+    exit_choked_RE: false
+  near_peak_RE_losses_on:
+    PR: 1.4814
+    eta: 0.8463
+    converged: true
 design_point:
   mass_flow: 33.25
   tip_M1rel: 1.4054189047275236

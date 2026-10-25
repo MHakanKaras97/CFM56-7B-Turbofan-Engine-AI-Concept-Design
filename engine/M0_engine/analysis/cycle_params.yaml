@@ -50,7 +50,7 @@ secondary_air:
   customer_bleed: {value: 0.0, unit: kg/s, tag: T, note: ICAO test bleed not verified}
   hp_power_offtake: {value: 0.0, unit: W, tag: KS, source: Girão 2023 Fig. 4.9}
 geometry:
-  fan_diameter: {value: 61.0, unit: in, tag: T}
+  fan_diameter: {value: 61.0, unit: in, tag: K, source: "docs/sources.md #42 (CFM 1997 CFM56-7 article)"}
   fan_hub_tip: {value: 0.30, unit: '-', tag: T}
 calibration:
   unknowns: [W2, T4]

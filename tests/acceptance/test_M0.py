@@ -138,5 +138,6 @@ def test_results_carry_assumptions_and_reference_tags(rated):
     assert by_name["Fan specific flow W2/A"] == "G"
     assert by_name["Fan choke (HARD)"] == "H"
     paths = {a["path"] for a in results["assumptions"]}
-    assert {"components.LHV", "rated_case.similarity", "geometry.fan_diameter"} <= paths
+    assert {"components.LHV", "rated_case.similarity", "geometry.fan_hub_tip"} <= paths
+    assert "geometry.fan_diameter" not in paths  # tagged K since rev008 (CFM 1997 article, sources #42)
     assert not any(p.startswith(("checks.", "calibration.")) for p in paths)

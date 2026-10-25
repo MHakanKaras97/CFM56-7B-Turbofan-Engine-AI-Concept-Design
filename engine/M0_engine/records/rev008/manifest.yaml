@@ -1,0 +1,9 @@
+revision: rev008
+parent_revision: rev007
+revision_type: maintenance
+date: '2026-10-25T18:10:02Z'
+summary: 'fan_diameter tag T -> K (source #42); no numeric change'
+reason: 'ADR-012 maintenance: provenance tag only'
+change_request: null
+code_commit: b90c1092e8d3cfb52d5f837e39b7560196225e4d
+outputs: []

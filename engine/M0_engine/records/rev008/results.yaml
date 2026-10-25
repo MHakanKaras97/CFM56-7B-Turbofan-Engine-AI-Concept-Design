@@ -1,0 +1,641 @@
+model: M0 cycle v4.2, two-spool separate-flow, CFM56-7B inputs (Girão 2023), secondary
+  air from HPC exit, isentropic component efficiencies, variable cp(T, FAR) NASA 7-coefficient
+  polynomials (ADR-006, ADR-007, ADR-008)
+gas_model: nasa_glenn
+design_point:
+  condition: SLS ISA, max take-off
+  icao_uid: 3CM034
+  T0:
+    value: 288.15
+    unit: K
+    tag: G
+  P0:
+    value: 101325.0
+    unit: Pa
+    tag: G
+calibration:
+  iterations: 5
+  unknowns:
+  - W2
+  - T4
+  targets:
+    thrust:
+      value: 121.43
+      unit: kN
+      tag: K
+    fuel_flow:
+      value: 1.284
+      unit: kg/s
+      tag: K
+  inputs:
+    FPR:
+      value: 1.765
+      unit: '-'
+      tag: KS
+    secondary_air_fraction:
+      value: 0.13
+      unit: '- of W25'
+      tag: KS
+  W2:
+    value: 345.397
+    unit: kg/s
+    tag: H
+  T4:
+    value: 1670.66
+    unit: K
+    tag: H
+stations:
+- station: '0'
+  Tt_K: 288.15
+  Pt_kPa: 101.33
+  W_kg_s: 345.4
+  FAR: 0.0
+- station: '2'
+  Tt_K: 288.15
+  Pt_kPa: 100.31
+  W_kg_s: 345.4
+  FAR: 0.0
+- station: '13'
+  Tt_K: 344.81
+  Pt_kPa: 177.05
+  W_kg_s: 287.83
+  FAR: 0.0
+- station: '18'
+  Tt_K: 344.81
+  Pt_kPa: 172.62
+  W_kg_s: 287.83
+  FAR: 0.0
+- station: '21'
+  Tt_K: 316.77
+  Pt_kPa: 134.82
+  W_kg_s: 57.566
+  FAR: 0.0
+- station: '24'
+  Tt_K: 393.12
+  Pt_kPa: 270.18
+  W_kg_s: 57.566
+  FAR: 0.0
+- station: '25'
+  Tt_K: 393.12
+  Pt_kPa: 264.77
+  W_kg_s: 57.566
+  FAR: 0.0
+- station: '3'
+  Tt_K: 817.51
+  Pt_kPa: 2871.9
+  W_kg_s: 56.415
+  FAR: 0.0
+- station: '31'
+  Tt_K: 817.51
+  Pt_kPa: 2871.9
+  W_kg_s: 50.083
+  FAR: 0.0
+- station: '4'
+  Tt_K: 1670.7
+  Pt_kPa: 2728.3
+  W_kg_s: 51.367
+  FAR: 0.025638
+- station: '41'
+  Tt_K: 1629.2
+  Pt_kPa: 2728.3
+  W_kg_s: 54.245
+  FAR: 0.024244
+- station: '43'
+  Tt_K: 1251.3
+  Pt_kPa: 737.55
+  W_kg_s: 54.245
+  FAR: 0.024244
+- station: '44'
+  Tt_K: 1227.0
+  Pt_kPa: 737.55
+  W_kg_s: 57.699
+  FAR: 0.02276
+- station: '45'
+  Tt_K: 1215.9
+  Pt_kPa: 722.8
+  W_kg_s: 58.85
+  FAR: 0.022305
+- station: '5'
+  Tt_K: 891.74
+  Pt_kPa: 179.59
+  W_kg_s: 58.85
+  FAR: 0.022305
+- station: '8'
+  Tt_K: 891.74
+  Pt_kPa: 177.8
+  W_kg_s: 58.85
+  FAR: 0.022305
+performance:
+  thrust:
+    value: 121.43
+    unit: kN
+    tag: H
+  thrust_bypass:
+    value: 90.9338
+    unit: kN
+    tag: H
+  thrust_core:
+    value: 30.4962
+    unit: kN
+    tag: H
+  fuel_flow:
+    value: 1.284
+    unit: kg/s
+    tag: H
+  fuel_air_ratio:
+    value: 0.0256377
+    unit: '-'
+    tag: H
+  sfc:
+    value: 10.574
+    unit: g/(kN s)
+    tag: H
+  specific_thrust:
+    value: 351.567
+    unit: N/(kg/s)
+    tag: H
+  opr:
+    value: 28.63
+    unit: '-'
+    tag: K
+  bpr:
+    value: 5.0
+    unit: '-'
+    tag: K
+  fpr:
+    value: 1.765
+    unit: '-'
+    tag: KS
+  core_pr_25_2:
+    value: 2.63951
+    unit: '-'
+    tag: KS
+  pr_fan_inner:
+    value: 1.344
+    unit: '-'
+    tag: KS
+  pr_booster:
+    value: 2.004
+    unit: '-'
+    tag: KS
+  hpc_pr:
+    value: 10.8467
+    unit: '-'
+    tag: H
+  hpt_pr:
+    value: 3.69916
+    unit: '-'
+    tag: H
+  lpt_pr:
+    value: 4.02471
+    unit: '-'
+    tag: H
+  T4:
+    value: 1670.66
+    unit: K
+    tag: H
+  T41:
+    value: 1629.21
+    unit: K
+    tag: H
+  W_core:
+    value: 57.5661
+    unit: kg/s
+    tag: H
+  W_bypass:
+    value: 287.83
+    unit: kg/s
+    tag: H
+  W_combustor:
+    value: 50.0825
+    unit: kg/s
+    tag: H
+  W_secondary:
+    value: 7.48359
+    unit: kg/s
+    tag: H
+  W_cooling_ngv:
+    value: 2.8783
+    unit: kg/s
+    tag: H
+  W_cooling_hpt_rotor:
+    value: 3.45397
+    unit: kg/s
+    tag: H
+  W_leak:
+    value: 1.15132
+    unit: kg/s
+    tag: H
+  W3:
+    value: 56.4148
+    unit: kg/s
+    tag: H
+  V18:
+    value: 315.928
+    unit: m/s
+    tag: H
+  V8:
+    value: 518.202
+    unit: m/s
+    tag: H
+  velocity_ratio:
+    value: 0.609663
+    unit: '-'
+    tag: H
+  A18:
+    value: 0.773988
+    unit: m2
+    tag: H
+  A8:
+    value: 0.250377
+    unit: m2
+    tag: H
+  nozzle18_choked: false
+  nozzle8_choked: false
+shaft_power_MW:
+  fan:
+    value: 16.406
+    unit: MW
+    tag: H
+  booster:
+    value: 6.09172
+    unit: MW
+    tag: H
+  hpc:
+    value: 25.4886
+    unit: MW
+    tag: H
+  hpt:
+    value: 25.746
+    unit: MW
+    tag: H
+  lpt:
+    value: 22.7249
+    unit: MW
+    tag: H
+  hp_offtake:
+    value: 0.0
+    unit: MW
+    tag: T
+fan:
+  face_area:
+    value: 1.71577
+    unit: m2
+    tag: T
+  specific_flow:
+    value: 201.307
+    unit: kg/(s m2)
+    tag: H
+  choke_mass_flux:
+    value: 241.287
+    unit: kg/(s m2)
+    tag: H
+egt:
+  model_K:
+    value: 1118.07
+    unit: K
+    tag: T
+  model_C:
+    value: 844.92
+    unit: degC
+    tag: T
+  displayed_C:
+    value: 874.92
+    unit: degC
+    tag: T
+  note: a = 0.976 (Girão Fig. 4.10; text gives 0.9664); displayed = model + SAC shunt
+checks:
+- name: Fan choke (HARD)
+  hard: true
+  value: 201.3
+  reference: 241.3
+  unit: kg/(s m2)
+  criterion: W2/A < choke mass flux at SLS ISA
+  result: pass
+  ref_tag: H
+- name: Fan specific flow W2/A
+  value: 201.3
+  reference:
+  - 190.0
+  - 215.0
+  unit: kg/(s m2)
+  criterion: 190 <= W2/A <= 215
+  result: pass
+  ref_tag: G
+- name: W2 vs estimate
+  value: 345.4
+  reference: 354.7
+  unit: kg/s
+  deviation: -0.0262
+  criterion: within 10%
+  result: pass
+  ref_tag: T
+- name: Total secondary air fraction
+  value: 0.13
+  reference:
+  - 0.12
+  - 0.22
+  unit: '- of W25'
+  criterion: 0.12 <= c <= 0.22 (input, Girão 2023)
+  result: pass
+  ref_tag: G
+- name: SFC vs ICAO/TCDS
+  value: 10.574
+  reference: 10.574
+  unit: g/(kN s)
+  criterion: within 0.5%
+  result: pass
+  ref_tag: H
+- name: EGT displayed vs TCDS limit
+  value: 874.9
+  reference: 950.0
+  unit: degC
+  margin: 75.08
+  criterion: model + 30 K shunt < 950
+  result: pass
+  ref_tag: K
+- name: EGT model vs Girão
+  value: 844.9
+  reference: 850.9
+  unit: degC
+  criterion: info only (Girão at 125.73 kN, formula value without shunt)
+  result: info
+  ref_tag: KS
+- name: Combustor air W31 vs references
+  value: 50.08
+  reference:
+    lopez_pintor: 44.52
+    girao_W31_125.7kN: 53.71
+  unit: kg/s
+  deviation:
+    lopez_pintor: 0.125
+    girao_W31_125.7kN: -0.0675
+  criterion: info only (Lopez-Pintor modeled, ADR-007; Girão at 125.73 kN)
+  result: info
+  ref_tag:
+    lopez_pintor: KS
+    girao_W31_125.7kN: KS
+- name: V18/V8 ideal
+  value: 0.6036
+  reference:
+    girao_ideal_takeoff: 0.627
+    model_at_girao_point: 0.6036
+  unit: '-'
+  criterion: info only (similarity target, ADR-009)
+  result: info
+  ref_tag:
+    girao_ideal_takeoff: KS
+    model_at_girao_point: H
+- name: T4 vs references
+  value: 1670.7
+  reference:
+    estimate: 1450.0
+    indriyati_turbine_in: 1553.0
+  unit: K
+  deviation:
+    estimate: 0.152
+    indriyati_turbine_in: 0.0758
+  criterion: info only
+  result: info
+  ref_tag:
+    estimate: T
+    indriyati_turbine_in: KS
+- name: T3 vs test cell
+  value: 817.51
+  reference: 832.4
+  unit: K
+  deviation: -0.0179
+  criterion: info only (test cell T0 298 K, not ISA)
+  result: info
+  ref_tag: KS
+hard_checks_passed: true
+assumptions:
+- path: components.cfg_8
+  value: 1.0
+  unit: '-'
+  note: core nozzle thrust coefficient; not shown by Girão, GasTurb default
+- path: components.LHV
+  value: 43124000.0
+  unit: J/kg
+  note: assumed GasTurb generic fuel, not in the thesis; reference 298.15 K, fuel
+    enters at 298.15 K
+- path: secondary_air.leak_bleed_point
+  value: 0.5
+  unit: '- of HPC enthalpy rise'
+- path: secondary_air.customer_bleed
+  value: 0.0
+  unit: kg/s
+  note: ICAO test bleed not verified
+- path: geometry.fan_hub_tip
+  value: 0.3
+  unit: '-'
+- path: rated_case.similarity
+  value: null
+  unit: null
+  target: ideal V18/V8
+  source: model at the Girão validation point
+  note: same family, take-off (ADR-009)
+rated_case:
+  description: ICAO -7B27 rating with the similarity condition (ADR-009)
+  similarity_target:
+    V18_V8_ideal:
+      value: 0.603638
+      unit: '-'
+      tag: T
+    basis: our model's ideal V18/V8 at the Girão validation point (same family, take-off)
+    girao_reported: 0.627
+  attempts:
+  - third_unknown: delta_eta
+    solvable: true
+    value: 0.01713
+    hard_checks_passed: true
+    W2_kg_s: 345.4
+    T4_K: 1670.7
+    accepted: true
+  delta_eta:
+    value: 0.0171297
+    unit: '-'
+    tag: H
+  FPR:
+    value: 1.765
+    unit: '-'
+    tag: KS
+  efficiencies_used:
+    eta_fan_outer:
+      value: 0.89513
+      unit: '-'
+      tag: H
+    eta_fan_inner:
+      value: 0.88713
+      unit: '-'
+      tag: H
+    eta_booster:
+      value: 0.90713
+      unit: '-'
+      tag: H
+    eta_hpc:
+      value: 0.85343
+      unit: '-'
+      tag: H
+    eta_hpt:
+      value: 0.89713
+      unit: '-'
+      tag: H
+    eta_lpt:
+      value: 0.93443
+      unit: '-'
+      tag: H
+  thrust_ceiling:
+    value: 130.91
+    unit: kN
+    tag: H
+    at_W2_kg_s: 430.0
+    margin: 0.07807
+    note: max thrust at the target fuel flow over W2
+  delta_eta_sweep:
+    method: thrust and fuel only, delta_eta fixed per row (info)
+    rows:
+    - delta_eta: 0.0
+      solvable: true
+      hard_checks_passed: true
+      W2_kg_s: 371.98
+      W2_per_A: 216.8
+      T4_K: 1626.6
+      T41_K: 1587.6
+      EGT_model_C: 793.2
+      EGT_displayed_C: 823.2
+      combustor_air_kg_s: 53.94
+      sfc_g_kNs: 10.574
+      V18_V8_ideal: 0.8494
+    - delta_eta: 0.005
+      solvable: true
+      hard_checks_passed: true
+      W2_kg_s: 360.71
+      W2_per_A: 210.2
+      T4_K: 1645.7
+      T41_K: 1605.7
+      EGT_model_C: 814.3
+      EGT_displayed_C: 844.3
+      combustor_air_kg_s: 52.3
+      sfc_g_kNs: 10.574
+      V18_V8_ideal: 0.7296
+    - delta_eta: 0.01
+      solvable: true
+      hard_checks_passed: true
+      W2_kg_s: 353.27
+      W2_per_A: 205.9
+      T4_K: 1658.0
+      T41_K: 1617.3
+      EGT_model_C: 828.9
+      EGT_displayed_C: 858.9
+      combustor_air_kg_s: 51.22
+      sfc_g_kNs: 10.574
+      V18_V8_ideal: 0.6639
+    - delta_eta: 0.015
+      solvable: true
+      hard_checks_passed: true
+      W2_kg_s: 347.51
+      W2_per_A: 202.5
+      T4_K: 1667.3
+      T41_K: 1626.1
+      EGT_model_C: 840.5
+      EGT_displayed_C: 870.5
+      combustor_air_kg_s: 50.39
+      sfc_g_kNs: 10.574
+      V18_V8_ideal: 0.6191
+    - delta_eta: 0.02
+      solvable: true
+      hard_checks_passed: true
+      W2_kg_s: 342.78
+      W2_per_A: 199.8
+      T4_K: 1674.7
+      T41_K: 1633.0
+      EGT_model_C: 850.4
+      EGT_displayed_C: 880.4
+      combustor_air_kg_s: 49.7
+      sfc_g_kNs: 10.574
+      V18_V8_ideal: 0.5853
+    - delta_eta: 0.025
+      solvable: true
+      hard_checks_passed: true
+      W2_kg_s: 338.73
+      W2_per_A: 197.4
+      T4_K: 1680.9
+      T41_K: 1638.8
+      EGT_model_C: 859.0
+      EGT_displayed_C: 889.0
+      combustor_air_kg_s: 49.12
+      sfc_g_kNs: 10.574
+      V18_V8_ideal: 0.5585
+    - delta_eta: 0.03
+      solvable: true
+      hard_checks_passed: true
+      W2_kg_s: 335.21
+      W2_per_A: 195.4
+      T4_K: 1686.1
+      T41_K: 1643.6
+      EGT_model_C: 866.6
+      EGT_displayed_C: 896.6
+      combustor_air_kg_s: 48.61
+      sfc_g_kNs: 10.574
+      V18_V8_ideal: 0.5365
+  validation: Girão 125.73 kN design point, 18 of 19 items pass (analysis/validation_girao.md)
+sensitivity:
+  method: W2, T4 recalibrated per isentropic-efficiency or LHV step
+  cases:
+  - case: eta_fan_outer +0.01
+    dW2_kg_s: -1.638
+    dT4_K: 3.612
+    dEGT_K: 4.005
+  - case: eta_fan_outer -0.01
+    dW2_kg_s: 1.783
+    dT4_K: -3.896
+    dEGT_K: -4.29
+  - case: eta_fan_inner +0.01
+    dW2_kg_s: -0.2987
+    dT4_K: 0.02749
+    dEGT_K: 0.3849
+  - case: eta_fan_inner -0.01
+    dW2_kg_s: 0.3082
+    dT4_K: -0.03293
+    dEGT_K: -0.3983
+  - case: eta_booster +0.01
+    dW2_kg_s: -0.6277
+    dT4_K: 0.05269
+    dEGT_K: 0.8077
+  - case: eta_booster -0.01
+    dW2_kg_s: 0.6538
+    dT4_K: -0.07532
+    dEGT_K: -0.8462
+  - case: eta_hpc +0.01
+    dW2_kg_s: -1.923
+    dT4_K: 0.3222
+    dEGT_K: 4.079
+  - case: eta_hpc -0.01
+    dW2_kg_s: 2.09
+    dT4_K: -0.5454
+    dEGT_K: -4.386
+  - case: eta_hpt +0.01
+    dW2_kg_s: -2.292
+    dT4_K: 5.062
+    dEGT_K: 4.817
+  - case: eta_hpt -0.01
+    dW2_kg_s: 2.54
+    dT4_K: -5.541
+    dEGT_K: -5.273
+  - case: eta_lpt +0.01
+    dW2_kg_s: -2.382
+    dT4_K: 5.262
+    dEGT_K: 5.007
+  - case: eta_lpt -0.01
+    dW2_kg_s: 2.657
+    dT4_K: -5.795
+    dEGT_K: -5.515
+  - case: LHV +0.3%
+    dW2_kg_s: -1.006
+    dT4_K: 4.731
+    dEGT_K: 4.395
+  - case: LHV -0.3%
+    dW2_kg_s: 1.031
+    dT4_K: -4.762
+    dEGT_K: -4.426

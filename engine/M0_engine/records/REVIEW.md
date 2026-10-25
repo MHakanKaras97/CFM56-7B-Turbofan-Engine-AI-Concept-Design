@@ -50,3 +50,6 @@ Classification only; the records themselves are unchanged. M0 acceptance: rev005
 rev006 superseded by rev007. Params notes quoted (unquoted commas had created stray keys); W2 tolerance moved from checks.w2_ref.tolerance to checks.w2_tolerance (same value 0.10).
 - numeric_changes(rev006 -> rev007): no blocking change; one move (checks.w2_ref.tolerance -> checks.w2_tolerance.value, 0.1).
 - results: only the text of assumptions[components.cfg_8].note changed. icd.yaml regenerated from rev007; concept003 pins M0 rev007.
+
+## 2026-10-25 rev008 (maintenance)
+rev007 superseded by rev008. geometry.fan_diameter tag T -> K (value 61.0 in unchanged), source docs/sources.md #42 (CFM 1997 CFM56-7 article). No numeric change; the value leaves the results' [T] assumptions list. icd.yaml regenerated from rev008.

@@ -55,11 +55,14 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
   - spanwise weights [T]: endwall 3 (2f - 1)^2 (both walls, after the parabolic distribution of SC90C, Sjögren p. 22), tip 3 f^2; both average 1 over the span.
 - Rotor 67 with these losses on (analysis/rotor67_validation.yaml `losses_on_diagnostic`) [H]: design PR 1.516, -7.0 % (A-1 limit 2 %); the two tip tubes choke at the exit; hub PR near peak 1.744 -> 1.721 against 1.609 measured. The hub excess is a work/deviation issue, not a loss issue. The losses therefore stay OFF in the acceptance run and in the fan design until radial equilibrium is in (user decision, M1 step 3b).
 - Rotor 67 DF per design streamline at the design point (rotor67_reference.yaml `computed_diffusion_factor`) [H from KS geometry]: 0.39 (hub, span 0.11) rising to 0.46 at mid span, falling to 0.39-0.40 at span 0.73-0.82; tip streamline 0.30 is at exit choke. Lieblein DF is less meaningful in the supersonic tip flow (M1rel > 1 above span about 0.45).
-- Not yet modelled: radial equilibrium, incidence-dependent deviation and loss.
+- Loss correlation sources (M1 step 4): Howell annulus/secondary drag in the form of Saravanamuttoo et al., Gas Turbine Theory, and Dixon & Hall (cascade lift, drag and loss relations); Lakshminarayana 1970 (J. Basic Eng. 92) for tip clearance. All [G]: not in the M1 source set (full citations in the `tools/meanline.py` docstring).
+- Radial equilibrium (M1 step 4, `solve_rotor_re`): simple radial equilibrium dh0/dr = T ds/dr + Vm dVm/dr + (Vt/r) d(r Vt)/dr [G] at rotor inlet (uniform inlet: uniform Vm, split by area) and exit (tube exit areas and area-centre radii moved, mass per tube fixed, under-relaxation 0.1, re-solving work, deviation and losses each pass). Limitation: streamline curvature and slope neglected.
+- A-1 with radial equilibrium (`radial_equilibrium_diagnostic` in rotor67_validation.yaml) [H]: RE without the new losses passes (PR +1.3 %); RE with the losses on removes the tip exit choke but fails (PR -4.5 %, eta 0.850; limit 2 %). Near peak, hub PR 1.744 -> 1.666 (measured 1.609); mid-span and tip PR now 0.13-0.22 below measured. Not tuned (user rule). Acceptance run stays without RE and without the new losses until this passes.
+- Not yet modelled: streamline curvature, incidence-dependent deviation and loss.
 
 ## M1 rules
 - R-AM.1 The first M1 meanline code implements steps 1-7 at design point, then off-design (step 8).
-- R-AM.2 Loss set for version 1: Lieblein D_eq profile loss, Schwenk-type normal shock at passage Mach. Endwall (Howell) and tip clearance (Lakshminarayana) terms are implemented [G] but switched on only after radial equilibrium passes A-1 with them. Alternatives are kept as options, not mixed silently.
+- R-AM.2 Loss set for version 1: Lieblein D_eq profile loss, Schwenk-type normal shock at passage Mach. Endwall (Howell) and tip clearance (Lakshminarayana) terms and radial equilibrium are implemented [G] but used in design only after A-1 passes with all of them on (it does not yet, M1 step 4). Alternatives are kept as options, not mixed silently.
 - R-AM.3 Validation case: NASA Rotor 67 (`learning/rotor67_reference.yaml`). Pass criterion in `analyses.md` A-1.
 - R-AM.4 Meanline results are compared with the M1 budget only through `core.budgets.check_budget` (see `budget.md`).
 
@@ -68,4 +71,7 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
 - R-AM.6 Metal angles: kappa1 = beta1 - design incidence (3 deg [T]); kappa2 iterated until the tube pressure ratio equals its stream target (outer FPR, inner pr_fan_inner from `read_icd`).
 - R-AM.7 Splitter at the inlet radius whose inner area share equals W21/W2 (uniform inlet, `solve_rotor` splits by area); tubes of equal inlet area within each stream.
 - R-AM.8 Until endwall and tip clearance losses are in the tool, design efficiencies are optimistic and are reported as such, not tuned.
-- R-AM.9 (proposed for the redesign, M1 step 3b) DF limit per stream tube: not above the Rotor 67 DF at the same relative span (linear interpolation in `computed_diffusion_factor`, tubes at exit choke excluded) [H from KS]; replaces the Abrisha 0.6/0.3 band of R-AM.5 once the redesign runs. In the supersonic part of the span the limit is a loading reference only.
+- R-AM.9 (approved by the user, M1 step 4) Blade loading per stream tube against Rotor 67 at the same relative span (linear interpolation in `rotor67_reference.yaml` `computed_diffusion_factor`, tubes at exit choke excluded) [H from KS]:
+  - below about 45 % span (subsonic Rotor 67 inlet, M1rel < 1): DF not above the Rotor 67 DF;
+  - above about 45 % span (supersonic, where Lieblein DF means less): DF not above the Rotor 67 DF and solidity not below the Rotor 67 solidity (hub 3.11 to tip 1.29, linear in span, Strazisar p. 2 [KS]).
+  It replaces the Abrisha 0.6/0.3 band of R-AM.5 for the redesign. The 45 % boundary is the Rotor 67 sonic span at the design point (M1rel = 1 between span 0.44 and 0.54 in `computed_diffusion_factor`) [H].

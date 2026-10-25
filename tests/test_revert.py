@@ -17,6 +17,8 @@ from core.requests import CRError, apply, create_cr, create_revert_cr, decide, l
 from core.util import read_yaml, write_yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+LATEST = active_revision("M0", root=ROOT)  # newest M0 record (reproducible)
+NEXT = f"rev{int(LATEST[3:]) + 1:03d}"
 
 
 @pytest.fixture
@@ -46,7 +48,7 @@ def test_revert_restores_params_results_and_icd(repo):
 
 def test_revert_to_latest_reruns_identically(repo):
     revert("M0", "rev005", root=repo)
-    out = revert("M0", "rev007", root=repo)
+    out = revert("M0", LATEST, root=repo)
     assert out["warnings"] == [] and out["results_diff"] is None
     assert read_yaml(m0(repo) / "rules" / "icd.yaml")["source"] == read_yaml(ROOT / "engine" / "M0_engine" / "rules" / "icd.yaml")["source"]
 
@@ -66,8 +68,8 @@ def test_history_revisions_are_not_reverted(repo):
         assert "girao" in reproducible("M0", rev, repo)
         with pytest.raises(RecordError, match="not reproducible"):
             revert("M0", rev, root=repo)
-    assert all(reproducible("M0", rev, repo) is None for rev in ("rev004", "rev005", "rev006", "rev007"))
-    assert active_revision("M0", root=repo) == "rev007"
+    assert all(reproducible("M0", rev, repo) is None for rev in ("rev004", "rev005", "rev006", "rev007", LATEST))
+    assert active_revision("M0", root=repo) == LATEST
     assert {f: f.read_bytes() for f in (m0(repo) / "analysis").glob("*.yaml")} == before
 
 
@@ -89,7 +91,7 @@ def test_revert_refuses_unrecorded_params(repo):
     write_yaml(path, params)
     with pytest.raises(RecordError, match="cycle_params.yaml"):
         revert("M0", "rev005", root=repo)
-    assert active_revision("M0", root=repo) == "rev007"
+    assert active_revision("M0", root=repo) == LATEST
 
 
 def test_revert_cr_lists_icd_affected_modules_and_applies(repo):
@@ -97,7 +99,7 @@ def test_revert_cr_lists_icd_affected_modules_and_applies(repo):
     cr = load_cr(cr_id, root=repo)
     assert cr["impact"]["by"] == "M0 revert"
     assert set(cr["impact"]["affected_modules"]) >= {"M0", "M1", "M3", "M5"}  # not started, listed anyway
-    assert cr["changes"] == [{"type": "revert", "module": "M0", "from": "rev007", "to": "rev004"}]
+    assert cr["changes"] == [{"type": "revert", "module": "M0", "from": LATEST, "to": "rev004"}]
     decide(cr_id, True, "back to rev004", root=repo, decided_by="user (UI)")
     assert apply(cr_id, root=repo) == {"M0": "rev004"}
     cr = load_cr(cr_id, root=repo)
@@ -109,7 +111,7 @@ def test_stale_revert_cr_is_refused(repo):
     cr_id = create_revert_cr({"M0": "rev005"}, "test", root=repo)
     decide(cr_id, True, "ok", root=repo)
     revert("M0", "rev006", root=repo)
-    with pytest.raises(CRError, match="expects rev007"):
+    with pytest.raises(CRError, match=f"expects {LATEST}"):
         apply(cr_id, root=repo)
 
 
@@ -124,20 +126,20 @@ def test_concept_revert_cr(repo):
 
 
 def test_revert_changes_cannot_mix_with_other_changes(repo):
-    change = {"type": "revert", "module": "M0", "from": "rev007", "to": "rev005"}
+    change = {"type": "revert", "module": "M0", "from": LATEST, "to": "rev005"}
     bom = {"module": "M0", "path": "module_name", "old": "Engine", "new": "Engine X"}
     with pytest.raises(CRError, match="only revert"):
         create_cr("M0", ["M0"], "mixed", [change, bom], root=repo)
 
 
 def test_moved_value_needs_review_mapping(repo):
-    params = read_revision("M0", "rev007", "params.yaml", repo)
+    params = read_revision("M0", LATEST, "params.yaml", repo)
     params["checks"]["w2_band"] = params["checks"].pop("w2_tolerance")
-    results = read_revision("M0", "rev007", "results.yaml", repo)
+    results = read_revision("M0", LATEST, "results.yaml", repo)
     with pytest.raises(RecordError, match="REVIEW.md"):
         create_revision("M0", "move", "test", params=params, results=results, root=repo, kind="maintenance")
     review = m0(repo) / "records" / "REVIEW.md"
     review.write_text(review.read_text(encoding="utf-8")
                       + "\n- checks.w2_tolerance.value -> checks.w2_band.value\n", encoding="utf-8")
     assert create_revision("M0", "move", "test", params=params, results=results, root=repo,
-                           kind="maintenance") == "rev008"
+                           kind="maintenance") == NEXT

@@ -1,9 +1,10 @@
 """Streamline (stream-tube) analysis of one compressor or fan blade row, reusable by M1, M2 and M3.
 
 Method: engine/M1_inlet_fan/rules/aero_method.md, steps 1-7, for a rotor without inlet swirl.
-Each stream tube is solved on its own (no radial equilibrium); its inlet and exit radii and areas
-are given. Perfect gas with constant gamma (cold air) [G]. Angles in radians, measured from the
-meridional direction, positive in the direction of rotation. SI units.
+solve_tube() solves one stream tube with given inlet and exit radii and areas. solve_rotor() splits the
+flow by inlet area and solves each tube on its own (no radial equilibrium). solve_rotor_re() adds radial
+equilibrium (see there). Perfect gas with constant gamma (cold air) [G]. Angles in radians, measured from
+the meridional direction, positive in the direction of rotation. SI units.
 
 Correlations (tags as used here):
 - Deviation: Carter's rule, delta = m * camber / sqrt(solidity), m = 0.23 (2a/c)^2 + kappa2/500 deg
@@ -14,20 +15,31 @@ Correlations (tags as used here):
 - Shock loss: normal shock at the passage Mach number = mean of inlet relative Mach and the suction-
   surface Mach after a Prandtl-Meyer expansion to the covered-passage entrance (Schwenk / Miller-
   Lewis-Hartmann type) [KS, Sjögren p. 24; Visentin p. 32]; taper 0.8 < M1rel < 1.0 [KS, Sjögren p. 24].
-- Endwall loss (only for tubes given `Endwall` data): Howell annulus drag C_Da = 0.020 s/h and secondary drag
-  C_Ds = 0.018 C_L^2 with C_L = 2 cos(beta_m) (tan beta1 - tan beta2) / sigma, turned into a loss
-  coefficient sigma C_D cos^2(beta1) / cos^3(beta_m) [G, Howell 1945 as given in turbomachinery textbooks; Howell
-  is the secondary loss model of SATURN, Visentin p. 32; coefficients not in the M1 source set]. The row value is
-  spread over the span with the weight 3 (2f - 1)^2 (mean 1, largest at both walls) [T, after the parabolic
-  endwall loss distribution of SC90C, Sjögren p. 22].
+- Endwall loss (only for tubes given `Endwall` data): Howell's annulus drag C_Da = 0.020 s/h and secondary
+  drag C_Ds = 0.018 C_L^2, with the cascade lift coefficient C_L = 2 cos(beta_m) (tan beta1 - tan beta2) / sigma
+  (profile drag term neglected), turned into a total pressure loss coefficient on the inlet dynamic head,
+  sigma C_D cos^2(beta1) / cos^3(beta_m). Textbook form: Howell (1945) as given in Saravanamuttoo, Rogers, Cohen,
+  Straznicky, Gas Turbine Theory (axial compressor design chapter: C_DA = 0.020 s/h, C_DS = 0.018 C_L^2) and
+  Dixon & Hall, Fluid Mechanics and Thermodynamics of Turbomachinery (compressor cascade chapter: lift, drag
+  and loss coefficient relations). [G]: these books are not in the M1 source set and were not re-read here;
+  Howell is the secondary loss model of SATURN (Visentin p. 32) [KS]. The row value is spread over the span
+  with the weight 3 (2f - 1)^2 (mean 1, largest at both walls) [T, after the parabolic endwall loss
+  distribution of SC90C, Sjögren p. 22].
 - Tip clearance loss: Lakshminarayana's efficiency debit d_eta = 0.7 (tau/h) psi / cos(beta_m)
-  (1 + 10 sqrt((tau/c) AR / (psi cos(beta_m)))), psi = dh0 / U^2, AR = h/c [G, Lakshminarayana 1970; not in the
-  M1 source set, Visentin p. 32 names Yaras-Sjolander]. Spread with the weight 3 f^2 (mean 1, casing) [T] and
-  applied as the total pressure loss of the matching entropy rise, ds = cp d_eta dTt / Tt2 [G].
+  (1 + 10 sqrt((tau/c) AR / (psi cos(beta_m)))), psi = dh0 / U^2, AR = h/c. Form and coefficients 0.7 and 10:
+  Lakshminarayana B., "Methods of predicting the tip clearance effects in axial flow turbomachinery",
+  J. Basic Eng. 92 (1970) 467-482, also in his book Fluid Dynamics and Heat Transfer of Turbomachinery
+  (1996) [G: not in the M1 source set; Visentin p. 32 names Yaras-Sjolander for SATURN]. Spread with the
+  weight 3 f^2 (mean 1, casing) [T] and applied as the total pressure loss of the matching entropy rise,
+  ds = cp d_eta dTt / Tt2 [G].
+- Radial equilibrium (solve_rotor_re): simple radial equilibrium with enthalpy and entropy gradients,
+  dh0/dr = T ds/dr + Vm dVm/dr + (Vt/r) d(r Vt)/dr [G, standard throughflow relation, e.g. Dixon & Hall,
+  three-dimensional flows chapter], at the rotor inlet and exit. Streamline curvature and slope terms are
+  neglected (limitation: the meridional flow is taken as parallel to the axis at each station).
 """
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 
 @dataclass(frozen=True)
@@ -302,3 +314,107 @@ def mass_averaged(results: list[TubeResult], gas: Gas = Gas()) -> dict:
     TR = sum(r.mass_flow * r.Tt_ratio for r in results) / m
     PR = (sum(r.mass_flow * r.Pt_ratio ** (1 / gas.k) for r in results) / m) ** gas.k
     return {"mass_flow": m, "Tt_ratio": TR, "Pt_ratio": PR, "efficiency": (PR ** (1 / gas.k) - 1) / (TR - 1)}
+
+
+@dataclass
+class RotorSolution:
+    """Radial equilibrium solution: tubes with their equilibrium exit radii and areas, the tube results,
+    and the convergence record (residual = largest relative exit-area change of the last iteration)."""
+    tubes: list[Tube]
+    results: list[TubeResult]
+    iterations: int
+    converged: bool
+    residual: float
+
+
+def exit_state(r: TubeResult, Tt1: float, Pt1: float, gas: Gas = Gas()) -> dict:
+    """Exit static state, total enthalpy and entropy (relative to the inlet) of a tube result."""
+    Tt2 = r.Tt_ratio * Tt1
+    T2 = Tt2 - (r.Vm2 ** 2 + r.Vt2 ** 2) / (2 * gas.cp)
+    p2 = r.Pt_ratio * Pt1 * (T2 / Tt2) ** gas.k
+    s = gas.cp * math.log(r.Tt_ratio) - gas.R * math.log(r.Pt_ratio)
+    return {"T": T2, "rho": p2 / (gas.R * T2), "h0": gas.cp * Tt2, "s": s}
+
+
+def area_centre_radii(areas: list[float], r_hub: float, r_tip: float) -> list[float]:
+    """Radii of the area centres of tubes laid side by side from hub to tip, in the given order. The
+    areas are flow areas (net of blockage) and are scaled to the geometric annulus."""
+    scale = math.pi * (r_tip ** 2 - r_hub ** 2) / sum(areas)
+    out, below = [], 0.0
+    for a in areas:
+        out.append(math.sqrt(r_hub ** 2 + (below + a * scale / 2) / math.pi))
+        below += a * scale
+    return out
+
+
+def equilibrium_areas(results: list[TubeResult], radii: list[float], area_total: float, Tt1: float, Pt1: float,
+                      gas: Gas = Gas()) -> list[float]:
+    """Exit flow areas (same order as `results`) that satisfy simple radial equilibrium with the tubes'
+    current exit h0, s, Vt and density and carry their mass flows in `area_total`.
+
+    Between neighbouring tubes j, j+1 (by radius): Vm^2 changes by
+    2 [dh0 - T ds - (Vt/r) d(r Vt)], with T, Vt, r the means of the pair. The hub meridional velocity is
+    found so that sum(m / (rho Vm)) equals area_total."""
+    order = sorted(range(len(results)), key=lambda i: radii[i])
+    st = [exit_state(results[i], Tt1, Pt1, gas) for i in order]
+    rs = [radii[i] for i in order]
+    vt = [results[i].Vt2 for i in order]
+    m = [results[i].mass_flow for i in order]
+    rise = [0.0]
+    for j in range(len(order) - 1):
+        T, v, r = (st[j]["T"] + st[j + 1]["T"]) / 2, (vt[j] + vt[j + 1]) / 2, (rs[j] + rs[j + 1]) / 2
+        d = (st[j + 1]["h0"] - st[j]["h0"]) - T * (st[j + 1]["s"] - st[j]["s"]) - v / r * (rs[j + 1] * vt[j + 1] - rs[j] * vt[j])
+        rise.append(rise[-1] + 2 * d)
+
+    def area(vm0):
+        return sum(mj / (s["rho"] * math.sqrt(vm0 ** 2 + q)) for mj, s, q in zip(m, st, rise))
+
+    lo = math.sqrt(max(0.0, -min(rise))) + 1e-6
+    hi = lo + 1.0
+    while area(hi) > area_total:
+        hi *= 2
+    if area(lo) < area_total:
+        raise ValueError("radial equilibrium: no hub velocity fits the exit area")
+    for _ in range(100):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if area(mid) > area_total else (lo, mid)
+    vm0 = (lo + hi) / 2
+    out = [0.0] * len(order)
+    for j, i in enumerate(order):
+        out[i] = m[j] / (st[j]["rho"] * math.sqrt(vm0 ** 2 + rise[j]))
+    return out
+
+
+def solve_rotor_re(tubes: list[Tube], mass_flow: float, omega: float, Tt1: float, Pt1: float,
+                   exit_hub: float, exit_tip: float, gas: Gas = Gas(), relax: float = 0.1, tol: float = 1e-5,
+                   max_iter: int = 200) -> RotorSolution:
+    """Rotor with simple radial equilibrium at inlet and exit, iterated with the losses.
+
+    Inlet: uniform Tt, Pt and no swirl make dh0/dr = ds/dr = 0 and r Vt = 0, so equilibrium needs a
+    uniform meridional velocity; the flow is split by inlet area (as solve_rotor) and the inlet tube
+    positions stay as given. Exit: the tube mass flows are fixed by the inlet; the exit areas (and the
+    area-centre radii within the exit annulus exit_hub..exit_tip) are moved, with under-relaxation, until
+    simple radial equilibrium holds (equilibrium_areas). Every pass re-solves the tubes, so work, deviation
+    and losses follow the new exit radii. The total exit flow area is that of the given tubes.
+    Streamline curvature is neglected."""
+    total_inlet = sum(t.A1 for t in tubes)
+    masses = [mass_flow * t.A1 / total_inlet for t in tubes]
+    area_total = sum(t.A2 for t in tubes)
+    current = list(tubes)
+    residual, results = float("inf"), []
+    for it in range(1, max_iter + 1):
+        results = [solve_tube(t, m, omega, Tt1, Pt1, gas) for t, m in zip(current, masses)]
+        target = equilibrium_areas(results, [t.r2 for t in current], area_total, Tt1, Pt1, gas)
+        new = [t.A2 + relax * (a - t.A2) for t, a in zip(current, target)]
+        new = [a * area_total / sum(new) for a in new]
+        residual = max(abs(a / t.A2 - 1) for a, t in zip(new, current))
+        order = sorted(range(len(current)), key=lambda i: current[i].r2)
+        radii = area_centre_radii([new[i] for i in order], exit_hub, exit_tip)
+        r2 = [0.0] * len(current)
+        for j, i in enumerate(order):
+            r2[i] = radii[j]
+        current = [replace(t, A2=a, r2=r) for t, a, r in zip(current, new, r2)]
+        if residual < tol:
+            results = [solve_tube(t, m, omega, Tt1, Pt1, gas) for t, m in zip(current, masses)]
+            return RotorSolution(current, results, it, True, residual)
+    return RotorSolution(current, results, max_iter, False, residual)
