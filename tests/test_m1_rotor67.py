@@ -165,6 +165,19 @@ def test_radial_equilibrium_diagnostic(validation):
     assert abs(hub["RE_losses_on"] - hub["measured"]) < abs(hub["no_RE_no_losses"] - hub["measured"])
 
 
+def test_loss_review_reports_breakdown_and_checks(validation):
+    """M1 step 4b: with radial equilibrium and all losses on, A-1 still fails (design PR, near stall PR and eta);
+    the calibration proposal (ADR-014) is not applied, so the acceptance run is unchanged."""
+    review = validation["loss_review"]
+    shares = review["design_point"]["delta_eta_mass_averaged"]
+    assert set(shares) == {"profile", "shock", "endwall", "tip"} and max(shares, key=shares.get) == "shock"
+    checks = {c["item"]: c for c in review["checks"]}
+    assert checks["design point tip M1rel"]["result"] == "pass"
+    assert checks["design point PR"]["result"] == "fail" and checks["near stall eta"]["result"] == "fail"
+    assert review["result"] == "fail" and review["near_stall"]["converged"]
+    assert len(review["design_point"]["tubes"]) == 9
+
+
 def test_digital_copy_agrees_with_unflagged_ocr():
     geo = read_yaml(LEARNING / "rotor67_geometry.yaml")
     unflagged = geo["digital_vs_ocr"]["by_ocr_status"]["unflagged"]

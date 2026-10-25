@@ -30,7 +30,7 @@ import math
 from pathlib import Path
 
 from core.util import dump_yaml, read_yaml, write_yaml
-from tools.meanline import Endwall, Gas, Tube, mass_averaged, solve_rotor, solve_rotor_re
+from tools.meanline import Endwall, Gas, Tube, loss_breakdown, mass_averaged, solve_rotor, solve_rotor_re
 
 M1 = Path(__file__).resolve().parents[1]
 REFERENCE = M1 / "learning" / "rotor67_reference.yaml"
@@ -139,7 +139,10 @@ def run(mass_flow: float, reference: dict | None = None, geometry: dict | None =
                 "loss_profile": round(r.loss_profile, 5), "loss_shock": round(r.loss_shock, 5),
                 "loss_endwall": round(r.loss_endwall, 5), "loss_tip": round(r.loss_tip, 5),
                 "M_passage": round(r.M_passage, 4), "Pt_ratio": round(r.Pt_ratio, 4), "Tt_ratio": round(r.Tt_ratio, 4),
-                "efficiency": round(r.efficiency, 4), "notes": r.notes}
+                "efficiency": round(r.efficiency, 4), "mass_flow": round(r.mass_flow, 4),
+                "loss_breakdown": {k: {"loss": round(v["loss"], 5), "delta_eta": round(v["delta_eta"], 5)}
+                                   for k, v in loss_breakdown(r).items()},
+                "notes": r.notes}
                 for r, t in zip(results, tubes)]}
 
 
@@ -249,6 +252,43 @@ def radial_equilibrium_diagnostic(ref: dict, survey: dict) -> dict:
                                        "converged": on["equilibrium"]["converged"]}}
 
 
+def loss_review(ref: dict) -> dict:
+    """M1 step 4b: loss breakdown per stream tube at the design point (radial equilibrium, all losses on),
+    the mass-averaged share of each mechanism in the efficiency deficit, and the A-1 checks: design point
+    (PR, tip M1rel) and the near stall point (PR, eta) as an independent check."""
+    design, stall = ref["design"], ref["measured"]["near_stall"]
+    peak = ref["measured"]["near_peak_efficiency"]
+    d = run(design["mass_flow"]["value"], ref, losses=True, equilibrium=True)
+    s = run(stall["mass_flow_orifice"]["value"], ref, losses=True, equilibrium=True)
+    m = sum(t["mass_flow"] for t in d["streamlines"])
+    shares = {k: round(sum(t["mass_flow"] * t["loss_breakdown"][k]["delta_eta"] for t in d["streamlines"]) / m, 4)
+              for k in ("profile", "shock", "endwall", "tip")}
+
+    def check(name, model, measured, limit, relative):
+        dev = model / measured - 1 if relative else model - measured
+        return {"item": name, "model": round(model, 4), "measured": measured, "deviation": round(dev, 4),
+                "limit": limit, "result": "pass" if abs(dev) <= limit else "fail"}
+
+    checks = [check("design point PR", d["Pt_ratio"], design["pressure_ratio"]["value"], LIMITS["pr_rel"], True),
+              check("design point tip M1rel", d["tip_M1rel"], design["tip_relative_mach_inlet"]["value"],
+                    LIMITS["tip_M1rel_rel"], True),
+              check("near stall PR", s["Pt_ratio"], stall["pressure_ratio"]["value"], LIMITS["pr_rel"], True),
+              check("near stall eta", s["efficiency"], stall["efficiency"]["value"], LIMITS["eta_abs"], False)]
+    return {"note": "[H] radial equilibrium + profile, shock, endwall and tip clearance losses (tip loss only above "
+                    "80 % span, Zanoni p. 7); delta_eta = share of 1 - eta split in proportion to the loss "
+                    "coefficients; not tuned",
+            "design_point": {"PR": round(d["Pt_ratio"], 4), "eta": round(d["efficiency"], 4),
+                             "delta_eta_mass_averaged": shares,
+                             "tubes": [{"name": t["name"], "Pt_ratio": t["Pt_ratio"], "efficiency": t["efficiency"],
+                                        **t["loss_breakdown"]} for t in d["streamlines"]]},
+            "measured_eta": {"near_peak_efficiency": peak["efficiency"]["value"], "near_stall": stall["efficiency"]["value"],
+                             "design": "not stated in TP-2879 (doğrulanmadı)"},
+            "near_stall": {"PR": round(s["Pt_ratio"], 4), "eta": round(s["efficiency"], 4),
+                           "converged": s["equilibrium"]["converged"]},
+            "checks": checks,
+            "result": "pass" if all(c["result"] == "pass" for c in checks) else "fail"}
+
+
 def diffusion_factor_reference(ref: dict, geometry: dict | None = None) -> dict:
     """Lieblein DF per design streamline at the design point (acceptance configuration), with its span
     fraction at the rotor inlet, for the M1 fan loading limits."""
@@ -317,6 +357,7 @@ def compare(ref: dict, survey: dict) -> dict:
         "angle_sensitivity": angle_sensitivity(ref),
         "losses_on_diagnostic": losses_on_diagnostic(ref, survey),
         "radial_equilibrium_diagnostic": radial_equilibrium_diagnostic(ref, survey),
+        "loss_review": loss_review(ref),
         "design_point": design_run,
         "near_peak_efficiency_point": peak_run,
     }
@@ -353,6 +394,10 @@ def main() -> None:
     for row in re["near_peak_radial_profile"]:
         print(f"  near peak {row['streamline']}: measured {row['measured']} old {row['no_RE_no_losses']} "
               f"RE+losses {row['RE_losses_on']}")
+    review = result["loss_review"]
+    print("loss review: design eta", review["design_point"]["eta"], "deficit shares", review["design_point"]["delta_eta_mass_averaged"])
+    for c in review["checks"]:
+        print(f"  {c['result']:4} {c['item']}: model {c['model']} measured {c['measured']} deviation {c['deviation']}")
     for row in ref["computed_diffusion_factor"]["streamlines"]:
         print(f"DF streamline {row['streamline']} span {row['span_fraction']}: {row['diffusion_factor']} "
               f"(M1rel {row['M1rel']})")

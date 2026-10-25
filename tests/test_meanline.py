@@ -113,3 +113,12 @@ def test_radial_equilibrium_balances_swirl_gradient():
     lhs = (t.Vm2 ** 2 - h.Vm2 ** 2) / 2
     rhs = (b["h0"] - a["h0"]) - (a["T"] + b["T"]) / 2 * (b["s"] - a["s"]) - (h.Vt2 + t.Vt2) / (r_h + r_t) * (r_t * t.Vt2 - r_h * h.Vt2)
     assert lhs == pytest.approx(rhs, rel=1e-3, abs=1.0)
+
+
+def test_tip_loss_only_in_tip_region_and_breakdown_adds_up():
+    from tools.meanline import TIP_REGION_START, Endwall, loss_breakdown, tip_weight
+    assert TIP_REGION_START == 0.8 and tip_weight(0.79) == 0.0 and tip_weight(0.9) == pytest.approx(5.0)
+    r = solve_tube(tube(endwall=Endwall(0.9, 0.1, 0.05, 0.001)), 3.0, 1700.0, 288.15, 101325.0)
+    b = loss_breakdown(r)
+    assert all(b[k]["loss"] > 0 for k in ("profile", "shock", "endwall", "tip"))
+    assert sum(v["delta_eta"] for v in b.values()) == pytest.approx(1 - r.efficiency)

@@ -29,9 +29,11 @@ Correlations (tags as used here):
   (1 + 10 sqrt((tau/c) AR / (psi cos(beta_m)))), psi = dh0 / U^2, AR = h/c. Form and coefficients 0.7 and 10:
   Lakshminarayana B., "Methods of predicting the tip clearance effects in axial flow turbomachinery",
   J. Basic Eng. 92 (1970) 467-482, also in his book Fluid Dynamics and Heat Transfer of Turbomachinery
-  (1996) [G: not in the M1 source set; Visentin p. 32 names Yaras-Sjolander for SATURN]. Spread with the
-  weight 3 f^2 (mean 1, casing) [T] and applied as the total pressure loss of the matching entropy rise,
-  ds = cp d_eta dTt / Tt2 [G].
+  (1996) [G: not in the M1 source set; Visentin p. 32 names Yaras-Sjolander for SATURN]. Applied only in the
+  tip region, span fraction f >= TIP_REGION_START = 0.8: measured Rotor 37 efficiency falls sharply above 80 %
+  span from tip clearance flow, shock and casing boundary layer (Zanoni p. 7, PDF p. 16) [KS extent]; uniform
+  weight 1 / 0.2 = 5 inside the region (mean 1 over the span) [T shape]. Applied as the total pressure loss of
+  the matching entropy rise, ds = cp d_eta dTt / Tt2 [G]. (M1 step 4: weight 3 f^2 over the whole span.)
 - Radial equilibrium (solve_rotor_re): simple radial equilibrium with enthalpy and entropy gradients,
   dh0/dr = T ds/dr + Vm dVm/dr + (Vt/r) d(r Vt)/dr [G, standard throughflow relation, e.g. Dixon & Hall,
   three-dimensional flows chapter], at the rotor inlet and exit. Streamline curvature and slope terms are
@@ -149,8 +151,11 @@ def endwall_weight(f: float) -> float:
     return 3 * (2 * f - 1) ** 2
 
 
+TIP_REGION_START = 0.8  # span fraction where the tip clearance loss region starts [KS, Zanoni p. 7]
+
+
 def tip_weight(f: float) -> float:
-    return 3 * f * f
+    return 1 / (1 - TIP_REGION_START) if f >= TIP_REGION_START else 0.0
 
 
 @dataclass
@@ -418,3 +423,13 @@ def solve_rotor_re(tubes: list[Tube], mass_flow: float, omega: float, Tt1: float
             results = [solve_tube(t, m, omega, Tt1, Pt1, gas) for t, m in zip(current, masses)]
             return RotorSolution(current, results, it, True, residual)
     return RotorSolution(current, results, max_iter, False, residual)
+
+
+def loss_breakdown(r: TubeResult) -> dict:
+    """Loss coefficient of each mechanism (profile, shock, endwall, tip; on the inlet relative dynamic head)
+    and its share of the efficiency deficit 1 - eta, split in proportion to the loss coefficients (with no
+    loss the model gives eta = 1, so the shares add up to the deficit)."""
+    terms = {"profile": r.loss_profile, "shock": r.loss_shock, "endwall": r.loss_endwall, "tip": r.loss_tip}
+    total = sum(terms.values())
+    deficit = 1 - r.efficiency
+    return {name: {"loss": w, "delta_eta": deficit * w / total if total > 0 else 0.0} for name, w in terms.items()}
