@@ -1,0 +1,9 @@
+revision: rev001
+parent_revision: null
+revision_type: design
+date: '2026-10-25T11:40:34Z'
+summary: 'M1 step 1: draft BOM (no geometry)'
+reason: Development revision before acceptance; no CR (ADR-012)
+change_request: null
+code_commit: b68f657086640e01dc5b266470b3aa9c111452dc
+outputs: []

@@ -1,0 +1,68 @@
+description: Material property data for module BOMs; bom.yaml `material` fields name an id below
+materials:
+  ti6al4v:
+    name: Ti-6Al-4V (Grade 5)
+    condition: solution treated and aged
+    used_by: [M1.1.1, M1.1.2, M1.1.5]
+    source:
+      primary: Mirghani A.A.M., Fatigue Strength Analysis of CFM56-7B Turbofan Engine Fan Blade, MSc thesis, California State University Sacramento, 2023, Table 2, p. 17 (PDF p. 34)
+      columns: Table 2 lists an ANSYS library value and a MatWeb value per property; MatWeb is used unless noted
+      datasheet: Appendix A (ATI Ti-6Al-4V Grade 5 data sheet) is listed in the contents but is not in the PDF file (139 pages, ends with the references); doğrulanmadı
+      license: thesis, all rights reserved; facts only, own wording
+    density:
+      value: 4430
+      unit: kg/m3
+      tag: KS
+      note: ANSYS column; MatWeb column 4405
+      cross_check: Mao 2008 4429; Wu 2022 and Wang 2024 (Johnson-Cook set) 4420; Zeng 2015 4440
+    youngs_modulus:
+      value: 114
+      unit: GPa
+      tag: KS
+      note: MatWeb column; ANSYS column 107
+      cross_check: Mao 2008 114; Zeng 2015 110
+    poissons_ratio:
+      value: 0.323
+      unit: '-'
+      tag: KS
+      note: both columns
+      cross_check: Mao 2008 0.33
+    yield_strength:
+      value: 1100
+      unit: MPa
+      tag: KS
+      cross_check: Wu 2022 and Wang 2024 Johnson-Cook A = 1098 MPa
+    ultimate_tensile_strength:
+      value: 1170
+      unit: MPa
+      tag: KS
+    fatigue_limit:
+      value: 160
+      unit: MPa
+      tag: KS
+      note: listed as fatigue strength without cycles, stress ratio or notch condition; do not use as a design allowable until a source with test conditions is found (doğrulanmadı)
+    shear_modulus:
+      value: 44
+      unit: GPa
+      tag: KS
+      note: ANSYS column 40.438
+    fracture_toughness:
+      value: 42.9
+      unit: MPa m^0.5
+      tag: KS
+    melting_point:
+      value: 1650
+      unit: degC
+      tag: KS
+  alloy718:
+    name: Alloy 718 (nickel base)
+    used_by: [M1.1.4]
+    source:
+      primary: Fox, Rossey, Raguet, J Fail. Anal. and Preven. 23, 2023, p. 1439 (shim material)
+    properties: none recorded yet
+  aluminium_alloy:
+    name: Aluminium alloy (grade not stated)
+    used_by: [M1.1.6, M1.4]
+    source:
+      primary: Fox et al. 2023, p. 1439 (blade platforms); Girão 2023 via docs/learning/cfm56_7b_module_facts.md (fan frame)
+    properties: none recorded yet
