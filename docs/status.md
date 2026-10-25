@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- M1 adım 2: Rotor 67 Tablo I/II/III(b) kodla çıkarıldı (analysis/rotor67_tables.py, pdftotext -table; şüpheli OCR değerleri işaretli, tahmin yok) -> rotor67_geometry.yaml, rotor67_survey.yaml. tools/meanline.py (akım tüpü, Euler, Carter sapması, Lieblein profil + normal şok kaybı). A-1: tasarım noktası geçti (PR -%1.3, uç Mrel +%1.8); tepe verim noktası kaldı (PR -%5.8, η -2.7 puan; uç tüpler çıkışta tıkanıyor). CS-E 800 (Amdt 5) [K] bird_strike.md'de. Yazma kapsamı: PreToolUse kancası (core/scope.py, agent_type) + git kontrolü (`python -m core.scope check M1`), ADR-002.
 - M1 adım 1: `.claude/agents/m1-inlet-fan.md` (Agent aracı yok; ADR-002'ye iç içe subagent cevabı eklendi), `learning/rotor67_reference.yaml` [KS] (Tablo I/II OCR güvenilmez, aktarılmadı; tepe verim OCR belirsiz, PR/TR'den testte kontrol), M1 rule book (index, bom, materials, joints, analyses, failure_modes, bird_strike, aero_method, budget), `tools/data/materials.yaml` (Ti-6Al-4V; Mirghani Ek A PDF'te yok), M1 rev001 (taslak BOM, geometri yok, CR'siz), ders01_fan.md, sources.md #22-38. Test: tests/test_m1_sources.py.
 - Geri dönüş koruması: yalnızca yeniden üretilebilir revizyonlara (rev004-rev007); rev001-003 geçmiş kaydı (arayüzde düğme gerekçeyle devre dışı). ICD kaynak kontrolü: bütçeler yalnızca core.budgets.read_icd ile; icd.yaml kaynağı aktif M0 revizyonu değilse ret. CLAUDE.md güncellendi.
 - Tam durum geri dönüşü (ADR-013): revert bom, params, results'u kayıttan getirir, icd.yaml'ı yeniden üretir (çözülemezse kaydın çalışma noktasından), güncel kodla doğrular (fark = uyarı). Arayüz geri dönüşü revert CR'si (impact.by M0 revert) ile; konsept geri dönüşü de. Bakımda `moved` için REVIEW.md'de eski -> yeni satırı şart. rev005/006 yeniden çalışabilir (eski w2_ref.tolerance okunur).
@@ -35,8 +36,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Fusion MCP kullanılabilir: http://127.0.0.1:27182/mcp (HTTP, Fusion eklentisi; yerel kapsamda kayıtlı, commit edilmez). Araçlar: fusion_mcp_read (belge/proje/lisans/API dokümanı/ekran görüntüsü, salt okunur), fusion_mcp_execute (modelde işlem), fusion_mcp_update (model güncelleme), fusion_mcp_electronics_read. Salt okunur test: açık belge listesi -> 0 belge. Fusion MCP için Fusion açık olmalı; ona ihtiyaç duyan testler aksi halde atlanır. Araçlar Claude Code yeniden başlatılınca oturuma yüklenir.
 - CR kuralı: impact.by (üretici) kaydedilir; onay için impact.affected_modules boş olmamalı. Önceden doldurulmuş etki yalnızca bütçe CR'lerinde (M0 integration_check); modül CR'leri M0 set_impact bekler.
 - UI faz 1: CR `impact.metrics` (isteğe bağlı; bütçe CR'leri dSFC %, dEGT K, dT41 K ile doldurur, onay için etki hazır). core/diff.py: diff_revisions, diff_concepts (saf veri). .cache/geometry/test_box.step üretildi (Fusion ilişkilendirme testi).
-- Araç yolları yapılandırması: core/toolpaths.py; ccx yapılandırılan yoldan çalıştı ("This is Version 2.22"; girdisiz: kullanım satırı).
-- UI spesifikasyonu (docs/design/ui_spec.md); ADR-011 (revizyonda section.svg, GLB/STEP önbellekte).
+- Araç yolları: core/toolpaths.py (ccx 2.22 çalıştı; pdftotext eklendi). UI spesifikasyonu (docs/design/ui_spec.md); ADR-011.
 - Kavramsal düzen referansı: concept_reference.yaml -> tools/reference.py -> engine_reference.svg; check_layout() taslağı.
 - Araçlar (.venv, Python 3.13): streamlit 1.65.0, cadquery 2.8.0 (OCP 7.9.3.1.1), gmsh 4.15.2; smoke testleri geçti.
 - Harici: PrePoMax 2.6.0 (C:\Tools, ccx 2.22), ParaView 6.2.0, Autodesk Fusion (MCP: aşağıya bakın).
@@ -55,10 +55,10 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - HPC ve HPT verim kaybının EGT etkisi Martins'in yaklaşık yarısı: sabit geometri yok (ADR-010). M0 v2 ile çözülecek.
 - Δη = +0.017 sınanmamış bir varsayım; tolerans ve entegrasyon sınırları [T].
 - .step ilişkilendirmesi kullanıcıda bekliyor. Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
-- M1: kuş çarpması sertifika sayıları (14 CFR 33.76 / CS-E 800 metni okunmadı), Ti-6Al-4V yorulma değeri koşulsuz, OGV sayısı, kasa/spinner/OGV malzemesi, Rotor 67 Tablo I aktarımı: doğrulanmadı. Yeni .claude/agents klasörü için Claude Code yeniden başlatılmalı.
+- M1: motor giriş boğaz alanı (CS-E 800 kuş sınıfı) ve 7B27 SAC özel koşul No. 1 metni, Ti-6Al-4V yorulma değeri koşulsuz, OGV sayısı, kasa/spinner/OGV malzemesi: doğrulanmadı. Rotor 67 OCR işaretleri kullanıcı incelemesinde. Kanca ve agent için Claude Code yeniden başlatılmalı.
 
 ## Sıradaki adımlar
-1. M1 adım 2: meanline kodu (aero_method.md adım 1-7), önce Rotor 67 doğrulaması (A-1), sonra bütçeye göre boyutlandırma.
+1. M1 adım 3: A-1 farkları (uç tıkanması: radyal denge, uç duvar ve uç boşluğu kaybı, insidansa bağlı sapma); sonra CFM56-7B fanı bütçeye göre boyutlandırma.
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 

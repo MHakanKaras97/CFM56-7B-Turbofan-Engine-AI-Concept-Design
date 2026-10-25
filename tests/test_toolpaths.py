@@ -11,7 +11,7 @@ needs_local = pytest.mark.skipif(not local_config().is_file(), reason="config/to
 
 def test_example_lists_the_known_tools():
     example = read_yaml(ROOT / "config" / "tools.example.yaml")["tools"]
-    assert set(example) == {"ccx", "pvpython"}
+    assert set(example) == {"ccx", "pvpython", "pdftotext"}
 
 
 def test_missing_config_or_tool_is_reported(tmp_path):

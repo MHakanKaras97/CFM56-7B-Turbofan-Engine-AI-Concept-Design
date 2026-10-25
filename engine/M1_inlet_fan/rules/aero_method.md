@@ -44,8 +44,15 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
 - Endwall: Koch-Smith, Koch, Benner (SATURN); Wright-Miller with aspect ratio, loading and clearance (SC90C); polynomial in DF with a cap (Abrisha p. 40) [KS].
 - Tip clearance: Yaras-Sjolander; secondary: Howell (Visentin p. 32) [KS].
 
+## Implementation (M1 step 2)
+- `tools/meanline.py` (shared with M2/M3): stream tubes with given inlet/exit radii and areas, no radial equilibrium; perfect gas with gamma 1.4 [G].
+- Deviation: Carter's rule (m = 0.23 (2a/c)^2 + kappa2/500, a/c = 0.5) [G], at the reference incidence only.
+- Profile loss: Lieblein D_eq [KS] with the wake momentum fit theta/c = 0.004 (1 + 3.1 (D_eq - 1)^2 + 0.4 (D_eq - 1)^8) [G, Aungier 2003, not in the source set].
+- Shock loss: normal shock at the mean of inlet relative Mach and the suction-surface Mach after a Prandtl-Meyer expansion to the covered-passage entrance [KS method, geometry assumption T].
+- Not yet modelled: endwall and tip clearance loss, radial equilibrium, incidence-dependent deviation and loss.
+
 ## M1 rules
 - R-AM.1 The first M1 meanline code implements steps 1-7 at design point, then off-design (step 8).
-- R-AM.2 Loss set for version 1: Lieblein D_eq profile loss, Schwenk-type normal shock at passage Mach, Wright-Miller-type endwall loss. Alternatives are kept as options, not mixed silently.
+- R-AM.2 Loss set for version 1: Lieblein D_eq profile loss, Schwenk-type normal shock at passage Mach; Wright-Miller-type endwall loss is the next addition. Alternatives are kept as options, not mixed silently.
 - R-AM.3 Validation case: NASA Rotor 67 (`learning/rotor67_reference.yaml`). Pass criterion in `analyses.md` A-1.
 - R-AM.4 Meanline results are compared with the M1 budget only through `core.budgets.check_budget` (see `budget.md`).

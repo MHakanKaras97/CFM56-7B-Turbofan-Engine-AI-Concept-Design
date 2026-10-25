@@ -2,11 +2,28 @@
 
 Summary of `learning/sources/bird_strike/`. Values are what each study used, not requirements.
 
-## Certification numbers
-- Wang 2024 (p. 2) [KS] summarizes the FAA history: FAR 33.77 Amdt 6 refined bird weight and number for ingestion tests; Amdt 20 (2000) set medium-bird ingestion with 1.5-2.5 lb birds and up to six birds, scaled with engine inlet area; Amdt 23/24 (2007) raised post-ingestion criteria and added large flocking birds.
-- These are a secondary summary; the regulation text (14 CFR 33.76, CS-E 800) was not read. Exact bird masses, speeds and pass criteria for the CFM56-7B fan size: doğrulanmadı.
-- Large single bird mass (e.g. 4 lb or 8 lb class) as a requirement: doğrulanmadı. Mao 2008 calls a 4 lb bird "canonical" but cites no rule.
-- Zeng 2015 (p. 1386) names CCAR-33R2 (China) and FAR as the criteria; no numbers.
+## Certification requirement: CS-E 800 [K]
+Source: EASA Easy Access Rules for Engines (CS-E), Amendment 5, CS-E 800 (ED Decision 2018/014/R), pp. 180-187 (`learning/sources/regulation/easa_cs-e_easy_access_amdt5.pdf`). Summary in our words; the regulation text governs.
+
+Which basis applies: EASA TCDS E.004 lists, for the CFM56-7B27 "SAC" build, JAR-E Change 8 plus Special Condition No. 1 "Bird strikes" [K]; later builds (/3, E) list CS-E 800 (CS-E dated 24 Oct 2003) [K]. The special condition text was not read (doğrulanmadı). M1 designs to current CS-E 800 (Amdt 5) as the requirement (decision for user, see status).
+
+The bird mass and number depend on the engine inlet throat area A, which the applicant declares as an installation limitation (CS-E 800(g)(8)). A for the CFM56-7B: doğrulanmadı.
+
+| Test | Engine condition | Bird | Speed | Pass criterion |
+|---|---|---|---|---|
+| (b) Single large bird | >= 100 % take-off thrust; account for hot-day sea level take-off | min. 1.85 kg (A < 1.35 m2), 2.75 kg (1.35 <= A < 3.90), 3.65 kg (A >= 3.90); aimed at the most critical exposed location of the first-stage rotor blades | 200 kn (aeroplane) | No Hazardous Engine Effect; no power lever movement for 15 s |
+| (c) Large flocking bird (only A >= 2.50 m2) | rotor speed giving 90 % of SLS rated take-off thrust, ISA | 1.85 kg (2.50 <= A < 3.50), 2.10 kg (3.50 <= A < 3.90), 2.50 kg (A >= 3.90); at >= 50 % blade height, leading edge | 200 kn | Complete the 20-min run-on schedule (steps 1-6); no shutdown; thrust not sustained below 50 % in step 1; no Hazardous Engine Effect |
+| (d) Medium (flocking) birds | >= 100 % take-off thrust | Table A, by A; e.g. 1.35 <= A < 1.70: 1 x 1.15 + 3 x 0.70 kg; 1.70 <= A < 2.10: 1 x 1.15 + 4 x 0.70 kg; 2.10 <= A < 2.50: 1 x 1.15 + 5 x 0.70 kg. Largest at the core, one at the most critical rotor location | critical speed in normal operation up to 1500 ft AGL, not below V1 | Not more than a sustained 25 % thrust loss; no shutdown during the 20-min schedule |
+| (d)(3) Medium birds, rotor integrity | - | Table A third column, e.g. 1 x 1.15 kg for 1.35 <= A < 2.90 | as (d) | Rotor still meets (d)(2) |
+| (d)(1)(v)(B) Small birds | as (d) | one 85 g bird per 0.032 m2 of A, max 16 | as (d) | as (d) |
+| (e) Core flocking bird (turbofan) | rotor speed for lowest climb thrust through 3000 ft AGL | heaviest Table A bird, aimed to put most material into the core | 250 kn | No sustained thrust below 50 % that the power lever cannot restore; no shutdown in the run-on; no Hazardous Engine Effect |
+| (f) Impact on engine front | as ingestion tests | largest medium bird and the large bird | critical speed up to 1500 ft, not below V1 | Assessed for CS-E 540, incl. damage to rotating blades |
+
+Notes [K]:
+- Table A read in `pdftotext -raw` mode; the `-layout` mode shifts the rows by one line.
+- Alternative evidence (rig tests, analysis, similar engines) may replace tests by agreement (CS-E 800(g)(1)).
+
+Earlier summary (kept for context): Wang 2024 (p. 2) [KS] recounts the FAA FAR 33.76/33.77 amendment history; superseded here by the CS-E text.
 
 ## Bird models used
 | Source | Bird | Mass | Density | Speed | Fan state |
@@ -36,4 +53,4 @@ Summary of `learning/sources/bird_strike/`. Values are what each study used, not
 ## M1 rules
 - R-BS.1 Bird strike is analysed on the rotating blade at take-off speed, with impact positions at least at root, mid span and tip [G].
 - R-BS.2 Use SPH or ALE with a Gruneisen EOS and a Johnson-Cook Ti-6Al-4V model; validate the bird on a rigid-plate case first [KS methods].
-- R-BS.3 Bird masses and speeds come from the regulation text once read; until then the case is marked [T].
+- R-BS.3 Bird masses, speeds and pass criteria are those of CS-E 800 above [K]; the size class follows from the inlet throat area, which is open until M0/the user fix it.

@@ -58,9 +58,19 @@ def test_rotor67_measured_efficiency_from_pr_and_tr():
 
     peak = measured["near_peak_efficiency"]
     eta_peak = isentropic_efficiency(peak["pressure_ratio"]["value"], peak["temperature_ratio"]["value"])
-    assert peak["efficiency"]["value"] is None
+    assert peak["efficiency"]["tag"] == "H"
+    assert round(eta_peak, 3) == peak["efficiency"]["value"]
     assert abs(eta_peak - 0.95) > 0.01, "OCR value 0.95 would be consistent; revisit the yaml note"
-    assert 0.90 < eta_peak < 0.95
+
+
+def test_rotor67_stream_tube_areas_cover_the_annulus():
+    ref = read(M1 / "learning" / "rotor67_reference.yaml")
+    stations = ref["survey_stations"]
+    for name, key in (("station_1", "station_1_upstream"), ("station_2", "station_2_downstream")):
+        r_o, r_i = stations[key]["shroud_radius"]["value"], stations[key]["hub_radius"]["value"]
+        annulus = math.pi * (r_o ** 2 - r_i ** 2)
+        fraction = sum(ref["stream_tube_areas"][name]) / annulus
+        assert 0.95 < fraction < 1.0, (name, fraction)  # endwall blockage of a few percent
 
 
 def test_materials_tagged_and_sourced():

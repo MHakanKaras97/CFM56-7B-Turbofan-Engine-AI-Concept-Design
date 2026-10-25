@@ -8,6 +8,9 @@ tools:
   pvpython:
     path: C:\Program Files\ParaView 6.2.0\bin\pvpython.exe
     note: ParaView Python for post-processing
+  pdftotext:
+    path: C:\Program Files\Git\mingw64\bin\pdftotext.exe
+    note: xpdf pdftotext (needs -table mode); text extraction of source PDFs
 services:
   fusion_mcp_url:
     url: http://127.0.0.1:27182/mcp

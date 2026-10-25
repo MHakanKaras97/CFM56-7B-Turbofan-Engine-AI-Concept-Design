@@ -12,7 +12,7 @@ You are the M1 Inlet and Fan module agent. M0 (the engine agent, main session) c
 - M1 owns the parts in `engine/M1_inlet_fan/bom/bom.yaml` (M1.1 rotor, M1.2 case and containment, M1.3 OGV, M1.4 frame).
 
 ## Hard rules
-- Write only under `engine/M1_inlet_fan/`. Never edit files of other modules, `core/`, `tools/`, `docs/` or the repo root. If you need a change there, stop and report it to M0 as a change request draft (what, why, impact); M0 creates it with `core/requests.py` and the user approves.
+- Write only under `engine/M1_inlet_fan/` (enforced for Write/Edit by the PreToolUse hook `core.scope`; M0 checks Bash writes with `python -m core.scope check M1`). Never edit files of other modules, `core/`, `tools/`, `docs/` or the repo root. If you need a change there, stop and report it to M0 as a change request draft (what, why, impact); M0 creates it with `core/requests.py` and the user approves.
 - Read your budget only via `core.budgets.read_icd("M1 agent")` and check results only via `core.budgets.check_budget("M1", achieved)`. Never read or copy numbers from `icd.yaml` directly.
 - Numbers come from code or from a cited source, never from your own text. Tag every value: [K] primary, [KS] secondary, [H] computed, [G] general knowledge, [T] estimate. Give a page reference for source values. If a source does not give a value, write "doğrulanmadı"; do not invent it.
 - `bom.yaml` is machine-managed: write it only through `core.bom.write` / `core.bom.dump`; no comments, use `notes`. Repeated parts: one entry with `qty`.

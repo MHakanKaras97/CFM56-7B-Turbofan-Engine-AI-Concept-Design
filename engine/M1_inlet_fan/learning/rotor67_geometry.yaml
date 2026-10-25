@@ -1,0 +1,5731 @@
+description: NASA Rotor 67 blade sections (Table I) and flowpath (Table II); generated
+  by engine/M1_inlet_fan/analysis/rotor67_tables.py, do not edit
+source:
+  primary: Strazisar et al., NASA TP-2879, 1989, Table I (pp. 18-32), Table II (p.
+    33)
+  tag: KS
+  license: US Government work; facts only
+units: cm, deg; Z = 0 at blade leading edge / hub; angles from the meridional direction
+review: 'flagged: true = failed a plausibility check, kept as read; ocr_candidates
+  are hints, not used'
+sections:
+- section: 1
+  page: 19
+  le_radius:
+    value: 9.57171
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 11.8084
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 38.47
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: -23.85
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 9.3232
+    unit: cm
+    tag: H
+    flagged: false
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 9.51722
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: 0.00666
+    te: 0.18551
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.80984
+    unit: cm
+    tag: KS
+    at_K: 18
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.04498
+    te: 0.04232
+    unit: cm
+    tag: KS
+- section: 2
+  page: 20
+  le_radius:
+    value: 10.80878
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 12.82506
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 40.23
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: -12.24
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 9.10458
+    unit: cm
+    tag: H
+    flagged: false
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 9.48868
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: 0.00301
+    te: 0.22916
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.79339
+    unit: cm
+    tag: KS
+    at_K: 17
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.04772
+    te: 0.04384
+    unit: cm
+    tag: KS
+- section: 3
+  page: 21
+  le_radius:
+    value: 12.04077
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 13.83842
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 42.02
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: -0.35
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 8.79676
+    unit: cm
+    tag: H
+    flagged: false
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 9.4617
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.00051
+    te: 0.26877
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.76144
+    unit: cm
+    tag: KS
+    at_K: 16
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.04439
+    te: 0.04365
+    unit: cm
+    tag: KS
+- section: 4
+  page: 22
+  le_radius:
+    value: 15.26852
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 14.84445
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 63.42
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 10.74
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 8.59957
+    unit: cm
+    tag: H
+    flagged: false
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 11.48064
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.00505
+    te: 0.50012
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.71989
+    unit: cm
+    tag: KS
+    at_K: 16
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.0443
+    te: 0.04098
+    unit: cm
+    tag: KS
+- section: 5
+  page: 23
+  le_radius:
+    value: 16.49509
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 15.85104
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 45.64
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 19.82
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 7.92136
+    unit: cm
+    tag: H
+    flagged: true
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 11.64711
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.00769
+    te: 0.52026
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.6672
+    unit: cm
+    tag: KS
+    at_K: 16
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.04139
+    te: 0.05857
+    unit: cm
+    tag: KS
+- section: 6
+  page: 24
+  le_radius:
+    value: 15.72496
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 16.80092
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 48.69
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 27.07
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 7.58788
+    unit: cm
+    tag: H
+    flagged: true
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 11.70661
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.01682
+    te: 0.53133
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.60556
+    unit: cm
+    tag: KS
+    at_K: 17
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.03858
+    te: 0.05696
+    unit: cm
+    tag: KS
+- section: 7
+  page: 25
+  le_radius:
+    value: 16.95374
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 17.78734
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 51.61
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 33.44
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 6.88807
+    unit: cm
+    tag: H
+    flagged: false
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 9.27865
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.01871
+    te: 0.33918
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.54292
+    unit: cm
+    tag: KS
+    at_K: 18
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.0359
+    te: 0.03445
+    unit: cm
+    tag: KS
+- section: 8
+  page: 26
+  le_radius:
+    value: 18.17931
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 18.77914
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 53.64
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 38.84
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 6.4394
+    unit: cm
+    tag: H
+    flagged: true
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 12.19787
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.01742
+    te: 0.54319
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.48
+    unit: cm
+    tag: KS
+    at_K: 19
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.05259
+    te: 0.03113
+    unit: cm
+    tag: KS
+- section: 9
+  page: 27
+  le_radius:
+    value: 19.40835
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 19.77011
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 55.79
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 45.65
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 5.97401
+    unit: cm
+    tag: H
+    flagged: true
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 12.47602
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.01457
+    te: 0.54455
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.57605
+    unit: cm
+    tag: KS
+    at_K: 14
+    flagged: true
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.02884
+    te: 0.02806
+    unit: cm
+    tag: KS
+- section: 10
+  page: 28
+  le_radius:
+    value: 20.63824
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 20.76767
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 57.72
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 47.82
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 5.59071
+    unit: cm
+    tag: H
+    flagged: true
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 12.78683
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.01099
+    te: 0.54448
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.3691
+    unit: cm
+    tag: KS
+    at_K: 20
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.02551
+    te: 0.02504
+    unit: cm
+    tag: KS
+- section: 11
+  page: 29
+  le_radius:
+    value: 21.86462
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 21.77237
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 59.79
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 50.66
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 5.19599
+    unit: cm
+    tag: H
+    flagged: false
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 9.23295
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: -0.00572
+    te: 0.34408
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.32656
+    unit: cm
+    tag: KS
+    at_K: 21
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.02261
+    te: 0.02213
+    unit: cm
+    tag: KS
+- section: 12
+  page: 30
+  le_radius:
+    value: 25.0918
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 22.77915
+    unit: cm
+    tag: KS
+    flagged: false
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 61.78
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 52.29
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 4.84779
+    unit: cm
+    tag: H
+    flagged: false
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 9.51267
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: 0.00051
+    te: 0.34246
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.29448
+    unit: cm
+    tag: KS
+    at_K: 21
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.02044
+    te: 0.01989
+    unit: cm
+    tag: KS
+- section: 13
+  page: 31
+  le_radius:
+    value: 24.3215
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 25.78459
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 65.69
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 52.98
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 4.52509
+    unit: cm
+    tag: H
+    flagged: true
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 14.59985
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: 0.00482
+    te: 0.55888
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.27555
+    unit: cm
+    tag: KS
+    at_K: 21
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.01909
+    te: 0.01826
+    unit: cm
+    tag: KS
+- section: 14
+  page: 32
+  le_radius:
+    value: 25.55194
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the leading edge circle centre
+  te_radius:
+    value: 24.78156
+    unit: cm
+    tag: KS
+    flagged: true
+    note: radial coordinate of the trailing edge circle centre
+  le_metal_angle:
+    value: 65.83
+    flagged: true
+    unit: deg
+    tag: KS
+    note: BETA at K=1
+  te_metal_angle:
+    value: 54.42
+    flagged: false
+    unit: deg
+    tag: KS
+    note: BETA at K=35
+  meridional_chord:
+    value: 4.17125
+    unit: cm
+    tag: H
+    flagged: true
+    note: (TE centre + TE circle radius) - (LE centre - LE circle radius), meridional
+  chord:
+    value: 9.23572
+    unit: cm
+    tag: H
+    flagged: true
+    note: hypot(meridional chord, mean edge radius x change of edge-centre angular
+      coordinate)
+  edge_angular:
+    le: 0.00685
+    te: 0.33427
+    unit: rad
+    tag: KS
+  max_thickness:
+    value: 0.27512
+    unit: cm
+    tag: KS
+    at_K: 24
+    flagged: false
+    note: largest unflagged TNPC
+  edge_circle_radius:
+    le: 0.01891
+    te: 0.01874
+    unit: cm
+    tag: KS
+flowpath:
+  page: 33
+  tag: KS
+  points:
+  - K: 1
+    Z: -18.05981
+    R_hub: 9.16263
+    R_shroud: 25.6938
+  - K: 2
+    Z: -17.58257
+    R_hub: 9.13694
+    R_shroud: 25.69502
+  - K: 3
+    Z: -16.70552
+    R_hub: 9.1111
+    R_shroud: 25.69606
+  - K: 4
+    Z: -16.02809
+    R_hub: 9.0853
+    R_shroud: 25.6969
+  - K: 5
+    Z: -15.55085
+    R_hub: 9.05977
+    R_shroud: 25.69756
+  - K: 6
+    Z: -14.67561
+    R_hub: 9.03473
+    R_shroud: 25.69798
+  - K: 7
+    Z: -15.99657
+    R_hub: 9.01039
+    R_shroud: 25.69821
+  - K: 8
+    Z: -13.31913
+    R_hub: 8.98698
+    R_shroud: 25.69824
+  - K: 9
+    Z: -12.64188
+    R_hub: 8.96473
+    R_shroud: 25.69804
+  - K: 10
+    Z: -11.96464
+    R_hub: 8.94385
+    R_shroud: 25.69763
+  - K: 11
+    Z: -11.28739
+    R_hub: 8.92453
+    R_shroud: 25.69701
+  - K: 12
+    Z: -10.61015
+    R_hub: 8.90693
+    R_shroud: 25.69615
+  - K: 13
+    Z: -9.93291
+    R_hub: 8.89121
+    R_shroud: 25.69508
+  - K: 14
+    Z: -9.25567
+    R_hub: 8.87769
+    R_shroud: 25.69377
+  - K: 15
+    Z: null
+    R_hub: 8.86747
+    R_shroud: 25.69223
+  - K: 16
+    Z: -7.90118
+    R_hub: 8.86182
+    R_shroud: 25.69044
+  - K: 17
+    Z: -7.22394
+    R_hub: 8.86201
+    R_shroud: 25.68843
+  - K: 18
+    Z: -6.5467
+    R_hub: 8.86932
+    R_shroud: 25.68617
+  - K: 19
+    Z: -5.86946
+    R_hub: 8.88502
+    R_shroud: 25.68367
+  - K: 20
+    Z: -5.19221
+    R_hub: 8.9104
+    R_shroud: 25.68091
+  - K: 21
+    Z: -4.51497
+    R_hub: 8.94672
+    R_shroud: 25.67789
+  - K: 22
+    Z: -3.83773
+    R_hub: 8.99527
+    R_shroud: 25.67462
+  - K: 23
+    Z: -3.16048
+    R_hub: 9.05731
+    R_shroud: 25.67108
+  - K: 24
+    Z: -2.48324
+    R_hub: 9.13414
+    R_shroud: 25.6673
+  - K: 25
+    Z: -1.806
+    R_hub: 9.22699
+    R_shroud: 25.66324
+  - K: 26
+    Z: -1.12875
+    R_hub: 9.33708
+    R_shroud: 25.65891
+  - K: 27
+    Z: -0.45151
+    R_hub: 9.46554
+    R_shroud: 25.6543
+  - K: 28
+    Z: 0.22573
+    R_hub: 9.61263
+    R_shroud: 25.64807
+  - K: 29
+    Z: 0.90297
+    R_hub: 9.77807
+    R_shroud: 25.63542
+  - K: 30
+    Z: 1.58021
+    R_hub: 9.9616
+    R_shroud: 25.61099
+  - K: 31
+    Z: 2.25746
+    R_hub: 10.16295
+    R_shroud: 25.569
+  - K: 32
+    Z: 2.9347
+    R_hub: 10.37995
+    R_shroud: 25.50014
+  - K: 33
+    Z: 3.61194
+    R_hub: 10.60335
+    R_shroud: 25.39339
+  - K: 34
+    Z: 4.28918
+    R_hub: 10.82219
+    R_shroud: 25.24631
+  - K: 35
+    Z: 4.96643
+    R_hub: 11.02556
+    R_shroud: 25.08638
+  - K: 36
+    Z: 5.64367
+    R_hub: 11.2066
+    R_shroud: 24.94333
+  - K: 37
+    Z: 6.32091
+    R_hub: 11.36588
+    R_shroud: 24.82292
+  - K: 38
+    Z: 6.99816
+    R_hub: 11.50476
+    R_shroud: 24.72263
+  - K: 39
+    Z: 7.6754
+    R_hub: 11.62462
+    R_shroud: 24.63994
+  - K: 40
+    Z: 8.35264
+    R_hub: 11.72681
+    R_shroud: 24.57231
+  - K: 41
+    Z: 9.02989
+    R_hub: 11.81286
+    R_shroud: 24.51726
+  - K: 42
+    Z: 9.70713
+    R_hub: 11.88601
+    R_shroud: 24.47249
+  - K: 43
+    Z: 10.38437
+    R_hub: 11.95076
+    R_shroud: 24.43715
+  - K: 44
+    Z: 11.06161
+    R_hub: 12.01159
+    R_shroud: 24.41084
+  - K: 45
+    Z: 11.73885
+    R_hub: 12.07301
+    R_shroud: 24.39322
+  - K: 46
+    Z: 12.4161
+    R_hub: 12.13859
+    R_shroud: 24.38387
+  - K: 47
+    Z: 13.09333
+    R_hub: 12.20953
+    R_shroud: 24.38176
+  - K: 48
+    Z: 13.77056
+    R_hub: 12.28665
+    R_shroud: 24.38327
+  - K: 49
+    Z: 14.44781
+    R_hub: 12.37076
+    R_shroud: 24.38435
+  - K: 50
+    Z: 15.12507
+    R_hub: 12.46268
+    R_shroud: 24.38408
+  - K: 51
+    Z: 15.80229
+    R_hub: 12.56321
+    R_shroud: 24.38383
+  - K: 52
+    Z: 16.47954
+    R_hub: 12.67077
+    R_shroud: 24.38394
+  - K: 53
+    Z: 17.15677
+    R_hub: 12.77743
+    R_shroud: 24.38408
+  - K: 54
+    Z: 17.83401
+    R_hub: 12.87424
+    R_shroud: 24.38414
+  - K: 55
+    Z: 18.51125
+    R_hub: 12.95222
+    R_shroud: 24.38414
+  - K: 56
+    Z: 19.18851
+    R_hub: 13.00243
+    R_shroud: 24.38409
+  - K: 57
+    Z: 19.86575
+    R_hub: 13.02487
+    R_shroud: 24.38399
+  - K: 58
+    Z: 20.54298
+    R_hub: 13.0399
+    R_shroud: 24.38382
+  - K: 59
+    Z: 21.22025
+    R_hub: 13.05056
+    R_shroud: 24.38364
+  - K: 60
+    Z: 21.89746
+    R_hub: 13.05828
+    R_shroud: 24.38345
+  - K: 61
+    Z: 22.57472
+    R_hub: 13.06386
+    R_shroud: 24.38329
+  - K: 62
+    Z: 23.25197
+    R_hub: 13.0674
+    R_shroud: 24.38315
+  - K: 63
+    Z: 23.9292
+    R_hub: 13.06903
+    R_shroud: 24.38306
+  - K: 64
+    Z: 24.60646
+    R_hub: 13.06884
+    R_shroud: 24.38303
+  - K: 65
+    Z: 25.28368
+    R_hub: 13.06695
+    R_shroud: 24.38301
+  - K: 66
+    Z: 25.96094
+    R_hub: 13.06346
+    R_shroud: 24.38303
+  - K: 67
+    Z: 26.63817
+    R_hub: 13.05847
+    R_shroud: 24.38307
+  - K: 68
+    Z: 27.31541
+    R_hub: 13.05209
+    R_shroud: 24.3831
+  - K: 69
+    Z: 27.99268
+    R_hub: 13.04443
+    R_shroud: 24.38315
+  - K: 70
+    Z: 28.66989
+    R_hub: 13.03558
+    R_shroud: 24.38319
+  - K: 71
+    Z: 29.34715
+    R_hub: 13.02566
+    R_shroud: 24.38321
+  - K: 72
+    Z: 30.02438
+    R_hub: 13.01477
+    R_shroud: 24.38321
+  - K: 73
+    Z: 30.70163
+    R_hub: 13.00301
+    R_shroud: 24.38321
+  - K: 74
+    Z: 31.37886
+    R_hub: 12.99049
+    R_shroud: 24.38321
+  - K: 75
+    Z: 32.05611
+    R_hub: 12.97732
+    R_shroud: 24.38321
+  - K: 76
+    Z: 32.73337
+    R_hub: 12.96361
+    R_shroud: 24.38319
+  - K: 77
+    Z: 33.4106
+    R_hub: 12.94945
+    R_shroud: 24.38319
+  - K: 78
+    Z: 34.08784
+    R_hub: 12.93495
+    R_shroud: 24.38319
+  - K: 79
+    Z: 34.76508
+    R_hub: 12.92022
+    R_shroud: 24.38319
+  - K: 80
+    Z: 35.44234
+    R_hub: 12.90536
+    R_shroud: 24.38319
+flags:
+- check: not_smooth
+  field: Z
+  K: 6
+  read: 1.55921
+  neighbour_fit: 1.35898
+  ocr_candidates:
+  - 1.35921
+  section: 1
+- check: not_smooth
+  field: Z
+  K: 15
+  read: 5.79207
+  neighbour_fit: 3.79208
+  ocr_candidates:
+  - 3.79207
+  section: 1
+- check: not_smooth
+  field: Z
+  K: 21
+  read: 5.59054
+  neighbour_fit: 5.39054
+  ocr_candidates:
+  - 5.39054
+  section: 1
+- check: not_smooth
+  field: THSP1
+  K: 1
+  read: 0.00865
+  neighbour_fit: 0.06842
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: THSP1
+  K: 2
+  read: 0.05618
+  neighbour_fit: 0.03623
+  ocr_candidates:
+  - 0.03618
+  section: 1
+- check: not_smooth
+  field: THSP1
+  K: 15
+  read: 0.25615
+  neighbour_fit: 0.23614
+  ocr_candidates:
+  - 0.23615
+  section: 1
+- check: not_smooth
+  field: THSP2
+  K: 1
+  read: -0.00178
+  neighbour_fit: -0.06261
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: THSP2
+  K: 2
+  read: 0.01615
+  neighbour_fit: 0.03643
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: THSP2
+  K: 3
+  read: 0.0536
+  neighbour_fit: 0.03548
+  ocr_candidates:
+  - 0.0336
+  section: 1
+- check: not_smooth
+  field: TNPC
+  K: 4
+  read: 0.29165
+  neighbour_fit: 0.30092
+  ocr_candidates:
+  - 0.29765
+  section: 1
+- check: not_smooth
+  field: TNPC
+  K: 5
+  read: 0.56457
+  neighbour_fit: 0.36806
+  ocr_candidates:
+  - 0.36457
+  section: 1
+- check: not_smooth
+  field: TNPC
+  K: 6
+  read: 0.45255
+  neighbour_fit: 0.43783
+  ocr_candidates:
+  - 0.43255
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 1
+  read: 38.47
+  neighbour_fit: 59.77
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 2
+  read: 37.49
+  neighbour_fit: 57.65
+  ocr_candidates:
+  - 57.49
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 3
+  read: 55.78
+  neighbour_fit: 35.09
+  ocr_candidates:
+  - 35.78
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 4
+  read: 32.86
+  neighbour_fit: 34.15
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 5
+  read: 50.51
+  neighbour_fit: 31.57
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 6
+  read: 29.85
+  neighbour_fit: 28.73
+  ocr_candidates:
+  - 29.35
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 7
+  read: 27.85
+  neighbour_fit: 26.83
+  ocr_candidates:
+  - 27.35
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 22
+  read: 5.84
+  neighbour_fit: 3.87
+  ocr_candidates:
+  - 3.84
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 27
+  read: -6.5
+  neighbour_fit: -4.51
+  ocr_candidates:
+  - -4.5
+  section: 1
+- check: not_smooth
+  field: BETA
+  K: 35
+  read: -23.85
+  neighbour_fit: -25.67
+  ocr_candidates:
+  - -25.85
+  section: 1
+- check: not_smooth
+  field: BETA1
+  K: 1
+  read: 44.11
+  neighbour_fit: 65.71
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA1
+  K: 5
+  read: 55.77
+  neighbour_fit: 35.44
+  ocr_candidates:
+  - 35.77
+  section: 1
+- check: not_smooth
+  field: BETA1
+  K: 6
+  read: 34.85
+  neighbour_fit: 33.09
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA1
+  K: 7
+  read: 52.1
+  neighbour_fit: 30.79
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA1
+  K: 35
+  read: -32.17
+  neighbour_fit: -34.43
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA2
+  K: 1
+  read: 51.8
+  neighbour_fit: 32.71
+  ocr_candidates:
+  - 31.8
+  section: 1
+- check: not_smooth
+  field: BETA2
+  K: 2
+  read: 31.5
+  neighbour_fit: 58.64
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA2
+  K: 3
+  read: 50.52
+  neighbour_fit: 32.97
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA2
+  K: 4
+  read: 27.45
+  neighbour_fit: 25.83
+  ocr_candidates: []
+  section: 1
+- check: not_smooth
+  field: BETA2
+  K: 5
+  read: 24.61
+  neighbour_fit: 25.84
+  ocr_candidates:
+  - 26.61
+  section: 1
+- check: not_smooth
+  field: BETA2
+  K: 7
+  read: 25.21
+  neighbour_fit: 22.65
+  ocr_candidates:
+  - 23.21
+  section: 1
+- check: not_smooth
+  field: BETA2
+  K: 15
+  read: 15.32
+  neighbour_fit: 13.29
+  ocr_candidates:
+  - 13.32
+  section: 1
+- check: z_not_increasing
+  field: Z
+  K: 16
+  read: 4.06025
+  previous: 5.79207
+  section: 1
+- check: edge_te_meridional_vs_tangency
+  field: tangency
+  values:
+    centre: 9.28088
+    surface_1: 9.50555
+    surface_2: 9.27058
+  odd:
+  - surface_1
+  section: 1
+- check: not_smooth
+  field: R
+  K: 9
+  read: 11.51249
+  neighbour_fit: 11.31285
+  ocr_candidates:
+  - 11.31249
+  section: 2
+- check: not_smooth
+  field: BETA
+  K: 5
+  read: 34.04
+  neighbour_fit: 32.92
+  ocr_candidates: []
+  section: 2
+- check: not_smooth
+  field: BETA
+  K: 6
+  read: 30.69
+  neighbour_fit: 32.15
+  ocr_candidates: []
+  section: 2
+- check: not_smooth
+  field: BETA
+  K: 7
+  read: 28.41
+  neighbour_fit: 29.31
+  ocr_candidates:
+  - 28.61
+  section: 2
+- check: not_smooth
+  field: BETA1
+  K: 6
+  read: 34.96
+  neighbour_fit: 36.28
+  ocr_candidates:
+  - 36.96
+  section: 2
+- check: not_smooth
+  field: BETA1
+  K: 7
+  read: 32.56
+  neighbour_fit: 34.08
+  ocr_candidates: []
+  section: 2
+- check: not_smooth
+  field: BETA1
+  K: 33
+  read: -15.45
+  neighbour_fit: -14.39
+  ocr_candidates:
+  - -13.45
+  section: 2
+- check: not_smooth
+  field: BETA1
+  K: 35
+  read: -21.23
+  neighbour_fit: -23.32
+  ocr_candidates: []
+  section: 2
+- check: not_smooth
+  field: BETA2
+  K: 5
+  read: 29.0
+  neighbour_fit: 27.94
+  ocr_candidates: []
+  section: 2
+- check: not_smooth
+  field: BETA2
+  K: 7
+  read: 23.9
+  neighbour_fit: 24.91
+  ocr_candidates:
+  - 25.9
+  section: 2
+- check: edge_te_angular_vs_tangency
+  field: tangency
+  values:
+    centre: 0.22916
+    surface_1: 0.25255
+    surface_2: 0.22574
+  odd:
+  - surface_1
+  section: 2
+- check: not_smooth
+  field: THSP1
+  K: 18
+  read: 0.25806
+  neighbour_fit: 0.23807
+  ocr_candidates:
+  - 0.23806
+  section: 3
+- check: not_smooth
+  field: Z
+  K: 11
+  read: 5.05057
+  neighbour_fit: 3.05046
+  ocr_candidates:
+  - 3.05057
+  section: 4
+- check: not_smooth
+  field: Z
+  K: 12
+  read: 5.29915
+  neighbour_fit: 3.29912
+  ocr_candidates:
+  - 3.29915
+  section: 4
+- check: not_smooth
+  field: Z
+  K: 14
+  read: 5.79214
+  neighbour_fit: 3.79208
+  ocr_candidates:
+  - 3.79214
+  section: 4
+- check: not_smooth
+  field: Z
+  K: 29
+  read: 7.54826
+  neighbour_fit: 7.34881
+  ocr_candidates:
+  - 7.34826
+  section: 4
+- check: not_smooth
+  field: Z
+  K: 35
+  read: 8.73768
+  neighbour_fit: 8.69749
+  ocr_candidates: []
+  section: 4
+- check: unreadable
+  field: R
+  K: 33
+  section: 4
+- check: not_smooth
+  field: R
+  K: 1
+  read: 15.26225
+  neighbour_fit: 15.09419
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: R
+  K: 2
+  read: 15.50521
+  neighbour_fit: 15.98992
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: R
+  K: 3
+  read: 15.36677
+  neighbour_fit: 13.34669
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: R
+  K: 9
+  read: 13.65888
+  neighbour_fit: 13.91285
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: R
+  K: 10
+  read: 15.71888
+  neighbour_fit: 13.97227
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: R
+  K: 11
+  read: 15.78067
+  neighbour_fit: 16.02249
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: R
+  K: 15
+  read: 14.03416
+  neighbour_fit: 16.03508
+  ocr_candidates:
+  - 16.03416
+  section: 4
+- check: not_smooth
+  field: R
+  K: 16
+  read: 16.09626
+  neighbour_fit: 14.09668
+  ocr_candidates:
+  - 14.09626
+  section: 4
+- check: not_smooth
+  field: R
+  K: 22
+  read: 16.42209
+  neighbour_fit: 14.4221
+  ocr_candidates:
+  - 14.42209
+  section: 4
+- check: not_smooth
+  field: R
+  K: 31
+  read: 16.7512
+  neighbour_fit: 14.75128
+  ocr_candidates:
+  - 14.7512
+  section: 4
+- check: not_smooth
+  field: R
+  K: 34
+  read: 14.82596
+  neighbour_fit: 13.82608
+  ocr_candidates: []
+  section: 4
+- check: unreadable
+  field: THSP1
+  K: 31
+  section: 4
+- check: not_smooth
+  field: THSP1
+  K: 33
+  read: 0.30107
+  neighbour_fit: 0.34541
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: THSP1
+  K: 34
+  read: 0.30228
+  neighbour_fit: 0.38227
+  ocr_candidates: []
+  section: 4
+- check: unreadable
+  field: THSP2
+  K: 23
+  section: 4
+- check: not_smooth
+  field: THSP2
+  K: 1
+  read: -0.0094
+  neighbour_fit: 0.01056
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: THSP2
+  K: 4
+  read: 0.05076
+  neighbour_fit: 0.0308
+  ocr_candidates:
+  - 0.03076
+  section: 4
+- check: not_smooth
+  field: THSP2
+  K: 13
+  read: 0.1519
+  neighbour_fit: 0.13192
+  ocr_candidates:
+  - 0.1319
+  section: 4
+- check: not_smooth
+  field: THSP2
+  K: 25
+  read: 0.25624
+  neighbour_fit: 0.23422
+  ocr_candidates:
+  - 0.23624
+  section: 4
+- check: not_smooth
+  field: TNPC
+  K: 26
+  read: 0.55305
+  neighbour_fit: 0.53306
+  ocr_candidates:
+  - 0.53305
+  section: 4
+- check: not_smooth
+  field: TNPC
+  K: 34
+  read: 0.15948
+  neighbour_fit: 0.13891
+  ocr_candidates:
+  - 0.13948
+  section: 4
+- check: not_smooth
+  field: TNPC
+  K: 35
+  read: 0.07043
+  neighbour_fit: 0.11731
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: BETA
+  K: 1
+  read: 63.42
+  neighbour_fit: 44.37
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: BETA
+  K: 2
+  read: 42.51
+  neighbour_fit: 50.11
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: BETA
+  K: 8
+  read: 53.81
+  neighbour_fit: 33.89
+  ocr_candidates:
+  - 33.81
+  section: 4
+- check: not_smooth
+  field: BETA
+  K: 10
+  read: 51.81
+  neighbour_fit: 31.63
+  ocr_candidates:
+  - 31.81
+  section: 4
+- check: not_smooth
+  field: BETA
+  K: 21
+  read: 25.12
+  neighbour_fit: 23.13
+  ocr_candidates:
+  - 23.12
+  section: 4
+- check: not_smooth
+  field: BETA1
+  K: 8
+  read: 56.96
+  neighbour_fit: 36.85
+  ocr_candidates:
+  - 36.96
+  section: 4
+- check: not_smooth
+  field: BETA1
+  K: 10
+  read: 55.69
+  neighbour_fit: 33.49
+  ocr_candidates: []
+  section: 4
+- check: unreadable
+  field: BETA2
+  K: 35
+  section: 4
+- check: not_smooth
+  field: BETA2
+  K: 1
+  read: 54.69
+  neighbour_fit: 87.91
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: BETA2
+  K: 2
+  read: 54.37
+  neighbour_fit: 41.06
+  ocr_candidates: []
+  section: 4
+- check: not_smooth
+  field: BETA2
+  K: 26
+  read: 25.88
+  neighbour_fit: 23.96
+  ocr_candidates:
+  - 23.88
+  section: 4
+- check: z_not_increasing
+  field: Z
+  K: 13
+  read: 3.54635
+  previous: 5.29915
+  section: 4
+- check: z_not_increasing
+  field: Z
+  K: 15
+  read: 4.03649
+  previous: 5.79214
+  section: 4
+- check: edge_te_angular_vs_tangency
+  field: tangency
+  values:
+    centre: 0.50012
+    surface_1: 0.50288
+    surface_2: 0.29751
+  odd:
+  - surface_2
+  section: 4
+- check: edge_te_meridional_vs_tangency
+  field: tangency
+  values:
+    centre: 8.55879
+    surface_1: 8.55729
+    surface_2: 8.37222
+  odd:
+  - surface_2
+  section: 4
+- check: not_smooth
+  field: Z
+  K: 10
+  read: 2.88849
+  neighbour_fit: 3.14409
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 11
+  read: 5.12601
+  neighbour_fit: 3.12339
+  ocr_candidates:
+  - 3.12601
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 12
+  read: 5.35798
+  neighbour_fit: 3.35692
+  ocr_candidates:
+  - 3.35798
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 13
+  read: 5.59059
+  neighbour_fit: 3.59024
+  ocr_candidates:
+  - 3.59059
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 14
+  read: 5.82126
+  neighbour_fit: 3.81425
+  ocr_candidates:
+  - 3.82126
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 15
+  read: 4.05057
+  neighbour_fit: 5.7958
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 21
+  read: 5.59969
+  neighbour_fit: 5.40017
+  ocr_candidates:
+  - 5.39969
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 30
+  read: 7.58502
+  neighbour_fit: 7.3843
+  ocr_candidates:
+  - 7.38502
+  section: 5
+- check: not_smooth
+  field: Z
+  K: 34
+  read: 8.26589
+  neighbour_fit: 8.22482
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: R
+  K: 1
+  read: 14.48984
+  neighbour_fit: 19.81904
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: R
+  K: 2
+  read: 16.52551
+  neighbour_fit: 14.52683
+  ocr_candidates:
+  - 14.52551
+  section: 5
+- check: not_smooth
+  field: R
+  K: 7
+  read: 14.75669
+  neighbour_fit: 14.73651
+  ocr_candidates:
+  - 14.73669
+  - 14.75469
+  - 14.75649
+  section: 5
+- check: not_smooth
+  field: R
+  K: 18
+  read: 15.51585
+  neighbour_fit: 15.31526
+  ocr_candidates:
+  - 15.31585
+  section: 5
+- check: not_smooth
+  field: R
+  K: 19
+  read: 15.56529
+  neighbour_fit: 15.36294
+  ocr_candidates:
+  - 15.36529
+  section: 5
+- check: not_smooth
+  field: R
+  K: 21
+  read: 15.65067
+  neighbour_fit: 15.4505
+  ocr_candidates:
+  - 15.45067
+  section: 5
+- check: not_smooth
+  field: THSP1
+  K: 1
+  read: -0.00671
+  neighbour_fit: -0.04665
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP1
+  K: 2
+  read: 0.015
+  neighbour_fit: 0.02998
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP1
+  K: 3
+  read: 0.05522
+  neighbour_fit: 0.04134
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP1
+  K: 9
+  read: 0.15141
+  neighbour_fit: 0.13188
+  ocr_candidates:
+  - 0.13141
+  section: 5
+- check: not_smooth
+  field: THSP1
+  K: 19
+  read: 0.25541
+  neighbour_fit: 0.23611
+  ocr_candidates:
+  - 0.23541
+  section: 5
+- check: not_smooth
+  field: THSP1
+  K: 28
+  read: 0.29497
+  neighbour_fit: 0.46973
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP1
+  K: 29
+  read: 0.50001
+  neighbour_fit: 0.47611
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 1
+  read: -0.01541
+  neighbour_fit: 0.00667
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 3
+  read: 0.01252
+  neighbour_fit: -0.02786
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 4
+  read: 0.02497
+  neighbour_fit: 0.03825
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 5
+  read: 0.05759
+  neighbour_fit: 0.03808
+  ocr_candidates:
+  - 0.03759
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 6
+  read: 0.06957
+  neighbour_fit: 0.05019
+  ocr_candidates:
+  - 0.04957
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 14
+  read: 0.15776
+  neighbour_fit: 0.13781
+  ocr_candidates:
+  - 0.13776
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 23
+  read: 0.22258
+  neighbour_fit: 0.22738
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 24
+  read: 0.25151
+  neighbour_fit: 0.2321
+  ocr_candidates:
+  - 0.23151
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 25
+  read: 0.25989
+  neighbour_fit: 0.24031
+  ocr_candidates:
+  - 0.23989
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 26
+  read: 0.26855
+  neighbour_fit: 0.24822
+  ocr_candidates:
+  - 0.24855
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 34
+  read: 0.51165
+  neighbour_fit: 0.39279
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: THSP2
+  K: 35
+  read: 0.51879
+  neighbour_fit: 0.84865
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 1
+  read: 0.0679
+  neighbour_fit: -0.13078
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 2
+  read: 0.16016
+  neighbour_fit: 0.09438
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 3
+  read: 0.24295
+  neighbour_fit: 0.37425
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 4
+  read: 0.51362
+  neighbour_fit: 0.31615
+  ocr_candidates:
+  - 0.31362
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 5
+  read: 0.57614
+  neighbour_fit: 0.37662
+  ocr_candidates:
+  - 0.37614
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 6
+  read: 0.6515
+  neighbour_fit: 0.42872
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 8
+  read: 0.52075
+  neighbour_fit: 0.53916
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 12
+  read: 0.65466
+  neighbour_fit: 0.63465
+  ocr_candidates:
+  - 0.63466
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 19
+  read: 0.66977
+  neighbour_fit: 0.6497
+  ocr_candidates:
+  - 0.64977
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 20
+  read: 0.65733
+  neighbour_fit: 0.63706
+  ocr_candidates:
+  - 0.63733
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 29
+  read: 0.58624
+  neighbour_fit: 0.38702
+  ocr_candidates:
+  - 0.38624
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 33
+  read: 0.19093
+  neighbour_fit: 0.1993
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 34
+  read: 0.15136
+  neighbour_fit: 0.13085
+  ocr_candidates:
+  - 0.13136
+  section: 5
+- check: not_smooth
+  field: TNPC
+  K: 35
+  read: 0.06591
+  neighbour_fit: 0.12033
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 2
+  read: 44.65
+  neighbour_fit: 56.44
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 3
+  read: 63.25
+  neighbour_fit: 43.35
+  ocr_candidates:
+  - 43.25
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 4
+  read: 42.03
+  neighbour_fit: 2.27
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 5
+  read: 40.95
+  neighbour_fit: 55.44
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 6
+  read: 59.77
+  neighbour_fit: 39.8
+  ocr_candidates:
+  - 39.77
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 7
+  read: 58.7
+  neighbour_fit: 38.8
+  ocr_candidates:
+  - 38.7
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 8
+  read: 37.78
+  neighbour_fit: 57.12
+  ocr_candidates:
+  - 57.78
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 9
+  read: 56.92
+  neighbour_fit: 36.86
+  ocr_candidates:
+  - 36.92
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 10
+  read: 36.02
+  neighbour_fit: 56.08
+  ocr_candidates:
+  - 56.02
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 11
+  read: 35.13
+  neighbour_fit: 55.29
+  ocr_candidates:
+  - 55.13
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 12
+  read: 54.55
+  neighbour_fit: 38.04
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 13
+  read: 33.67
+  neighbour_fit: 53.78
+  ocr_candidates:
+  - 53.67
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 19
+  read: 50.65
+  neighbour_fit: 33.0
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 20
+  read: 29.94
+  neighbour_fit: 32.49
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA
+  K: 29
+  read: 26.6
+  neighbour_fit: 24.6
+  ocr_candidates:
+  - 24.6
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 2
+  read: 50.77
+  neighbour_fit: 43.79
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 4
+  read: 66.76
+  neighbour_fit: 46.81
+  ocr_candidates:
+  - 46.76
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 6
+  read: 65.57
+  neighbour_fit: 43.43
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 7
+  read: 41.86
+  neighbour_fit: 63.29
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 8
+  read: 40.62
+  neighbour_fit: 60.64
+  ocr_candidates:
+  - 60.62
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 11
+  read: 56.51
+  neighbour_fit: 58.98
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 12
+  read: 55.29
+  neighbour_fit: 58.67
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 13
+  read: 56.18
+  neighbour_fit: 38.99
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA1
+  K: 25
+  read: 25.25
+  neighbour_fit: 23.23
+  ocr_candidates:
+  - 23.25
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 1
+  read: 56.97
+  neighbour_fit: 43.53
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 2
+  read: 36.85
+  neighbour_fit: 43.55
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 3
+  read: 36.72
+  neighbour_fit: 56.69
+  ocr_candidates:
+  - 56.72
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 4
+  read: 36.48
+  neighbour_fit: 56.44
+  ocr_candidates:
+  - 56.48
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 11
+  read: 55.71
+  neighbour_fit: 53.82
+  ocr_candidates:
+  - 53.71
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 12
+  read: 53.59
+  neighbour_fit: 55.02
+  ocr_candidates:
+  - 55.59
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 13
+  read: 55.16
+  neighbour_fit: 53.27
+  ocr_candidates:
+  - 53.16
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 14
+  read: 32.98
+  neighbour_fit: 53.03
+  ocr_candidates:
+  - 52.98
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 16
+  read: 32.57
+  neighbour_fit: 52.6
+  ocr_candidates:
+  - 52.57
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 19
+  read: 32.1
+  neighbour_fit: 52.15
+  ocr_candidates:
+  - 52.1
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 23
+  read: 31.57
+  neighbour_fit: 51.3
+  ocr_candidates:
+  - 51.57
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 26
+  read: 50.58
+  neighbour_fit: 47.0
+  ocr_candidates: []
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 27
+  read: 50.5
+  neighbour_fit: 30.3
+  ocr_candidates:
+  - 30.5
+  section: 5
+- check: not_smooth
+  field: BETA2
+  K: 28
+  read: 29.97
+  neighbour_fit: 32.52
+  ocr_candidates: []
+  section: 5
+- check: z_not_increasing
+  field: Z
+  K: 15
+  read: 4.05057
+  previous: 5.82126
+  section: 5
+- check: edge_le_radial_vs_R_K1
+  field: edge
+  edge: 16.49509
+  R_K1: 14.48984
+  section: 5
+- check: unreadable
+  field: Z
+  K: 14
+  section: 6
+- check: not_smooth
+  field: Z
+  K: 17
+  read: 4.6288
+  neighbour_fit: 4.42878
+  ocr_candidates:
+  - 4.4288
+  section: 6
+- check: not_smooth
+  field: Z
+  K: 22
+  read: 5.67121
+  neighbour_fit: 5.47123
+  ocr_candidates:
+  - 5.47121
+  section: 6
+- check: not_smooth
+  field: Z
+  K: 32
+  read: 7.56697
+  neighbour_fit: 7.54669
+  ocr_candidates:
+  - 7.54697
+  - 7.56497
+  section: 6
+- check: not_smooth
+  field: R
+  K: 14
+  read: 3.7941
+  neighbour_fit: 16.24142
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: R
+  K: 19
+  read: 16.65111
+  neighbour_fit: 16.45071
+  ocr_candidates:
+  - 16.45111
+  section: 6
+- check: not_smooth
+  field: R
+  K: 20
+  read: 16.68683
+  neighbour_fit: 16.48659
+  ocr_candidates:
+  - 16.48683
+  section: 6
+- check: not_smooth
+  field: THSP1
+  K: 10
+  read: 0.15169
+  neighbour_fit: 0.13176
+  ocr_candidates:
+  - 0.13169
+  section: 6
+- check: not_smooth
+  field: THSP1
+  K: 14
+  read: 16.24138
+  neighbour_fit: 0.17916
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: THSP2
+  K: 14
+  read: 0.17919
+  neighbour_fit: 0.13339
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: THSP2
+  K: 25
+  read: 0.26106
+  neighbour_fit: 0.24107
+  ocr_candidates:
+  - 0.24106
+  section: 6
+- check: not_smooth
+  field: THSP2
+  K: 33
+  read: 0.51299
+  neighbour_fit: 0.31299
+  ocr_candidates:
+  - 0.31299
+  section: 6
+- check: not_smooth
+  field: THSP2
+  K: 34
+  read: 0.32162
+  neighbour_fit: 0.45495
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: THSP2
+  K: 35
+  read: 0.33017
+  neighbour_fit: -0.06983
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 7
+  read: 0.60555
+  neighbour_fit: 0.40662
+  ocr_candidates:
+  - 0.40555
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 8
+  read: 0.66268
+  neighbour_fit: 0.44271
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 14
+  read: 0.15292
+  neighbour_fit: 0.58891
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 25
+  read: 0.69791
+  neighbour_fit: 0.49785
+  ocr_candidates:
+  - 0.49791
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 26
+  read: 0.46992
+  neighbour_fit: 0.63415
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 27
+  read: 0.63872
+  neighbour_fit: 0.43897
+  ocr_candidates:
+  - 0.43872
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 28
+  read: 0.60664
+  neighbour_fit: 0.40466
+  ocr_candidates:
+  - 0.40664
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 29
+  read: 0.36706
+  neighbour_fit: 0.53117
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 30
+  read: 0.52585
+  neighbour_fit: 0.32621
+  ocr_candidates:
+  - 0.32585
+  section: 6
+- check: not_smooth
+  field: TNPC
+  K: 34
+  read: 0.12492
+  neighbour_fit: 0.0842
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: BETA
+  K: 14
+  read: 588.87
+  neighbour_fit: 38.43
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: BETA
+  K: 19
+  read: 56.17
+  neighbour_fit: 36.18
+  ocr_candidates:
+  - 36.17
+  section: 6
+- check: not_smooth
+  field: BETA
+  K: 23
+  read: 54.34
+  neighbour_fit: 34.35
+  ocr_candidates:
+  - 34.34
+  section: 6
+- check: not_smooth
+  field: BETA
+  K: 24
+  read: 53.83
+  neighbour_fit: 33.85
+  ocr_candidates:
+  - 33.83
+  section: 6
+- check: not_smooth
+  field: BETA1
+  K: 15
+  read: 58.13
+  neighbour_fit: 37.99
+  ocr_candidates:
+  - 38.13
+  section: 6
+- check: not_smooth
+  field: BETA1
+  K: 21
+  read: 35.26
+  neighbour_fit: 33.25
+  ocr_candidates:
+  - 33.26
+  section: 6
+- check: not_smooth
+  field: BETA1
+  K: 22
+  read: 52.42
+  neighbour_fit: 32.41
+  ocr_candidates:
+  - 32.42
+  section: 6
+- check: not_smooth
+  field: BETA2
+  K: 5
+  read: 60.59
+  neighbour_fit: 40.63
+  ocr_candidates:
+  - 40.59
+  section: 6
+- check: not_smooth
+  field: BETA2
+  K: 8
+  read: 59.45
+  neighbour_fit: 39.4
+  ocr_candidates:
+  - 39.45
+  section: 6
+- check: not_smooth
+  field: BETA2
+  K: 9
+  read: 59.0
+  neighbour_fit: 38.94
+  ocr_candidates:
+  - 39.0
+  section: 6
+- check: not_smooth
+  field: BETA2
+  K: 14
+  read: 59.0
+  neighbour_fit: 37.73
+  ocr_candidates: []
+  section: 6
+- check: not_smooth
+  field: BETA2
+  K: 33
+  read: 36.77
+  neighbour_fit: 34.83
+  ocr_candidates:
+  - 34.77
+  section: 6
+- check: decimal_point_inferred
+  field: BETA
+  K: 14
+  read: 588.87
+  section: 6
+- check: edge_te_angular_vs_tangency
+  field: tangency
+  values:
+    centre: 0.53133
+    surface_1: 0.35541
+    surface_2: 0.52951
+  odd:
+  - surface_1
+  section: 6
+- check: edge_te_meridional_vs_tangency
+  field: edge
+  values:
+    centre: 7.53092
+    surface_1: 7.31886
+    surface_2: 7.35172
+  odd:
+  - centre
+  section: 6
+- check: not_smooth
+  field: Z
+  K: 16
+  read: 6.19095
+  neighbour_fit: 4.19093
+  ocr_candidates:
+  - 4.19095
+  section: 7
+- check: not_smooth
+  field: R
+  K: 15
+  read: 17.61312
+  neighbour_fit: 17.41325
+  ocr_candidates:
+  - 17.41312
+  section: 7
+- check: not_smooth
+  field: THSP1
+  K: 30
+  read: 0.51199
+  neighbour_fit: 0.31198
+  ocr_candidates:
+  - 0.31199
+  section: 7
+- check: not_smooth
+  field: THSP1
+  K: 33
+  read: 0.35095
+  neighbour_fit: 0.33092
+  ocr_candidates:
+  - 0.33095
+  section: 7
+- check: not_smooth
+  field: THSP1
+  K: 34
+  read: 0.33675
+  neighbour_fit: 0.35175
+  ocr_candidates: []
+  section: 7
+- check: not_smooth
+  field: BETA
+  K: 27
+  read: 57.75
+  neighbour_fit: 37.74
+  ocr_candidates:
+  - 37.75
+  section: 7
+- check: not_smooth
+  field: BETA
+  K: 32
+  read: 55.18
+  neighbour_fit: 35.14
+  ocr_candidates:
+  - 35.18
+  section: 7
+- check: not_smooth
+  field: BETA
+  K: 34
+  read: 33.93
+  neighbour_fit: 27.35
+  ocr_candidates: []
+  section: 7
+- check: not_smooth
+  field: BETA
+  K: 35
+  read: 33.44
+  neighbour_fit: 53.17
+  ocr_candidates:
+  - 53.44
+  section: 7
+- check: not_smooth
+  field: BETA1
+  K: 1
+  read: 55.68
+  neighbour_fit: 60.64
+  ocr_candidates: []
+  section: 7
+- check: not_smooth
+  field: BETA1
+  K: 2
+  read: 56.72
+  neighbour_fit: 54.53
+  ocr_candidates:
+  - 54.72
+  section: 7
+- check: not_smooth
+  field: BETA1
+  K: 10
+  read: 67.33
+  neighbour_fit: 47.32
+  ocr_candidates:
+  - 47.33
+  section: 7
+- check: not_smooth
+  field: BETA2
+  K: 15
+  read: 62.24
+  neighbour_fit: 42.19
+  ocr_candidates:
+  - 42.24
+  section: 7
+- check: not_smooth
+  field: BETA2
+  K: 17
+  read: 62.21
+  neighbour_fit: 42.22
+  ocr_candidates:
+  - 42.21
+  section: 7
+- check: decimal_point_inferred
+  field: BETA1
+  K: 33
+  read: 28.08
+  section: 7
+- check: z_not_increasing
+  field: Z
+  K: 17
+  read: 4.38862
+  previous: 6.19095
+  section: 7
+- check: unreadable
+  field: Z
+  K: 18
+  section: 8
+- check: unreadable
+  field: R
+  K: 19
+  section: 8
+- check: unreadable
+  field: THSP2
+  K: 28
+  section: 8
+- check: unreadable
+  field: THSP2
+  K: 29
+  section: 8
+- check: not_smooth
+  field: TNPC
+  K: 14
+  read: 0.46365
+  neighbour_fit: 0.4434
+  ocr_candidates:
+  - 0.44365
+  section: 8
+- check: decimal_point_inferred
+  field: Z
+  K: 16
+  read: 4.17783
+  section: 8
+- check: decimal_point_inferred
+  field: Z
+  K: 17
+  read: 4.36231
+  section: 8
+- check: decimal_point_inferred
+  field: TNPC
+  K: 23
+  read: 0.44889
+  section: 8
+- check: decimal_point_inferred
+  field: THSP2
+  K: 27
+  read: 0.26252
+  section: 8
+- check: decimal_point_inferred
+  field: THSP1
+  K: 32
+  read: 0.32643
+  section: 8
+- check: edge_le_meridional_vs_radius
+  field: edge
+  meridional: 0.03239
+  radius: 0.05259
+  section: 8
+- check: not_smooth
+  field: Z
+  K: 10
+  read: 5.11512
+  neighbour_fit: 3.11371
+  ocr_candidates:
+  - 3.11512
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 11
+  read: 3.2885
+  neighbour_fit: 3.38061
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 12
+  read: 3.46285
+  neighbour_fit: 5.83799
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 13
+  read: 5.6568
+  neighbour_fit: 3.61885
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 14
+  read: 5.81022
+  neighbour_fit: 3.86476
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 15
+  read: 5.98515
+  neighbour_fit: 3.98299
+  ocr_candidates:
+  - 3.98515
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 16
+  read: 4.15568
+  neighbour_fit: 4.6397
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 17
+  read: 4.52787
+  neighbour_fit: 4.32778
+  ocr_candidates:
+  - 4.32787
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 29
+  read: 6.59873
+  neighbour_fit: 6.39912
+  ocr_candidates:
+  - 6.39873
+  section: 9
+- check: not_smooth
+  field: THSP1
+  K: 2
+  read: 0.00129
+  neighbour_fit: 0.0146
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: THSP1
+  K: 4
+  read: 0.05082
+  neighbour_fit: 0.03079
+  ocr_candidates:
+  - 0.03082
+  section: 9
+- check: not_smooth
+  field: THSP1
+  K: 22
+  read: 0.2616
+  neighbour_fit: 0.24142
+  ocr_candidates:
+  - 0.2416
+  section: 9
+- check: not_smooth
+  field: THSP1
+  K: 33
+  read: 0.53308
+  neighbour_fit: 0.33304
+  ocr_candidates:
+  - 0.33308
+  section: 9
+- check: not_smooth
+  field: THSP1
+  K: 34
+  read: 0.54024
+  neighbour_fit: 0.47359
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: THSP1
+  K: 35
+  read: 0.34725
+  neighbour_fit: 0.48053
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: THSP2
+  K: 15
+  read: 0.15781
+  neighbour_fit: 0.13788
+  ocr_candidates:
+  - 0.13781
+  section: 9
+- check: not_smooth
+  field: THSP2
+  K: 34
+  read: 0.55544
+  neighbour_fit: 0.33611
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: THSP2
+  K: 35
+  read: 0.34582
+  neighbour_fit: 0.93183
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: TNPC
+  K: 9
+  read: 0.28966
+  neighbour_fit: 0.31542
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: TNPC
+  K: 10
+  read: 0.5102
+  neighbour_fit: 0.33592
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: TNPC
+  K: 15
+  read: 0.58942
+  neighbour_fit: 0.56269
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: TNPC
+  K: 16
+  read: 0.40089
+  neighbour_fit: 0.57397
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: TNPC
+  K: 28
+  read: 0.51218
+  neighbour_fit: 0.31234
+  ocr_candidates:
+  - 0.31218
+  section: 9
+- check: not_smooth
+  field: BETA
+  K: 6
+  read: 55.65
+  neighbour_fit: 53.6
+  ocr_candidates:
+  - 53.65
+  section: 9
+- check: not_smooth
+  field: BETA
+  K: 7
+  read: 55.24
+  neighbour_fit: 53.26
+  ocr_candidates:
+  - 53.24
+  section: 9
+- check: not_smooth
+  field: BETA
+  K: 35
+  read: 45.65
+  neighbour_fit: 47.51
+  ocr_candidates: []
+  section: 9
+- check: not_smooth
+  field: BETA1
+  K: 10
+  read: 55.81
+  neighbour_fit: 53.81
+  ocr_candidates:
+  - 53.81
+  section: 9
+- check: not_smooth
+  field: BETA1
+  K: 11
+  read: 55.55
+  neighbour_fit: 53.38
+  ocr_candidates:
+  - 53.55
+  section: 9
+- check: not_smooth
+  field: BETA1
+  K: 28
+  read: 45.0
+  neighbour_fit: 43.03
+  ocr_candidates:
+  - 43.0
+  section: 9
+- check: z_not_increasing
+  field: Z
+  K: 11
+  read: 3.2885
+  previous: 5.11512
+  section: 9
+- check: z_not_increasing
+  field: Z
+  K: 16
+  read: 4.15568
+  previous: 5.98515
+  section: 9
+- check: z_not_increasing
+  field: Z
+  K: 18
+  read: 4.49981
+  previous: 4.52787
+  section: 9
+- check: z_not_increasing
+  field: Z
+  K: 30
+  read: 6.57587
+  previous: 6.59873
+  section: 9
+- check: edge_te_angular_vs_tangency
+  field: edge
+  values:
+    centre: 0.54455
+    surface_1: 0.34548
+    surface_2: 0.34342
+  odd:
+  - centre
+  section: 9
+- check: not_smooth
+  field: Z
+  K: 2
+  read: 1.86159
+  neighbour_fit: 2.06162
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: Z
+  K: 5
+  read: 2.56335
+  neighbour_fit: 2.36389
+  ocr_candidates:
+  - 2.36335
+  section: 10
+- check: not_smooth
+  field: Z
+  K: 16
+  read: 6.16254
+  neighbour_fit: 4.16203
+  ocr_candidates:
+  - 4.16254
+  section: 10
+- check: not_smooth
+  field: Z
+  K: 18
+  read: 4.68665
+  neighbour_fit: 4.48445
+  ocr_candidates:
+  - 4.48665
+  section: 10
+- check: not_smooth
+  field: Z
+  K: 20
+  read: 6.80613
+  neighbour_fit: 4.80611
+  ocr_candidates:
+  - 4.80613
+  section: 10
+- check: not_smooth
+  field: Z
+  K: 24
+  read: 5.65046
+  neighbour_fit: 5.45036
+  ocr_candidates:
+  - 5.45046
+  section: 10
+- check: not_smooth
+  field: Z
+  K: 30
+  read: 6.62685
+  neighbour_fit: 6.42695
+  ocr_candidates:
+  - 6.42685
+  section: 10
+- check: not_smooth
+  field: R
+  K: 1
+  read: 20.63673
+  neighbour_fit: 20.68167
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: THSP1
+  K: 23
+  read: 0.26774
+  neighbour_fit: 0.24775
+  ocr_candidates:
+  - 0.24774
+  section: 10
+- check: not_smooth
+  field: THSP1
+  K: 33
+  read: 0.33232
+  neighbour_fit: 0.33883
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: THSP1
+  K: 34
+  read: 0.33983
+  neighbour_fit: 0.34784
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: THSP1
+  K: 35
+  read: 0.36719
+  neighbour_fit: 0.34467
+  ocr_candidates:
+  - 0.34719
+  section: 10
+- check: not_smooth
+  field: THSP2
+  K: 6
+  read: 0.06146
+  neighbour_fit: 0.042
+  ocr_candidates:
+  - 0.04146
+  section: 10
+- check: not_smooth
+  field: THSP2
+  K: 16
+  read: 0.1682
+  neighbour_fit: 0.14814
+  ocr_candidates:
+  - 0.1482
+  section: 10
+- check: not_smooth
+  field: THSP2
+  K: 25
+  read: 0.26039
+  neighbour_fit: 0.24039
+  ocr_candidates:
+  - 0.24039
+  section: 10
+- check: not_smooth
+  field: THSP2
+  K: 34
+  read: 0.33354
+  neighbour_fit: 0.34448
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: THSP2
+  K: 35
+  read: 0.36407
+  neighbour_fit: 0.34408
+  ocr_candidates:
+  - 0.34407
+  section: 10
+- check: not_smooth
+  field: TNPC
+  K: 1
+  read: 0.06614
+  neighbour_fit: 0.04626
+  ocr_candidates:
+  - 0.04614
+  section: 10
+- check: not_smooth
+  field: TNPC
+  K: 9
+  read: 0.26861
+  neighbour_fit: 0.24851
+  ocr_candidates:
+  - 0.24861
+  section: 10
+- check: not_smooth
+  field: TNPC
+  K: 24
+  read: 0.36922
+  neighbour_fit: 0.34959
+  ocr_candidates:
+  - 0.34922
+  section: 10
+- check: not_smooth
+  field: TNPC
+  K: 35
+  read: 0.06362
+  neighbour_fit: 0.04334
+  ocr_candidates:
+  - 0.04362
+  section: 10
+- check: not_smooth
+  field: BETA
+  K: 13
+  read: 56.5
+  neighbour_fit: 54.53
+  ocr_candidates:
+  - 54.5
+  section: 10
+- check: not_smooth
+  field: BETA
+  K: 18
+  read: 55.33
+  neighbour_fit: 53.38
+  ocr_candidates:
+  - 53.33
+  section: 10
+- check: not_smooth
+  field: BETA
+  K: 30
+  read: 69.38
+  neighbour_fit: 49.38
+  ocr_candidates:
+  - 49.38
+  section: 10
+- check: not_smooth
+  field: BETA
+  K: 32
+  read: 48.73
+  neighbour_fit: 84.68
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: BETA
+  K: 34
+  read: 68.07
+  neighbour_fit: 48.21
+  ocr_candidates:
+  - 48.07
+  section: 10
+- check: not_smooth
+  field: BETA
+  K: 35
+  read: 47.82
+  neighbour_fit: 100.67
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: BETA1
+  K: 15
+  read: 56.97
+  neighbour_fit: 54.95
+  ocr_candidates:
+  - 54.97
+  section: 10
+- check: not_smooth
+  field: BETA1
+  K: 33
+  read: 63.44
+  neighbour_fit: 43.51
+  ocr_candidates:
+  - 43.44
+  section: 10
+- check: not_smooth
+  field: BETA1
+  K: 34
+  read: 62.67
+  neighbour_fit: 56.09
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: BETA1
+  K: 35
+  read: 42.11
+  neighbour_fit: 55.22
+  ocr_candidates: []
+  section: 10
+- check: not_smooth
+  field: BETA2
+  K: 7
+  read: 55.91
+  neighbour_fit: 53.91
+  ocr_candidates:
+  - 53.91
+  section: 10
+- check: decimal_point_inferred
+  field: R
+  K: 30
+  read: 20.80002
+  section: 10
+- check: z_not_increasing
+  field: Z
+  K: 6
+  read: 2.52965
+  previous: 2.56335
+  section: 10
+- check: z_not_increasing
+  field: Z
+  K: 17
+  read: 4.32349
+  previous: 6.16254
+  section: 10
+- check: z_not_increasing
+  field: Z
+  K: 19
+  read: 4.6453
+  previous: 4.68665
+  section: 10
+- check: z_not_increasing
+  field: Z
+  K: 21
+  read: 4.96699
+  previous: 6.80613
+  section: 10
+- check: z_not_increasing
+  field: Z
+  K: 25
+  read: 5.61212
+  previous: 5.65046
+  section: 10
+- check: z_not_increasing
+  field: Z
+  K: 31
+  read: 6.59165
+  previous: 6.62685
+  section: 10
+- check: edge_te_angular_vs_tangency
+  field: edge
+  values:
+    centre: 0.54448
+    surface_1: 0.34537
+    surface_2: 0.36376
+  odd:
+  - centre
+  section: 10
+- check: not_smooth
+  field: Z
+  K: 2
+  read: 2.05877
+  neighbour_fit: 2.19234
+  ocr_candidates: []
+  section: 11
+- check: not_smooth
+  field: Z
+  K: 4
+  read: 2.56862
+  neighbour_fit: 2.36853
+  ocr_candidates:
+  - 2.36862
+  section: 11
+- check: not_smooth
+  field: Z
+  K: 15
+  read: 6.04237
+  neighbour_fit: 4.04236
+  ocr_candidates:
+  - 4.04237
+  section: 11
+- check: not_smooth
+  field: THSP1
+  K: 12
+  read: 0.15056
+  neighbour_fit: 0.13055
+  ocr_candidates:
+  - 0.13056
+  section: 11
+- check: z_not_increasing
+  field: Z
+  K: 5
+  read: 2.52262
+  previous: 2.56862
+  section: 11
+- check: z_not_increasing
+  field: Z
+  K: 16
+  read: 4.19286
+  previous: 6.04237
+  section: 11
+- check: unreadable
+  field: Z
+  K: 19
+  section: 12
+- check: not_smooth
+  field: Z
+  K: 2
+  read: 2.25221
+  neighbour_fit: 2.40245
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: Z
+  K: 3
+  read: 2.59458
+  neighbour_fit: 2.39452
+  ocr_candidates:
+  - 2.39458
+  section: 12
+- check: not_smooth
+  field: Z
+  K: 13
+  read: 5.8019
+  neighbour_fit: 3.80193
+  ocr_candidates:
+  - 3.8019
+  section: 12
+- check: not_smooth
+  field: Z
+  K: 17
+  read: 4.5619
+  neighbour_fit: 4.36188
+  ocr_candidates:
+  - 4.3619
+  section: 12
+- check: not_smooth
+  field: Z
+  K: 24
+  read: 5.54871
+  neighbour_fit: 5.34871
+  ocr_candidates:
+  - 5.34871
+  section: 12
+- check: not_smooth
+  field: Z
+  K: 31
+  read: 6.55557
+  neighbour_fit: 6.35558
+  ocr_candidates:
+  - 6.35557
+  section: 12
+- check: not_smooth
+  field: R
+  K: 1
+  read: 25.09181
+  neighbour_fit: 28.42518
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 2
+  read: 25.09166
+  neighbour_fit: 23.84165
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 3
+  read: 23.09111
+  neighbour_fit: 23.78302
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 4
+  read: 25.09021
+  neighbour_fit: 23.09024
+  ocr_candidates:
+  - 23.09021
+  section: 12
+- check: not_smooth
+  field: R
+  K: 5
+  read: 23.08891
+  neighbour_fit: 23.63435
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 8
+  read: 25.08214
+  neighbour_fit: 23.08212
+  ocr_candidates:
+  - 23.08214
+  section: 12
+- check: not_smooth
+  field: R
+  K: 9
+  read: 23.07883
+  neighbour_fit: 24.9942
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 10
+  read: 23.07494
+  neighbour_fit: 25.43781
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 11
+  read: 25.07059
+  neighbour_fit: 23.91125
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 12
+  read: 25.06505
+  neighbour_fit: 24.63189
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 13
+  read: 25.05891
+  neighbour_fit: 25.27474
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: R
+  K: 14
+  read: 23.05199
+  neighbour_fit: 25.05202
+  ocr_candidates:
+  - 25.05199
+  section: 12
+- check: not_smooth
+  field: R
+  K: 16
+  read: 23.05574
+  neighbour_fit: 25.03577
+  ocr_candidates:
+  - 25.05574
+  section: 12
+- check: not_smooth
+  field: R
+  K: 17
+  read: 25.02652
+  neighbour_fit: 23.03815
+  ocr_candidates:
+  - 23.02652
+  section: 12
+- check: not_smooth
+  field: R
+  K: 18
+  read: 25.01605
+  neighbour_fit: 23.01585
+  ocr_candidates:
+  - 23.01605
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 1
+  read: 0.00051
+  neighbour_fit: -0.0355
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 2
+  read: 0.01516
+  neighbour_fit: 0.0065
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 4
+  read: 0.05796
+  neighbour_fit: 0.03849
+  ocr_candidates:
+  - 0.03796
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 12
+  read: 0.15079
+  neighbour_fit: 0.13096
+  ocr_candidates:
+  - 0.13079
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 30
+  read: 0.50696
+  neighbour_fit: 0.30695
+  ocr_candidates:
+  - 0.30696
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 31
+  read: 0.51487
+  neighbour_fit: 0.31486
+  ocr_candidates:
+  - 0.31487
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 33
+  read: 0.55014
+  neighbour_fit: -0.0699
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 34
+  read: 0.3375
+  neighbour_fit: 0.29751
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: THSP1
+  K: 35
+  read: 0.34471
+  neighbour_fit: -0.02866
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: THSP2
+  K: 14
+  read: 0.15005
+  neighbour_fit: 0.13006
+  ocr_candidates:
+  - 0.13005
+  section: 12
+- check: not_smooth
+  field: THSP2
+  K: 31
+  read: 0.50268
+  neighbour_fit: 0.30267
+  ocr_candidates:
+  - 0.30268
+  section: 12
+- check: not_smooth
+  field: THSP2
+  K: 32
+  read: 0.51265
+  neighbour_fit: 0.31262
+  ocr_candidates:
+  - 0.31265
+  section: 12
+- check: not_smooth
+  field: THSP2
+  K: 33
+  read: 0.52253
+  neighbour_fit: 0.45587
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: THSP2
+  K: 34
+  read: 0.33238
+  neighbour_fit: 0.53239
+  ocr_candidates:
+  - 0.53238
+  section: 12
+- check: not_smooth
+  field: THSP2
+  K: 35
+  read: 0.54219
+  neighbour_fit: 0.00885
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: TNPC
+  K: 1
+  read: 0.05704
+  neighbour_fit: 0.03862
+  ocr_candidates:
+  - 0.03704
+  section: 12
+- check: not_smooth
+  field: TNPC
+  K: 11
+  read: 0.25052
+  neighbour_fit: 0.23042
+  ocr_candidates:
+  - 0.23052
+  section: 12
+- check: not_smooth
+  field: TNPC
+  K: 32
+  read: 0.15465
+  neighbour_fit: 0.1362
+  ocr_candidates:
+  - 0.13465
+  section: 12
+- check: not_smooth
+  field: TNPC
+  K: 35
+  read: 0.03503
+  neighbour_fit: -0.0028
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: BETA1
+  K: 1
+  read: 64.15
+  neighbour_fit: 70.2
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: BETA1
+  K: 2
+  read: 65.88
+  neighbour_fit: 63.18
+  ocr_candidates:
+  - 63.88
+  section: 12
+- check: not_smooth
+  field: BETA1
+  K: 3
+  read: 63.59
+  neighbour_fit: 66.63
+  ocr_candidates: []
+  section: 12
+- check: not_smooth
+  field: BETA1
+  K: 4
+  read: 65.37
+  neighbour_fit: 63.32
+  ocr_candidates:
+  - 63.37
+  section: 12
+- check: not_smooth
+  field: BETA1
+  K: 5
+  read: 65.09
+  neighbour_fit: 63.05
+  ocr_candidates:
+  - 63.09
+  section: 12
+- check: z_not_increasing
+  field: Z
+  K: 4
+  read: 2.53657
+  previous: 2.59458
+  section: 12
+- check: z_not_increasing
+  field: Z
+  K: 14
+  read: 3.94185
+  previous: 5.8019
+  section: 12
+- check: z_not_increasing
+  field: Z
+  K: 18
+  read: 4.50212
+  previous: 4.5619
+  section: 12
+- check: z_not_increasing
+  field: Z
+  K: 25
+  read: 5.49105
+  previous: 5.54871
+  section: 12
+- check: z_not_increasing
+  field: Z
+  K: 32
+  read: 6.50172
+  previous: 6.55557
+  section: 12
+- check: edge_te_angular_vs_tangency
+  field: tangency
+  values:
+    centre: 0.34246
+    surface_1: 0.54505
+    surface_2: 0.34197
+  odd:
+  - surface_1
+  section: 12
+- check: unreadable
+  field: Z
+  K: 18
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 1
+  read: 2.50058
+  neighbour_fit: 2.30022
+  ocr_candidates:
+  - 2.30058
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 2
+  read: 2.4298
+  neighbour_fit: 2.50996
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 4
+  read: 2.68777
+  neighbour_fit: 2.88781
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 5
+  read: 2.81622
+  neighbour_fit: 3.00338
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 7
+  read: 5.07271
+  neighbour_fit: 3.07283
+  ocr_candidates:
+  - 3.07271
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 8
+  read: 5.20079
+  neighbour_fit: 4.83641
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 10
+  read: 3.45682
+  neighbour_fit: 5.45732
+  ocr_candidates:
+  - 5.45682
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 13
+  read: 5.8416
+  neighbour_fit: 5.70932
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 14
+  read: 5.97031
+  neighbour_fit: 4.1704
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 15
+  read: 4.09953
+  neighbour_fit: 6.09672
+  ocr_candidates:
+  - 6.09953
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 16
+  read: 4.22868
+  neighbour_fit: 4.6438
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 17
+  read: 4.55848
+  neighbour_fit: 4.35843
+  ocr_candidates:
+  - 4.35848
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 31
+  read: 6.25524
+  neighbour_fit: 6.23326
+  ocr_candidates:
+  - 6.23524
+  - 6.25324
+  section: 13
+- check: not_smooth
+  field: R
+  K: 1
+  read: 24.52251
+  neighbour_fit: 24.45562
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: R
+  K: 3
+  read: 24.51026
+  neighbour_fit: 24.37962
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: R
+  K: 4
+  read: 24.50322
+  neighbour_fit: 24.30318
+  ocr_candidates:
+  - 24.30322
+  section: 13
+- check: not_smooth
+  field: R
+  K: 5
+  read: 24.29546
+  neighbour_fit: 24.32106
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: R
+  K: 17
+  read: 24.15576
+  neighbour_fit: 24.1355
+  ocr_candidates:
+  - 24.13576
+  - 24.15376
+  - 24.15516
+  section: 13
+- check: not_smooth
+  field: R
+  K: 26
+  read: 23.95546
+  neighbour_fit: 24.20348
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: R
+  K: 27
+  read: 25.95527
+  neighbour_fit: 23.93537
+  ocr_candidates:
+  - 23.95527
+  section: 13
+- check: not_smooth
+  field: R
+  K: 28
+  read: 25.91525
+  neighbour_fit: 23.9114
+  ocr_candidates:
+  - 23.91525
+  section: 13
+- check: not_smooth
+  field: R
+  K: 29
+  read: 25.89545
+  neighbour_fit: 25.83365
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: R
+  K: 31
+  read: 23.85655
+  neighbour_fit: 25.85652
+  ocr_candidates:
+  - 25.85655
+  section: 13
+- check: not_smooth
+  field: R
+  K: 32
+  read: 23.85752
+  neighbour_fit: 25.83753
+  ocr_candidates:
+  - 25.85752
+  section: 13
+- check: not_smooth
+  field: R
+  K: 34
+  read: 25.80042
+  neighbour_fit: 24.48046
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: R
+  K: 35
+  read: 25.78241
+  neighbour_fit: 27.74235
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: THSP1
+  K: 22
+  read: 0.25469
+  neighbour_fit: 0.23483
+  ocr_candidates:
+  - 0.23469
+  section: 13
+- check: not_smooth
+  field: THSP1
+  K: 30
+  read: 0.50523
+  neighbour_fit: 0.3053
+  ocr_candidates:
+  - 0.30523
+  section: 13
+- check: not_smooth
+  field: THSP1
+  K: 31
+  read: 0.31279
+  neighbour_fit: 0.50822
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: THSP1
+  K: 32
+  read: 0.52015
+  neighbour_fit: 0.32011
+  ocr_candidates:
+  - 0.32015
+  section: 13
+- check: not_smooth
+  field: THSP1
+  K: 33
+  read: 0.32726
+  neighbour_fit: 0.54864
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: THSP1
+  K: 34
+  read: 0.55417
+  neighbour_fit: 0.33418
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: THSP1
+  K: 35
+  read: 0.5409
+  neighbour_fit: 0.92753
+  ocr_candidates: []
+  section: 13
+- check: unreadable
+  field: THSP2
+  K: 30
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 4
+  read: 0.05065
+  neighbour_fit: 0.03075
+  ocr_candidates:
+  - 0.03065
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 15
+  read: 0.15901
+  neighbour_fit: 0.13902
+  ocr_candidates:
+  - 0.13901
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 24
+  read: 0.2516
+  neighbour_fit: 0.23162
+  ocr_candidates:
+  - 0.2316
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 31
+  read: 0.50134
+  neighbour_fit: 0.30135
+  ocr_candidates:
+  - 0.30134
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 32
+  read: 0.31085
+  neighbour_fit: 0.53458
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 33
+  read: 0.52022
+  neighbour_fit: 0.51355
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 34
+  read: 0.52949
+  neighbour_fit: 0.23951
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: THSP2
+  K: 35
+  read: 0.35866
+  neighbour_fit: 0.53865
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: TNPC
+  K: 1
+  read: 0.05451
+  neighbour_fit: 0.03474
+  ocr_candidates:
+  - 0.03451
+  section: 13
+- check: not_smooth
+  field: TNPC
+  K: 13
+  read: 0.25569
+  neighbour_fit: 0.23584
+  ocr_candidates:
+  - 0.23569
+  section: 13
+- check: not_smooth
+  field: TNPC
+  K: 27
+  read: 0.25745
+  neighbour_fit: 0.23732
+  ocr_candidates:
+  - 0.23745
+  section: 13
+- check: not_smooth
+  field: TNPC
+  K: 35
+  read: 0.05212
+  neighbour_fit: 0.03266
+  ocr_candidates:
+  - 0.03212
+  section: 13
+- check: not_smooth
+  field: BETA
+  K: 6
+  read: 63.5
+  neighbour_fit: 65.42
+  ocr_candidates:
+  - 65.5
+  section: 13
+- check: not_smooth
+  field: BETA
+  K: 7
+  read: 63.25
+  neighbour_fit: 65.25
+  ocr_candidates:
+  - 65.25
+  section: 13
+- check: not_smooth
+  field: BETA
+  K: 8
+  read: 65.18
+  neighbour_fit: 63.18
+  ocr_candidates:
+  - 63.18
+  section: 13
+- check: not_smooth
+  field: BETA
+  K: 34
+  read: 55.47
+  neighbour_fit: 53.57
+  ocr_candidates:
+  - 53.47
+  section: 13
+- check: not_smooth
+  field: BETA
+  K: 35
+  read: 52.98
+  neighbour_fit: 58.07
+  ocr_candidates: []
+  section: 13
+- check: unreadable
+  field: BETA1
+  K: 19
+  section: 13
+- check: not_smooth
+  field: BETA1
+  K: 13
+  read: 65.55
+  neighbour_fit: 63.49
+  ocr_candidates:
+  - 63.55
+  section: 13
+- check: not_smooth
+  field: BETA1
+  K: 14
+  read: 65.52
+  neighbour_fit: 63.29
+  ocr_candidates:
+  - 63.52
+  section: 13
+- check: not_smooth
+  field: BETA1
+  K: 15
+  read: 65.09
+  neighbour_fit: 63.04
+  ocr_candidates:
+  - 63.09
+  section: 13
+- check: not_smooth
+  field: BETA1
+  K: 16
+  read: 62.85
+  neighbour_fit: 64.09
+  ocr_candidates: []
+  section: 13
+- check: not_smooth
+  field: BETA1
+  K: 17
+  read: 62.61
+  neighbour_fit: 63.65
+  ocr_candidates:
+  - 62.67
+  section: 13
+- check: not_smooth
+  field: BETA1
+  K: 29
+  read: 55.88
+  neighbour_fit: 53.88
+  ocr_candidates:
+  - 53.88
+  section: 13
+- check: unreadable
+  field: BETA2
+  K: 3
+  section: 13
+- check: z_not_increasing
+  field: Z
+  K: 2
+  read: 2.4298
+  previous: 2.50058
+  section: 13
+- check: z_not_increasing
+  field: Z
+  K: 10
+  read: 3.45682
+  previous: 5.32881
+  section: 13
+- check: z_not_increasing
+  field: Z
+  K: 15
+  read: 4.09953
+  previous: 5.97031
+  section: 13
+- check: edge_te_angular_vs_tangency
+  field: tangency
+  values:
+    centre: 0.55888
+    surface_1: 0.55959
+    surface_2: 0.35846
+  odd:
+  - surface_2
+  section: 13
+- check: edge_le_radial_vs_R_K1
+  field: edge
+  edge: 24.3215
+  R_K1: 24.52251
+  section: 13
+- check: not_smooth
+  field: Z
+  K: 6
+  read: 3.04601
+  neighbour_fit: 3.31467
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: Z
+  K: 7
+  read: 5.15778
+  neighbour_fit: 4.99095
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: Z
+  K: 8
+  read: 5.26951
+  neighbour_fit: 5.34418
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: Z
+  K: 9
+  read: 5.58148
+  neighbour_fit: 5.38181
+  ocr_candidates:
+  - 5.38148
+  section: 14
+- check: not_smooth
+  field: Z
+  K: 13
+  read: 5.83514
+  neighbour_fit: 5.80251
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: Z
+  K: 14
+  read: 5.94753
+  neighbour_fit: 4.2015
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: Z
+  K: 15
+  read: 4.06271
+  neighbour_fit: 4.31057
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: R
+  K: 9
+  read: 25.4561
+  neighbour_fit: 25.43607
+  ocr_candidates:
+  - 25.4361
+  - 25.4541
+  section: 14
+- check: not_smooth
+  field: R
+  K: 10
+  read: 25.41592
+  neighbour_fit: 25.45471
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: R
+  K: 11
+  read: 25.59445
+  neighbour_fit: 25.39434
+  ocr_candidates:
+  - 25.39445
+  section: 14
+- check: not_smooth
+  field: R
+  K: 12
+  read: 25.57167
+  neighbour_fit: 25.37158
+  ocr_candidates:
+  - 25.37167
+  section: 14
+- check: not_smooth
+  field: R
+  K: 14
+  read: 25.52285
+  neighbour_fit: 25.32288
+  ocr_candidates:
+  - 25.32285
+  section: 14
+- check: not_smooth
+  field: THSP1
+  K: 13
+  read: 0.15375
+  neighbour_fit: 0.13421
+  ocr_candidates:
+  - 0.13375
+  section: 14
+- check: not_smooth
+  field: THSP1
+  K: 30
+  read: 0.30154
+  neighbour_fit: 0.32852
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: THSP1
+  K: 31
+  read: 0.50909
+  neighbour_fit: 0.48355
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: THSP1
+  K: 34
+  read: 0.5299
+  neighbour_fit: 0.54325
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: THSP2
+  K: 5
+  read: 0.05905
+  neighbour_fit: 0.0391
+  ocr_candidates:
+  - 0.03905
+  section: 14
+- check: not_smooth
+  field: THSP2
+  K: 34
+  read: 0.5248
+  neighbour_fit: 0.3248
+  ocr_candidates:
+  - 0.3248
+  section: 14
+- check: not_smooth
+  field: THSP2
+  K: 35
+  read: 0.33406
+  neighbour_fit: 0.86739
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: TNPC
+  K: 1
+  read: 0.05399
+  neighbour_fit: 0.0345
+  ocr_candidates:
+  - 0.03399
+  section: 14
+- check: not_smooth
+  field: BETA1
+  K: 24
+  read: 65.59
+  neighbour_fit: 63.29
+  ocr_candidates:
+  - 63.59
+  section: 14
+- check: not_smooth
+  field: BETA1
+  K: 31
+  read: 55.82
+  neighbour_fit: 53.78
+  ocr_candidates:
+  - 53.82
+  section: 14
+- check: not_smooth
+  field: BETA1
+  K: 32
+  read: 52.52
+  neighbour_fit: 58.44
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: BETA1
+  K: 33
+  read: 51.12
+  neighbour_fit: 63.06
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: BETA1
+  K: 34
+  read: 69.68
+  neighbour_fit: 49.89
+  ocr_candidates:
+  - 49.68
+  section: 14
+- check: not_smooth
+  field: BETA1
+  K: 35
+  read: 48.65
+  neighbour_fit: 102.18
+  ocr_candidates: []
+  section: 14
+- check: not_smooth
+  field: BETA2
+  K: 2
+  read: 65.21
+  neighbour_fit: 62.58
+  ocr_candidates:
+  - 63.21
+  section: 14
+- check: not_smooth
+  field: BETA2
+  K: 3
+  read: 63.37
+  neighbour_fit: 65.38
+  ocr_candidates:
+  - 65.37
+  section: 14
+- check: not_smooth
+  field: BETA2
+  K: 4
+  read: 65.55
+  neighbour_fit: 63.49
+  ocr_candidates:
+  - 63.55
+  section: 14
+- check: not_smooth
+  field: BETA2
+  K: 5
+  read: 63.61
+  neighbour_fit: 65.97
+  ocr_candidates:
+  - 65.61
+  section: 14
+- check: not_smooth
+  field: BETA2
+  K: 6
+  read: 65.76
+  neighbour_fit: 63.73
+  ocr_candidates:
+  - 63.76
+  section: 14
+- check: not_smooth
+  field: BETA2
+  K: 7
+  read: 65.9
+  neighbour_fit: 63.85
+  ocr_candidates:
+  - 63.9
+  section: 14
+- check: not_smooth
+  field: BETA2
+  K: 23
+  read: 65.82
+  neighbour_fit: 64.51
+  ocr_candidates:
+  - 63.82
+  - 65.32
+  section: 14
+- check: z_not_increasing
+  field: Z
+  K: 10
+  read: 5.49575
+  previous: 5.58148
+  section: 14
+- check: z_not_increasing
+  field: Z
+  K: 15
+  read: 4.06271
+  previous: 5.94753
+  section: 14
+- check: edge_te_angular_vs_tangency
+  field: edge
+  values:
+    centre: 0.33427
+    surface_1: null
+    surface_2: 0.55588
+  odd:
+  - centre
+  - surface_2
+  section: 14
+- check: not_smooth_spanwise
+  field: le_radius
+  section: 1
+  read: 9.57171
+  neighbour_fit: 10.24024
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: le_radius
+  section: 2
+  read: 10.80878
+  neighbour_fit: 10.14183
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: le_radius
+  section: 3
+  read: 12.04077
+  neighbour_fit: 13.37161
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: le_radius
+  section: 4
+  read: 15.26852
+  neighbour_fit: 13.27026
+  ocr_candidates:
+  - 13.26852
+- check: not_smooth_spanwise
+  field: le_radius
+  section: 5
+  read: 16.49509
+  neighbour_fit: 14.49824
+  ocr_candidates:
+  - 14.49509
+- check: not_smooth_spanwise
+  field: le_radius
+  section: 12
+  read: 25.0918
+  neighbour_fit: 23.09394
+  ocr_candidates:
+  - 23.0918
+- check: not_smooth_spanwise
+  field: le_radius
+  section: 14
+  read: 25.55194
+  neighbour_fit: 21.55315
+  ocr_candidates: []
+- check: ambiguous_end_pair
+  field: le_radius
+  section: 13
+  read: 24.3215
+- check: not_smooth_spanwise
+  field: te_radius
+  section: 13
+  read: 25.78459
+  neighbour_fit: 23.77916
+  ocr_candidates:
+  - 23.78459
+- check: not_smooth_spanwise
+  field: te_radius
+  section: 14
+  read: 24.78156
+  neighbour_fit: 30.78869
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: le_metal_angle
+  section: 2
+  read: 40.23
+  neighbour_fit: 33.70333
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: le_metal_angle
+  section: 4
+  read: 63.42
+  neighbour_fit: 43.81955
+  ocr_candidates:
+  - 43.42
+- check: not_smooth_spanwise
+  field: le_metal_angle
+  section: 14
+  read: 65.83
+  neighbour_fit: 70.02
+  ocr_candidates: []
+- check: ambiguous_end_pair
+  field: le_metal_angle
+  section: 1
+  read: 38.47
+- check: ambiguous_end_pair
+  field: le_metal_angle
+  section: 13
+  read: 65.69
+- check: not_smooth_spanwise
+  field: chord
+  section: 1
+  read: 9.51722
+  neighbour_fit: 10.26212
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 3
+  read: 9.4617
+  neighbour_fit: 11.02323
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 4
+  read: 11.48064
+  neighbour_fit: 9.42351
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 7
+  read: 9.27865
+  neighbour_fit: 11.94724
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 10
+  read: 12.78683
+  neighbour_fit: 10.91876
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 11
+  read: 9.23295
+  neighbour_fit: 13.28349
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 12
+  read: 9.51267
+  neighbour_fit: 13.8809
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 13
+  read: 14.59985
+  neighbour_fit: 9.20433
+  ocr_candidates: []
+- check: not_smooth_spanwise
+  field: chord
+  section: 14
+  read: 9.23572
+  neighbour_fit: 24.16987
+  ocr_candidates: []
+- check: ambiguous_end_pair
+  field: chord
+  section: 2
+  read: 9.48868
+- check: not_smooth_spanwise
+  field: max_thickness
+  section: 9
+  read: 0.57605
+  neighbour_fit: 0.41918
+  ocr_candidates:
+  - 0.37605
+- check: unreadable
+  field: Z
+  K: 15
+  table: II
+- check: not_smooth
+  field: Z
+  K: 1
+  read: -18.05981
+  neighbour_fit: -18.65967
+  ocr_candidates: []
+  table: II
+- check: not_smooth
+  field: Z
+  K: 2
+  read: -17.58257
+  neighbour_fit: -17.35771
+  ocr_candidates: []
+  table: II
+- check: not_smooth
+  field: Z
+  K: 3
+  read: -16.70552
+  neighbour_fit: -17.00468
+  ocr_candidates: []
+  table: II
+- check: not_smooth
+  field: Z
+  K: 4
+  read: -16.02809
+  neighbour_fit: -16.32774
+  ocr_candidates: []
+  table: II
+- check: not_smooth
+  field: Z
+  K: 5
+  read: -15.55085
+  neighbour_fit: -15.35169
+  ocr_candidates:
+  - -15.35085
+  table: II
+- check: not_smooth
+  field: Z
+  K: 7
+  read: -15.99657
+  neighbour_fit: -13.99713
+  ocr_candidates:
+  - -13.99657
+  table: II
+ocr_repairs:
+- 'section 1: row 16 Z: ''4 06025'' -> 4.06025'
+- 'section 1: row 17 Z: ''4 32773'' -> 4.32773'
+- 'section 1: row 18 Z: ''4 59453'' -> 4.59453'
+- 'section 1: row 19 Z: ''4 86060'' -> 4.86060'
+- 'section 1: row 20 Z: ''5 12594'' -> 5.12594'
+- 'section 1: row 21 Z: ''5 59054'' -> 5.59054'
+- 'section 1: row 32 BETA: ''-15.I5'' -> -15.15'
+- 'section 1: row 33 TNPC: ''0.2409I'' -> 0.24091'
+- 'section 1: row 33 BETA2: ''-IO.I2'' -> -10.12'
+- 'section 2: edge tangency_2_angular: row 1 1: ''0.Z2574'' -> 0.22574'
+- 'section 2: row 6 R: ''ll.lOOIO'' -> 11.10010'
+- 'section 2: row 23 BETA: ''8 34'' -> 8.34'
+- 'section 2: row 23 BETA2: ''Ii.71'' -> 11.71'
+- 'section 2: row 24 BETA: ''7 09'' -> 7.09'
+- 'section 2: row 25 BETA: ''5 76'' -> 5.76'
+- 'section 2: row 25 BETA2: ''i0.00'' -> 10.00'
+- 'section 2: row 26 BETA: ''4 37'' -> 4.37'
+- 'section 2: row 27 BETA: ''2 94'' -> 2.94'
+- 'section 2: row 28 R: ''12 58554'' -> 12.58554'
+- 'section 2: row 28 BETA: ''1 45'' -> 1.45'
+- 'section 2: row 29 R: ''12 62734'' -> 12.62734'
+- 'section 2: row 29 BETA: ''-0 15'' -> -0.15'
+- 'section 2: row 30 R: ''12 66667'' -> 12.66667'
+- 'section 2: row 30 BETA: ''-I 86'' -> -1.86'
+- 'section 2: row 31 R: ''12 70363'' -> 12.70363'
+- 'section 2: row 32 R: ''12 73826'' -> 12.73826'
+- 'section 2: row 33 R: ''12 77066'' -> 12.77066'
+- 'section 3: row 1 R: ''12 03391'' -> 12.03391'
+- 'section 3: row 1 BETA2: ''33 85'' -> 33.85'
+- 'section 3: row 2 R: ''12 08119'' -> 12.08119'
+- 'section 3: row 2 BETA2: ''33 25'' -> 33.25'
+- 'section 3: row 3 R: ''12 13123'' -> 12.13123'
+- 'section 3: row 3 THSP1: ''0 04861'' -> 0.04861'
+- 'section 3: row 3 BETA2: ''32 52'' -> 32.52'
+- 'section 3: row 4 R: ''12 18389'' -> 12.18389'
+- 'section 3: row 4 THSP1: ''0 06948'' -> 0.06948'
+- 'section 3: row 4 BETA: ''36 98'' -> 36.98'
+- 'section 3: row 4 BETA2: ''31 39'' -> 31.39'
+- 'section 3: row 5 R: ''12 23917'' -> 12.23917'
+- 'section 3: row 5 THSP1: ''0 08865'' -> 0.08865'
+- 'section 3: row 5 BETA: ''35 18'' -> 35.18'
+- 'section 3: row 5 BETA2: ''29 98'' -> 29.98'
+- 'section 3: row 6 R: ''12 29704'' -> 12.29704'
+- 'section 3: row 6 THSP1: ''0 10650'' -> 0.10650'
+- 'section 3: row 6 BETA: ''33 83'' -> 33.83'
+- 'section 3: row 6 BETA2: ''29 I0'' -> 29.10'
+- 'section 3: row 7 R: ''12 35745'' -> 12.35745'
+- 'section 3: row 7 THSP1: ''0 12319'' -> 0.12319'
+- 'section 3: row 7 BETA: ''32 34'' -> 32.34'
+- 'section 3: row 7 BETA2: ''28 22'' -> 28.22'
+- 'section 3: row 8 R: ''12 42035'' -> 12.42035'
+- 'section 3: row 8 THSP1: ''0 13847'' -> 0.13847'
+- 'section 3: row 8 BETA: ''30 57'' -> 30.57'
+- 'section 3: row 8 BETA2: ''27 12'' -> 27.12'
+- 'section 3: row 9 THSP1: ''0 15244'' -> 0.15244'
+- 'section 3: row 9 BETA: ''29 03'' -> 29.03'
+- 'section 3: row 9 BETA2: ''26 14'' -> 26.14'
+- 'section 3: row 10 THSP1: ''0 16535'' -> 0.16535'
+- 'section 3: row 10 BETA: ''27 69'' -> 27.69'
+- 'section 3: row 10 BETA2: ''25 34'' -> 25.34'
+- 'section 3: row 11 THSP1: ''0 17725'' -> 0.17725'
+- 'section 3: row 11 THSP2: ''0 11648'' -> 0.11648'
+- 'section 3: row 11 BETA: ''26 43'' -> 26.43'
+- 'section 3: row 11 BETA2: ''24 69'' -> 24.69'
+- 'section 3: row 12 THSP1: ''0 18822'' -> 0.18822'
+- 'section 3: row 12 THSP2: ''0 12612'' -> 0.12612'
+- 'section 3: row 12 BETA: ''25 26'' -> 25.26'
+- 'section 3: row 12 BETA1: ''26 44'' -> 26.44'
+- 'section 3: row 13 THSP1: ''0 19834'' -> 0.19834'
+- 'section 3: row 13 THSP2: ''0 13540'' -> 0.13540'
+- 'section 3: row 13 BETA: ''24 13'' -> 24.13'
+- 'section 3: row 13 BETA1: ''24 82'' -> 24.82'
+- 'section 3: row 14 THSP2: ''0 14432'' -> 0.14432'
+- 'section 3: row 14 BETA1: ''23 24'' -> 23.24'
+- 'section 3: row 15 THSP2: ''0 15291'' -> 0.15291'
+- 'section 3: row 15 BETA1: ''21 81'' -> 21.81'
+- 'section 3: row 16 THSP2: ''0 16120'' -> 0.16120'
+- 'section 3: row 16 BETA1: ''20 48'' -> 20.48'
+- 'section 3: row 17 THSP2: ''0 16920'' -> 0.16920'
+- 'section 3: row 17 BETA1: ''19 14'' -> 19.14'
+- 'section 3: row 18 THSP2: ''0 17692'' -> 0.17692'
+- 'section 3: row 18 BETA1: ''17 84'' -> 17.84'
+- 'section 3: row 19 BETA1: ''16 58'' -> 16.58'
+- 'section 3: row 20 TNPC: ''0 73430'' -> 0.73430'
+- 'section 3: row 20 BETA1: ''15 33'' -> 15.33'
+- 'section 3: row 21 TNPC: ''0 71744'' -> 0.71744'
+- 'section 3: row 21 BETA1: ''14 02'' -> 14.02'
+- 'section 3: row 22 TNPC: ''0 69655'' -> 0.69655'
+- 'section 3: row 23 TNPC: ''0 67217'' -> 0.67217'
+- 'section 3: row 24 R: ''13 45194'' -> 13.45194'
+- 'section 3: row 24 TNPC: ''0 64436'' -> 0.64436'
+- 'section 3: row 25 Z: ''6 46912'' -> 6.46912'
+- 'section 3: row 25 R: ''13 49873'' -> 13.49873'
+- 'section 3: row 25 TNPC: ''0 61244'' -> 0.61244'
+- 'section 3: row 25 BETA: ''12 99'' -> 12.99'
+- 'section 3: row 26 Z: ''6 71383'' -> 6.71383'
+- 'section 3: row 26 R: ''13 54304'' -> 13.54304'
+- 'section 3: row 26 TNPC: ''0 57673'' -> 0.57673'
+- 'section 3: row 26 BETA: ''11 94'' -> 11.94'
+- 'section 3: row 26 BETA2: ''16 55'' -> 16.55'
+- 'section 3: row 27 Z: ''6 95791'' -> 6.95791'
+- 'section 3: row 27 R: ''13 58497'' -> 13.58497'
+- 'section 3: row 27 TNPC: ''0 53744'' -> 0.53744'
+- 'section 3: row 27 BETA: ''10 86'' -> 10.86'
+- 'section 3: row 27 BETA2: ''15 86'' -> 15.86'
+- 'section 3: row 28 Z: ''7 20138'' -> 7.20138'
+- 'section 3: row 28 R: ''13 62455'' -> 13.62455'
+- 'section 3: row 28 TNPC: ''0 49423'' -> 0.49423'
+- 'section 3: row 28 BETA: ''9 73'' -> 9.73'
+- 'section 3: row 28 BETA2: ''15 17'' -> 15.17'
+- 'section 3: row 29 Z: ''7 44429'' -> 7.44429'
+- 'section 3: row 29 R: ''13 66188'' -> 13.66188'
+- 'section 3: row 29 TNPC: ''0 44709'' -> 0.44709'
+- 'section 3: row 29 BETA: ''8 54'' -> 8.54'
+- 'section 3: row 29 BETA2: ''14 40'' -> 14.40'
+- 'section 3: row 30 Z: ''7 68672'' -> 7.68672'
+- 'section 3: row 30 R: ''i3 69703'' -> 13.69703'
+- 'section 3: row 30 THSP1: ''0 27766'' -> 0.27766'
+- 'section 3: row 30 BETA: ''7 27'' -> 7.27'
+- 'section 3: row 30 BETA2: ''13 59'' -> 13.59'
+- 'section 3: row 31 Z: ''7 92869'' -> 7.92869'
+- 'section 3: row 31 R: ''13 73005'' -> 13.73005'
+- 'section 3: row 31 THSP1: ''0 27763'' -> 0.27763'
+- 'section 3: row 31 BETA: ''6 02'' -> 6.02'
+- 'section 3: row 31 BETA2: ''12 79'' -> 12.79'
+- 'section 3: row 32 Z: ''8 I7023'' -> 8.17023'
+- 'section 3: row 32 R: ''I3 76099'' -> 13.76099'
+- 'section 3: row 32 THSP1: ''0 27710'' -> 0.27710'
+- 'section 3: row 32 BETA: ''4 80'' -> 4.80'
+- 'section 3: row 32 BETA2: ''11 96'' -> 11.96'
+- 'section 3: row 33 THSP1: ''0 27600'' -> 0.27600'
+- 'section 3: row 33 BETA: ''3 03'' -> 3.03'
+- 'section 3: row 33 BETA2: ''10 80'' -> 10.80'
+- 'section 3: row 34 THSP1: ''0 27408'' -> 0.27408'
+- 'section 3: row 34 BETA: ''1 O0'' -> 1.00'
+- 'section 3: row 34 BETA2: ''9 50'' -> 9.50'
+- 'section 3: row 35 THSP1: ''0 27145'' -> 0.27145'
+- 'section 3: row 35 BETA: ''-0 35'' -> -0.35'
+- 'section 3: row 35 BETA2: ''8 66'' -> 8.66'
+- 'section 4: row 1 BETA: ''63 42'' -> 63.42'
+- 'section 4: row 2 BETA: ''42 51'' -> 42.51'
+- 'section 4: row 3 BETA: ''40 76'' -> 40.76'
+- 'section 4: row 4 BETA: ''39 31'' -> 39.31'
+- 'section 4: row 5 BETA: ''37 91'' -> 37.91'
+- 'section 4: row 6 BETA: ''36 40'' -> 36.40'
+- 'section 4: row 6 BETA2: ''32 09'' -> 32.09'
+- 'section 4: row 7 BETA2: ''31 24'' -> 31.24'
+- 'section 4: row 8 BETA2: ''30 44'' -> 30.44'
+- 'section 4: row 9 TNPC: ''0 60145'' -> 0.60145'
+- 'section 4: row 9 BETA2: ''30 15'' -> 30.15'
+- 'section 4: row 10 TNPC: ''0 63579'' -> 0.63579'
+- 'section 4: row 10 BETA2: ''29 86'' -> 29.86'
+- 'section 4: row 11 TNPC: ''0 66429'' -> 0.66429'
+- 'section 4: row 11 BETA2: ''29 21'' -> 29.21'
+- 'section 4: row 12 TNPC: ''0 68554'' -> 0.68554'
+- 'section 4: row 12 BETA2: ''28 60'' -> 28.60'
+- 'section 4: row 13 TNPC: ''0 70123'' -> 0.70123'
+- 'section 4: row 14 THSP2: ''0 14158'' -> 0.14158'
+- 'section 4: row 14 TNPC: ''0 71202'' -> 0.71202'
+- 'section 4: row 15 THSP1: ''0 20852'' -> 0.20852'
+- 'section 4: row 15 THSP2: ''0 15103'' -> 0.15103'
+- 'section 4: row 15 TNPC: ''0 71806'' -> 0.71806'
+- 'section 4: row 16 THSP1: ''0 21728'' -> 0.21728'
+- 'section 4: row 16 THSP2: ''0 16026'' -> 0.16026'
+- 'section 4: row 16 BETA1: ''25 59'' -> 25.59'
+- 'section 4: row 17 THSP1: ''0 22551'' -> 0.22551'
+- 'section 4: row 17 THSP2: ''0 16928'' -> 0.16928'
+- 'section 4: row 17 BETA1: ''24 46'' -> 24.46'
+- 'section 4: row 18 Z: ''4 76145'' -> 4.76145'
+- 'section 4: row 18 THSP1: ''0 23325'' -> 0.23325'
+- 'section 4: row 18 THSP2: ''0 17809'' -> 0.17809'
+- 'section 4: row 18 BETA1: ''23 45'' -> 23.45'
+- 'section 4: row 19 Z: ''5 00059'' -> 5.00059'
+- 'section 4: row 19 R: ''14 27089'' -> 14.27089'
+- 'section 4: row 19 THSP1: ''0 24056'' -> 0.24056'
+- 'section 4: row 19 THSP2: ''0 18669'' -> 0.18669'
+- 'section 4: row 19 BETA1: ''22 48'' -> 22.48'
+- 'section 4: row 20 Z: ''5 23868'' -> 5.23868'
+- 'section 4: row 20 R: ''14 32395'' -> 14.32395'
+- 'section 4: row 20 THSP1: ''0 24744'' -> 0.24744'
+- 'section 4: row 20 BETA1: ''21 42'' -> 21.42'
+- 'section 4: row 21 Z: ''5 47581'' -> 5.47581'
+- 'section 4: row 21 R: ''14 37431'' -> 14.37431'
+- 'section 4: row 21 THSP1: ''0 25388'' -> 0.25388'
+- 'section 4: row 21 BETA1: ''20 36'' -> 20.36'
+- 'section 4: row 22 Z: ''5 71206'' -> 5.71206'
+- 'section 4: row 22 R: ''16 42209'' -> 16.42209'
+- 'section 4: row 22 THSP1: ''0 25995'' -> 0.25995'
+- 'section 4: row 23 Z: ''5 94752'' -> 5.94752'
+- 'section 4: row 23 R: ''14 46741'' -> 14.46741'
+- 'section 4: row 23: unreadable ''0.2191_'''
+- 'section 4: row 23 BETA: ''21 78'' -> 21.78'
+- 'section 4: row 24 Z: ''6 18229'' -> 6.18229'
+- 'section 4: row 24 R: ''14 51036'' -> 14.51036'
+- 'section 4: row 24 BETA: ''21 06'' -> 21.06'
+- 'section 4: row 25 Z: ''6 41644'' -> 6.41644'
+- 'section 4: row 25 R: ''14 55104'' -> 14.55104'
+- 'section 4: row 25 BETA: ''20 30'' -> 20.30'
+- 'section 4: row 26 BETA: ''19 54'' -> 19.54'
+- 'section 4: row 27 BETA: ''18 74'' -> 18.74'
+- 'section 4: row 28 BETA: ''17 9O'' -> 17.90'
+- 'section 4: row 28 BETA2: ''22 99'' -> 22.99'
+- 'section 4: row 29 BETA: ''17 04'' -> 17.04'
+- 'section 4: row 29 BETA2: ''22 48'' -> 22.48'
+- 'section 4: row 30 TNPC: ''0 36519'' -> 0.36519'
+- 'section 4: row 30 BETA: ''16 13'' -> 16.13'
+- 'section 4: row 30 BETA2: ''21 95'' -> 21.95'
+- 'section 4: row 31: unreadable ''0,29708'''
+- 'section 4: row 31 TNPC: ''0 31447'' -> 0.31447'
+- 'section 4: row 31 BETA2: ''21 44'' -> 21.44'
+- 'section 4: row 32 TNPC: ''0 26025'' -> 0.26025'
+- 'section 4: row 32 BETA2: ''20 89'' -> 20.89'
+- 'section 4: row 33: unreadable ''14,80276'''
+- 'section 4: row 33 TNPC: ''0 20275'' -> 0.20275'
+- 'section 4: row 33 BETA2: ''20 21'' -> 20.21'
+- 'section 4: row 34 TNPC: ''0 15948'' -> 0.15948'
+- 'section 4: row 34 BETA2: ''19 53'' -> 19.53'
+- 'section 4: row 35 TNPC: ''0 07043'' -> 0.07043'
+- 'section 4: row 35 BETA2: ''ID'' -> 1D'
+- 'section 4: row 35: unreadable ''ID'''
+- 'section 5: row 1 R: ''14 48984'' -> 14.48984'
+- 'section 5: row 2 R: ''16 52551'' -> 16.52551'
+- 'section 5: row 2 BETA2: ''36 85'' -> 36.85'
+- 'section 5: row 3 R: ''14 56548'' -> 14.56548'
+- 'section 5: row 3 BETA2: ''36 72'' -> 36.72'
+- 'section 5: row 4 R: ''14 60561'' -> 14.60561'
+- 'section 5: row 4 THSP1: ''0 05589'' -> 0.05589'
+- 'section 5: row 4 BETA2: ''36 48'' -> 36.48'
+- 'section 5: row 5 R: ''14 64591'' -> 14.64591'
+- 'section 5: row 5 THSP1: ''0 07138'' -> 0.07138'
+- 'section 5: row 5 BETA2: ''56 I0'' -> 56.10'
+- 'section 5: row 6 R: ''14 69027'' -> 14.69027'
+- 'section 5: row 6 THSP1: ''0 08776'' -> 0.08776'
+- 'section 5: row 6 BETA: ''59 77'' -> 59.77'
+- 'section 5: row 6 BETA2: ''55 75'' -> 55.75'
+- 'section 5: row 7 R: ''14 75669'' -> 14.75669'
+- 'section 5: row 7 THSP1: ''0 10510'' -> 0.10510'
+- 'section 5: row 7 BETA: ''58 70'' -> 58.70'
+- 'section 5: row 7 BETA2: ''55 24'' -> 55.24'
+- 'section 5: row 8 R: ''14 78510'' -> 14.78510'
+- 'section 5: row 8 THSP1: ''0 11765'' -> 0.11765'
+- 'section 5: row 8 BETA: ''37 78'' -> 37.78'
+- 'section 5: row 8 BETA2: ''54 71'' -> 54.71'
+- 'section 5: row 9 R: ''14 85545'' -> 14.85545'
+- 'section 5: row 9 THSP1: ''0 15141'' -> 0.15141'
+- 'section 5: row 9 BETA: ''56 92'' -> 56.92'
+- 'section 5: row 9 BETA2: ''54 45'' -> 54.45'
+- 'section 5: row 10 THSP1: ''0 14445'' -> 0.14445'
+- 'section 5: row 10 BETA: ''36 02'' -> 36.02'
+- 'section 5: row 10 BETA2: ''54 II'' -> 54.11'
+- 'section 5: row 11 THSP1: ''0 15671'' -> 0.15671'
+- 'section 5: row 11 BETA: ''35 13'' -> 35.13'
+- 'section 5: row 11 BETA2: ''55 7i'' -> 55.71'
+- 'section 5: row 12 THSP1: ''0 16852'' -> 0.16852'
+- 'section 5: row 12 THSP2: ''0 11706'' -> 0.11706'
+- 'section 5: row 12 BETA: ''54 55'' -> 54.55'
+- 'section 5: row 12 BETA2: ''53 59'' -> 53.59'
+- 'section 5: row 13 THSP1: ''0 17954'' -> 0.17954'
+- 'section 5: row 13 THSP2: ''0 12769'' -> 0.12769'
+- 'section 5: row 13 BETA: ''33 67'' -> 33.67'
+- 'section 5: row 13 BETA2: ''55 16'' -> 55.16'
+- 'section 5: row 14 THSP1: ''0 18985'' -> 0.18985'
+- 'section 5: row 14 THSP2: ''0 15776'' -> 0.15776'
+- 'section 5: row 14 BETA: ''53 07'' -> 53.07'
+- 'section 5: row 14 BETA2: ''32 98'' -> 32.98'
+- 'section 5: row 15 THSP1: ''0 19982'' -> 0.19982'
+- 'section 5: row 15 THSP2: ''0 14781'' -> 0.14781'
+- 'section 5: row 15 BETA: ''52 47'' -> 52.47'
+- 'section 5: row 15 BETA2: ''52 75'' -> 52.75'
+- 'section 5: row 16 THSP1: ''0 20955'' -> 0.20955'
+- 'section 5: row 16 THSP2: ''0 15768'' -> 0.15768'
+- 'section 5: row 16 BETA: ''51 90'' -> 51.90'
+- 'section 5: row 16 BETA2: ''32 57'' -> 32.57'
+- 'section 5: row 17 THSP2: ''0 16740'' -> 0.16740'
+- 'section 5: row 17 BETA: ''51 40'' -> 51.40'
+- 'section 5: row 17 BETA2: ''52 47'' -> 52.47'
+- 'section 5: row 18 THSP2: ''0 17696'' -> 0.17696'
+- 'section 5: row 19 THSP2: ''0 18656'' -> 0.18656'
+- 'section 5: row 19 BETA2: ''32. I0'' -> 32.10'
+- 'section 5: row 20 THSP2: ''0 19562'' -> 0.19562'
+- 'section 5: row 24 BETA1: ''24 17'' -> 24.17'
+- 'section 5: row 25 TNPC: ''0 52881'' -> 0.52881'
+- 'section 5: row 25 BETA1: ''25 25'' -> 25.25'
+- 'section 5: row 26 TNPC: ''0 49800'' -> 0.49800'
+- 'section 5: row 26 BETA1: ''22 27'' -> 22.27'
+- 'section 5: row 27 TNPC: ''0 46599'' -> 0.46599'
+- 'section 5: row 27 BETA1: ''21 22'' -> 21.22'
+- 'section 5: row 28 TNPC: ''0 42672'' -> 0.42672'
+- 'section 5: row 28 BETA1: ''20 15'' -> 20.15'
+- 'section 5: row 29 Z: ''7 16515'' -> 7.16515'
+- 'section 5: row 29 TNPC: ''0 58624'' -> 0.58624'
+- 'section 5: row 29 BETA1: ''19 13'' -> 19.13'
+- 'section 5: row 30 Z: ''7 58502'' -> 7.58502'
+- 'section 5: row 30 TNPC: ''0 34271'' -> 0.34271'
+- 'section 5: row 30 BETA1: ''17 98'' -> 17.98'
+- 'section 5: row 31 Z: ''7 60299'' -> 7.60299'
+- 'section 5: row 31 TNPC: ''0 29568'' -> 0.29568'
+- 'section 5: row 31 BETA1: ''16 80'' -> 16.80'
+- 'section 5: row 32 Z: ''7 82509'' -> 7.82509'
+- 'section 5: row 32 TNPC: ''0 24682'' -> 0.24682'
+- 'section 5: row 32 BETA1: ''15 76'' -> 15.76'
+- 'section 5: row 33 Z: ''8 04359'' -> 8.04359'
+- 'section 5: row 33 TNPC: ''0 19093'' -> 0.19093'
+- 'section 5: row 33 BETA1: ''14 27'' -> 14.27'
+- 'section 5: row 34 Z: ''8 26589'' -> 8.26589'
+- 'section 5: row 34 TNPC: ''0 15136'' -> 0.15136'
+- 'section 5: row 34 BETA1: ''12 45'' -> 12.45'
+- 'section 5: row 35 Z: ''8 48456'' -> 8.48456'
+- 'section 5: row 35 TNPC: ''0 06591'' -> 0.06591'
+- 'section 5: row 35 BETA1: ''II 17'' -> 11.17'
+- 'section 6: row 1 BETA: ''48 69'' -> 48.69'
+- 'section 6: row 2 BETA: ''47 80'' -> 47.80'
+- 'section 6: row 3 BETA: ''46 65'' -> 46.65'
+- 'section 6: row 4 BETA: ''45 63'' -> 45.63'
+- 'section 6: row 5 TNPC: ''0 31723'' -> 0.31723'
+- 'section 6: row 5 BETA: ''44 72'' -> 44.72'
+- 'section 6: row 5 BETA2: ''60 59'' -> 60.59'
+- 'section 6: row 6 TNPC: ''0 36389'' -> 0.36389'
+- 'section 6: row 6 BETA: ''43 85'' -> 43.85'
+- 'section 6: row 6 BETA2: ''40 20'' -> 40.20'
+- 'section 6: row 7 TNPC: ''0 60555'' -> 0.60555'
+- 'section 6: row 7 BETA: ''43 03'' -> 43.03'
+- 'section 6: row 7 BETA2: ''39 84'' -> 39.84'
+- 'section 6: row 8 TNPC: ''0 66268'' -> 0.66268'
+- 'section 6: row 8 BETA2: ''59 45'' -> 59.45'
+- 'section 6: row 9 R: ''16 01453'' -> 16.01453'
+- 'section 6: row 9 TNPC: ''0 47618'' -> 0.47618'
+- 'section 6: row 9 BETA2: ''59 O0'' -> 59.00'
+- 'section 6: row 10 R: ''16 05862'' -> 16.05862'
+- 'section 6: row 10 TNPC: ''0 50600'' -> 0.50600'
+- 'section 6: row 10 BETA2: ''38 59'' -> 38.59'
+- 'section 6: row 11 R: ''16 10381'' -> 16.10381'
+- 'section 6: row 11 TNPC: ''0 53230'' -> 0.53230'
+- 'section 6: row 11 BETA2: ''38 25'' -> 38.25'
+- 'section 6: row 12 R: ''16 14964'' -> 16.14964'
+- 'section 6: row 12 THSP2: ''0 11186'' -> 0.11186'
+- 'section 6: row 12 TNPC: ''0 55540'' -> 0.55540'
+- 'section 6: row 12 BETA2: ''37 96'' -> 37.96'
+- 'section 6: row 13 R: ''16 19563'' -> 16.19563'
+- 'section 6: row 13 THSP2: ''0 12265'' -> 0.12265'
+- 'section 6: row 13 TNPC: ''0 57667'' -> 0.57667'
+- 'section 6: row 13 BETA2: ''37 82'' -> 37.82'
+- 'section 6: row 14 Z: ''lfi'' -> 1f1'
+- 'section 6: row 14: unreadable ''lfi'''
+- 'section 6: row 14 THSP1: ''16 24138'' -> 16.24138'
+- 'section 6: row 14 TNPC: ''0 15292'' -> 0.15292'
+- 'section 6: row 14 BETA: ''58887'' -> 588.87'
+- 'section 6: row 14 BETA2: ''59. O0'' -> 59.00'
+- 'section 6: row 15 R: ''16 28661'' -> 16.28661'
+- 'section 6: row 15 THSP1: ''0 18986'' -> 0.18986'
+- 'section 6: row 15 THSP2: ''0 14528'' -> 0.14528'
+- 'section 6: row 15 TNPC: ''0 59822'' -> 0.59822'
+- 'section 6: row 15 BETA2: ''37 71'' -> 37.71'
+- 'section 6: row 16 R: ''16 33029'' -> 16.33029'
+- 'section 6: row 16 THSP1: ''0 20009'' -> 0.20009'
+- 'section 6: row 16 THSP2: ''0 15350'' -> 0.15350'
+- 'section 6: row 16 TNPC: ''0 60397'' -> 0.60397'
+- 'section 6: row 16 BETA2: ''37 61'' -> 37.61'
+- 'section 6: row 17 R: ''16 37260'' -> 16.37260'
+- 'section 6: row 17 THSP1: ''0 20995'' -> 0.20995'
+- 'section 6: row 17 THSP2: ''0 16361'' -> 0.16361'
+- 'section 6: row 17 TNPC: ''0 60556'' -> 0.60556'
+- 'section 6: row 17 BETA2: ''37 61'' -> 37.61'
+- 'section 6: row 18 R: ''16 41299'' -> 16.41299'
+- 'section 6: row 18 THSP1: ''0 21943'' -> 0.21943'
+- 'section 6: row 18 THSP2: ''0 17564'' -> 0.17564'
+- 'section 6: row 18 TNPC: ''0 60336'' -> 0.60336'
+- 'section 6: row 18 BETA2: ''37 53'' -> 37.53'
+- 'section 6: row 19 R: ''i6 65Iii'' -> 16.65111'
+- 'section 6: row 19 THSP1: ''0 22858'' -> 0.22858'
+- 'section 6: row 19 THSP2: ''0 18356'' -> 0.18356'
+- 'section 6: row 19 TNPC: ''0 59816'' -> 0.59816'
+- 'section 6: row 19 BETA2: ''37.4i'' -> 37.41'
+- 'section 6: row 20 R: ''16 68683'' -> 16.68683'
+- 'section 6: row 20 THSP1: ''0 23740'' -> 0.23740'
+- 'section 6: row 20 THSP2: ''0 19335'' -> 0.19335'
+- 'section 6: row 20 TNPC: ''0 58948'' -> 0.58948'
+- 'section 6: row 21 R: ''16 52023'' -> 16.52023'
+- 'section 6: row 21 THSP1: ''0 24590'' -> 0.24590'
+- 'section 6: row 21 THSP2: ''0 20307'' -> 0.20307'
+- 'section 6: row 21 TNPC: ''0 57734'' -> 0.57734'
+- 'section 6: row 22 R: ''16 55145'' -> 16.55145'
+- 'section 6: row 22 THSP1: ''0 25610'' -> 0.25610'
+- 'section 6: row 22 THSP2: ''0 21271'' -> 0.21271'
+- 'section 6: row 22 TNPC: ''0 56219'' -> 0.56219'
+- 'section 6: row 22 BETA2: ''37.I3'' -> 37.13'
+- 'section 6: row 23 R: ''16 58061'' -> 16.58061'
+- 'section 6: row 23 THSP1: ''0 26199'' -> 0.26199'
+- 'section 6: row 23 THSP2: ''0 22225'' -> 0.22225'
+- 'section 6: row 23 TNPC: ''0 54402'' -> 0.54402'
+- 'section 6: row 23 BETA1: ''31 55'' -> 31.55'
+- 'section 6: row 24 R: ''16 60785'' -> 16.60785'
+- 'section 6: row 24 THSP1: ''0 26958'' -> 0.26958'
+- 'section 6: row 24 THSP2: ''0 23170'' -> 0.23170'
+- 'section 6: row 24 BETA1: ''30 64'' -> 30.64'
+- 'section 6: row 25 R: ''16 63324'' -> 16.63324'
+- 'section 6: row 25 THSP1: ''0 27689'' -> 0.27689'
+- 'section 6: row 25 BETA1: ''29 75'' -> 29.75'
+- 'section 6: row 26 Z: ''6 29997'' -> 6.29997'
+- 'section 6: row 26 R: ''16 65686'' -> 16.65686'
+- 'section 6: row 26 THSP1: ''0 28391'' -> 0.28391'
+- 'section 6: row 26 BETA1: ''28 80'' -> 28.80'
+- 'section 6: row 27 Z: ''6 50718'' -> 6.50718'
+- 'section 6: row 27 R: ''16 67880'' -> 16.67880'
+- 'section 6: row 27 THSP1: ''0 29065'' -> 0.29065'
+- 'section 6: row 27 BETA1: ''27 86'' -> 27.86'
+- 'section 6: row 28 Z: ''6 71657'' -> 6.71657'
+- 'section 6: row 28 R: ''16 69915'' -> 16.69915'
+- 'section 6: row 28 THSP1: ''0 29712'' -> 0.29712'
+- 'section 6: row 28 BETA1: ''26 91'' -> 26.91'
+- 'section 6: row 29 Z: ''6 92218'' -> 6.92218'
+- 'section 6: row 29 R: ''16 71791'' -> 16.71791'
+- 'section 6: row 29 THSP1: ''0 30331'' -> 0.30331'
+- 'section 6: row 29 BETA1: ''25 89'' -> 25.89'
+- 'section 6: row 30 Z: ''7 13011'' -> 7.13011'
+- 'section 6: row 30 R: ''16 73526'' -> 16.73526'
+- 'section 6: row 30 BETA1: ''24 81'' -> 24.81'
+- 'section 6: row 31 Z: ''7 33835'' -> 7.33835'
+- 'section 6: row 31 R: ''16 75119'' -> 16.75119'
+- 'section 6: row 31 BETA1: ''23 76'' -> 23.76'
+- 'section 6: row 32 Z: ''7 56697'' -> 7.56697'
+- 'section 6: row 32 R: ''16 76581'' -> 16.76581'
+- 'section 6: row 32 BETA1: ''22 74'' -> 22.74'
+- 'section 6: row 33 Z: ''7 75606'' -> 7.75606'
+- 'section 6: row 33 R: ''16 77919'' -> 16.77919'
+- 'section 6: row 33 BETA1: ''21 45'' -> 21.45'
+- 'section 6: row 34 Z: ''7 96559'' -> 7.96559'
+- 'section 6: row 34 R: ''16 79161'' -> 16.79161'
+- 'section 6: row 34 BETA1: ''19 95'' -> 19.95'
+- 'section 6: row 35 Z: ''8 17558'' -> 8.17558'
+- 'section 6: row 35 R: ''16 80261'' -> 16.80261'
+- 'section 6: row 35 BETA1: ''18 87'' -> 18.87'
+- 'section 7: row 1 THSP1: ''-0 01805'' -> -0.01805'
+- 'section 7: row 2 THSP1: ''0 00034'' -> 0.00034'
+- 'section 7: row 3 THSP1: ''0 01788'' -> 0.01788'
+- 'section 7: row 4 THSP1: ''0 03454'' -> 0.03454'
+- 'section 7: row 4 BETA1: ''52 39'' -> 52.39'
+- 'section 7: row 5 THSP1: ''0 05051'' -> 0.05051'
+- 'section 7: row 5 THSP2: ''0 02761'' -> 0.02761'
+- 'section 7: row 5 BETA1: ''51 46'' -> 51.46'
+- 'section 7: row 6 THSP1: ''0 06587'' -> 0.06587'
+- 'section 7: row 6 THSP2: ''0 03989'' -> 0.03989'
+- 'section 7: row 6 BETA1: ''50 53'' -> 50.53'
+- 'section 7: row 7 THSP2: ''0 05192'' -> 0.05192'
+- 'section 7: row 7 BETA1: ''49 66'' -> 49.66'
+- 'section 7: row 8 THSP2: ''0 06370'' -> 0.06370'
+- 'section 7: row 8 BETA1: ''48 86'' -> 48.86'
+- 'section 7: row 9 THSP2: ''0 07525'' -> 0.07525'
+- 'section 7: row 9 BETA1: ''48 08'' -> 48.08'
+- 'section 7: row 10 THSP2: ''0 08659'' -> 0.08659'
+- 'section 7: row 10 BETA1: ''67 33'' -> 67.33'
+- 'section 7: row 11 Z: ''3.I8863'' -> 3.18863'
+- 'section 7: row 11 THSP2: ''0 09771'' -> 0.09771'
+- 'section 7: row 11 TNPC: ''0 45475'' -> 0.45475'
+- 'section 7: row 11 BETA1: ''46 59'' -> 46.59'
+- 'section 7: row 12 Z: ''3 39108'' -> 3.39108'
+- 'section 7: row 12 THSP2: ''0 10864'' -> 0.10864'
+- 'section 7: row 12 TNPC: ''0 47861'' -> 0.47861'
+- 'section 7: row 12 BETA1: ''45 84'' -> 45.84'
+- 'section 7: row 13 Z: ''3 59260'' -> 3.59260'
+- 'section 7: row 13 TNPC: ''0 49908'' -> 0.49908'
+- 'section 7: row 14 Z: ''3 79304'' -> 3.79304'
+- 'section 7: row 14 TNPC: ''0 51517'' -> 0.51517'
+- 'section 7: row 14 BETA2: ''42 30'' -> 42.30'
+- 'section 7: row 15 Z: ''3 99245'' -> 3.99245'
+- 'section 7: row 15 R: ''I7.61312'' -> 17.61312'
+- 'section 7: row 15 TNPC: ''0 52797'' -> 0.52797'
+- 'section 7: row 15 BETA2: ''62 24'' -> 62.24'
+- 'section 7: row 16 Z: ''6 19095'' -> 6.19095'
+- 'section 7: row 16 THSP1: ''0.i9288'' -> 0.19288'
+- 'section 7: row 16 TNPC: ''0 53727'' -> 0.53727'
+- 'section 7: row 16 BETA: ''42 43'' -> 42.43'
+- 'section 7: row 16 BETA2: ''42 17'' -> 42.17'
+- 'section 7: row 17 Z: ''4 38862'' -> 4.38862'
+- 'section 7: row 17 R: ''17 48131'' -> 17.48131'
+- 'section 7: row 17 BETA: ''42 05'' -> 42.05'
+- 'section 7: row 17 BETA2: ''62 21'' -> 62.21'
+- 'section 7: row 18 Z: ''4 58558'' -> 4.58558'
+- 'section 7: row 18 R: ''17 51288'' -> 17.51288'
+- 'section 7: row 18 BETA: ''41 67'' -> 41.67'
+- 'section 7: row 18 BETA2: ''42 22'' -> 42.22'
+- 'section 7: row 19 Z: ''4 78196'' -> 4.78196'
+- 'section 7: row 19 R: ''17 54240'' -> 17.54240'
+- 'section 7: row 19 BETA: ''41 27'' -> 41.27'
+- 'section 7: row 19 BETA2: ''42 19'' -> 42.19'
+- 'section 7: row 20 Z: ''4 97787'' -> 4.97787'
+- 'section 7: row 20 R: ''17 56976'' -> 17.56976'
+- 'section 7: row 20 BETA: ''40 86'' -> 40.86'
+- 'section 7: row 20 BETA2: ''42 15'' -> 42.15'
+- 'section 7: row 21 R: ''17 59505'' -> 17.59505'
+- 'section 7: row 21 THSP1: ''0 24172'' -> 0.24172'
+- 'section 7: row 21 BETA: ''40 45'' -> 40.45'
+- 'section 7: row 21 BETA2: ''42 04'' -> 42.04'
+- 'section 7: row 22 R: ''17 61839'' -> 17.61839'
+- 'section 7: row 22 THSP1: ''0 25058'' -> 0.25058'
+- 'section 7: row 22 BETA2: ''41 94'' -> 41.94'
+- 'section 7: row 23 R: ''17 65992'' -> 17.65992'
+- 'section 7: row 23 THSP1: ''0 25916'' -> 0.25916'
+- 'section 7: row 23 BETA1: ''37 17'' -> 37.17'
+- 'section 7: row 24 THSP1: ''0 26746'' -> 0.26746'
+- 'section 7: row 24 BETA1: ''36 35'' -> 36.35'
+- 'section 7: row 25 THSP1: ''0 27551'' -> 0.27551'
+- 'section 7: row 25 BETA1: ''35 55'' -> 35.55'
+- 'section 7: row 26 THSP1: ''0 28330'' -> 0.28330'
+- 'section 7: row 26 THSP2: ''0 2522I'' -> 0.25221'
+- 'section 7: row 26 BETA1: ''34 66'' -> 34.66'
+- 'section 7: row 27 THSP1: ''0 29083'' -> 0.29083'
+- 'section 7: row 27 THSP2: ''0 26198'' -> 0.26198'
+- 'section 7: row 27 TNPC: ''0 40400'' -> 0.40400'
+- 'section 7: row 27 BETA1: ''33 78'' -> 33.78'
+- 'section 7: row 28 THSP2: ''0 27169'' -> 0.27169'
+- 'section 7: row 28 TNPC: ''0 37308'' -> 0.37308'
+- 'section 7: row 28 BETA1: ''32 93'' -> 32.93'
+- 'section 7: row 29 THSP2: ''0 28133'' -> 0.28133'
+- 'section 7: row 29 TNPC: ''0 33893'' -> 0.33893'
+- 'section 7: row 29 BETA1: ''32 02'' -> 32.02'
+- 'section 7: row 30 Z: ''6 93331'' -> 6.93331'
+- 'section 7: row 30 THSP2: ''0 29094'' -> 0.29094'
+- 'section 7: row 30 TNPC: ''0 30128'' -> 0.30128'
+- 'section 7: row 30 BETA1: ''31 03'' -> 31.03'
+- 'section 7: row 31 Z: ''7 13020'' -> 7.13020'
+- 'section 7: row 31 THSP2: ''0 30050'' -> 0.30050'
+- 'section 7: row 31 TNPC: ''0 26015'' -> 0.26015'
+- 'section 7: row 31 BETA1: ''30 06'' -> 30.06'
+- 'section 7: row 32 Z: ''7 32759'' -> 7.32759'
+- 'section 7: row 32 TNPC: ''0 21563'' -> 0.21563'
+- 'section 7: row 32 BETA1: ''29 16'' -> 29.16'
+- 'section 7: row 33 Z: ''7 52553'' -> 7.52553'
+- 'section 7: row 33 TNPC: ''0 16792'' -> 0.16792'
+- 'section 7: row 33 BETA1: ''2808'' -> 28.08'
+- 'section 7: row 34 Z: ''7 72406'' -> 7.72406'
+- 'section 7: row 34 TNPC: ''0 11590'' -> 0.11590'
+- 'section 7: row 35 Z: ''7 92314'' -> 7.92314'
+- 'section 8: row 2 BETA1: ''56 59'' -> 56.59'
+- 'section 8: row 3 BETA1: ''55 67'' -> 55.67'
+- 'section 8: row 4 BETA1: ''54 88'' -> 54.88'
+- 'section 8: row 5 BETA1: ''54 13'' -> 54.13'
+- 'section 8: row 6 BETA1: ''53 41'' -> 53.41'
+- 'section 8: row 7 BETA1: ''52 72'' -> 52.72'
+- 'section 8: row 8 R: ''18 34360'' -> 18.34360'
+- 'section 8: row 8 BETA1: ''52 03'' -> 52.03'
+- 'section 8: row 9 R: ''18 37100'' -> 18.37100'
+- 'section 8: row 9 BETA: ''49 41'' -> 49.41'
+- 'section 8: row 10 Z: ''3 05636'' -> 3.05636'
+- 'section 8: row 10 R: ''18 39909'' -> 18.39909'
+- 'section 8: row 10 BETA: ''48 99'' -> 48.99'
+- 'section 8: row 11 Z: ''3 24537'' -> 3.24537'
+- 'section 8: row 11 R: ''18 42761'' -> 18.42761'
+- 'section 8: row 11 BETA: ''48 59'' -> 48.59'
+- 'section 8: row 11 BETA2: ''46 82'' -> 46.82'
+- 'section 8: row 12 Z: ''3 43347'' -> 3.43347'
+- 'section 8: row 12 R: ''18 45622'' -> 18.45622'
+- 'section 8: row 12 BETA: ''48 19'' -> 48.19'
+- 'section 8: row 12 BETA2: ''46 61'' -> 46.61'
+- 'section 8: row 13 Z: ''3 62070'' -> 3.62070'
+- 'section 8: row 13 R: ''18 48460'' -> 18.48460'
+- 'section 8: row 13 BETA: ''47 80'' -> 47.80'
+- 'section 8: row 13 BETA2: ''46 39'' -> 46.39'
+- 'section 8: row 14 Z: ''3 80712'' -> 3.80712'
+- 'section 8: row 14 R: ''i8 51250'' -> 18.51250'
+- 'section 8: row 14 BETA: ''47 42'' -> 47.42'
+- 'section 8: row 14 BETA2: ''46 20'' -> 46.20'
+- 'section 8: row 15 Z: ''3 99279'' -> 3.99279'
+- 'section 8: row 15 R: ''I8 53960'' -> 18.53960'
+- 'section 8: row 15 TNPC: ''0 45748'' -> 0.45748'
+- 'section 8: row 15 BETA: ''47 ii'' -> 47.11'
+- 'section 8: row 15 BETA2: ''46 i0'' -> 46.10'
+- 'section 8: row 16 Z: ''417783'' -> 4.17783'
+- 'section 8: row 16 TNPC: ''0 46878'' -> 0.46878'
+- 'section 8: row 16 BETA: ''46 80'' -> 46.80'
+- 'section 8: row 16 BETA2: ''46 15'' -> 46.15'
+- 'section 8: row 17 Z: ''43623I'' -> 4.36231'
+- 'section 8: row 17 TNPC: ''0 47657'' -> 0.47657'
+- 'section 8: row 17 BETA2: ''46 27'' -> 46.27'
+- 'section 8: row 18: unreadable ''4,54633'''
+- 'section 8: row 18 R: ''I8.61314'' -> 18.61314'
+- 'section 8: row 18 THSP2: ''0 17065'' -> 0.17065'
+- 'section 8: row 18 TNPC: ''0 47990'' -> 0.47990'
+- 'section 8: row 18 BETA2: ''46 28'' -> 46.28'
+- 'section 8: row 19: unreadable ''18.63_26'''
+- 'section 8: row 19 THSP2: ''0 18102'' -> 0.18102'
+- 'section 8: row 19 TNPC: ''0 48000'' -> 0.48000'
+- 'section 8: row 19 BETA2: ''46 21'' -> 46.21'
+- 'section 8: row 20 THSP2: ''0 19133'' -> 0.19133'
+- 'section 8: row 20 TNPC: ''0 47715'' -> 0.47715'
+- 'section 8: row 21 THSP2: ''0 2O160'' -> 0.20160'
+- 'section 8: row 21 TNPC: ''0 47092'' -> 0.47092'
+- 'section 8: row 22 THSP2: ''0 21184'' -> 0.21184'
+- 'section 8: row 22 TNPC: ''0 46133'' -> 0.46133'
+- 'section 8: row 23 THSP2: ''0 22204'' -> 0.22204'
+- 'section 8: row 23 TNPC: ''044889'' -> 0.44889'
+- 'section 8: row 24 THSP2: ''0 23220'' -> 0.23220'
+- 'section 8: row 25 THSP1: ''0 27280'' -> 0.27280'
+- 'section 8: row 25 THSP2: ''0 24235'' -> 0.24235'
+- 'section 8: row 25 BETA1: ''40 52'' -> 40.52'
+- 'section 8: row 26 THSP1: ''0 28111'' -> 0.28111'
+- 'section 8: row 26 THSP2: ''0 25245'' -> 0.25245'
+- 'section 8: row 26 BETA1: ''39 83'' -> 39.83'
+- 'section 8: row 27 Z: ''6.i9921'' -> 6.19921'
+- 'section 8: row 27 R: ''I8 74358'' -> 18.74358'
+- 'section 8: row 27 THSP1: ''0 28921'' -> 0.28921'
+- 'section 8: row 27 THSP2: ''026252'' -> 0.26252'
+- 'section 8: row 27 BETA1: ''39 03'' -> 39.03'
+- 'section 8: row 28 R: ''I8 75133'' -> 18.75133'
+- 'section 8: row 28 THSP1: ''0 29708'' -> 0.29708'
+- 'section 8: row 28: unreadable ''0,27259'''
+- 'section 8: row 28 BETA: ''42 04'' -> 42.04'
+- 'section 8: row 28 BETA1: ''38 13'' -> 38.13'
+- 'section 8: row 29 R: ''i8 75801'' -> 18.75801'
+- 'section 8: row 29 THSP1: ''0 30473'' -> 0.30473'
+- 'section 8: row 29: unreadable ''0,28263'''
+- 'section 8: row 29 BETA: ''41 61'' -> 41.61'
+- 'section 8: row 29 BETA1: ''37 33'' -> 37.33'
+- 'section 8: row 30 R: ''18 76367'' -> 18.76367'
+- 'section 8: row 30 THSP1: ''0 31217'' -> 0.31217'
+- 'section 8: row 30 BETA: ''41 16'' -> 41.16'
+- 'section 8: row 30 BETA1: ''36 50'' -> 36.50'
+- 'section 8: row 31 R: ''18 76842'' -> 18.76842'
+- 'section 8: row 31 THSP1: ''0 31940'' -> 0.31940'
+- 'section 8: row 31 BETA: ''40 68'' -> 40.68'
+- 'section 8: row 32 R: ''18 77229'' -> 18.77229'
+- 'section 8: row 32 THSP1: ''032643'' -> 0.32643'
+- 'section 8: row 32 BETA: ''40 25'' -> 40.25'
+- 'section 8: row 33 R: ''18 77534'' -> 18.77534'
+- 'section 8: row 33 BETA: ''39 78'' -> 39.78'
+- 'section 8: row 34 R: ''18 77766'' -> 18.77766'
+- 'section 8: row 34 BETA: ''39 24'' -> 39.24'
+- 'section 8: row 35 BETA: ''38 84'' -> 38.84'
+- 'section 9: row 2 BETA1: ''58 57'' -> 58.57'
+- 'section 9: row 3 BETA1: ''57 67'' -> 57.67'
+- 'section 9: row 4 BETA1: ''57 04'' -> 57.04'
+- 'section 9: row 5 BETA1: ''56 43'' -> 56.43'
+- 'section 9: row 6 BETA1: ''55 85'' -> 55.85'
+- 'section 9: row 7 BETA1: ''55 31'' -> 55.31'
+- 'section 9: row 8 BETA1: ''54 80'' -> 54.80'
+- 'section 9: row 12 THSP1: ''0 13454'' -> 0.13454'
+- 'section 9: row 13 THSP1: ''0 14627'' -> 0.14627'
+- 'section 9: row 14 THSP1: ''0 15780'' -> 0.15780'
+- 'section 9: row 15 THSP1: ''0 16912'' -> 0.16912'
+- 'section 9: row 16 THSP1: ''0 18019'' -> 0.18019'
+- 'section 9: row 17 THSP1: ''0 19102'' -> 0.19102'
+- 'section 9: row 25 R: ''19 77069'' -> 19.77069'
+- 'section 9: row 26 R: ''19 77411'' -> 19.77411'
+- 'section 9: row 27 R: ''19 77660'' -> 19.77660'
+- 'section 9: row 27 BETA2: ''49 45'' -> 49.45'
+- 'section 9: row 28 R: ''19 77818'' -> 19.77818'
+- 'section 9: row 28 BETA2: ''49 40'' -> 49.40'
+- 'section 9: row 29 R: ''19 77895'' -> 19.77895'
+- 'section 9: row 29 BETA2: ''49 57'' -> 49.57'
+- 'section 9: row 30 R: ''19 77895'' -> 19.77895'
+- 'section 9: row 30 BETA2: ''49 30'' -> 49.30'
+- 'section 9: row 31 BETA2: ''49 20'' -> 49.20'
+- 'section 9: row 32 BETA2: ''49 15'' -> 49.15'
+- 'section 9: row 33 BETA2: ''49 07'' -> 49.07'
+- 'section 10: row 11 THSP1: ''0.1194O'' -> 0.11940'
+- 'section 10: row 20 THSP2: ''0 18909'' -> 0.18909'
+- 'section 10: row 21 THSP1: ''O.22848'' -> 0.22848'
+- 'section 10: row 21 THSP2: ''0 19937'' -> 0.19937'
+- 'section 10: row 22 THSP2: ''0 20962'' -> 0.20962'
+- 'section 10: row 23 THSP2: ''0 21987'' -> 0.21987'
+- 'section 10: row 24 R: ''20 82281'' -> 20.82281'
+- 'section 10: row 24 THSP2: ''0 23015'' -> 0.23015'
+- 'section 10: row 25 R: ''20 82077'' -> 20.82077'
+- 'section 10: row 25 THSP2: ''0 26O39'' -> 0.26039'
+- 'section 10: row 26 R: ''20 81795'' -> 20.81795'
+- 'section 10: row 27 R: ''20 81642'' -> 20.81642'
+- 'section 10: row 28 R: ''20 81021'' -> 20.81021'
+- 'section 10: row 29 R: ''20 80539'' -> 20.80539'
+- 'section 10: row 30 R: ''2080002'' -> 20.80002'
+- 'section 10: row 30 BETA: ''69 38'' -> 69.38'
+- 'section 10: row 31 BETA: ''49 05'' -> 49.05'
+- 'section 10: row 32 BETA: ''48 73'' -> 48.73'
+- 'section 10: row 33 BETA: ''48 60'' -> 48.60'
+- 'section 10: row 34 BETA: ''68 07'' -> 68.07'
+- 'section 10: row 35 Z: ''7.257ii'' -> 7.25711'
+- 'section 10: row 35 BETA: ''47 82'' -> 47.82'
+- 'section 11: row 1 Z: ''1 90349'' -> 1.90349'
+- 'section 11: row 1 TNPC: ''0 04099'' -> 0.04099'
+- 'section 11: row 1 BETA1: ''62 31'' -> 62.31'
+- 'section 11: row 2 Z: ''2 05877'' -> 2.05877'
+- 'section 11: row 2 TNPC: ''0 07006'' -> 0.07006'
+- 'section 11: row 2 BETA1: ''61 94'' -> 61.94'
+- 'section 11: row 3 Z: ''2 21409'' -> 2.21409'
+- 'section 11: row 3 TNPC: ''0 09716'' -> 0.09716'
+- 'section 11: row 3 BETA1: ''61 54'' -> 61.54'
+- 'section 11: row 4 Z: ''2 56862'' -> 2.56862'
+- 'section 11: row 4 TNPC: ''0 12187'' -> 0.12187'
+- 'section 11: row 4 BETA1: ''61 24'' -> 61.24'
+- 'section 11: row 5 Z: ''2 52262'' -> 2.52262'
+- 'section 11: row 5 TNPC: ''0 14520'' -> 0.14520'
+- 'section 11: row 5 BETA1: ''60 90'' -> 60.90'
+- 'section 11: row 6 Z: ''2 67632'' -> 2.67632'
+- 'section 11: row 6 TNPC: ''0 16676'' -> 0.16676'
+- 'section 11: row 6 BETA1: ''60 54'' -> 60.54'
+- 'section 11: row 7 Z: ''Z 82955'' -> 2.82955'
+- 'section 11: row 7 TNPC: ''0 18644'' -> 0.18644'
+- 'section 11: row 7 BETA1: ''60 22'' -> 60.22'
+- 'section 11: row 8 Z: ''2 98230'' -> 2.98230'
+- 'section 11: row 8 TNPC: ''0 20502'' -> 0.20502'
+- 'section 11: row 9 Z: ''3 13472'' -> 3.13472'
+- 'section 11: row 9 TNPC: ''0 22193'' -> 0.22193'
+- 'section 11: row 10 Z: ''3 28676'' -> 3.28676'
+- 'section 11: row 10 TNPC: ''0 23697'' -> 0.23697'
+- 'section 11: row 11 Z: ''3 43843'' -> 3.43843'
+- 'section 11: row 11 TNPC: ''0 25122'' -> 0.25122'
+- 'section 11: row 12 Z: ''3 58981'' -> 3.58981'
+- 'section 11: row 12 TNPC: ''0 26436'' -> 0.26436'
+- 'section 11: row 13 Z: ''3 74090'' -> 3.74090'
+- 'section 11: row 13 TNPC: ''0 27564'' -> 0.27564'
+- 'section 11: row 14 Z: ''3 89172'' -> 3.89172'
+- 'section 11: row 14 TNPC: ''0 28581'' -> 0.28581'
+- 'section 11: row 14 BETA2: ''56 37'' -> 56.37'
+- 'section 11: row 15 Z: ''6 04237'' -> 6.04237'
+- 'section 11: row 15 TNPC: ''0 29518'' -> 0.29518'
+- 'section 11: row 15 BETA2: ''56 33'' -> 56.33'
+- 'section 11: row 16 Z: ''4 19286'' -> 4.19286'
+- 'section 11: row 16 TNPC: ''0 30332'' -> 0.30332'
+- 'section 11: row 16 BETA2: ''56 24'' -> 56.24'
+- 'section 11: row 17 Z: ''4 34325'' -> 4.34325'
+- 'section 11: row 17 TNPC: ''0 31067'' -> 0.31067'
+- 'section 11: row 17 BETA2: ''56 09'' -> 56.09'
+- 'section 11: row 18 Z: ''4 49360'' -> 4.49360'
+- 'section 11: row 18 TNPC: ''0 31673'' -> 0.31673'
+- 'section 11: row 18 BETA2: ''56 09'' -> 56.09'
+- 'section 11: row 19 Z: ''4 64396'' -> 4.64396'
+- 'section 11: row 19 TNPC: ''0 32146'' -> 0.32146'
+- 'section 11: row 19 BETA2: ''56 11'' -> 56.11'
+- 'section 11: row 20 Z: ''4 79441'' -> 4.79441'
+- 'section 11: row 20 TNPC: ''0 32518'' -> 0.32518'
+- 'section 11: row 20 BETA2: ''56 02'' -> 56.02'
+- 'section 11: row 21 Z: ''4 94500'' -> 4.94500'
+- 'section 11: row 21 TNPC: ''0 32656'' -> 0.32656'
+- 'section 11: row 21 BETA2: ''55 92'' -> 55.92'
+- 'section 11: row 22 Z: ''5 09576'' -> 5.09576'
+- 'section 11: row 22 TNPC: ''0 32506'' -> 0.32506'
+- 'section 11: row 22 BETA2: ''55 89'' -> 55.89'
+- 'section 11: row 23 Z: ''5 26679'' -> 5.26679'
+- 'section 11: row 23 TNPC: ''0 32005'' -> 0.32005'
+- 'section 11: row 23 BETA2: ''55 95'' -> 55.95'
+- 'section 11: row 24 Z: ''5 39811'' -> 5.39811'
+- 'section 11: row 24 TNPC: ''0 31184'' -> 0.31184'
+- 'section 11: row 24 BETA2: ''55 92'' -> 55.92'
+- 'section 11: row 25 Z: ''5 54977'' -> 5.54977'
+- 'section 11: row 25 TNPC: ''0 30130'' -> 0.30130'
+- 'section 11: row 25 BETA2: ''55 79'' -> 55.79'
+- 'section 11: row 26 Z: ''5 7018I'' -> 5.70181'
+- 'section 11: row 26 TNPC: ''0 28813'' -> 0.28813'
+- 'section 11: row 26 BETA2: ''55 67'' -> 55.67'
+- 'section 11: row 27 Z: ''5 85430'' -> 5.85430'
+- 'section 11: row 27 TNPC: ''0 27198'' -> 0.27198'
+- 'section 11: row 27 BETA2: ''55 61'' -> 55.61'
+- 'section 11: row 28 Z: ''6 00723'' -> 6.00723'
+- 'section 11: row 28 TNPC: ''0 25267'' -> 0.25267'
+- 'section 11: row 28 BETA2: ''55 55'' -> 55.55'
+- 'section 11: row 29 Z: ''6 16069'' -> 6.16069'
+- 'section 11: row 29 TNPC: ''0 23063'' -> 0.23063'
+- 'section 11: row 29 BETA2: ''55 42'' -> 55.42'
+- 'section 11: row 30 Z: ''6 31471'' -> 6.31471'
+- 'section 11: row 30 TNPC: ''0 20610'' -> 0.20610'
+- 'section 11: row 30 BETA2: ''55 25'' -> 55.25'
+- 'section 11: row 31 TNPC: ''0 17859'' -> 0.17859'
+- 'section 11: row 31 BETA2: ''55 12'' -> 55.12'
+- 'section 11: row 32 TNPC: ''0 14792'' -> 0.14792'
+- 'section 11: row 32 BETA2: ''55 06'' -> 55.06'
+- 'section 11: row 33 TNPC: ''0 11446'' -> 0.11446'
+- 'section 11: row 33 BETA2: ''55 O0'' -> 55.00'
+- 'section 11: row 34 TNPC: ''0 07804'' -> 0.07804'
+- 'section 11: row 34 BETA2: ''54 94'' -> 54.94'
+- 'section 11: row 35 BETA2: ''54 89'' -> 54.89'
+- 'section 12: row 1 THSP1: ''0 00051'' -> 0.00051'
+- 'section 12: row 1 THSP2: ''-0 00288'' -> -0.00288'
+- 'section 12: row 1 TNPC: ''0 05704'' -> 0.05704'
+- 'section 12: row 2 THSP1: ''0 01516'' -> 0.01516'
+- 'section 12: row 2 THSP2: ''0 00736'' -> 0.00736'
+- 'section 12: row 2 TNPC: ''0 06377'' -> 0.06377'
+- 'section 12: row 3 THSP1: ''0 02565'' -> 0.02565'
+- 'section 12: row 3 THSP2: ''0 01759'' -> 0.01759'
+- 'section 12: row 3 TNPC: ''0 08885'' -> 0.08885'
+- 'section 12: row 4 THSP1: ''0 05796'' -> 0.05796'
+- 'section 12: row 4 THSP2: ''0 02784'' -> 0.02784'
+- 'section 12: row 4 TNPC: ''0 11183'' -> 0.11183'
+- 'section 12: row 5 R: ''23 08891'' -> 23.08891'
+- 'section 12: row 5 THSP1: ''0 05010'' -> 0.05010'
+- 'section 12: row 5 THSP2: ''0 03810'' -> 0.03810'
+- 'section 12: row 5 TNPC: ''0 13541'' -> 0.13541'
+- 'section 12: row 5 BETA1: ''65 09'' -> 65.09'
+- 'section 12: row 6 R: ''23 08714'' -> 23.08714'
+- 'section 12: row 6 THSP1: ''0 06208'' -> 0.06208'
+- 'section 12: row 6 THSP2: ''0 04834'' -> 0.04834'
+- 'section 12: row 6 TNPC: ''o 15555'' -> 0.15555'
+- 'section 12: row 6 BETA1: ''62 79'' -> 62.79'
+- 'section 12: row 7 R: ''23 08490'' -> 23.08490'
+- 'section 12: row 7 THSP1: ''0 07589'' -> 0.07589'
+- 'section 12: row 7 TNPC: ''0 17191'' -> 0.17191'
+- 'section 12: row 7 BETA1: ''62 51'' -> 62.51'
+- 'section 12: row 8 R: ''25 08214'' -> 25.08214'
+- 'section 12: row 8 THSP1: ''0 08554'' -> 0.08554'
+- 'section 12: row 8 BETA1: ''62 24'' -> 62.24'
+- 'section 12: row 9 R: ''23 07883'' -> 23.07883'
+- 'section 12: row 9 THSP1: ''0 09705'' -> 0.09705'
+- 'section 12: row 9 BETA1: ''62 00'' -> 62.00'
+- 'section 12: row 10 R: ''23 07494'' -> 23.07494'
+- 'section 12: row 10 BETA1: ''61 74'' -> 61.74'
+- 'section 12: row 11 R: ''25 07059'' -> 25.07059'
+- 'section 12: row 11 BETA1: ''61 46'' -> 61.46'
+- 'section 12: row 12 R: ''25 06505'' -> 25.06505'
+- 'section 12: row 12 BETA1: ''61 20'' -> 61.20'
+- 'section 12: row 13 BETA1: ''60 96'' -> 60.96'
+- 'section 12: row 14 BETA1: ''60 72'' -> 60.72'
+- 'section 12: row 16 BETA: ''59 64'' -> 59.64'
+- 'section 12: row 17 BETA: ''59 54'' -> 59.54'
+- 'section 12: row 18 BETA: ''59 42'' -> 59.42'
+- 'section 12: row 19: unreadable ''4.6_252'''
+- 'section 12: row 19 BETA: ''59 18'' -> 59.18'
+- 'section 12: row 19 BETA2: ''59 10'' -> 59.10'
+- 'section 12: row 20 BETA: ''58 88'' -> 58.88'
+- 'section 12: row 20 BETA2: ''58 85'' -> 58.85'
+- 'section 12: row 21 BETA: ''58 65'' -> 58.65'
+- 'section 12: row 21 BETA2: ''58 78'' -> 58.78'
+- 'section 12: row 22 BETA: ''58 37'' -> 58.37'
+- 'section 12: row 22 BETA2: ''58 84'' -> 58.84'
+- 'section 12: row 23 TNPC: ''0 29040'' -> 0.29040'
+- 'section 12: row 23 BETA: ''57 97'' -> 57.97'
+- 'section 12: row 23 BETA2: ''58 80'' -> 58.80'
+- 'section 12: row 24 TNPC: ''0 28456'' -> 0.28456'
+- 'section 12: row 24 BETA: ''57 49'' -> 57.49'
+- 'section 12: row 24 BETA2: ''58 68'' -> 58.68'
+- 'section 12: row 25 TNPC: ''0 27507'' -> 0.27507'
+- 'section 12: row 25 BETA2: ''58 47'' -> 58.47'
+- 'section 12: row 26 THSP2: ''0 25244'' -> 0.25244'
+- 'section 12: row 26 TNPC: ''0 26504'' -> 0.26504'
+- 'section 12: row 26 BETA2: ''58 22'' -> 58.22'
+- 'section 12: row 27 THSP2: ''0 26255'' -> 0.26255'
+- 'section 12: row 27 TNPC: ''0 24856'' -> 0.24856'
+- 'section 12: row 27 BETA2: ''58 O0'' -> 58.00'
+- 'section 12: row 28 THSP2: ''0 27262'' -> 0.27262'
+- 'section 12: row 28 TNPC: ''0 23121'' -> 0.23121'
+- 'section 12: row 28 BETA2: ''57 84'' -> 57.84'
+- 'section 12: row 29 THSP1: ''0 29883'' -> 0.29883'
+- 'section 12: row 29 THSP2: ''0 28267'' -> 0.28267'
+- 'section 12: row 29 TNPC: ''0 21104'' -> 0.21104'
+- 'section 12: row 29 BETA2: ''57 67'' -> 57.67'
+- 'section 12: row 30 THSP1: ''0 50696'' -> 0.50696'
+- 'section 12: row 30 THSP2: ''0 29270'' -> 0.29270'
+- 'section 12: row 30 TNPC: ''0 18838'' -> 0.18838'
+- 'section 12: row 30 BETA2: ''57 65'' -> 57.65'
+- 'section 12: row 31 THSP1: ''0 51487'' -> 0.51487'
+- 'section 12: row 31 THSP2: ''0 50268'' -> 0.50268'
+- 'section 12: row 31 TNPC: ''0 16500'' -> 0.16500'
+- 'section 12: row 31 BETA2: ''57 20'' -> 57.20'
+- 'section 12: row 32 THSP1: ''0 32259'' -> 0.32259'
+- 'section 12: row 32 THSP2: ''0 51265'' -> 0.51265'
+- 'section 12: row 32 TNPC: ''0 15465'' -> 0.15465'
+- 'section 12: row 33 THSP1: ''0 55014'' -> 0.55014'
+- 'section 12: row 33 THSP2: ''0 52253'' -> 0.52253'
+- 'section 12: row 33 TNPC: ''0 10594'' -> 0.10594'
+- 'section 12: row 34 THSP1: ''0 33750'' -> 0.33750'
+- 'section 12: row 34 THSP2: ''0 33238'' -> 0.33238'
+- 'section 12: row 35 THSP1: ''0 34471'' -> 0.34471'
+- 'section 12: row 35 THSP2: ''0 54219'' -> 0.54219'
+- 'section 13: row 3 BETA2: ''61.Iq'' -> 61.1q'
+- 'section 13: row 3: unreadable ''61.Iq'''
+- 'section 13: row 18: unreadable ''4.4a875'''
+- 'section 13: row 19: unreadable ''62.2_'''
+- 'section 13: row 30: unreadable ''0.2917_'''
+- 'flowpath K=2: row 1 0: ''-17. 58257'' -> -17.58257'
+- 'flowpath K=4: row 1 0: ''-16. 02809'' -> -16.02809'
+- 'flowpath K=10: row 1 0: ''-II .96464'' -> -11.96464'
+- 'flowpath K=11: row 1 0: ''-ii .28739'' -> -11.28739'
+- 'flowpath K=15: row 1 0: ''-8. 578_3'' -> -8.578_3'
+- 'flowpath K=15: row 1: unreadable ''-8. 578_3'''
+- 'flowpath K=18: row 1 0: ''-6. 54670'' -> -6.54670'
+- 'flowpath K=20: row 1 0: ''-5. 19221'' -> -5.19221'
+- 'flowpath K=23: row 1 0: ''-3. 16048'' -> -3.16048'
+- 'flowpath K=24: row 1 0: ''-2. 48324'' -> -2.48324'
+- 'flowpath K=25: row 1 0: ''-I .80600'' -> -1.80600'
+- 'flowpath K=26: row 1 0: ''-1. 12875'' -> -1.12875'
+- 'flowpath K=28: row 1 0: ''0. 22573'' -> 0.22573'
