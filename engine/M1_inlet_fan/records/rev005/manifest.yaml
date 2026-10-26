@@ -1,0 +1,15 @@
+revision: rev005
+parent_revision: rev004
+revision_type: design
+date: '2026-10-26T12:37:32Z'
+summary: 'M1 step 4e: one smooth blade (MCA profile, free vortex per stream with C2
+  splitter blend), R-AM.9 SP-36/Rotor 67'
+reason: 'Development: user step 4e (spanwise smoothness, profile-based shock expansion,
+  SP-36 DF limits, physical-solution flags); ADR-015 budget-eta branch'
+change_request: null
+code_commit: 0f69a77e3ac46a93beefecb1613f06cd0baa1901
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 5e2d6d66f6439725862b0e236b0e3e155bf391be705f23e4936414d07ce06806
+- file: analysis/results.yaml
+  sha256: 6325064b7e3463667b7e755f8ccab7ec9f3c6029e7e41e3a0733456fa5bd3b77

@@ -20,3 +20,18 @@ Adım 4d sonuçları (`engine/M1_inlet_fan/analysis/rotor67_validation.yaml` `lo
 - M1 bütçe kontrolünde verim satırları tanım gereği bütçeye eşit. Bu bir doğrulama değil, varsayımdır [T]. Rapor bunu açıkça söyler.
 - Tam kayıp modeli verimi düşük tahmin ediyor (Rotor 67'de tepe veriminin yaklaşık 7 puan altında). Bu yüzden hedef PR'ye ulaşmak için meanline daha fazla iş, yani daha fazla dönüş ister. Metal açıları ve DF muhafazakâr yönde (fazla yüklü) olabilir. Sınırlama olarak raporlanır.
 - Kayıp biçimleri düzeltilip Rotor 67 stall yakını geçtiğinde bu ADR yeniden ele alınır ve meanline verimine dönülür.
+
+## Sapma çapraz kontrolü (M1 adım 4e, bilgi) [H]
+Aynı model (radyal denge + `rotor67.FULL_MODEL` kayıp biçimleri, çarpanlar 1) iki yerde:
+| Durum | Model η | Karşılaştırma η | Fark (puan) |
+|---|---|---|---|
+| Rotor 67 tepe verim yakını | 0.857 | ölçülen 0.928 [KS] | -7.1 |
+| Rotor 67 stall yakını | 0.855 | ölçülen 0.901 [KS] | -4.7 |
+| Fanımız dış akım (rev005) | 0.843 | bütçe 0.895 [T] | -5.2 |
+| Fanımız iç akım (rev005) | 0.931 | bütçe 0.887 [T] | +4.3 |
+| Fanımız toplam (rev005) | 0.850 | bütçe 0.894 [T] | -4.4 |
+
+Kaynak: `engine/M1_inlet_fan/analysis/rotor67_validation.yaml` (`loss_review`, B1 adımı) ve `engine/M1_inlet_fan/analysis/results.yaml` (`summary`).
+- Dış akım ve toplam farkı, Rotor 67'deki model sapmasıyla aynı işarette ve aynı büyüklük aralığında (-4.4 ile -5.2 puan, Rotor 67'de -4.7 ile -7.1). Fanın düşük meanline verimi büyük olasılıkla tasarımın kötü olmasından değil, modelin bilinen sapmasından geliyor. Bütçe verimi dalı bununla tutarlı.
+- İç akım ters işaretli (+4.3). Göbek bölgesi ses altı (şok kaybı yok) ve Rotor 67 göbeğinde model PR'yi zaten yüksek tahmin ediyordu (adım 4: 1.666 / ölçülen 1.609). İç akımda model iyimser olabilir. Rotor 67'de akım başına ölçülmüş verim olmadığı için bu doğrulanamadı.
+- Bu tablo yalnızca bilgidir; hiçbir çarpan veya bütçe değeri bundan türetilmez.
