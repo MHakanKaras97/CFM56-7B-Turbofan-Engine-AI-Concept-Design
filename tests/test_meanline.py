@@ -137,3 +137,31 @@ def test_shock_loss_only_when_passage_is_supersonic_and_follows_the_expansion_an
     flat = solve_tube(tube(ss_turn=0.0), 3.0, 1700.0, 288.15, 101325.0)  # straight suction surface to the shock
     assert linear.M1rel > 1.0 and flat.loss_shock < linear.loss_shock
     assert flat.M_passage >= flat.M1rel  # at most the incidence expansion is left
+
+
+def test_physical_solution_has_no_issues():
+    from dataclasses import replace
+    from tools.meanline import solve_rotor_re
+    tubes = [replace(tube(), name="hub", r1=0.15, r2=0.16, A1=0.02, A2=0.017),
+             replace(tube(), name="tip", r1=0.25, r2=0.25, A1=0.02, A2=0.017)]
+    sol = solve_rotor_re(tubes, 7.0, 1500.0, 288.15, 101325.0, exit_hub=0.12, exit_tip=0.29)
+    assert sol.physical and sol.issues == []
+
+
+def test_non_physical_solutions_are_flagged():
+    """Unconverged run, collapsed area split and exit choke are each reported."""
+    from dataclasses import replace
+    from tools.meanline import AREA_SHARE_LIMIT, physical_issues, solve_rotor_re, solve_tube
+    tubes = [replace(tube(), name="hub", r1=0.15, r2=0.16, A1=0.02, A2=0.017),
+             replace(tube(), name="tip", r1=0.25, r2=0.25, A1=0.02, A2=0.017)]
+    sol = solve_rotor_re(tubes, 7.0, 1500.0, 288.15, 101325.0, exit_hub=0.12, exit_tip=0.29, max_iter=2)
+    assert not sol.physical and sol.issues[0] == "not converged"
+    results = [solve_tube(t, m, 1500.0, 288.15, 101325.0) for t, m in zip(tubes, (4.0, 0.5))]
+    share = AREA_SHARE_LIMIT / 9 + 0.05  # tip area share above the limit x its mass share 1/9
+    collapsed = [replace(tubes[0], A2=0.034 * (1 - share)), replace(tubes[1], A2=0.034 * share)]
+    area = [i for i in physical_issues(collapsed, results, True) if "exit-area share" in i]
+    assert len(area) == 1 and area[0].startswith("tube 1:")
+    matched = [replace(tubes[0], A2=0.034 * 8 / 9), replace(tubes[1], A2=0.034 / 9)]
+    assert not [i for i in physical_issues(matched, results, True) if "exit-area share" in i]
+    choked = solve_tube(replace(tubes[0], A2=0.002), 3.5, 1500.0, 288.15, 101325.0)
+    assert any(i == "tube 0: exit choked" for i in physical_issues(tubes, [choked, results[1]], True))

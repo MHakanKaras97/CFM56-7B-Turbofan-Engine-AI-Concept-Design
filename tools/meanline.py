@@ -342,15 +342,41 @@ def mass_averaged(results: list[TubeResult], gas: Gas = Gas()) -> dict:
     return {"mass_flow": m, "Tt_ratio": TR, "Pt_ratio": PR, "efficiency": (PR ** (1 / gas.k) - 1) / (TR - 1)}
 
 
+AREA_SHARE_LIMIT = 3.0  # [T] exit-area share / mass share above which a tube has collapsed
+
+
 @dataclass
 class RotorSolution:
     """Radial equilibrium solution: tubes with their equilibrium exit radii and areas, the tube results,
-    and the convergence record (residual = largest relative exit-area change of the last iteration)."""
+    and the convergence record (residual = largest relative exit-area change of the last iteration).
+    issues lists why the solution is not physical (physical_issues); empty for a physical solution."""
     tubes: list[Tube]
     results: list[TubeResult]
     iterations: int
     converged: bool
     residual: float
+    issues: list[str] = field(default_factory=list)
+
+    @property
+    def physical(self) -> bool:
+        return not self.issues
+
+
+def physical_issues(tubes: list[Tube], results: list[TubeResult], converged: bool) -> list[str]:
+    """Reasons a radial equilibrium solution is not physical. A lossy rotor can have several equilibria,
+    including collapsed ones [H, M1 step 4d]: a tube at the exit choke point, a tube whose exit-area share
+    exceeds AREA_SHARE_LIMIT times its mass share, or an efficiency outside (0, 1]."""
+    out = [] if converged else ["not converged"]
+    m_total, a_total = sum(r.mass_flow for r in results), sum(t.A2 for t in tubes)
+    for i, (t, r) in enumerate(zip(tubes, results)):
+        if any(n.startswith("exit choked") for n in r.notes):
+            out.append(f"tube {i}: exit choked")
+        if (t.A2 / a_total) > AREA_SHARE_LIMIT * (r.mass_flow / m_total):
+            out.append(f"tube {i}: exit-area share {t.A2 / a_total:.3f} above {AREA_SHARE_LIMIT} x mass share "
+                       f"{r.mass_flow / m_total:.3f}")
+        if not 0.0 < r.efficiency <= 1.0:
+            out.append(f"tube {i}: efficiency {r.efficiency:.3f} outside (0, 1]")
+    return out
 
 
 def exit_state(r: TubeResult, Tt1: float, Pt1: float, gas: Gas = Gas()) -> dict:
@@ -422,7 +448,7 @@ def solve_rotor_re(tubes: list[Tube], mass_flow: float, omega: float, Tt1: float
     area-centre radii within the exit annulus exit_hub..exit_tip) are moved, with under-relaxation, until
     simple radial equilibrium holds (equilibrium_areas). Every pass re-solves the tubes, so work, deviation
     and losses follow the new exit radii. The total exit flow area is that of the given tubes.
-    Streamline curvature is neglected."""
+    Streamline curvature is neglected. The solution carries physical_issues (empty when physical)."""
     total_inlet = sum(t.A1 for t in tubes)
     masses = [mass_flow * t.A1 / total_inlet for t in tubes]
     area_total = sum(t.A2 for t in tubes)
@@ -442,8 +468,8 @@ def solve_rotor_re(tubes: list[Tube], mass_flow: float, omega: float, Tt1: float
         current = [replace(t, A2=a, r2=r) for t, a, r in zip(current, new, r2)]
         if residual < tol:
             results = [solve_tube(t, m, omega, Tt1, Pt1, gas) for t, m in zip(current, masses)]
-            return RotorSolution(current, results, it, True, residual)
-    return RotorSolution(current, results, max_iter, False, residual)
+            return RotorSolution(current, results, it, True, residual, physical_issues(current, results, True))
+    return RotorSolution(current, results, max_iter, False, residual, physical_issues(current, results, False))
 
 
 def loss_breakdown(r: TubeResult) -> dict:
