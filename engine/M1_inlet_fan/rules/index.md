@@ -20,4 +20,4 @@ Workflow (M1 agent):
 3. Check results with `core.budgets.check_budget("M1", ...)`.
 4. Cross-module needs: CR to M0 via `core/requests.py`, user approval required.
 
-Status: step 3. Meanline validated on Rotor 67 at the design point (A-1); CS-E 800 bird class (A-7 input); first CFM56-7B27 fan rotor design (`analysis/fan_design.py`, params `analysis/fan_params.yaml`, results `analysis/results.yaml`, calc plugin `analysis/calc.py`; rules R-AM.5-8). No 3D geometry yet.
+Status: step 4d. Meanline validated on Rotor 67 at the design point (A-1, no radial equilibrium, no added losses); CS-E 800 bird class (A-7 input); CFM56-7B27 fan rotor redesign with radial equilibrium and the full loss model, budget efficiencies per ADR-015 (`analysis/fan_design.py`, params `analysis/fan_params.yaml`, results `analysis/results.yaml`, calc plugin `analysis/calc.py`; rules R-AM.7, R-AM.9, R-AM.10, `aero_method.md` step 4d section). No 3D geometry yet.

@@ -1,4 +1,12 @@
-# Ders 02: İlk fan tasarımı (M1 adım 3)
+# Ders 02: İlk fan tasarımı (M1 adım 3) ve yeniden tasarım (adım 4d)
+
+> **Adım 4d güncellemesi (yeniden tasarım).** Bölüm 1-7 adım 3'ü anlatır; güncel sayılar `analysis/results.yaml` dosyasındadır.
+> - Model: radyal denge açık (`solve_rotor_re`), tam kayıp modeli (uç duvar + uç boşluğu açık, ses altı akışta şok kaybı yok, çarpanlar 1). Uç boşluğu 3.0 mm [T]: Rotor 67'nin 1.0 mm'si uç yarıçapına göre ölçeklendi; CFM değeri doğrulanmadı. Şok genişleme açısı aracın varsayılanı (doğrusal kamber) [T]; Rotor 67'de M_ss'i fazla tahmin ediyordu (uçta +0.23'e kadar).
+> - Verim (ADR-015): bütçeye giden verimler M0 bütçesinin kendisi (dış 0.895, iç 0.887) [T]. Meanline'ın kendi verimi yalnızca bilgi: dış 0.831, iç 0.925 [H, doğrulanmamış model]. T13 ≈ 344.9 K ve T21 ≈ 316.8 K hedef PR ve bütçe veriminden [H].
+> - Neden "her tüp aynı PR" kuralı (R-AM.6) bırakıldı? Uç tüpte kayıp çok yüksek (tüp verimi ≈ 0.66), yani entropi yüksek. Basit radyal dengede sabit iş için dVm² = -2 T ds; uçtaki eksenel hız sıfıra gidiyor. Her tüpe aynı PR'yi zorlamak daha da kötü: kayıp arttıkça iş artıyor ve çözüm kaçıyor (deneme: uç tüp çıkış alanının %63'ünü aldı, verim 0.24). Kanat açıları sabit tutulunca ise hız düşünce iş artar ve çözüm kararlı kalır.
+> - Uygulanan yol [T, kullanıcı kararı bekliyor]: (1) ilk halkada her akım için sabit iş ile kanat biçimi; (2) kanatlar sabitken radyal denge ve her akıma tek bir kappa2 kayması (Newton), böylece akımın kütle ortalamalı PR'si hedefe eşit (dış 1.765, iç 1.344); dış akımda kayma yalnızca %80 açıklığın altında; (3) R-AM.9 ile katılık geçişi. 5 geçişte yakınsadı; tüpler arasında PR değişiyor (≈ 1.71-1.87 dış, ≈ 1.34-1.35 iç).
+> - R-AM.9 (Rotor 67'ye göre yükleme) 9 tüpün 6'sında sağlanamadı: göbekteki iki tüp (3.2 katılıkta bile DF fazla) ve dış akımın üst dört tüpü (%64-95 açıklık). Bu tüplerde katılık Rotor 67 tabanında bırakıldı ve rapor edildi. Neden: kayıp modeli verimi düşük tahmin ettiği için hedef PR'ye ulaşmak daha fazla iş, yani daha fazla yük istiyor (ADR-015'te öngörülen sınırlama).
+> - Uç bağıl Mach ≈ 1.44; uç katılığı 1.37 (kord ≈ 0.27 m), Rotor 67 ucu 1.29. Kök gerilmesi ≈ 266 MPa, Ti-6Al-4V payı ≈ 1.76 (akma/1.5).
 
 Bu not, CFM56-7B27 sınıfı fanın ilk akım tüpü (meanline) tasarımının nasıl yapıldığını anlatır. Sayılar `analysis/results.yaml` dosyasından gelir (kod: `analysis/fan_design.py`, girdiler: `analysis/fan_params.yaml`). Buradaki sayılar o dosyanın özetidir; değişirse doğru olan dosyadır.
 

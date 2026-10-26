@@ -21,15 +21,15 @@ annulus:
     tag: T
     note: 'rotor exit casing radius / inlet tip radius; slightly converging casing over the blade, Rotor 67 survey stations give 24.4043/25.654 = 0.951 (Strazisar 1989 p. 34, rotor67_reference.yaml) [H]; a high bypass fan casing converges less [T]'
   exit_hub_radius_ratio:
-    value: 1.45
+    value: 1.30
     unit: '-'
     tag: T
-    note: 'rotor exit hub radius / inlet hub radius; rising hub so that the inner tubes reach their pressure ratio with Vt2 below U2; Rotor 67 survey stations give 12.0167/9.1465 = 1.314 (Strazisar 1989 p. 34) [H]; chosen from a scratch sweep of 1.30 and 1.45 with exit tip ratios 0.92-0.98 (M1 step 3 report); outer efficiency moves by about 0.01 across it'
+    note: 'rotor exit hub radius / inlet hub radius; rising hub so that the inner tubes reach their pressure ratio with Vt2 below U2; Rotor 67 survey stations give 12.0167/9.1465 = 1.314 (Strazisar 1989 p. 34) [H]. M1 step 3 used 1.45; with radial equilibrium and the full loss model (M1 step 4d) 1.45 gives the splitter-side inner tube more work from the radius rise than its equilibrium share even at 1 deg camber, so 1.30 (close to Rotor 67) is used'
   exit_core_area_fraction:
     value: 0.20
     unit: '-'
     tag: T
-    note: 'share of the rotor exit annulus area given to the inner (core) tubes; larger than the inlet share because the core stream is compressed less'
+    note: 'initial share of the rotor exit annulus area given to the inner (core) tubes; since M1 step 4d radial equilibrium (solve_rotor_re) moves the exit areas, so this is only the starting point'
 stream_tubes:
   n_inner:
     value: 3
@@ -52,36 +52,45 @@ blading:
     unit: deg
     tag: T
     note: 'same at every tube; the Rotor 67 meanline design point gives 3.4 to 8.0 deg (analysis/rotor67_validation.yaml) [H]; the lower end is taken to limit the shock loss'
-  df_limit_hub:
-    value: 0.6
-    unit: '-'
-    tag: KS
-    source: 'Abrisha 2026, PDF p. 38 (printed p. 26): DF 0.3 - 0.6 for tip and hub respectively as a practical design criterion'
-  df_limit_tip:
-    value: 0.3
-    unit: '-'
-    tag: KS
-    source: 'Abrisha 2026, PDF p. 38 (printed p. 26)'
-  df_limit_distribution:
-    value: linear
+  pr_distribution:
+    value: constant_work
     tag: T
-    note: 'DF limit linear in inlet span fraction between hub and tip; each tube gets the lowest solidity that keeps DF at its local limit (solidity bounds below)'
+    note: 'spanwise work distribution within each stream. constant_work: same Tt ratio in every tube of a stream (free-vortex type, r Vt2 about constant) [G], level set so the stream mass-averaged PR equals its ICD target. uniform_pr (M1 step 3, R-AM.6): every tube at its stream PR; with radial equilibrium and the full loss model it runs away (M1 step 4d: tip tube takes 63 % of the exit area at tube efficiency 0.24, middle tubes choke), so it is kept only as an option'
+  shock_expansion:
+    value: linear_camber
+    tag: T
+    note: 'suction-surface expansion ahead of the passage shock. No CFM blade geometry exists, so tools/meanline.py ss_turn cannot be computed. linear_camber (used): tools/meanline.py default (incidence + covered fraction x camber), which over-predicted M_ss on Rotor 67 by up to +0.23 at the tip (M1 step 4c), so shock loss and required turning are likely high. rotor67_ss_turn (option): the Rotor 67 value at the same relative span (KS geometry; on Rotor 67 M_ss within +0.04 to +0.11 of the laser data); in M1 step 4d its R-AM.9 solidity pass did not settle (3-cycle at tube 6, whose DF at solidity_max sits at the Rotor 67 limit), so it is not used'
+  outer_offset_span_limit:
+    value: 0.8
+    unit: '-'
+    tag: T
+    note: 'the per-stream kappa2 offset that brings the outer stream PR to FPR (fan_design.py design()) is applied only to tubes below this inlet span fraction; the tubes above keep their initial shape. 0.8 = start of the tip clearance loss region of tools/meanline.py (Zanoni p. 7) [KS extent]. With the offset on all outer tubes the extra camber at the high-loss tip drove solve_rotor_re onto a collapsed branch before FPR was reached (M1 step 4d trials)'
+  rotor67_sonic_span:
+    value: 0.45
+    unit: '-'
+    tag: H
+    note: 'R-AM.9 boundary (approved): Rotor 67 design-point sonic span, M1rel = 1 between span 0.44 and 0.54 in learning/rotor67_reference.yaml computed_diffusion_factor; above it DF <= Rotor 67 DF and solidity >= Rotor 67 solidity, below it DF <= Rotor 67 DF only. Rotor 67 DF held constant outside its span range 0.11-0.92 [T]'
   solidity_min:
     value: 1.0
     unit: '-'
     tag: T
-    note: 'lower bound of the solidity search'
+    note: 'lower bound of the solidity search below the sonic span (R-AM.9 gives no solidity floor there)'
   solidity_max:
     value: 3.2
     unit: '-'
     tag: T
     note: 'upper bound of the solidity search; Rotor 67 hub solidity 3.11 (Strazisar 1989 p. 2) [KS]'
-mechanical:
-  taper_ratio:
-    value: 0.4
-    unit: '-'
+losses:
+  tip_clearance_running:
+    value: 3.0
+    unit: mm
     tag: T
-    note: 'blade cross-section area tip/root, linear in radius; a solid wide-chord blade has a thick root and a thin tip, chord grows towards the tip, so the area falls less than the thickness; the uniform blade (1.0) is reported as the upper bound'
+    note: 'running tip clearance for the Endwall tip loss; Rotor 67 runs 1.0 mm at tip radius 256.5 mm (Strazisar p. 2, rotor67_reference.yaml) [KS], 0.39 % of the tip radius; scaled to the 774.7 mm fan tip radius this gives 3.0 mm. CFM56-7B running clearance doğrulanmadı; a large fan with an abradable liner may run tighter (conservative choice)'
+mechanical:
+  area_taper_method:
+    value: rotor67_tc_chord_squared
+    tag: T
+    note: 'blade section area tip/root = (t/c tip / t/c root) x (chord tip / chord root)^2 (similar section shapes) [G]; t/c from Rotor 67 sections 1 and 14 (rotor67_geometry.yaml max_thickness / chord) as an analogue [T]; chords from the design (hub and tip tubes); linear area taper in radius'
   safety_factor:
     value: 1.5
     unit: '-'

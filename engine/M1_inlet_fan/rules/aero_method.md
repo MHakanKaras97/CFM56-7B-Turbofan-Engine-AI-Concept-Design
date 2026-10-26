@@ -86,10 +86,21 @@ Summary of the meanline theses in `learning/sources/aero/`. Page numbers are PDF
 
 ## Fan design (M1 step 3, `analysis/fan_design.py`)
 - R-AM.5 Blade loading: DF limit 0.6 at the hub and 0.3 at the tip (Abrisha p. 38) [KS], linear in inlet span fraction [T]; each tube gets the lowest solidity that keeps DF at its local limit, within the search bounds 1.0-3.2 [T]. A tube at the upper solidity bound with DF above its limit is reported as a failed DF check.
-- R-AM.6 Metal angles: kappa1 = beta1 - design incidence (3 deg [T]); kappa2 iterated until the tube pressure ratio equals its stream target (outer FPR, inner pr_fan_inner from `read_icd`).
+- R-AM.6 Metal angles: kappa1 = beta1 - design incidence (3 deg [T]); kappa2 iterated until the tube pressure ratio equals its stream target (outer FPR, inner pr_fan_inner from `read_icd`). (M1 step 3, without radial equilibrium. Step 4d: per-tube targets have no physical equilibrium with the full loss model; the stream mass-averaged PR is met instead, see the step 4d section. For user decision.)
 - R-AM.7 Splitter at the inlet radius whose inner area share equals W21/W2 (uniform inlet, `solve_rotor` splits by area); tubes of equal inlet area within each stream.
-- R-AM.8 Until endwall and tip clearance losses are in the tool, design efficiencies are optimistic and are reported as such, not tuned.
+- R-AM.8 Until endwall and tip clearance losses are in the tool, design efficiencies are optimistic and are reported as such, not tuned. (M1 step 3; since step 4d the losses are on and R-AM.10 applies.)
 - R-AM.9 (approved by the user, M1 step 4) Blade loading per stream tube against Rotor 67 at the same relative span (linear interpolation in `rotor67_reference.yaml` `computed_diffusion_factor`, tubes at exit choke excluded) [H from KS]:
   - below about 45 % span (subsonic Rotor 67 inlet, M1rel < 1): DF not above the Rotor 67 DF;
   - above about 45 % span (supersonic, where Lieblein DF means less): DF not above the Rotor 67 DF and solidity not below the Rotor 67 solidity (hub 3.11 to tip 1.29, linear in span, Strazisar p. 2 [KS]).
   It replaces the Abrisha 0.6/0.3 band of R-AM.5 for the redesign. The 45 % boundary is the Rotor 67 sonic span at the design point (M1rel = 1 between span 0.44 and 0.54 in `computed_diffusion_factor`) [H].
+
+## Fan redesign (M1 step 4d, `analysis/fan_design.py`; ADR-015 budget-efficiency branch)
+- Model: `solve_rotor_re` with the FULL_MODEL loss forms (endwall + tip clearance on, `subsonic_shock_taper` False, multipliers 1). Endwall data per tube: blade height = mean of inlet and exit annulus heights [T], chord = solidity x inlet pitch, running tip clearance 3.0 mm [T] (Rotor 67 1.0 mm at tip radius 25.7 cm [KS] scaled to the fan tip radius; CFM value doğrulanmadı). Shock expansion: tools default (linear camber) [T]; it over-predicts M_ss (Rotor 67: up to +0.23 at the tip). Option `rotor67_ss_turn` (Rotor 67 ss_turn at the same span) did not settle in the R-AM.9 pass (3-cycle), so it is not used.
+- R-AM.6 as written (every tube at its stream PR) has no physical equilibrium with this loss model (trials [H]): the tip tube entropy is high, and simple radial equilibrium at prescribed work drives the tip Vm2 to zero (constant work: dVm^2 = -2 T ds); prescribed uniform PR runs away (tip tube 63 % of the exit area at eta 0.24, middle tubes choked). Applied instead [T, for user decision]:
+  1. blade shapes from a per-tube design on the initial layout (constant work per stream at the level of the budget efficiency, `pr_distribution: constant_work`);
+  2. fixed-blade `solve_rotor_re` and one kappa2 offset per stream (2x2 Newton, FD Jacobian, backtracking) so that each stream's mass-averaged PR equals its ICD target; the outer offset only below span 0.8 (tip tubes keep their shape) [T]; only physical equilibria accepted (converged, no tube at exit choke), because `solve_rotor_re` also has collapsed branches;
+  3. R-AM.9 solidity pass on the equilibrium state with each tube's work held; repeat 2-3 until no solidity moves by more than 1e-3.
+  Tube PRs then vary along the span; the stream averages meet FPR and pr_fan_inner.
+- R-AM.9 not met (rule not met even at solidity 3.2): supersonic zone keeps the Rotor 67 solidity floor [T] (more solidity adds loss there without meeting the rule), subsonic zone takes 3.2; both reported per tube in `results.yaml`.
+- Exit hub radius ratio 1.30 [T] (1.45 of step 3 gives the splitter-side inner tube more work than its equilibrium share even at 1 deg camber).
+- Root stress: area taper = (t/c tip / t/c root of Rotor 67) x (chord tip / chord root)^2 [T analogue, G].

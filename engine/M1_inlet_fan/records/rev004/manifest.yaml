@@ -1,0 +1,16 @@
+revision: rev004
+parent_revision: rev003
+revision_type: design
+date: '2026-10-25T22:34:01Z'
+summary: 'M1 step 4d: fan redesign, radial equilibrium + full loss model, R-AM.9,
+  ADR-015 budget-eta branch'
+reason: 'Development: Rotor 67 near stall fails after loss-form changes and calibration
+  (ADR-015); eta from M0 budget [T], meanline for triangles, metal angles, DF and
+  geometry'
+change_request: null
+code_commit: 6cae7628e573d39598a9957e8876fa982e3e30f9
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 897f04fe6c358297c4f01ee215c349adbc71c7bc79fc20d1873337560c8509e4
+- file: analysis/results.yaml
+  sha256: 457ea4937e84b42e170c5261c35f4b71baa7c7e69bf505f897910beb8678d82e
