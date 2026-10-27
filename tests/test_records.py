@@ -13,6 +13,8 @@ from core.records import (
     active_revision,
     create_concept,
     create_revision,
+    design_drift,
+    reproduce,
     revert,
     revert_concept,
     uncommitted_code,
@@ -273,3 +275,30 @@ def test_uncommitted_code_blocks_revision(repo):
 
 def test_guard_ignores_non_git_root(repo):
     assert uncommitted_code(repo) == []
+
+
+FAKE_CALC = "PARAMS_FILE = 'fan_params.yaml'\n\ndef rerun(root, params):\n    return {{'x': params['a'] * {k}}}\n"
+
+
+def test_reproduce_uses_the_records_own_code(repo, monkeypatch):
+    calc = repo / "engine" / "M1_inlet_fan" / "analysis" / "calc.py"
+    calc.write_text(FAKE_CALC.format(k=2))
+    _git(repo, "init", "-q")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "code x2")
+    good = create_revision("M1", "Good", "Matches its code", params={"a": 1}, results={"x": 2}, root=repo)
+    bad = create_revision("M1", "Bad", "Does not match", params={"a": 1}, results={"x": 5}, root=repo)
+    assert reproduce("M1", good, root=repo) == []
+    assert "results differ" in reproduce("M1", bad, root=repo)[0]
+
+    calc.write_text(FAKE_CALC.format(k=3))  # later code change: the record still reproduces with its own code
+    _git(repo, "commit", "-q", "-am", "code x3")
+    assert reproduce("M1", good, root=repo) == []
+    assert len(subprocess.run(["git", "-C", str(repo), "worktree", "list"], capture_output=True,
+                              text=True).stdout.splitlines()) == 1  # temporary worktree removed
+
+    fake = type("Calc", (), {"rerun": staticmethod(lambda root, params: {"x": params["a"] * 3})})
+    monkeypatch.setattr(records, "calc_plugin", lambda module, root=ROOT: fake)
+    assert design_drift("M1", good, root=repo) != []  # info: current code moved on, new revision needed
+    third = create_revision("M1", "Current", "Matches current code", params={"a": 1}, results={"x": 3}, root=repo)
+    assert design_drift("M1", third, root=repo) == []

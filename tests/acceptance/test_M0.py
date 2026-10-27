@@ -4,13 +4,14 @@ parameter change, revert and conflict. Results: engine/M0_engine/analysis/accept
 import copy
 import hashlib
 import shutil
+import warnings
 from pathlib import Path
 
 import pytest
 
-from core.records import active_revision, revert, revision_ids, verify
+from core.records import active_revision, design_drift, reproduce, revert, revision_ids, verify
 from core.requests import CRError, apply, decide, load_cr, set_impact
-from core.util import dump_yaml, read_yaml
+from core.util import read_yaml
 from engine.M0_engine.analysis import calc
 from engine.M0_engine.analysis.cycle import calibrate, load_inputs, solve_rated, validation_case, validation_rows
 from engine.M0_engine.analysis.integration import integration_check
@@ -75,17 +76,20 @@ def test_parameter_change_propagates_without_writing(rated):
 # --- revert ---------------------------------------------------------------------------------
 
 def test_revert_and_rerun_reproduces_record(repo):
-    m0 = repo / "engine" / "M0_engine"
     revert("M0", "rev004", root=repo)
     assert active_revision("M0", root=repo) == "rev004"
-    latest = revision_ids("M0", repo)[-1]  # the current code reproduces the latest record
+    latest = revision_ids("M0", repo)[-1]
     revert("M0", latest, root=repo)
     rev = active_revision("M0", root=repo)
     assert rev == latest and verify("M0", rev, root=repo) == []
-    p, t, initial, raw, refs = load_inputs(m0 / "records" / rev / "params.yaml", repo)
-    results, *_ = solve_rated(p, t, initial, raw, refs, TOL)
-    rerun = hashlib.sha256(dump_yaml(results).encode("utf-8")).hexdigest()
-    assert rerun == sha(m0 / "records" / rev / "results.yaml")
+    assert reproduce("M0", active_revision("M0")) == []  # the record's own code_commit (ADR-013)
+
+
+def test_design_drift_info():
+    """Info only: current code differs from the active record -> new revision needed (ADR-013)."""
+    rev = active_revision("M0")
+    if keys := design_drift("M0", rev):
+        warnings.warn(f"M0 {rev}: design drift, new revision needed ({len(keys)} keys: {', '.join(keys[:5])})")
 
 
 # --- conflict ---------------------------------------------------------------------------------

@@ -25,6 +25,11 @@ Her modülün hesap eklentisi `engine/<M>/analysis/calc.py` aynı arayüzü suna
 - Eklentisi olmayan modül yalnızca bom.yaml geri getirir ve her zaman yeniden üretilebilirdir.
 - Yeniden üretilebilirlik koruması: `create_revision`, kod (core/, tools/, engine/*/analysis/*.py) commit edilmeden kaydı reddeder; böylece `code_commit` kaydı üreten kodu içerir. M1 rev002 bu korumadan önce kaydedildi (`code_commit` fan_design.py'den önce): REVIEW.md'de işaretli, yerine rev003 (bakım, aynı sayılar).
 
+## Kayıt kontrolü kendi koduyla (2026-10-27)
+- **Kayıt kontrolü** (`core.records.reproduce`): kayıt, manifest'teki KENDİ `code_commit`'i ile yeniden çalıştırılır (o commit'te geçici git worktree; hesap eklentisinin `rerun`'u kayıtlı params ile) ve kayıtlı results ile karşılaştırılır. Güncel çalışma ağacı kullanılmaz; sonraki kod değişiklikleri bu kontrolü bozmaz. Fark = kayıt hatası (test kalır).
+- **Tasarım sapması** (`core.records.design_drift`, ayrı bilgi kontrolü): güncel kod aktif kaydın params'ı ile farklı sonuç veriyorsa "yeni revizyon gerekli" bildirilir; hata değildir (testte uyarı). Geri dönüşteki `results_diff` uyarısı aynı kavramdır.
+- Aktif kayıt testleri (M0 kabul, M1) bu ikisini ayrı kullanır.
+
 ## Revert CR'si
 - Arayüzden geri dönüş bir CR üzerinden yapılır: değişiklik türü `revert` ({module, from, to}); konsept geri dönüşünde CR'de `concept` alanı vardır ve bütün modülleri listeler.
 - Etki M0 tarafından doldurulur: `impact.by = "M0 revert"`, `affected_modules` = geri dönen modüller + ICD bütçesi değişen modüller (başlamamış olsalar da listelenir).

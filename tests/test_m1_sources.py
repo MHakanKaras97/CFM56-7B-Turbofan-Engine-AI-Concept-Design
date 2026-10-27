@@ -1,12 +1,13 @@
 """M1 step 1 data: Rotor 67 reference, materials, BOM and agent definition."""
 
 import math
+import warnings
 from pathlib import Path
 
 import yaml
 
 from core.bom import load as load_bom
-from core.records import active_revision, verify
+from core.records import active_revision, design_drift, reproduce, verify
 
 ROOT = Path(__file__).resolve().parents[1]
 M1 = ROOT / "engine" / "M1_inlet_fan"
@@ -95,6 +96,14 @@ def test_m1_active_record_verifies():
     rev = active_revision("M1")
     assert rev is not None
     assert verify("M1", rev) == []
+    assert reproduce("M1", rev) == []  # with the record's own code_commit (ADR-013)
+
+
+def test_m1_design_drift_info():
+    """Info only: current code differs from the active record -> new revision needed (ADR-013)."""
+    rev = active_revision("M1")
+    if keys := design_drift("M1", rev):
+        warnings.warn(f"M1 {rev}: design drift, new revision needed ({len(keys)} keys: {', '.join(keys[:5])})")
 
 
 def test_m1_agent_cannot_spawn_agents():

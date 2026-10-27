@@ -12,6 +12,10 @@ Reproducibility guard: create_revision refuses while code (core/, tools/, engine
 uncommitted changes in git, so the recorded code_commit always contains the code that made the record.
 Outside a git work tree (e.g. test copies) the guard does not apply.
 
+Record check (ADR-013): reproduce() re-runs a record with its own code_commit (git worktree), so code
+changes never break it; design_drift() is the separate info check "current code differs from the record
+-> new revision needed".
+
 Revision types (ADR-012):
   design       numbers, params values or geometry change. Once the module is accepted
                (records/ACCEPTED names the accepted revision) it needs an approved CR.
@@ -21,9 +25,12 @@ Revision types (ADR-012):
 
 import hashlib
 import importlib
+import os
 import re
 import shutil
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 from core import bom as bom_io
@@ -339,6 +346,77 @@ def revert(module: str, rev: str, force: bool = False, root: Path = ROOT) -> dic
         raise RecordError(f"{module}: {rev} is not reproducible, revert refused: {reason}")
     _check_clean(module, force, root)
     return _restore(module, rev, root)
+
+
+# Run in a worktree at the record's code_commit (cwd): rerun(root, params) of the module's calc plugin,
+# results written as YAML. Self-contained so it works with any commit that has the plugin interface.
+_RERUN_SCRIPT = """
+import importlib, sys
+from pathlib import Path
+import yaml
+calc = importlib.import_module(f"engine.{sys.argv[1]}.analysis.calc")
+params = yaml.safe_load(Path(sys.argv[2]).read_text(encoding="utf-8"))
+results = calc.rerun(Path.cwd(), params)
+Path(sys.argv[3]).write_text(yaml.safe_dump(results, sort_keys=False, allow_unicode=True), encoding="utf-8")
+"""
+
+
+def _results_diff(module: str, rev: str, rerun: dict, root: Path) -> list[str]:
+    from core.diff import diff_data  # core.diff imports this module
+    recorded = read_revision(module, rev, "results.yaml", root)
+    return [c["key"] for c in diff_data({"results": recorded}, {"results": rerun})["results"]]
+
+
+def reproduce(module: str, rev: str, root: Path = ROOT) -> list[str]:
+    """Re-run `rev` with ITS OWN code (git worktree at the manifest's code_commit) on its recorded
+    params and compare with its recorded results (ADR-013). Returns problems (empty list = reproduces).
+    Independent of the current working tree, so later code changes do not affect it. A module without
+    a calc plugin or with empty params has nothing to re-run."""
+    mdir = module_dir(module, root)
+    manifest = read_revision(module, rev, "manifest.yaml", root)
+    if calc_plugin(module, root) is None or not read_revision(module, rev, "params.yaml", root):
+        return []
+    commit = manifest.get("code_commit")
+    if not commit:
+        return [f"{mdir.name} {rev}: no code_commit in the manifest"]
+    tmp = Path(tempfile.mkdtemp(prefix="record_"))
+    tree = tmp / "tree"
+    try:
+        subprocess.run(["git", "-C", str(root), "worktree", "add", "--detach", "--quiet", str(tree), commit],
+                       capture_output=True, text=True, check=True)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        shutil.rmtree(tmp, ignore_errors=True)
+        return [f"{mdir.name} {rev}: no worktree at {commit[:10]} ({getattr(exc, 'stderr', '') or exc})".strip()]
+    try:
+        params_file, out_file = tmp / "params.yaml", tmp / "results.yaml"
+        write_yaml(params_file, read_revision(module, rev, "params.yaml", root))
+        env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+        run = subprocess.run([sys.executable, "-c", _RERUN_SCRIPT, mdir.name, str(params_file), str(out_file)],
+                             cwd=tree, env=env, capture_output=True, text=True)
+        if run.returncode != 0:
+            last = (run.stderr.strip().splitlines() or ["?"])[-1]
+            return [f"{mdir.name} {rev}: code at {commit[:10]} did not run on the recorded params ({last})"]
+        keys = _results_diff(module, rev, read_yaml(out_file), root)
+        return [f"{mdir.name} {rev}: results differ from the record at {commit[:10]}: " + ", ".join(keys[:10])] \
+            if keys else []
+    finally:
+        subprocess.run(["git", "-C", str(root), "worktree", "remove", "--force", str(tree)], capture_output=True)
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def design_drift(module: str, rev: str, root: Path = ROOT) -> list[str]:
+    """Info check (ADR-013): result keys where the CURRENT code on the recorded params of `rev` differs
+    from its recorded results. Non-empty = the code has moved on: a new revision is needed. Never a
+    record failure (that is reproduce())."""
+    plugin = calc_plugin(module, root)
+    params = read_revision(module, rev, "params.yaml", root)
+    if plugin is None or not params:
+        return []
+    try:
+        rerun = plugin.rerun(root, params)
+    except Exception as exc:  # the current code may no longer accept the old params: also drift
+        return [f"current code did not run ({type(exc).__name__}: {exc})"]
+    return _results_diff(module, rev, rerun, root)
 
 
 def verify(module: str, rev: str, root: Path = ROOT) -> list[str]:

@@ -10,6 +10,7 @@ from core.records import (
     active_concept,
     active_revision,
     create_revision,
+    design_drift,
     read_revision,
     revert,
 )
@@ -46,10 +47,12 @@ def test_revert_restores_params_results_and_icd(repo):
     assert any("güncel kod" in w for w in out["warnings"])  # the current solver cannot re-run rev004
 
 
-def test_revert_to_latest_reruns_identically(repo):
+def test_revert_to_latest_restores_record(repo):
     revert("M0", "rev005", root=repo)
     out = revert("M0", LATEST, root=repo)
-    assert out["warnings"] == [] and out["results_diff"] is None
+    assert read_yaml(m0(repo) / "analysis" / "results.yaml") == read_revision("M0", LATEST, "results.yaml", repo)
+    drift = [c["key"] for c in out["results_diff"] or []]
+    assert drift == design_drift("M0", LATEST, root=repo)  # current-code difference is info only (ADR-013)
     assert read_yaml(m0(repo) / "rules" / "icd.yaml")["source"] == read_yaml(ROOT / "engine" / "M0_engine" / "rules" / "icd.yaml")["source"]
 
 
