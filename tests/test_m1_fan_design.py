@@ -23,6 +23,13 @@ def results():
     return read_yaml(RESULTS)
 
 
+def chord_at(law: dict, f: float) -> float:
+    """Chord law R-AM.14 evaluated independently: quadratic + a (1 - x^2)^3, x = (f - f_b) / w_b, |x| < 1."""
+    b = law["bump"]
+    x = (f - b["centre_span_fraction"]) / b["half_width_span_fraction"]
+    return bp.polyval(law["base_coefficients_m"], f) + (b["amplitude_m"] * (1 - x * x) ** 3 if abs(x) < 1 else 0.0)
+
+
 def budget():
     return read_icd("M1 test")["modules"]["M1"]["budget"]
 
@@ -81,14 +88,14 @@ def test_blade_is_one_smooth_function_of_span():
         f = t["span_fraction"]
         x = min(1, max(0, (f - fs - bl["splitter_blend_start"]["value"]) / bl["splitter_blend_width"]["value"]))
         blend = x ** 3 * (10 - 15 * x + 6 * x * x)
-        assert math.isclose(t["chord_m"], bp.polyval(b["chord_m_coefficients"], f), abs_tol=2e-4)
+        assert math.isclose(t["chord_m"], chord_at(b["chord_law"], f), abs_tol=2e-4)
         k2 = sum(c * v for c, v in zip(b["kappa2_deg_coefficients_total"], [1, f, f * f, f ** 3, blend]))
         assert math.isclose(t["kappa2_deg"], k2, abs_tol=0.02)
 
 
 def test_smoothness_better_than_step_4d():
     sm = results()["smoothness"]
-    assert sm["chord_m"]["max_abs_second_difference"] < 5  # step 4d: 32.3
+    assert sm["chord_m"]["max_abs_second_difference"] < 10  # step 4d: 32.3; step 4g local bump 8.45
     assert sm["kappa2_deg"]["max_abs_second_difference"] < 1500  # step 4d: 3940
 
 
@@ -150,9 +157,9 @@ def _area_profile(r, n=2000):
     """Section area along the span from the stored chord coefficients and the Rotor 67 t/c fit (independent
     trapezoidal quadrature)."""
     tc = bp.rotor67_fits()["coefficients"]["tc"]
-    c = r["blade"]["chord_m_coefficients"]
+    law = r["blade"]["chord_law"]
     fs = [j / n for j in range(n + 1)]
-    return fs, [2 / 3 * bp.polyval(tc, f) * bp.polyval(c, f) ** 2 for f in fs]
+    return fs, [2 / 3 * bp.polyval(tc, f) * chord_at(law, f) ** 2 for f in fs]
 
 
 def test_root_sizing_rules_r_am13():
@@ -298,3 +305,37 @@ def test_blade_mass_diagnosis():
     best = min(d["variants"], key=lambda v: v["mass_kg"])
     assert d["dominant_chord_driver"] == best["case"]
     assert all(v["mass_kg"] <= bm["per_blade_kg"] + 1e-3 for v in d["variants"])
+
+
+# --- M1 step 4g -----------------------------------------------------------------------------------------------
+
+def test_chord_bump_is_local_r_am14():
+    r = results()
+    law, fs = r["blade"]["chord_law"], [t["span_fraction"] for t in r["tubes"]]
+    b = law["bump"]
+    assert law["form"] == "quadratic_local_bump" and b["amplitude_m"] >= 0
+    i = b["tube_index_0based"]
+    assert math.isclose(b["centre_span_fraction"], fs[i], abs_tol=1e-4)
+    for j in (i - 1, i + 1):  # zero at both neighbour tube centres
+        assert abs(fs[j] - b["centre_span_fraction"]) >= b["half_width_span_fraction"] - 1e-4
+
+
+def test_rotor67_tc_benchmark():
+    tc = results()["blade"]["tc_benchmark_rotor67"]
+    secs = tc["sections"]
+    for q in secs:
+        assert math.isclose(q["t_c"], q["max_thickness_cm"] / q["chord_cm"], abs_tol=1e-5)
+    assert len(secs) == 14 and tc["hub"] == secs[0]["t_c"] and tc["tip"] == secs[-1]["t_c"]
+    lo = max(j for j, q in enumerate(secs) if q["span_fraction"] <= 0.5)
+    a, b = secs[lo], secs[lo + 1]
+    w = (0.5 - a["span_fraction"]) / (b["span_fraction"] - a["span_fraction"])
+    assert math.isclose(tc["mid"], a["t_c"] + w * (b["t_c"] - a["t_c"]), abs_tol=2e-5)
+    assert tc["hub"] > tc["mid"] > tc["tip"]
+
+
+def test_chord_law_variants_ordered():
+    """Same R-AM.9 needs: the local bump is lighter than the global quadratic and cubic laws, and is the law used."""
+    r = results()
+    mass = {v["law"]: v["mass_kg"] for v in r["mechanical"]["mass_diagnosis"]["chord_law_variants"]}
+    assert mass["quadratic_local_bump"] < mass["cubic"] < mass["quadratic"]
+    assert math.isclose(mass["quadratic_local_bump"], r["mechanical"]["blade_mass"]["per_blade_kg"], abs_tol=1e-3)

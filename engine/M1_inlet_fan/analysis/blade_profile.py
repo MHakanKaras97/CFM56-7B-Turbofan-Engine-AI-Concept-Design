@@ -22,6 +22,15 @@ inboard (DCA-like), falling to 0.12 at the casing (flat front suction surface of
 
 The M1 fan has no measured sections, so its family parameters at a span fraction are Rotor 67 fits [T analogue
 of KS data]: front share quadratic, t/c cubic and x_max linear in span (least squares over the 14 sections).
+Span fraction of a Rotor 67 section (M1 step 4g): leading-edge radius fraction between section 1 and section 14,
+the same definition as the M1 blade (inlet radius between hub and tip); the sections are equally spaced in
+leading-edge radius, so this equals the section index fraction to 4 decimals.
+
+t/c benchmark (M1 step 4g, rotor67_tc_benchmark): t/c = largest tabulated TNPC of a section (thickness normal to
+the mean camber line, TP-2879 Table I symbol list, PDF p. 22, printed p. 18 [KS]) divided by the section chord
+(straight line between the extreme points of the edge circles in the (m, r theta) plane, rotor67_geometry.yaml
+`chord` [H from KS]). Hub = section 1, tip = section 14, mid = linear interpolation at span fraction 0.5 between
+sections 7 and 8 [H from KS]. The cubic fit of these 14 values is the t/c(f) of the M1 blade [T analogue].
 """
 
 import math
@@ -134,6 +143,14 @@ def _interp(pts: list[tuple[float, float]], x: float) -> float:
     return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
 
 
+def rotor67_section_spans(geometry: dict | None = None) -> list[float]:
+    """Span fraction of every Table I section: leading-edge radius fraction between section 1 and section 14
+    (M1 step 4g; same definition as rotor67_kappa2_curvature and as the M1 inlet span fraction)."""
+    geo = geometry or read_yaml(R67_GEOMETRY)
+    r = [s["le_radius"]["value"] for s in geo["sections"]]
+    return [(x - r[0]) / (r[-1] - r[0]) for x in r]
+
+
 def rotor67_sections(geometry: dict | None = None) -> list[dict]:
     """Per Table I section [H from KS]: span fraction, front camber share at X_TRANSITION (from the camber-line
     angle BETA along the meridional length), position of the largest normal thickness TNPC, and t/c (max
@@ -141,14 +158,15 @@ def rotor67_sections(geometry: dict | None = None) -> list[dict]:
     geo = geometry or read_yaml(R67_GEOMETRY)
     cols = geo["points"]["columns"]
     iz, ir, ib, it = (cols.index(k) for k in ("Z", "R", "BETA", "TNPC"))
+    spans = rotor67_section_spans(geo)
     out = []
-    for n, (pts, sec) in enumerate(zip(geo["points"]["sections"], geo["sections"]), 1):
+    for n, (pts, sec, span) in enumerate(zip(geo["points"]["sections"], geo["sections"], spans), 1):
         rows = pts["rows"]
         xs = _meridional_fractions(rows, iz, ir)
         beta = [(x, r[ib]) for x, r in zip(xs, rows) if r[ib] is not None]
         k1, k2 = beta[0][1], beta[-1][1]
         thick = [(x, r[it]) for x, r in zip(xs, rows) if r[it] is not None]
-        out.append({"section": n, "span": (n - 1) / (N_SECTIONS - 1),
+        out.append({"section": n, "span": span,
                     "front": (k1 - _interp(beta, X_TRANSITION)) / (k1 - k2),
                     "x_max": max(thick, key=lambda p: p[1])[0],
                     "tc": sec["max_thickness"]["value"] / sec["chord"]["value"]})
@@ -166,6 +184,37 @@ def rotor67_fits(geometry: dict | None = None) -> dict:
     return {"coefficients": fits, "rms": rms, "sections": secs}
 
 
+def rotor67_tc_benchmark(geometry: dict | None = None) -> dict:
+    """Rotor 67 thickness / chord benchmark (M1 step 4g) [H from KS]: per Table I section the span fraction
+    (rotor67_section_spans), the largest TNPC and the chord (cm) and t/c; hub (section 1), mid (span fraction 0.5,
+    linear between the neighbouring sections) and tip (section 14); the cubic fit used for the M1 blade and its
+    largest deviation from the sections."""
+    geo = geometry or read_yaml(R67_GEOMETRY)
+    fits = rotor67_fits(geo)
+    rows = [{"section": s["section"], "span_fraction": round(f, 5),
+             "max_thickness_cm": s["max_thickness"]["value"], "max_thickness_at_K": s["max_thickness"]["at_K"],
+             "chord_cm": round(s["chord"]["value"], 5),
+             "t_c": round(s["max_thickness"]["value"] / s["chord"]["value"], 5)}
+            for s, f in zip(geo["sections"], rotor67_section_spans(geo))]
+    pts = [(r["span_fraction"], r["max_thickness_cm"] / r["chord_cm"]) for r in rows]
+    tc_fit = fits["coefficients"]["tc"]
+    return {
+        "method": "t/c = largest tabulated TNPC of the section (thickness normal to the mean camber line, TP-2879 "
+                  "Table I symbol list, PDF p. 22, printed p. 18 [KS]) / section chord (straight line between the "
+                  "extreme points of the edge circles in the (m, r theta) plane, rotor67_geometry.yaml chord [H "
+                  "from KS]); span fraction = leading-edge radius fraction between section 1 and section 14; hub = "
+                  "section 1, tip = section 14, mid = linear interpolation at 0.5 between the neighbouring sections",
+        "tag": "H from KS",
+        "hub": rows[0]["t_c"], "mid": round(_interp(pts, 0.5), 5), "tip": rows[-1]["t_c"],
+        "sections": rows,
+        "fit_cubic_coefficients": [round(c, 6) for c in tc_fit],
+        "fit_max_abs_deviation": round(max(abs(polyval(tc_fit, f) - y) for f, y in pts), 6),
+        "fit_note": "the M1 blade uses this cubic fit of the 14 section values in its own inlet span fraction "
+                    "(smooth, C2) [T analogue: Rotor 67 thickness applied to the CFM56-7B27 fan, CFM56-7B thickness "
+                    "doğrulanmadı]",
+    }
+
+
 def rotor67_section_areas(geometry: dict | None = None) -> dict:
     """Rotor 67 section areas from Table I [H from KS]: integral of the normal thickness TNPC along the camber
     line, ds = dm / cos(BETA) in the (m, r theta) plane, trapezoidal over the tabulated points (cm^2); the area
@@ -174,11 +223,12 @@ def rotor67_section_areas(geometry: dict | None = None) -> dict:
     cols = geo["points"]["columns"]
     iz, ir, it, ib = (cols.index(k) for k in ("Z", "R", "TNPC", "BETA"))
     rows_out = []
-    for n, (pts, sec) in enumerate(zip(geo["points"]["sections"], geo["sections"]), 1):
+    spans = rotor67_section_spans(geo)
+    for n, (pts, sec, span) in enumerate(zip(geo["points"]["sections"], geo["sections"], spans), 1):
         rows = [r for r in pts["rows"] if r[it] is not None and r[ib] is not None]
         area = sum((p[it] + q[it]) / 2 * math.hypot(q[iz] - p[iz], q[ir] - p[ir]) / math.cos(math.radians((p[ib] + q[ib]) / 2))
                    for p, q in zip(rows, rows[1:]))
-        rows_out.append({"section": n, "span": (n - 1) / (N_SECTIONS - 1), "area_cm2": area,
+        rows_out.append({"section": n, "span": span, "area_cm2": area,
                          "area_coefficient": area / (sec["max_thickness"]["value"] * sec["chord"]["value"])})
     return {"sections": rows_out, "taper_tip_over_root": rows_out[-1]["area_cm2"] / rows_out[0]["area_cm2"]}
 
