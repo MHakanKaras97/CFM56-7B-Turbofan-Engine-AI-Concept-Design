@@ -34,7 +34,10 @@ Thumbs.db
 .idea/
 
 # Downloaded source documents (PDFs, databanks) - never committed
-engine/*/learning/sources/
+engine/*/learning/sources/*
+!engine/*/learning/sources/INDEX.md
+# Text cache of source PDFs (tools/pdf_text.py)
+engine/*/learning/sources_text/
 *.pdf
 *.xlsx
 *.xls

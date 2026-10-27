@@ -41,6 +41,14 @@ an M0 engine agent coordinating M1-M9 module agents.
 - No copyrighted text or figures. Summarize in your own words.
 - List every source with its license in `docs/sources.md`.
 
+## Token efficiency
+- Never open source PDFs directly. Use `engine/<M>/learning/sources/INDEX.md` first, then grep in
+  `engine/<M>/learning/sources_text/` (built by `python -m tools.pdf_text`). Open a PDF page image only if the user asks.
+- Do not re-read sources when the value is already in a yaml.
+- During development run only relevant tests (`pytest -q --tb=short <path>`); full suite once, before commit.
+- Never print large files or full test output; summarise.
+- Use the subagent only for module design work; M0 checks stay in the main session.
+
 ## Language
 - Code, identifiers, comments: English.
 - Learning notes (`docs/learning/`, `engine/M*/learning/`): Turkish.
