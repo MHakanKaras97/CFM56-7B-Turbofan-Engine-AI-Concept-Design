@@ -63,7 +63,15 @@ blading:
   offset_blend:
     value: splitter_blend
     tag: T
-    note: 'R-AM.12: the two stream kappa2 offsets of the PR balance enter through the same blend, delta_inner (1 - B(f)) + delta_outer B(f); B is C2, so the offsets cannot kink the continuous blade at the splitter. Replaces outer_offset_span_limit of M1 step 4d'
+    note: 'R-AM.12 (step 4f: the total kappa2 is monotonic over the blend region, constrained least-squares fit in fan_design.kappa2_fit): the two stream kappa2 offsets of the PR balance enter through the same blend, delta_inner (1 - B(f)) + delta_outer B(f); B is C2, so the offsets cannot kink the continuous blade at the splitter. Replaces outer_offset_span_limit of M1 step 4d'
+  kappa2_blend_direction:
+    value: rising
+    tag: T
+    note: 'R-AM.12 (M1 step 4f): the total kappa2(f) (shape + blended stream offsets) must not fall anywhere in the splitter blend region (no dip, no local extremum); enforced in the kappa2 fit at 41 points and checked on 401 points (results.yaml kappa2_blend_check). Rising because kappa2 rises from hub to tip over the blade (rev005: 22 deg at the hub tube to 42 deg at the tip tube) [H]; a direction taken from each pass''s fit flipped between passes'
+  kappa2_blend_curvature_limit:
+    value: rotor67_max
+    tag: T
+    note: 'R-AM.12 (M1 step 4f): |d2 kappa2 / df2| of the final blade over the splitter blend region must not exceed the largest spanwise curvature of the Rotor 67 exit metal angle (Table I te_metal_angle, blade_profile.rotor67_kappa2_curvature, about 340 deg per unit span fraction squared) [H from KS]. Reason: kappa2 curvature sets the spanwise gradient of the exit swirl and work; a blend sharper than a measured, well-behaved transonic rotor would put a local work gradient (and a section stacking kink) at the splitter. Per unit span fraction, not per metre, so the limit scales with the blade. Checked, not imposed (the monotonic fit already keeps it below)'
   splitter_blend_start:
     value: -0.25
     unit: '-'
@@ -95,6 +103,22 @@ blading:
     unit: '-'
     tag: T
     note: 'upper bound of the solidity search; Rotor 67 hub solidity 3.11 (Strazisar 1989 p. 2) [KS]'
+tip_check:
+  band_span_min:
+    value: 0.8
+    unit: '-'
+    tag: T
+    note: 'tip region of the like-for-like tip efficiency check (M1 step 4f): stream tubes with inlet centre span fraction >= 0.8, on the M1 fan and on Rotor 67 at its design point, same solver and loss settings; tip clearance loss acts above span 0.8 (Zanoni p. 16) [KS]'
+  band_span_min_sensitivity:
+    value: 0.7
+    unit: '-'
+    tag: T
+    note: 'second band reported as a sensitivity of the tube discretisation'
+  eta_gap_limit:
+    value: 0.03
+    unit: '-'
+    tag: T
+    note: 'user rule (M1 step 4f): if the M1 tip-region meanline efficiency is more than 3 points below the Rotor 67 model value, a controlled vortex shifts work from the tip toward mid span at constant outer FPR; otherwise the free vortex stays'
 losses:
   tip_clearance_running:
     value: 3.0
@@ -102,15 +126,31 @@ losses:
     tag: T
     note: 'running tip clearance for the Endwall tip loss; Rotor 67 runs 1.0 mm at tip radius 256.5 mm (Strazisar p. 2, rotor67_reference.yaml) [KS], 0.39 % of the tip radius; scaled to the 774.7 mm fan tip radius this gives 3.0 mm. CFM56-7B running clearance doğrulanmadı; a large fan with an abradable liner may run tighter (conservative choice)'
 mechanical:
-  area_taper_method:
-    value: smooth_blade_tc_chord_squared
+  area_method:
+    value: integrated_section_area
     tag: T
-    note: 'blade section area tip/root = (t/c tip / t/c root) x (chord tip / chord root)^2 (similar section shapes) [G]; t/c from the Rotor 67 t/c fit at f = 0 and 1 (blade_profile.rotor67_fits) as an analogue [T]; chords from the smooth chord(f) at f = 0 and 1; linear area taper in radius'
+    note: 'R-AM.13 (M1 step 4f): section area A(f) = k t/c(f) chord(f)^2 with k = 2/3 (parabolic thickness arcs of the R-AM.11 profile) [H from T]; t/c fixed by the Rotor 67 fit (analogue) [T]; root stress, the stress of every section and the blade mass integrate A along the span; the chord LP keeps the taper band and the root chord is raised until every section has stress_margin_min. Replaces the step 4e endpoint taper with a linear area (smooth_blade_tc_chord_squared), which ignored the mid-span chord (rules/aero_method.md R-AM.13)'
+  area_taper_min:
+    value: 0.3
+    unit: '-'
+    tag: G
+    note: 'lower end of the section-area taper A_tip/A_root band (chord LP constraint); no source with a page in the M1 source set (Sjögren, SP-36, Mirghani searched; SP-36 printed p. 34, PDF p. 52 defines a stress taper factor for turbine blades, not this range): doğrulanmadı. Rotor 67 Table I gives 0.335 [H from KS, blade_profile.rotor67_section_areas]'
   area_taper_max:
+    value: 0.5
+    unit: '-'
+    tag: G
+    note: 'upper end of the section-area taper band; same status as area_taper_min. Replaces the step 4e bound area_taper_max = 1.0 (applied at the blade ends only)'
+  stress_margin_min:
     value: 1.0
     unit: '-'
     tag: T
-    note: 'upper bound of the section-area taper tip/root of the smooth blade (chord(f) linear programme in fan_design.py): the section area must not grow from root to tip, so the root carries no more than a uniform blade (root stress at most root_stress_uniform_blade) [G]; without it the lowest-chord blade has a root chord of a few cm (hub solidity 1.0 meets the hub DF limit) and a tip chord ten times larger'
+    note: 'required margin allowable / sigma - 1 at every section (largest section stress; the root for this blade), allowable = yield / safety_factor (user requirement: root margin >= 1.0, M1 step 4f); the design raises the root chord in 1 % steps until it holds'
+  blade_set_mass_check:
+    value: 118
+    unit: kg
+    tag: KS
+    source: 'Mirghani 2023, Table 3, printed p. 49 (PDF p. 67), citing other sources (weak: student thesis)'
+    note: '24 fan blades together; a sanity check of the computed airfoil mass, not a design input (rules/bom.md)'
   safety_factor:
     value: 1.5
     unit: '-'

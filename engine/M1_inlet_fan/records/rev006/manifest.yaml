@@ -1,0 +1,16 @@
+revision: rev006
+parent_revision: rev005
+revision_type: design
+date: '2026-10-27T12:47:48Z'
+summary: 'M1 step 4f: root sized from section-area integral (margin 1.03, taper 0.328),
+  free vortex kept (tip eta +0.35 pt vs Rotor 67 model), kappa2 curvature check, blade
+  mass diagnosis'
+reason: 'Development: user step 4f (structural root sizing R-AM.13, tip check, kappa2
+  limit, blade mass vs 118 kg / 24 [KS weak])'
+change_request: null
+code_commit: cd6f4e98206aee8ccc936ef1976e24aa84a82d47
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: c4f8345a548922df645ade6e9709d8f469da6c9d4d9c3576651d87e1aed295b4
+- file: analysis/results.yaml
+  sha256: bbe00cecfdb2f735ccdbd05db035a9b33c465bd300ee5e24ec13c362cd48d22c
