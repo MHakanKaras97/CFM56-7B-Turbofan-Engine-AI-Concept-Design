@@ -42,8 +42,11 @@ an M0 engine agent coordinating M1-M9 module agents.
 - List every source with its license in `docs/sources.md`.
 
 ## Token efficiency
-- Never open source PDFs directly. Use `engine/<M>/learning/sources/INDEX.md` first, then grep in
-  `engine/<M>/learning/sources_text/` (built by `python -m tools.pdf_text`). Open a PDF page image only if the user asks.
+- Source files (PDFs, databanks) live outside the repo in the archive `sources_archive` (config/tools.local.yaml,
+  read via `core/toolpaths.py`), as `<archive>/<module>/...`. `engine/<M>/learning/sources/` holds only INDEX.md.
+- PDFs are never read directly (a PreToolUse hook blocks Read on *.pdf). Use `engine/<M>/learning/sources/INDEX.md`
+  first, then grep in `engine/<M>/learning/sources_text/` (built from the archive by `python -m tools.pdf_text`).
+  Open a PDF page image only if the user asks.
 - Do not re-read sources when the value is already in a yaml.
 - During development run only relevant tests (`pytest -q --tb=short <path>`); full suite once, before commit.
 - Never print large files or full test output; summarise.

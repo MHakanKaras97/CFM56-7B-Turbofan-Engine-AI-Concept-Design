@@ -1,7 +1,7 @@
 # Kaynaklar
 
 Kural: alıntı veya şekil kopyalanmaz; yalnızca faktler kullanılır, kendi cümlelerimizle özetlenir.
-İndirilen dosyalar `engine/*/learning/sources/` altında tutulur ve git'e girmez.
+İndirilen dosyalar depo dışındaki kaynak arşivinde tutulur (`config/tools.local.yaml` -> `sources_archive`, modül alt klasörleriyle) ve git'e girmez; depoda yalnızca `engine/*/learning/sources/INDEX.md` ve `sources_text/` metinleri var.
 
 | # | Kaynak | Kullanım | Lisans |
 |---|---|---|---|
@@ -29,7 +29,7 @@ Kural: alıntı veya şekil kopyalanmaz; yalnızca faktler kullanılır, kendi c
 | 12 | Martins D., *Off-Design Performance Prediction of the CFM56-3 Aircraft Engine*, genişletilmiş özet, Instituto Superior Técnico, Lizbon, 2015. | Kalibrasyon yöntemi (Kurzke yaklaşımı); EGT formu; verim kaybı başına EGT artışı (yalnızca büyüklük karşılaştırması, `rules/martins_2015.yaml`); motor CFM56-3 | faktler, kendi cümlelerimizle |
 
 ## M1 Giriş ve fan kaynakları
-Dosyalar `engine/M1_inlet_fan/learning/sources/` altında (git dışı). Lisans sütunu, her PDF'teki lisans beyanına göre yazıldı; beyan yoksa "lisans beyanı yok".
+Dosyalar kaynak arşivinde `M1_inlet_fan/` altında (git dışı). Lisans sütunu, her PDF'teki lisans beyanına göre yazıldı; beyan yoksa "lisans beyanı yok".
 
 | # | Kaynak | Kullanım | Lisans |
 |---|---|---|---|

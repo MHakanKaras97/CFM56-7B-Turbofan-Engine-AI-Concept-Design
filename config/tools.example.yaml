@@ -1,6 +1,9 @@
 description: >-
   External tool paths. Copy this file to config/tools.local.yaml (git-ignored) and set the
   paths for this machine. Code reads tool paths only from tools.local.yaml (core/toolpaths.py).
+# Source documents (PDFs, databanks) outside the repo, one subfolder per module
+# (<archive>/M1_inlet_fan/aero/...). tools/pdf_text.py reads PDFs from here.
+sources_archive: C:\Tools\TurbofanSources
 tools:
   ccx:
     path: C:\Tools\PrePoMax v2.6.0\Solver\ccx_dynamic.exe

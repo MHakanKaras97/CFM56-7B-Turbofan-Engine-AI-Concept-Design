@@ -15,6 +15,9 @@ def test_scanned_when_no_text_layer():
     assert format_pages(["x" * 200] + [""] * 20) == SCANNED_LINE + "\n"
 
 
-def test_text_path_keeps_subfolders():
-    pdf = Path("engine/M1_inlet_fan/learning/sources/aero/r67.pdf")
-    assert text_path(pdf) == Path("engine/M1_inlet_fan/learning/sources_text/aero/r67.txt")
+def test_text_path_maps_archive_into_repo():
+    archive, root = Path("C:/archive"), Path("repo")
+    assert (text_path(archive / "M1_inlet_fan" / "aero" / "r67.pdf", archive, root)
+            == root / "engine" / "M1_inlet_fan" / "learning" / "sources_text" / "aero" / "r67.txt")
+    assert (text_path(archive / "M0_engine" / "a.pdf", archive, root)
+            == root / "engine" / "M0_engine" / "learning" / "sources_text" / "a.txt")

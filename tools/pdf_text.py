@@ -3,8 +3,9 @@
 Usage:
     python -m tools.pdf_text
 
-Inputs:  every PDF under engine/*/learning/sources/ (git-ignored)
-Output:  engine/<M>/learning/sources_text/<same relative path>.txt (git-ignored),
+Inputs:  every PDF under the source archive (`sources_archive` in config/tools.local.yaml, outside the repo),
+         laid out as <archive>/<module>/<relative path>.pdf
+Output:  engine/<module>/learning/sources_text/<same relative path>.txt (git-ignored),
          pages separated by "=== p.N ===" markers (N = PDF page, 1-based).
 PDFs without a usable text layer (scans) get the single line SCANNED_LINE.
 Uses pypdf (BSD-3-Clause).
@@ -14,6 +15,8 @@ import sys
 from pathlib import Path
 
 from pypdf import PdfReader
+
+from core.toolpaths import sources_archive
 
 ROOT = Path(__file__).resolve().parents[1]
 SCANNED_LINE = "SCANNED: no text layer"
@@ -35,17 +38,17 @@ def pdf_pages(path: Path) -> list[str]:
     return [page.extract_text() or "" for page in PdfReader(path).pages]
 
 
-def text_path(pdf: Path) -> Path:
-    """engine/<M>/learning/sources/a/b.pdf -> engine/<M>/learning/sources_text/a/b.txt"""
-    learning = next(p for p in pdf.parents if p.name == "sources").parent
-    rel = pdf.relative_to(learning / "sources")
-    return (learning / "sources_text" / rel).with_suffix(".txt")
+def text_path(pdf: Path, archive: Path, root: Path = ROOT) -> Path:
+    """<archive>/<M>/a/b.pdf -> <root>/engine/<M>/learning/sources_text/a/b.txt"""
+    module, *rel = pdf.relative_to(archive).parts
+    return (root / "engine" / module / "learning" / "sources_text" / Path(*rel)).with_suffix(".txt")
 
 
 def main() -> int:
-    pdfs = sorted(ROOT.glob("engine/*/learning/sources/**/*.pdf"))
+    archive = sources_archive()
+    pdfs = sorted(archive.glob("*/**/*.pdf"))
     for pdf in pdfs:
-        out = text_path(pdf)
+        out = text_path(pdf, archive)
         out.parent.mkdir(parents=True, exist_ok=True)
         text = format_pages(pdf_pages(pdf))
         out.write_text(text, encoding="utf-8")

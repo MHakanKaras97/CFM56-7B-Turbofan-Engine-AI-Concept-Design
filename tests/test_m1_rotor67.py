@@ -22,10 +22,10 @@ VALIDATION = ROOT / "engine" / "M1_inlet_fan" / "analysis" / "rotor67_validation
 def pdf_available() -> bool:
     try:
         tool_path("pdftotext")
+        pdf, digital = rotor67_tables.pdf_path(), rotor67_tables.digital_dir()
     except ToolPathError:
         return False
-    return rotor67_tables.PDF.is_file() and all((rotor67_tables.DIGITAL / name).is_file()
-                                                for name, _ in rotor67_tables.DIGITAL_FILES.values())
+    return pdf.is_file() and all((digital / name).is_file() for name, _ in rotor67_tables.DIGITAL_FILES.values())
 
 
 @pytest.fixture(scope="module")

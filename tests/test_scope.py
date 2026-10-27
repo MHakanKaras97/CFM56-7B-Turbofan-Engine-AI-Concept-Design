@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from core.scope import agent_module, changed_outside, hook
+from core.scope import PDF_READ_MESSAGE, agent_module, changed_outside, hook
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,6 +38,14 @@ def test_hook_blocks_writes_outside_module():
 def test_hook_ignores_other_tools_and_bad_input():
     assert hook(json.dumps({"tool_name": "Bash", "agent_type": "m1-inlet-fan", "tool_input": {"command": "ls"}}))[0] == 0
     assert hook("not json")[0] == 0
+
+
+def test_hook_blocks_pdf_reads_for_everyone():
+    for agent in (None, "m1-inlet-fan", "Explore"):
+        code, msg = hook(event(agent, "C:/Tools/TurbofanSources/M1_inlet_fan/aero/r67.PDF", tool="Read"))
+        assert code == 2 and msg == PDF_READ_MESSAGE
+    assert hook(event(None, ROOT / "engine" / "M1_inlet_fan" / "learning" / "sources" / "INDEX.md", tool="Read"))[0] == 0
+    assert hook(event("m1-inlet-fan", ROOT / "core" / "bom.py", tool="Read"))[0] == 0
 
 
 def test_hook_command_line_exit_code():

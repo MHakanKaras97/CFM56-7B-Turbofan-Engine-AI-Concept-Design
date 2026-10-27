@@ -23,7 +23,8 @@ Table I geometry (rotor67_geometry.yaml) is then built as follows:
   smooth-column fit; repaired values are marked.
 
 Run: python -m engine.M1_inlet_fan.analysis.rotor67_tables  (writes learning/rotor67_geometry.yaml
-and learning/rotor67_survey.yaml; needs the PDF, the digital copy and pdftotext in config/tools.local.yaml).
+and learning/rotor67_survey.yaml; needs the PDF and the digital copy in the source archive, and
+sources_archive and pdftotext in config/tools.local.yaml).
 """
 
 import csv
@@ -35,11 +36,12 @@ import subprocess
 from itertools import combinations, product
 from pathlib import Path
 
-from core.toolpaths import tool_path
+from core.toolpaths import sources_archive, tool_path
 from core.util import read_yaml, write_yaml
 
 M1 = Path(__file__).resolve().parents[1]
-PDF = M1 / "learning" / "sources" / "aero" / "strazisar_1989_nasa_tp2879_rotor67.pdf"
+# Source files live in the source archive outside the repo (config/tools.local.yaml: sources_archive)
+PDF_REL = Path("M1_inlet_fan") / "aero" / "strazisar_1989_nasa_tp2879_rotor67.pdf"
 GEOMETRY_OUT = M1 / "learning" / "rotor67_geometry.yaml"
 SURVEY_OUT = M1 / "learning" / "rotor67_survey.yaml"
 REFERENCE = M1 / "learning" / "rotor67_reference.yaml"
@@ -67,7 +69,7 @@ THICKNESS_MAX_FRACTION = 0.15  # max thickness / meridional chord upper bound [T
 EDGE_MATCH = 0.003  # cm: LE circle centre meridional coordinate equals the LE circle radius [T]
 
 # Clean digital copy of Table I (Z, R, THSP1, THSP2 and edge circles), see docs/sources.md
-DIGITAL = M1 / "learning" / "sources" / "aero" / "bladeatlas_rotor67"
+DIGITAL_REL = Path("M1_inlet_fan") / "aero" / "bladeatlas_rotor67"
 DIGITAL_FILES = {
     "table": ("rotor67_tp2879_table1.csv", "81d84a82d9fcecfcebd20478ace1a705e1f745141fa9d776977a4958a70ed936"),
     "edges": ("rotor67_tp2879_edge_circles.csv", "eb513c30121ada06afc52a550b696c24d4b8a4027e518fda4ffdb5ae0af99a22"),
@@ -103,7 +105,15 @@ FINE_RATIO = 3.0
 FLOWPATH_LIMIT = {"Z": 0.001, "R_hub": 0.02, "R_shroud": 0.02}
 
 
-def page_text(page: int, pdf: Path = PDF) -> str:
+def pdf_path() -> Path:
+    return sources_archive() / PDF_REL
+
+
+def digital_dir() -> Path:
+    return sources_archive() / DIGITAL_REL
+
+
+def page_text(page: int, pdf: Path) -> str:
     exe = tool_path("pdftotext")
     out = subprocess.run([str(exe), "-table", "-f", str(page), "-l", str(page), str(pdf), "-"],
                          capture_output=True, check=True)
@@ -389,7 +399,7 @@ def check_across_sections(sections: list[dict]) -> list[dict]:
     return flags
 
 
-def read_digital(folder: Path = DIGITAL) -> tuple[dict, dict]:
+def read_digital(folder: Path) -> tuple[dict, dict]:
     """Digital copy: ({section: [row dict of DIGITAL_FIELDS] x 35}, {section: edge dict as _edge_data}).
     Refused if a file differs from the pinned sha256."""
     paths = {}
@@ -647,7 +657,8 @@ def check_survey(rows: list[dict], streamline_radii: list[float]) -> list[dict]:
     return flags
 
 
-def extract(pdf: Path = PDF, digital: Path = DIGITAL) -> tuple[dict, dict]:
+def extract(pdf: Path | None = None, digital: Path | None = None) -> tuple[dict, dict]:
+    pdf, digital = pdf or pdf_path(), digital or digital_dir()
     digital_rows, digital_edges = read_digital(digital)
     overrides = read_yaml(OVERRIDES)["overrides"]
     ocr, ocr_flags, layout_repairs = [], [], []

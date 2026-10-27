@@ -4,6 +4,8 @@ A module agent (Claude Code subagent named `m<digit>-...`, e.g. `m1-inlet-fan`) 
 module folder `engine/M<digit>_*/`. Two checks enforce this:
 - hook(): PreToolUse hook for Write/Edit/NotebookEdit. Claude Code passes `agent_type` (the subagent name)
   in the hook input; a write outside the module folder is blocked with exit code 2.
+- The same hook blocks the Read tool on *.pdf for every agent and the main session (token efficiency):
+  source PDFs are read only through sources_text/ and INDEX.md.
 - changed_outside(): after a module task M0 lists files changed outside the module folder (git status),
   which also catches writes made through Bash or PowerShell, where the hook cannot see the target path.
 
@@ -20,6 +22,7 @@ from core.records import ROOT, module_dir
 
 AGENT_RE = re.compile(r"^m(\d)-")
 WRITE_TOOLS = {"Write": "file_path", "Edit": "file_path", "NotebookEdit": "notebook_path"}
+PDF_READ_MESSAGE = "use sources_text/ and INDEX.md; ask the user for a PDF page"
 
 
 def agent_module(agent_type: str | None) -> str | None:
@@ -53,6 +56,9 @@ def hook(stdin_text: str, root: Path = ROOT) -> tuple[int, str]:
         event = json.loads(stdin_text)
     except json.JSONDecodeError:
         return 0, ""
+    if event.get("tool_name") == "Read":
+        target = str((event.get("tool_input") or {}).get("file_path") or "")
+        return (2, PDF_READ_MESSAGE) if target.lower().endswith(".pdf") else (0, "")
     key = WRITE_TOOLS.get(event.get("tool_name", ""))
     target = (event.get("tool_input") or {}).get(key) if key else None
     if not target:

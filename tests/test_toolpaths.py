@@ -3,7 +3,7 @@ import subprocess
 import pytest
 
 from core.records import ROOT
-from core.toolpaths import ToolPathError, local_config, tool_path
+from core.toolpaths import ToolPathError, local_config, sources_archive, tool_path
 from core.util import read_yaml
 
 needs_local = pytest.mark.skipif(not local_config().is_file(), reason="config/tools.local.yaml not on this machine")
@@ -21,6 +21,19 @@ def test_missing_config_or_tool_is_reported(tmp_path):
     (tmp_path / "config" / "tools.local.yaml").write_text("tools: {}\n", encoding="utf-8")
     with pytest.raises(ToolPathError):
         tool_path("ccx", root=tmp_path)
+
+
+def test_sources_archive_must_be_configured_and_exist(tmp_path):
+    (tmp_path / "config").mkdir()
+    cfg = tmp_path / "config" / "tools.local.yaml"
+    cfg.write_text("tools: {}\n", encoding="utf-8")
+    with pytest.raises(ToolPathError):
+        sources_archive(root=tmp_path)
+    cfg.write_text(f"sources_archive: {tmp_path / 'missing'}\n", encoding="utf-8")
+    with pytest.raises(ToolPathError):
+        sources_archive(root=tmp_path)
+    cfg.write_text(f"sources_archive: {tmp_path}\n", encoding="utf-8")
+    assert sources_archive(root=tmp_path) == tmp_path
 
 
 @needs_local
