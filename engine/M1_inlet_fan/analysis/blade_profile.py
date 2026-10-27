@@ -35,11 +35,25 @@ R67_REFERENCE = M1 / "learning" / "rotor67_reference.yaml"
 
 X_TRANSITION = 0.5  # chord fraction of the camber-arc joint [T]
 N_SECTIONS = 14
+# Section area / (max thickness x chord) of the R-AM.11 thickness form [H from the T form]: each parabolic arc
+# with zero slope at x_max encloses 2/3 of its bounding rectangle, so A = (2/3) t c for any x_max (edge circles
+# ignored). Rotor 67 Table I sections give 0.69-0.73 (rotor67_section_areas) [H from KS].
+AREA_COEFFICIENT = 2.0 / 3.0
 
 
 def polyval(coeffs: tuple[float, ...] | list[float], x: float) -> float:
     """c0 + c1 x + c2 x^2 + ... (ascending powers)."""
     return sum(c * x ** k for k, c in enumerate(coeffs))
+
+
+def polyder(coeffs: tuple[float, ...] | list[float], x: float) -> float:
+    """Derivative of polyval(coeffs, x) in x."""
+    return sum(k * c * x ** (k - 1) for k, c in enumerate(coeffs) if k)
+
+
+def section_area(chord: float, tc: float) -> float:
+    """Blade section area of the R-AM.11 profile: AREA_COEFFICIENT x t/c x chord^2."""
+    return AREA_COEFFICIENT * tc * chord * chord
 
 
 def lstsq(rows: list[list[float]], ys: list[float]) -> list[float]:
@@ -68,6 +82,19 @@ def camber_angle(kappa1: float, kappa2: float, front: float, x: float, x_t: floa
     if x <= x_t:
         return kappa1 - front * theta * x / x_t
     return kappa1 - front * theta - (1 - front) * theta * (x - x_t) / (1 - x_t)
+
+
+def thickness(x: float, x_max: float) -> float:
+    """Normalised thickness tau of the R-AM.11 profile: two parabolic arcs, 1 at x_max, 0 at both edges."""
+    d = (x - x_max) / (x_max if x <= x_max else 1 - x_max)
+    return 1 - d * d
+
+
+def profile_area_coefficient(x_max: float, n: int = 2000) -> float:
+    """A / (t_max x chord) of the R-AM.11 thickness distribution by Simpson's rule on n intervals (n even) [H]; the
+    two parabolic arcs give 2/3 for any x_max (cross-check of AREA_COEFFICIENT, M1 step 4f mass review)."""
+    h = 1.0 / n
+    return h / 3 * sum((1 if j in (0, n) else (4 if j % 2 else 2)) * thickness(j * h, x_max) for j in range(n + 1))
 
 
 def thickness_slope(x: float, x_max: float) -> float:
@@ -137,6 +164,36 @@ def rotor67_fits(geometry: dict | None = None) -> dict:
             "x_max": polyfit(f, [s["x_max"] for s in secs], 1)}
     rms = {k: math.sqrt(sum((polyval(c, s["span"]) - s[k]) ** 2 for s in secs) / len(secs)) for k, c in fits.items()}
     return {"coefficients": fits, "rms": rms, "sections": secs}
+
+
+def rotor67_section_areas(geometry: dict | None = None) -> dict:
+    """Rotor 67 section areas from Table I [H from KS]: integral of the normal thickness TNPC along the camber
+    line, ds = dm / cos(BETA) in the (m, r theta) plane, trapezoidal over the tabulated points (cm^2); the area
+    coefficient A / (max thickness x chord) per section; and the tip/root area taper (section 14 / section 1)."""
+    geo = geometry or read_yaml(R67_GEOMETRY)
+    cols = geo["points"]["columns"]
+    iz, ir, it, ib = (cols.index(k) for k in ("Z", "R", "TNPC", "BETA"))
+    rows_out = []
+    for n, (pts, sec) in enumerate(zip(geo["points"]["sections"], geo["sections"]), 1):
+        rows = [r for r in pts["rows"] if r[it] is not None and r[ib] is not None]
+        area = sum((p[it] + q[it]) / 2 * math.hypot(q[iz] - p[iz], q[ir] - p[ir]) / math.cos(math.radians((p[ib] + q[ib]) / 2))
+                   for p, q in zip(rows, rows[1:]))
+        rows_out.append({"section": n, "span": (n - 1) / (N_SECTIONS - 1), "area_cm2": area,
+                         "area_coefficient": area / (sec["max_thickness"]["value"] * sec["chord"]["value"])})
+    return {"sections": rows_out, "taper_tip_over_root": rows_out[-1]["area_cm2"] / rows_out[0]["area_cm2"]}
+
+
+def rotor67_kappa2_curvature(geometry: dict | None = None) -> dict:
+    """Spanwise curvature of the Rotor 67 exit metal angle [H from KS]: d2(kappa2)/df2 (deg per unit span
+    fraction squared) by three-point finite differences on the uneven section spacing; kappa2 = Table I
+    te_metal_angle, f = leading-edge radius fraction between section 1 and section 14."""
+    geo = geometry or read_yaml(R67_GEOMETRY)
+    k2 = [s["te_metal_angle"]["value"] for s in geo["sections"]]
+    r = [s["le_radius"]["value"] for s in geo["sections"]]
+    f = [(x - r[0]) / (r[-1] - r[0]) for x in r]
+    d2 = [2 * ((k2[j + 1] - k2[j]) / (f[j + 1] - f[j]) - (k2[j] - k2[j - 1]) / (f[j] - f[j - 1])) / (f[j + 1] - f[j - 1])
+          for j in range(1, len(k2) - 1)]
+    return {"span": f[1:-1], "d2kappa2_df2_deg": d2, "max_abs_deg": max(abs(x) for x in d2)}
 
 
 def family_at(fits: dict, span: float) -> dict:
