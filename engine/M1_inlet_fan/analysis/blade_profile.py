@@ -246,6 +246,35 @@ def rotor67_kappa2_curvature(geometry: dict | None = None) -> dict:
     return {"span": f[1:-1], "d2kappa2_df2_deg": d2, "max_abs_deg": max(abs(x) for x in d2)}
 
 
+def second_differences(fs: list[float], ys: list[float]) -> list[float]:
+    """Second divided differences 2 [(y3 - y2)/(f3 - f2) - (y2 - y1)/(f2 - f1)] / (f3 - f1) at the inner points
+    (uneven spacing allowed); used by fan_design.second_differences and the R-AM.17 limit."""
+    return [2 * ((ys[i + 1] - ys[i]) / (fs[i + 1] - fs[i]) - (ys[i] - ys[i - 1]) / (fs[i] - fs[i - 1]))
+            / (fs[i + 1] - fs[i - 1]) for i in range(1, len(fs) - 1)]
+
+
+def chord_smoothness_metric(fs: list[float], chords: list[float]) -> dict:
+    """R-AM.17 metric [H]: largest |second divided difference| of c / c_mean over the span stations, c_mean =
+    arithmetic mean of the station chords (per unit span fraction squared); also where it occurs."""
+    c_mean = sum(chords) / len(chords)
+    d2 = second_differences(fs, [c / c_mean for c in chords])
+    j = max(range(len(d2)), key=lambda i: abs(d2[i]))
+    return {"metric": abs(d2[j]), "at_station_0based": j + 1, "at_span_fraction": fs[j + 1], "c_mean": c_mean,
+            "second_differences": d2}
+
+
+def rotor67_chord_smoothness(geometry: dict | None = None) -> dict:
+    """R-AM.17 limit [H from KS]: chord_smoothness_metric on the 14 Rotor 67 Table I sections, chord from
+    rotor67_geometry.yaml (cm), span fraction = leading-edge radius fraction (rotor67_section_spans, as R-AM.14)."""
+    geo = geometry or read_yaml(R67_GEOMETRY)
+    fs = rotor67_section_spans(geo)
+    chords = [s["chord"]["value"] for s in geo["sections"]]
+    out = chord_smoothness_metric(fs, chords)
+    out["section"] = out.pop("at_station_0based") + 1
+    out["c_mean_cm"] = out.pop("c_mean")
+    return out
+
+
 def family_at(fits: dict, span: float) -> dict:
     c = fits["coefficients"]
     return {"front": min(1.0, max(0.0, polyval(c["front"], span))), "tc": polyval(c["tc"], span),
