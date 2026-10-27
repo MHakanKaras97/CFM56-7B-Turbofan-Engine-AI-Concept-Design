@@ -1,0 +1,17 @@
+revision: rev007
+parent_revision: rev006
+revision_type: design
+date: '2026-10-27T16:59:13Z'
+summary: 'M1 step 4g: chord law quadratic + C2 local bump at tube 4 (R-AM.14), Rotor
+  67 t/c benchmark (hub 0.0851, mid 0.0552, tip 0.0298); blade 7.28 kg (rev006 9.78),
+  margin 1.00, taper 0.50'
+reason: 'Development: user step 4g (blade mass: higher-order local chord law, Rotor
+  67 t/c benchmark); mass vs 118 kg / 24 [KS weak] still x1.48, open (tube 4 need
+  at design-state work), not tuned'
+change_request: null
+code_commit: c9f5515198710fdd4decacaf3abcf71e270514da
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: a7c3bc9cf501faccd31ecfc7a99b45d28634fb84f4dab60647434dd84b9d69f0
+- file: analysis/results.yaml
+  sha256: 70ddab4204d06f66419de7b071bc65ac28ca21d6370d2f1ebd7d46e87617763b

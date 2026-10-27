@@ -56,6 +56,14 @@ blading:
     value: MCA
     tag: T
     note: 'R-AM.11: multiple-circular-arc type section (two-arc camber line joined at chord fraction 0.5 [T], parabolic thickness [T]); front camber share, t/c and x_max smooth in span from Rotor 67 Table I fits (analysis/blade_profile.py) [T analogue of KS]. DCA (front share 0.5, x_max 0.5) is the special case defined in NASA SP-36 PDF p. 204 (printed p. 186) [K]. Rotor 67 profile family not named in TP-2879 (PDF p. 6 refers to its refs. 11-12): doğrulanmadı'
+  chord_law:
+    value: quadratic_local_bump
+    tag: T
+    note: 'M1 step 4g (R-AM.13 chord law): chord(f) = quadratic + a (1 - x^2)^3, x = (f - f_b) / w_b, |x| < 1 (C2 compact bump, a >= 0); f_b = span fraction of the tube whose R-AM.9 need stands highest above both neighbour needs, w_b = smaller distance to its neighbour tubes, so the bump is zero at both neighbour tube centres [T rule]. Reason: the step 4f quadratic spread the single high need of tube 4 (first bypass tube above the splitter) over mid span; a cubic does not keep it local either (fan_design.mass_diagnosis chord_law_variants). Lowest mean chord, R-AM.9 needs, taper band and root stress loop unchanged'
+  thickness_chord:
+    value: rotor67_table1_benchmark
+    tag: T
+    note: 'M1 step 4g: t/c(f) = cubic fit of the Rotor 67 Table I sections, t/c = largest TNPC (thickness normal to the mean camber line, TP-2879 PDF p. 22, printed p. 18 [KS]) / section chord [H from KS], section span = leading-edge radius fraction (same as the M1 inlet span fraction); benchmark in results.yaml blade.tc_benchmark_rotor67. Applied to the CFM56-7B27 fan as an analogue [T]; CFM56-7B thickness doğrulanmadı'
   vortex:
     value: free_vortex_splitter_blend
     tag: T

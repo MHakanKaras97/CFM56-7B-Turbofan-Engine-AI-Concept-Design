@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 from core.bom import load as load_bom
-from core.records import active_revision, design_drift, reproduce, verify
+from core.records import active_revision, design_drift, read_revision, reproduce, verify
 
 ROOT = Path(__file__).resolve().parents[1]
 M1 = ROOT / "engine" / "M1_inlet_fan"
@@ -96,6 +96,7 @@ def test_m1_active_record_verifies():
     rev = active_revision("M1")
     assert rev is not None
     assert verify("M1", rev) == []
+    assert read_revision("M1", rev, "params.yaml") and read_revision("M1", rev, "results.yaml")  # else reproduce is empty
     assert reproduce("M1", rev) == []  # with the record's own code_commit (ADR-013)
 
 

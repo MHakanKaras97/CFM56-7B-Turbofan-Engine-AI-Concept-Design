@@ -1,0 +1,15 @@
+revision: rev008
+parent_revision: rev007
+revision_type: maintenance
+date: '2026-10-27T16:59:37Z'
+summary: 'M1 step 4g full state: params and results of rev007 added to the record
+  (same numbers)'
+reason: 'Maintenance: rev006 and rev007 were recorded without params/results, so the
+  record check (reproduce) was empty; ADR-013'
+change_request: null
+code_commit: c9f5515198710fdd4decacaf3abcf71e270514da
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: a7c3bc9cf501faccd31ecfc7a99b45d28634fb84f4dab60647434dd84b9d69f0
+- file: analysis/results.yaml
+  sha256: 70ddab4204d06f66419de7b071bc65ac28ca21d6370d2f1ebd7d46e87617763b

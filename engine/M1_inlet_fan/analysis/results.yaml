@@ -32,27 +32,144 @@ model:
 blade:
   tag: H (parameters from the design loop; forms T)
   span_variable: f = (r1 - r_hub1) / (r_tip1 - r_hub1), inlet radius of the tube centre
-  chord_m_coefficients:
-  - 0.258358
-  - 0.436065
-  - -0.44466
-  chord_form: chord(f) = c0 + c1 f + c2 f^2 [T form]; lowest mean chord with every
-    tube at or above its R-AM.9 need (linear programme)
+  chord_law:
+    form: quadratic_local_bump
+    base_coefficients_m:
+    - 0.222882
+    - 0.239188
+    - -0.196089
+    bump:
+      amplitude_m: 0.07475
+      centre_span_fraction: 0.360203
+      half_width_span_fraction: 0.124237
+      tube_index_0based: 3
+      need_excess_over_neighbours_m: 0.06765
+  chord_form: chord(f) = c0 + c1 f + c2 f^2 + a K((f - f_b) / w_b), K(x) = (1 - x^2)^3
+    for |x| < 1 else 0 (C2 compact bump) [T form, M1 step 4g]; f_b = span fraction
+    of the tube whose R-AM.9 need stands highest above both neighbour needs, w_b =
+    smaller distance to its neighbour tubes (bump zero at both neighbour tube centres),
+    a >= 0; lowest mean chord with every tube at or above its R-AM.9 need, the R-AM.13
+    taper band and the root raised for the stress margin (linear programme)
+  tc_benchmark_rotor67:
+    method: t/c = largest tabulated TNPC of the section (thickness normal to the mean
+      camber line, TP-2879 Table I symbol list, PDF p. 22, printed p. 18 [KS]) / section
+      chord (straight line between the extreme points of the edge circles in the (m,
+      r theta) plane, rotor67_geometry.yaml chord [H from KS]); span fraction = leading-edge
+      radius fraction between section 1 and section 14; hub = section 1, tip = section
+      14, mid = linear interpolation at 0.5 between the neighbouring sections
+    tag: H from KS
+    hub: 0.08513
+    mid: 0.05522
+    tip: 0.02979
+    sections:
+    - section: 1
+      span_fraction: 0.0
+      max_thickness_cm: 0.80984
+      max_thickness_at_K: 18
+      chord_cm: 9.51295
+      t_c: 0.08513
+    - section: 2
+      span_fraction: 0.07741
+      max_thickness_cm: 0.79339
+      max_thickness_at_K: 17
+      chord_cm: 9.48868
+      t_c: 0.08361
+    - section: 3
+      span_fraction: 0.15451
+      max_thickness_cm: 0.76144
+      max_thickness_at_K: 16
+      chord_cm: 9.4617
+      t_c: 0.08048
+    - section: 4
+      span_fraction: 0.23132
+      max_thickness_cm: 0.71989
+      max_thickness_at_K: 16
+      chord_cm: 9.41881
+      t_c: 0.07643
+    - section: 5
+      span_fraction: 0.30809
+      max_thickness_cm: 0.6672
+      max_thickness_at_K: 16
+      chord_cm: 9.33593
+      t_c: 0.07147
+    - section: 6
+      span_fraction: 0.38505
+      max_thickness_cm: 0.60556
+      max_thickness_at_K: 17
+      chord_cm: 9.27232
+      t_c: 0.06531
+    - section: 7
+      span_fraction: 0.46195
+      max_thickness_cm: 0.54292
+      max_thickness_at_K: 18
+      chord_cm: 9.27865
+      t_c: 0.05851
+    - section: 8
+      span_fraction: 0.53864
+      max_thickness_cm: 0.48
+      max_thickness_at_K: 19
+      chord_cm: 9.25269
+      t_c: 0.05188
+    - section: 9
+      span_fraction: 0.61555
+      max_thickness_cm: 0.42137
+      max_thickness_at_K: 20
+      chord_cm: 9.22623
+      t_c: 0.04567
+    - section: 10
+      span_fraction: 0.69251
+      max_thickness_cm: 0.3691
+      max_thickness_at_K: 20
+      chord_cm: 9.22982
+      t_c: 0.03999
+    - section: 11
+      span_fraction: 0.76926
+      max_thickness_cm: 0.32656
+      max_thickness_at_K: 21
+      chord_cm: 9.23295
+      t_c: 0.03537
+    - section: 12
+      span_fraction: 0.84605
+      max_thickness_cm: 0.29448
+      max_thickness_at_K: 21
+      chord_cm: 9.22401
+      t_c: 0.03193
+    - section: 13
+      span_fraction: 0.923
+      max_thickness_cm: 0.27555
+      max_thickness_at_K: 21
+      chord_cm: 9.22173
+      t_c: 0.02988
+    - section: 14
+      span_fraction: 1.0
+      max_thickness_cm: 0.27512
+      max_thickness_at_K: 24
+      chord_cm: 9.23617
+      t_c: 0.02979
+    fit_cubic_coefficients:
+    - 0.08496
+    - -0.003229
+    - -0.172297
+    - 0.120395
+    fit_max_abs_deviation: 0.000334
+    fit_note: 'the M1 blade uses this cubic fit of the 14 section values in its own
+      inlet span fraction (smooth, C2) [T analogue: Rotor 67 thickness applied to
+      the CFM56-7B27 fan, CFM56-7B thickness doğrulanmadı]'
   kappa2_deg_coefficients_shape:
-  - 9.44951
-  - 2.44828
-  - 3.7539
-  - 18.24845
-  - 14.09299
+  - 9.11038
+  - 4.09062
+  - -11.32382
+  - 31.83017
+  - 15.11987
   kappa2_offsets_deg:
-    inner: 14.22676
-    outer: -1.84929
+    inner: 14.26059
+    outer: -1.95762
   kappa2_deg_coefficients_total:
-  - 23.67627
-  - 2.44828
-  - 3.7539
-  - 18.24845
-  - -1.98306
+  - 23.37097
+  - 4.09062
+  - -11.32382
+  - 31.83017
+  - -1.09835
   kappa2_form: kappa2(f) = k0 + k1 f + k2 f^2 + k3 f^3 + k4 B(f) (least squares over
     the tubes at their vortex targets) + delta_inner (1 - B(f)) + delta_outer B(f);
     B = C2 quintic smoothstep from f_split + -0.25 to f_split + 0.25 (f_split 0.27371)
@@ -63,55 +180,55 @@ blade:
     0.5 [T], parabolic thickness [T]'
   profile_fits_rotor67:
     front_camber_share:
-    - 0.44707
-    - 0.669741
-    - -1.027542
+    - 0.446888
+    - 0.670482
+    - -1.028146
     t_c:
-    - 0.084961
-    - -0.003496
-    - -0.171701
-    - 0.120066
+    - 0.08496
+    - -0.003229
+    - -0.172297
+    - 0.120395
     x_max:
-    - 0.453581
-    - 0.154822
+    - 0.453519
+    - 0.154872
     rms:
-      front: 0.01591
+      front: 0.01597
       tc: 0.00017
-      x_max: 0.02689
+      x_max: 0.02691
     tag: H fit of KS sections (Table I), used for the M1 fan as T analogue
   vortex:
     law: free_vortex
     law_statement: 'free vortex in each stream (r Vt2 constant, dh0 constant) with
       the C2 splitter blend; no controlled vortex: tip-region meanline eta of this
-      fan minus the Rotor 67 model +0.0035 (limit -0.03), tip_region.decision [H,
+      fan minus the Rotor 67 model -0.0001 (limit -0.03), tip_region.decision [H,
       rule T]'
     controlled_vortex: false
     form: 'free vortex (dh0 = U2 Vt2 constant, r Vt2 constant without inlet swirl)
       in each stream [G], blended across the splitter: dh0(f) = dh_inner (1 - B(f))
       + dh_outer B(f) [T blend]'
-    dh_inner_J_kg: 22105.3
-    dh_outer_J_kg: 61910.1
+    dh_inner_J_kg: 21332.5
+    dh_outer_J_kg: 62252.5
     tag: H (dh_inner, dh_outer solved for the achieved stream levels of the last pass)
     tube_work_design_J_kg:
-    - 22206.5
-    - 26610.1
-    - 36459.0
-    - 53925.3
-    - 61901.5
-    - 61910.1
-    - 61910.1
-    - 61910.1
-    - 61910.1
+    - 21436.6
+    - 25963.6
+    - 36088.3
+    - 54044.0
+    - 62243.7
+    - 62252.5
+    - 62252.5
+    - 62252.5
+    - 62252.5
     tube_work_equilibrium_J_kg:
-    - 22548.2
-    - 28672.3
-    - 34054.0
-    - 41739.7
-    - 50161.2
-    - 56313.5
-    - 61356.2
-    - 71549.2
-    - 82348.7
+    - 22012.0
+    - 28084.7
+    - 33390.2
+    - 41590.2
+    - 49995.2
+    - 56716.4
+    - 62030.4
+    - 72572.8
+    - 82395.0
     note: '[H] the fixed blade sets the actual work in radial equilibrium; the design
       values are the vortex targets the kappa2 shape was fitted to'
 profile_check_rotor67:
@@ -129,38 +246,38 @@ profile_check_rotor67:
     ss_turn_sections_deg: 3.948
     ss_turn_smooth_fit_deg: 4.042
     ss_turn_dca_deg: 7.204
-    diff_sections_deg: 1.033
+    diff_sections_deg: 1.032
     diff_smooth_fit_deg: 1.127
     diff_dca_deg: 4.289
   - name: streamline 2
     span_fraction: 0.8203
     covered_fraction: 0.552
     ss_turn_geometry_deg: 3.172
-    ss_turn_sections_deg: 3.237
+    ss_turn_sections_deg: 3.236
     ss_turn_smooth_fit_deg: 3.382
     ss_turn_dca_deg: 5.576
-    diff_sections_deg: 0.065
-    diff_smooth_fit_deg: 0.209
+    diff_sections_deg: 0.064
+    diff_smooth_fit_deg: 0.21
     diff_dca_deg: 2.403
   - name: streamline 3
     span_fraction: 0.7301
     covered_fraction: 0.4986
     ss_turn_geometry_deg: 3.329
-    ss_turn_sections_deg: 3.335
-    ss_turn_smooth_fit_deg: 3.247
+    ss_turn_sections_deg: 3.337
+    ss_turn_smooth_fit_deg: 3.248
     ss_turn_dca_deg: 4.736
-    diff_sections_deg: 0.007
+    diff_sections_deg: 0.008
     diff_smooth_fit_deg: -0.081
     diff_dca_deg: 1.407
   - name: streamline 4
     span_fraction: 0.6361
     covered_fraction: 0.4415
     ss_turn_geometry_deg: 4.135
-    ss_turn_sections_deg: 3.913
+    ss_turn_sections_deg: 3.914
     ss_turn_smooth_fit_deg: 3.781
     ss_turn_dca_deg: 4.518
-    diff_sections_deg: -0.222
-    diff_smooth_fit_deg: -0.355
+    diff_sections_deg: -0.221
+    diff_smooth_fit_deg: -0.354
     diff_dca_deg: 0.383
   - name: streamline 5
     span_fraction: 0.5402
@@ -168,7 +285,7 @@ profile_check_rotor67:
     ss_turn_geometry_deg: 4.87
     ss_turn_sections_deg: 4.242
     ss_turn_smooth_fit_deg: 4.277
-    ss_turn_dca_deg: 4.365
+    ss_turn_dca_deg: 4.364
     diff_sections_deg: -0.628
     diff_smooth_fit_deg: -0.592
     diff_dca_deg: -0.505
@@ -177,41 +294,41 @@ profile_check_rotor67:
     covered_fraction: 0.3283
     ss_turn_geometry_deg: 5.854
     ss_turn_sections_deg: 4.443
-    ss_turn_smooth_fit_deg: 4.472
-    ss_turn_dca_deg: 4.039
+    ss_turn_smooth_fit_deg: 4.471
+    ss_turn_dca_deg: 4.038
     diff_sections_deg: -1.411
     diff_smooth_fit_deg: -1.383
-    diff_dca_deg: -1.815
+    diff_dca_deg: -1.816
   - name: streamline 7
     span_fraction: 0.3388
     covered_fraction: 0.2733
     ss_turn_geometry_deg: 6.751
     ss_turn_sections_deg: 4.138
-    ss_turn_smooth_fit_deg: 4.127
-    ss_turn_dca_deg: 3.421
-    diff_sections_deg: -2.612
-    diff_smooth_fit_deg: -2.624
-    diff_dca_deg: -3.329
+    ss_turn_smooth_fit_deg: 4.125
+    ss_turn_dca_deg: 3.42
+    diff_sections_deg: -2.613
+    diff_smooth_fit_deg: -2.625
+    diff_dca_deg: -3.331
   - name: streamline 8
     span_fraction: 0.231
     covered_fraction: 0.22
     ss_turn_geometry_deg: 6.578
-    ss_turn_sections_deg: 3.583
-    ss_turn_smooth_fit_deg: 3.605
-    ss_turn_dca_deg: 2.99
-    diff_sections_deg: -2.994
-    diff_smooth_fit_deg: -2.973
-    diff_dca_deg: -3.588
+    ss_turn_sections_deg: 3.58
+    ss_turn_smooth_fit_deg: 3.603
+    ss_turn_dca_deg: 2.988
+    diff_sections_deg: -2.998
+    diff_smooth_fit_deg: -2.975
+    diff_dca_deg: -3.589
   - name: streamline 9
     span_fraction: 0.1128
     covered_fraction: 0.1738
     ss_turn_geometry_deg: 6.142
-    ss_turn_sections_deg: 3.135
-    ss_turn_smooth_fit_deg: 3.213
-    ss_turn_dca_deg: 3.216
-    diff_sections_deg: -3.007
-    diff_smooth_fit_deg: -2.929
-    diff_dca_deg: -2.926
+    ss_turn_sections_deg: 3.13
+    ss_turn_smooth_fit_deg: 3.21
+    ss_turn_dca_deg: 3.215
+    diff_sections_deg: -3.011
+    diff_smooth_fit_deg: -2.932
+    diff_dca_deg: -2.927
 annulus:
   tag: H from T inputs
   r_tip1_m: 0.7747
@@ -220,7 +337,7 @@ annulus:
   r_tip2_m: 0.73596
   r_hub2_m: 0.30213
   r_split2_initial_m: 0.42586
-  exit_core_area_fraction_equilibrium: 0.21816
+  exit_core_area_fraction_equilibrium: 0.2138
   inlet_area_m2: 1.71577
   exit_area_m2: 1.41485
   icd_fan_face_area_m2: 1.71577
@@ -235,10 +352,11 @@ convergence:
   outer_passes: 8
   scheme: 'pass: stream levels from the target PR and the stream eta (budget in pass
     0, then meanline); design-mode radial equilibrium at the vortex targets; R-AM.9
-    chord needs, lowest quadratic chord with the taper bound, kappa2 basis fit (cubic
-    + splitter blend); 2x2 Newton on the blended stream offsets with fixed-blade solve_rotor_re
-    until each stream PR = target (physical solutions only); repeat until the reshaped
-    chord and kappa2 are stable'
+    chord needs, lowest chord (quadratic + local bump, step 4g) with the taper band
+    and the root stress loop, kappa2 basis fit (cubic + splitter blend); 2x2 Newton
+    on the blended stream offsets with fixed-blade solve_rotor_re until each stream
+    PR = target (physical solutions only); repeat until the reshaped chord and kappa2
+    are stable'
   tolerances:
     stream_PR_newton: 2.0e-05
     stream_PR_final: 0.0001
@@ -248,12 +366,12 @@ convergence:
     fd_step_deg: 0.05
   final_check:
     re_converged: true
-    re_iterations: 9
+    re_iterations: 6
     physical: true
     issues: []
-    max_stream_PR_error_after_re: 1.05e-05
+    max_stream_PR_error_after_re: 9.68e-06
     PR_tolerance_relative: 0.0001
-  radial_equilibrium_residual: 9.4e-06
+  radial_equilibrium_residual: 9.5e-06
   history:
   - pass: 0
     design_efficiency:
@@ -295,8 +413,20 @@ convergence:
     - true
     - true
     - true
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.220675
+      - 0.252351
+      - -0.209679
+      bump:
+        amplitude_m: 0.0
+        centre_span_fraction: 0.638217
+        half_width_span_fraction: 0.114725
+        tube_index_0based: 5
+        need_excess_over_neighbours_m: 0.00329
     root_stress_steps: 0
-    stress_margin: 1.1155
+    stress_margin: 1.1149
     area_taper: 0.5
     kappa2_per_tube_deg:
     - 19.5794
@@ -305,9 +435,9 @@ convergence:
     - 15.445
     - 23.2332
     - 33.7249
-    - 40.062
-    - 41.3403
-    - 41.9574
+    - 40.0619
+    - 41.3402
+    - 41.9576
     kappa2_fit_max_residual_deg: 6.2649
     kappa2_blend_constraint:
       sign: 1.0
@@ -330,7 +460,7 @@ convergence:
     - iteration: 2
       offset_deg:
         inner: 3.0
-        outer: -1.45041
+        outer: -1.45034
       PR_error:
       - -0.00978
       - 0.00364
@@ -338,8 +468,8 @@ convergence:
       physical: true
     - iteration: 3
       offset_deg:
-        inner: 4.4368
-        outer: -2.32539
+        inner: 4.43694
+        outer: -2.32526
       PR_error:
       - -0.000868
       - -0.000334
@@ -347,38 +477,38 @@ convergence:
       physical: true
     - iteration: 4
       offset_deg:
-        inner: 4.34499
-        outer: -2.41542
+        inner: 4.3452
+        outer: -2.41522
       PR_error:
-      - -0.000108
-      - -7.21e-05
+      - -0.000107
+      - -7.18e-05
       re_iterations: 38
       physical: true
     - iteration: 5
       offset_deg:
-        inner: 4.32477
-        outer: -2.42735
+        inner: 4.32504
+        outer: -2.42713
       PR_error:
-      - -1.02e-05
-      - -1.41e-05
+      - -1.01e-05
+      - -1.4e-05
       re_iterations: 19
       physical: true
     offsets_deg:
-      inner: 4.32477
-      outer: -2.42735
+      inner: 4.32504
+      outer: -2.42713
     meanline_efficiency:
-      outer: 0.837075
-      inner: 0.917106
+      outer: 0.837077
+      inner: 0.917104
   - pass: 1
     design_efficiency:
-      outer: 0.837075
-      inner: 0.917106
+      outer: 0.837077
+      inner: 0.917104
     levels:
-      outer: 1.210551
+      outer: 1.21055
       inner: 1.096109
     vortex_dh_J_kg:
-      inner: 21307.3
-      outer: 62315.8
+      inner: 21307.4
+      outer: 62315.6
     design_exit_area_share:
     - 0.06849
     - 0.06445
@@ -409,102 +539,114 @@ convergence:
     - true
     - true
     - true
-    root_stress_steps: 23
-    stress_margin: 1.0251
-    area_taper: 0.3281
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
     kappa2_per_tube_deg:
-    - 18.5047
-    - 21.7941
-    - 15.1759
-    - 8.423
-    - 18.4838
-    - 31.7058
-    - 39.5615
-    - 41.8625
-    - 42.9748
-    kappa2_fit_max_residual_deg: 10.69
+    - 18.3882
+    - 21.6086
+    - 14.744
+    - 8.4234
+    - 17.7451
+    - 31.1274
+    - 39.1493
+    - 41.4577
+    - 43.055
+    kappa2_fit_max_residual_deg: 10.4351
     kappa2_blend_constraint:
       sign: 1.0
       active_points:
       - 0.02371
       - 0.21121
       offsets_used_deg:
-        inner: 4.32477
-        outer: -2.42735
+        inner: 4.32504
+        outer: -2.42713
     max_chord_change_m: 0.073979
-    max_kappa2_change_deg: 7.18691
+    max_kappa2_change_deg: 7.41244
     newton:
     - iteration: 1
       offset_deg:
-        inner: 4.32477
-        outer: -2.42735
+        inner: 4.32504
+        outer: -2.42713
       PR_error:
-      - -0.169
-      - -0.0495
-      re_iterations: 113
+      - -0.166
+      - -0.0476
+      re_iterations: 132
       physical: true
     - iteration: 2
       offset_deg:
-        inner: 6.87864
-        outer: 0.57265
+        inner: 7.07878
+        outer: 0.57287
       PR_error:
-      - -0.0204
-      - 0.0131
-      re_iterations: 93
+      - -0.0211
+      - 0.0129
+      re_iterations: 85
       physical: true
     - iteration: 3
       offset_deg:
-        inner: 9.87864
-        outer: -0.50593
+        inner: 10.07878
+        outer: -0.56062
       PR_error:
-      - -0.00731
-      - 0.00459
-      re_iterations: 61
+      - -0.00765
+      - 0.00447
+      re_iterations: 52
       physical: true
     - iteration: 4
       offset_deg:
-        inner: 11.51271
-        outer: -1.11989
+        inner: 11.63147
+        outer: -1.25044
       PR_error:
-      - -0.00031
-      - 9.57e-06
-      re_iterations: 59
+      - -0.000468
+      - -0.0001
+      re_iterations: 45
       physical: true
     - iteration: 5
       offset_deg:
-        inner: 11.52345
-        outer: -1.14804
+        inner: 11.60533
+        outer: -1.29795
       PR_error:
-      - 4.81e-06
-      - 6.06e-06
-      re_iterations: 14
+      - -1.23e-05
+      - 2.9e-06
+      re_iterations: 22
       physical: true
     offsets_deg:
-      inner: 11.52345
-      outer: -1.14804
+      inner: 11.60533
+      outer: -1.29795
     meanline_efficiency:
-      outer: 0.84209
-      inner: 0.902677
+      outer: 0.838271
+      inner: 0.919915
   - pass: 2
     design_efficiency:
-      outer: 0.84209
-      inner: 0.902677
+      outer: 0.838271
+      inner: 0.919915
     levels:
-      outer: 1.209297
-      inner: 1.097645
+      outer: 1.21025
+      inner: 1.095815
     vortex_dh_J_kg:
-      inner: 21910.7
-      outer: 61919.4
+      inner: 21222.8
+      outer: 62228.7
     design_exit_area_share:
-    - 0.0694
-    - 0.06549
-    - 0.05981
-    - 0.14783
-    - 0.13791
-    - 0.13347
-    - 0.13057
-    - 0.12852
-    - 0.12699
+    - 0.06865
+    - 0.06454
+    - 0.05861
+    - 0.14838
+    - 0.13852
+    - 0.13397
+    - 0.13102
+    - 0.12893
+    - 0.12737
     chord_needs_m:
     - 0.06886
     - 0.08259
@@ -525,89 +667,101 @@ convergence:
     - true
     - true
     - true
-    root_stress_steps: 23
-    stress_margin: 1.0251
-    area_taper: 0.3281
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
     kappa2_per_tube_deg:
-    - 17.8392
-    - 21.8322
-    - 15.8128
-    - 9.1554
-    - 19.0947
-    - 31.9934
-    - 39.6638
-    - 41.8559
-    - 42.8724
-    kappa2_fit_max_residual_deg: 12.5369
+    - 18.6279
+    - 21.8143
+    - 14.8925
+    - 8.5834
+    - 17.8536
+    - 31.1893
+    - 39.1833
+    - 41.4767
+    - 43.0614
+    kappa2_fit_max_residual_deg: 12.8933
     kappa2_blend_constraint:
       sign: 1.0
       active_points:
       - 0.19871
       - 0.21121
       offsets_used_deg:
-        inner: 11.52345
-        outer: -1.14804
+        inner: 11.60533
+        outer: -1.29795
     max_chord_change_m: 0.0
-    max_kappa2_change_deg: 2.57926
+    max_kappa2_change_deg: 2.61825
     newton:
     - iteration: 1
       offset_deg:
-        inner: 11.52345
-        outer: -1.14804
+        inner: 11.60533
+        outer: -1.29795
       PR_error:
-      - -0.00566
-      - 0.00454
-      re_iterations: 50
+      - -0.00473
+      - 0.00489
+      re_iterations: 44
       physical: true
     - iteration: 2
       offset_deg:
-        inner: 13.03702
-        outer: -1.63063
+        inner: 13.11625
+        outer: -1.74885
       PR_error:
-      - -0.000158
-      - 0.000301
-      re_iterations: 66
+      - -0.000145
+      - 0.000296
+      re_iterations: 49
       physical: true
     - iteration: 3
       offset_deg:
-        inner: 13.13924
-        outer: -1.6442
+        inner: 13.21188
+        outer: -1.76285
       PR_error:
-      - -9.53e-06
-      - -3.15e-06
-      re_iterations: 35
+      - -6.72e-07
+      - 2.34e-06
+      re_iterations: 26
       physical: true
     offsets_deg:
-      inner: 13.13924
-      outer: -1.6442
+      inner: 13.21188
+      outer: -1.76285
     meanline_efficiency:
-      outer: 0.842129
-      inner: 0.899062
+      outer: 0.837979
+      inner: 0.917737
   - pass: 3
     design_efficiency:
-      outer: 0.842129
-      inner: 0.899062
+      outer: 0.837979
+      inner: 0.917737
     levels:
-      outer: 1.209287
-      inner: 1.098037
+      outer: 1.210324
+      inner: 1.096043
     vortex_dh_J_kg:
-      inner: 22047.2
-      outer: 61911.8
+      inner: 21297.3
+      outer: 62248.1
     design_exit_area_share:
-    - 0.06944
-    - 0.0656
-    - 0.06
-    - 0.14775
-    - 0.13785
-    - 0.13341
-    - 0.13052
-    - 0.12848
-    - 0.12694
+    - 0.06863
+    - 0.06455
+    - 0.05869
+    - 0.14835
+    - 0.13851
+    - 0.13397
+    - 0.13101
+    - 0.12893
+    - 0.12736
     chord_needs_m:
     - 0.06886
     - 0.08259
     - 0.09435
-    - 0.35815
+    - 0.35835
     - 0.2907
     - 0.2951
     - 0.29181
@@ -617,95 +771,107 @@ convergence:
     - true
     - true
     - true
+    - false
     - true
     - true
     - true
     - true
     - true
-    - true
-    root_stress_steps: 23
-    stress_margin: 1.0276
-    area_taper: 0.3281
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
     kappa2_per_tube_deg:
-    - 17.6042
-    - 21.7197
-    - 15.8201
-    - 9.1697
-    - 19.121
-    - 31.9988
-    - 39.6581
-    - 41.8424
-    - 42.8532
-    kappa2_fit_max_residual_deg: 13.2936
+    - 18.4753
+    - 21.7176
+    - 14.8571
+    - 8.5475
+    - 17.8366
+    - 31.1762
+    - 39.173
+    - 41.4674
+    - 43.0531
+    kappa2_fit_max_residual_deg: 13.6805
     kappa2_blend_constraint:
       sign: 1.0
       active_points:
       - 0.19871
       - 0.21121
       offsets_used_deg:
-        inner: 13.13924
-        outer: -1.6442
-    max_chord_change_m: 0.000216
-    max_kappa2_change_deg: 0.78685
+        inner: 13.21188
+        outer: -1.76285
+    max_chord_change_m: 0.0
+    max_kappa2_change_deg: 0.77488
     newton:
     - iteration: 1
       offset_deg:
-        inner: 13.13924
-        outer: -1.6442
+        inner: 13.21188
+        outer: -1.76285
       PR_error:
-      - -0.00144
-      - 0.00199
-      re_iterations: 53
+      - -0.00122
+      - 0.00206
+      re_iterations: 41
       physical: true
     - iteration: 2
       offset_deg:
-        inner: 13.77664
-        outer: -1.77126
+        inner: 13.83387
+        outer: -1.88404
       PR_error:
-      - 6.52e-06
-      - 0.000152
-      re_iterations: 59
+      - 1.07e-05
+      - 0.00015
+      re_iterations: 43
       physical: true
     - iteration: 3
       offset_deg:
-        inner: 13.82628
-        outer: -1.77038
+        inner: 13.8816
+        outer: -1.8826
       PR_error:
-      - 1.47e-07
-      - 7.97e-08
-      re_iterations: 28
+      - 1.38e-07
+      - 1.61e-07
+      re_iterations: 21
       physical: true
     offsets_deg:
-      inner: 13.82628
-      outer: -1.77038
+      inner: 13.8816
+      outer: -1.8826
     meanline_efficiency:
-      outer: 0.842136
-      inner: 0.898067
+      outer: 0.837926
+      inner: 0.917107
   - pass: 4
     design_efficiency:
-      outer: 0.842136
-      inner: 0.898067
+      outer: 0.837926
+      inner: 0.917107
     levels:
-      outer: 1.209286
-      inner: 1.098146
+      outer: 1.210337
+      inner: 1.096109
     vortex_dh_J_kg:
-      inner: 22085.0
-      outer: 61909.9
+      inner: 21319.5
+      outer: 62251.3
     design_exit_area_share:
-    - 0.06945
-    - 0.06563
-    - 0.06005
-    - 0.14773
-    - 0.13783
-    - 0.1334
-    - 0.13051
-    - 0.12846
-    - 0.12693
+    - 0.06862
+    - 0.06456
+    - 0.05871
+    - 0.14834
+    - 0.13851
+    - 0.13396
+    - 0.13101
+    - 0.12892
+    - 0.12736
     chord_needs_m:
     - 0.06886
     - 0.08259
     - 0.09435
-    - 0.35786
+    - 0.35835
     - 0.2907
     - 0.2951
     - 0.29181
@@ -715,95 +881,107 @@ convergence:
     - true
     - true
     - true
+    - false
     - true
     - true
     - true
     - true
     - true
-    - true
-    root_stress_steps: 23
-    stress_margin: 1.0313
-    area_taper: 0.3281
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
     kappa2_per_tube_deg:
-    - 17.5388
-    - 21.6879
-    - 15.8208
-    - 9.1715
-    - 19.1258
-    - 31.9983
-    - 39.655
-    - 41.8369
-    - 42.8478
-    kappa2_fit_max_residual_deg: 13.5949
+    - 18.4327
+    - 21.6927
+    - 14.8509
+    - 8.5416
+    - 17.835
+    - 31.1742
+    - 39.1708
+    - 41.465
+    - 43.0504
+    kappa2_fit_max_residual_deg: 13.9827
     kappa2_blend_constraint:
       sign: 1.0
       active_points:
       - 0.19871
       - 0.21121
       offsets_used_deg:
-        inner: 13.82628
-        outer: -1.77038
-    max_chord_change_m: 0.000324
-    max_kappa2_change_deg: 0.3031
+        inner: 13.8816
+        outer: -1.8826
+    max_chord_change_m: 0.0
+    max_kappa2_change_deg: 0.29628
     newton:
     - iteration: 1
       offset_deg:
-        inner: 13.82628
-        outer: -1.77038
+        inner: 13.8816
+        outer: -1.8826
       PR_error:
-      - -0.000577
-      - 0.000735
-      re_iterations: 42
+      - -0.000486
+      - 0.000751
+      re_iterations: 30
       physical: true
     - iteration: 2
       offset_deg:
-        inner: 14.06585
-        outer: -1.82101
+        inner: 14.11183
+        outer: -1.93064
       PR_error:
-      - -1.04e-06
-      - 4.34e-05
-      re_iterations: 46
+      - -7.67e-07
+      - 4.05e-05
+      re_iterations: 33
       physical: true
     - iteration: 3
       offset_deg:
-        inner: 14.08013
-        outer: -1.82103
+        inner: 14.1248
+        outer: -1.93063
       PR_error:
-      - -4.34e-07
-      - -1.57e-06
-      re_iterations: 15
+      - -8.1e-07
+      - -1.93e-06
+      re_iterations: 11
       physical: true
     offsets_deg:
-      inner: 14.08013
-      outer: -1.82103
+      inner: 14.1248
+      outer: -1.93063
     meanline_efficiency:
-      outer: 0.842125
-      inner: 0.897713
+      outer: 0.83791
+      inner: 0.916862
   - pass: 5
     design_efficiency:
-      outer: 0.842125
-      inner: 0.897713
+      outer: 0.83791
+      inner: 0.916862
     levels:
-      outer: 1.209288
-      inner: 1.098185
+      outer: 1.210341
+      inner: 1.096134
     vortex_dh_J_kg:
-      inner: 22098.2
-      outer: 61910.3
+      inner: 21328.1
+      outer: 62252.2
     design_exit_area_share:
-    - 0.06945
-    - 0.06564
-    - 0.06007
-    - 0.14773
-    - 0.13783
-    - 0.1334
-    - 0.13051
-    - 0.12846
-    - 0.12693
+    - 0.06862
+    - 0.06456
+    - 0.05872
+    - 0.14834
+    - 0.13851
+    - 0.13396
+    - 0.13101
+    - 0.12892
+    - 0.12736
     chord_needs_m:
     - 0.06886
     - 0.08259
     - 0.09435
-    - 0.35778
+    - 0.35835
     - 0.2907
     - 0.2951
     - 0.29181
@@ -813,175 +991,98 @@ convergence:
     - true
     - true
     - true
+    - false
     - true
     - true
     - true
     - true
     - true
-    - true
-    root_stress_steps: 23
-    stress_margin: 1.0322
-    area_taper: 0.3281
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
     kappa2_per_tube_deg:
-    - 17.5149
-    - 21.6754
-    - 15.8194
-    - 9.1705
-    - 19.1264
-    - 31.9977
-    - 39.6537
-    - 41.835
-    - 42.846
-    kappa2_fit_max_residual_deg: 13.7085
+    - 18.4164
+    - 21.6835
+    - 14.849
+    - 8.5399
+    - 17.8349
+    - 31.1737
+    - 39.1701
+    - 41.4641
+    - 43.0494
+    kappa2_fit_max_residual_deg: 14.0938
     kappa2_blend_constraint:
       sign: 1.0
       active_points:
       - 0.19871
       - 0.21121
       offsets_used_deg:
-        inner: 14.08013
-        outer: -1.82103
-    max_chord_change_m: 8.3e-05
-    max_kappa2_change_deg: 0.11261
+        inner: 14.1248
+        outer: -1.93063
+    max_chord_change_m: 0.0
+    max_kappa2_change_deg: 0.10942
     newton:
     - iteration: 1
       offset_deg:
-        inner: 14.08013
-        outer: -1.82103
+        inner: 14.1248
+        outer: -1.93063
       PR_error:
-      - -0.00021
-      - 0.000285
-      re_iterations: 28
-      physical: true
-    - iteration: 2
-      offset_deg:
-        inner: 14.17252
-        outer: -1.83944
-      PR_error:
-      - -1.7e-06
-      - 8.9e-06
-      re_iterations: 33
-      physical: true
-    offsets_deg:
-      inner: 14.17252
-      outer: -1.83944
-    meanline_efficiency:
-      outer: 0.842121
-      inner: 0.897588
-  - pass: 6
-    design_efficiency:
-      outer: 0.842121
-      inner: 0.897588
-    levels:
-      outer: 1.209289
-      inner: 1.098199
-    vortex_dh_J_kg:
-      inner: 22102.9
-      outer: 61910.4
-    design_exit_area_share:
-    - 0.06945
-    - 0.06564
-    - 0.06007
-    - 0.14772
-    - 0.13783
-    - 0.13339
-    - 0.13051
-    - 0.12846
-    - 0.12693
-    chord_needs_m:
-    - 0.06886
-    - 0.08259
-    - 0.09435
-    - 0.35776
-    - 0.2907
-    - 0.2951
-    - 0.29181
-    - 0.28289
-    - 0.26962
-    need_met:
-    - true
-    - true
-    - true
-    - true
-    - true
-    - true
-    - true
-    - true
-    - true
-    root_stress_steps: 23
-    stress_margin: 1.0325
-    area_taper: 0.3281
-    kappa2_per_tube_deg:
-    - 17.5065
-    - 21.6709
-    - 15.8189
-    - 9.1702
-    - 19.1267
-    - 31.9975
-    - 39.6533
-    - 41.8344
-    - 42.8454
-    kappa2_fit_max_residual_deg: 13.7499
-    kappa2_blend_constraint:
-      sign: 1.0
-      active_points:
-      - 0.19871
-      - 0.21121
-      offsets_used_deg:
-        inner: 14.17252
-        outer: -1.83944
-    max_chord_change_m: 2.5e-05
-    max_kappa2_change_deg: 0.04107
-    newton:
-    - iteration: 1
-      offset_deg:
-        inner: 14.17252
-        outer: -1.83944
-      PR_error:
-      - -7.87e-05
-      - 0.000122
-      re_iterations: 12
-      physical: true
-    - iteration: 2
-      offset_deg:
-        inner: 14.21169
-        outer: -1.84621
-      PR_error:
-      - -1.21e-06
-      - -6.4e-06
+      - -0.000181
+      - 0.000283
       re_iterations: 20
       physical: true
+    - iteration: 2
+      offset_deg:
+        inner: 14.21171
+        outer: -1.94833
+      PR_error:
+      - -1.04e-06
+      - 6.6e-06
+      re_iterations: 23
+      physical: true
     offsets_deg:
-      inner: 14.21169
-      outer: -1.84621
+      inner: 14.21171
+      outer: -1.94833
     meanline_efficiency:
-      outer: 0.842123
-      inner: 0.897526
-  - pass: 7
+      outer: 0.837904
+      inner: 0.916777
+  - pass: 6
     design_efficiency:
-      outer: 0.842123
-      inner: 0.897526
+      outer: 0.837904
+      inner: 0.916777
     levels:
-      outer: 1.209289
-      inner: 1.098205
+      outer: 1.210343
+      inner: 1.096143
     vortex_dh_J_kg:
-      inner: 22105.3
-      outer: 61910.1
+      inner: 21331.1
+      outer: 62252.6
     design_exit_area_share:
-    - 0.06945
-    - 0.06564
-    - 0.06008
-    - 0.14772
-    - 0.13783
-    - 0.13339
-    - 0.1305
-    - 0.12846
-    - 0.12693
+    - 0.06862
+    - 0.06457
+    - 0.05873
+    - 0.14834
+    - 0.13851
+    - 0.13396
+    - 0.13101
+    - 0.12892
+    - 0.12736
     chord_needs_m:
     - 0.06886
     - 0.08259
     - 0.09435
-    - 0.35774
+    - 0.35835
     - 0.2907
     - 0.2951
     - 0.29181
@@ -991,86 +1092,199 @@ convergence:
     - true
     - true
     - true
+    - false
     - true
     - true
     - true
     - true
     - true
-    - true
-    root_stress_steps: 23
-    stress_margin: 1.0328
-    area_taper: 0.3281
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
     kappa2_per_tube_deg:
-    - 17.5025
-    - 21.6691
-    - 15.8192
-    - 9.1706
-    - 19.1272
-    - 31.9975
-    - 39.6531
-    - 41.834
-    - 42.845
-    kappa2_fit_max_residual_deg: 13.7667
+    - 18.4107
+    - 21.6803
+    - 14.8483
+    - 8.5393
+    - 17.8349
+    - 31.1735
+    - 39.1698
+    - 41.4638
+    - 43.049
+    kappa2_fit_max_residual_deg: 14.1337
     kappa2_blend_constraint:
       sign: 1.0
       active_points:
       - 0.19871
       - 0.21121
       offsets_used_deg:
-        inner: 14.21169
-        outer: -1.84621
-    max_chord_change_m: 2.5e-05
-    max_kappa2_change_deg: 0.0172
+        inner: 14.21171
+        outer: -1.94833
+    max_chord_change_m: 0.0
+    max_kappa2_change_deg: 0.03933
     newton:
     - iteration: 1
       offset_deg:
-        inner: 14.21169
-        outer: -1.84621
+        inner: 14.21171
+        outer: -1.94833
       PR_error:
-      - -3.62e-05
-      - 4.49e-05
+      - -6.8e-05
+      - 0.000116
+      re_iterations: 11
+      physical: true
+    - iteration: 2
+      offset_deg:
+        inner: 14.24724
+        outer: -1.95488
+      PR_error:
+      - 7.63e-07
+      - -6.25e-06
+      re_iterations: 14
+      physical: true
+    offsets_deg:
+      inner: 14.24724
+      outer: -1.95488
+    meanline_efficiency:
+      outer: 0.837904
+      inner: 0.916738
+  - pass: 7
+    design_efficiency:
+      outer: 0.837904
+      inner: 0.916738
+    levels:
+      outer: 1.210343
+      inner: 1.096147
+    vortex_dh_J_kg:
+      inner: 21332.5
+      outer: 62252.5
+    design_exit_area_share:
+    - 0.06862
+    - 0.06457
+    - 0.05873
+    - 0.14834
+    - 0.13851
+    - 0.13396
+    - 0.13101
+    - 0.12892
+    - 0.12736
+    chord_needs_m:
+    - 0.06886
+    - 0.08259
+    - 0.09435
+    - 0.35835
+    - 0.2907
+    - 0.2951
+    - 0.29181
+    - 0.28289
+    - 0.26962
+    need_met:
+    - true
+    - true
+    - true
+    - false
+    - true
+    - true
+    - true
+    - true
+    - true
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
+    kappa2_per_tube_deg:
+    - 18.4082
+    - 21.679
+    - 14.8483
+    - 8.5394
+    - 17.8351
+    - 31.1735
+    - 39.1698
+    - 41.4637
+    - 43.0488
+    kappa2_fit_max_residual_deg: 14.1497
+    kappa2_blend_constraint:
+      sign: 1.0
+      active_points:
+      - 0.19871
+      - 0.21121
+      offsets_used_deg:
+        inner: 14.24724
+        outer: -1.95488
+    max_chord_change_m: 0.0
+    max_kappa2_change_deg: 0.01595
+    newton:
+    - iteration: 1
+      offset_deg:
+        inner: 14.24724
+        outer: -1.95488
+      PR_error:
+      - -2.85e-05
+      - 4.21e-05
       re_iterations: 6
       physical: true
     - iteration: 2
       offset_deg:
-        inner: 14.22676
-        outer: -1.84929
+        inner: 14.26059
+        outer: -1.95762
       PR_error:
-      - 1.11e-06
-      - -1.05e-05
-      re_iterations: 9
+      - 2.4e-06
+      - -9.68e-06
+      re_iterations: 6
       physical: true
     offsets_deg:
-      inner: 14.22676
-      outer: -1.84929
+      inner: 14.26059
+      outer: -1.95762
     meanline_efficiency:
-      outer: 0.842123
-      inner: 0.897505
+      outer: 0.837903
+      inner: 0.916725
   - pass: 8
     design_efficiency:
-      outer: 0.842123
-      inner: 0.897505
+      outer: 0.837903
+      inner: 0.916725
     levels:
-      outer: 1.209289
-      inner: 1.098208
+      outer: 1.210343
+      inner: 1.096149
     vortex_dh_J_kg:
-      inner: 22106.1
-      outer: 61910.2
+      inner: 21333.0
+      outer: 62252.6
     design_exit_area_share:
-    - 0.06945
-    - 0.06564
-    - 0.06008
-    - 0.14772
-    - 0.13783
-    - 0.13339
-    - 0.1305
-    - 0.12846
-    - 0.12692
+    - 0.06862
+    - 0.06457
+    - 0.05873
+    - 0.14834
+    - 0.13851
+    - 0.13396
+    - 0.13101
+    - 0.12892
+    - 0.12736
     chord_needs_m:
     - 0.06886
     - 0.08259
     - 0.09435
-    - 0.35773
+    - 0.35835
     - 0.2907
     - 0.2951
     - 0.29181
@@ -1080,36 +1294,48 @@ convergence:
     - true
     - true
     - true
+    - false
     - true
     - true
     - true
     - true
     - true
-    - true
-    root_stress_steps: 23
-    stress_margin: 1.0329
-    area_taper: 0.3281
+    chord_law:
+      form: quadratic_local_bump
+      base_coefficients_m:
+      - 0.222882
+      - 0.239188
+      - -0.196089
+      bump:
+        amplitude_m: 0.07475
+        centre_span_fraction: 0.360203
+        half_width_span_fraction: 0.124237
+        tube_index_0based: 3
+        need_excess_over_neighbours_m: 0.06765
+    root_stress_steps: 1
+    stress_margin: 1.0022
+    area_taper: 0.5
     kappa2_per_tube_deg:
-    - 17.501
-    - 21.6683
-    - 15.8191
-    - 9.1705
-    - 19.1272
-    - 31.9975
-    - 39.653
-    - 41.8339
-    - 42.8449
-    kappa2_fit_max_residual_deg: 13.7735
+    - 18.4073
+    - 21.6785
+    - 14.8481
+    - 8.5392
+    - 17.835
+    - 31.1735
+    - 39.1697
+    - 41.4636
+    - 43.0488
+    kappa2_fit_max_residual_deg: 14.1558
     kappa2_blend_constraint:
       sign: 1.0
       active_points:
       - 0.19871
       - 0.21121
       offsets_used_deg:
-        inner: 14.22676
-        outer: -1.84929
-    max_chord_change_m: 8.0e-06
-    max_kappa2_change_deg: 0.00669
+        inner: 14.26059
+        outer: -1.95762
+    max_chord_change_m: 0.0
+    max_kappa2_change_deg: 0.00602
     note: 'shape stable: the last balanced blade is kept'
 summary:
   tag: H
@@ -1117,17 +1343,17 @@ summary:
   U_tip_m_s: 428.51
   sonic_span_fraction: 0.4466
   vortex_law: free vortex per stream, C2 splitter blend (no controlled vortex; blade.vortex.law_statement)
-  DF_min: 0.3739
-  DF_max: 0.6534
+  DF_min: 0.3769
+  DF_max: 0.6533
   loading_rule: 'R-AM.9 (step 4e): span below the sonic span of this fan: DF <= 0.6
     (hub) to 0.4 (tip), linear in span [T] (NASA SP-36 PDF p. 286 [K]); above: solidity
     >= Rotor 67 solidity (3.11 hub to 1.29 tip, linear, Strazisar p. 2 [KS])'
   R_AM9_check: pass
   R_AM9_failed_tubes: []
-  solidity_min: 1.3735
-  solidity_max: 4.0888
-  chord_min_m: 0.26962
-  chord_max_m: 0.3651
+  solidity_min: 1.3886
+  solidity_max: 3.4237
+  chord_min_m: 0.23576
+  chord_max_m: 0.35835
   loading_coefficient:
     definition: 'psi = dh0 / U_tip^2, U_tip at the inlet tip radius; M1: dh0 = cp
       (T13 - Tt2) of the outer stream (target FPR, budget eta); Rotor 67: dh0 = cp
@@ -1147,27 +1373,27 @@ summary:
     mass_flow_kg_s: 287.8309
     Pt_ratio_meanline: 1.765
     efficiency_budget: 0.89513
-    efficiency_meanline: 0.84212
-    efficiency_bias_meanline_minus_budget: -0.05301
-    Tt_ratio_meanline: 1.20929
+    efficiency_meanline: 0.8379
+    efficiency_bias_meanline_minus_budget: -0.05723
+    Tt_ratio_meanline: 1.21034
     Tt_exit_K: 344.88538
     power_MW: 16.40368
   inner:
     mass_flow_kg_s: 57.5661
     Pt_ratio_meanline: 1.34399
     efficiency_budget: 0.88713
-    efficiency_meanline: 0.8975
-    efficiency_bias_meanline_minus_budget: 0.01037
-    Tt_ratio_meanline: 1.0982
+    efficiency_meanline: 0.91672
+    efficiency_bias_meanline_minus_budget: 0.02959
+    Tt_ratio_meanline: 1.09615
     Tt_exit_K: 316.77948
     power_MW: 1.6555
   overall_meanline:
     mass_flow: 345.397
-    Tt_ratio: 1.19078
+    Tt_ratio: 1.19131
     Pt_ratio: 1.68908
-    efficiency: 0.84687
+    efficiency: 0.8445
   overall_efficiency_budget: 0.8944
-  overall_efficiency_bias_meanline_minus_budget: -0.04752
+  overall_efficiency_bias_meanline_minus_budget: -0.04989
   efficiency_note: 'efficiency_budget is the achieved value [T, ADR-015]; efficiency_meanline
     is information only [H, unvalidated model: about 7 points low on Rotor 67 near
     peak]; overall budget efficiency from the mass-averaged budget Tt ratio and the
@@ -1176,29 +1402,30 @@ summary:
     deviation and loss
 smoothness:
   note: '[H] second divided differences in span fraction over the tube values; the
-    blade functions are smooth (chord quadratic, kappa2 cubic + C2 splitter blend,
-    t/c cubic, kappa1 from radius), so there is no jump at the splitter by construction'
+    blade functions are smooth (chord quadratic + C2 local bump, kappa2 cubic + C2
+    splitter blend, t/c cubic, kappa1 from radius), so there is no jump at the splitter
+    by construction'
   splitter_between:
   - tube 3
   - tube 4
   chord_m:
-    max_abs_second_difference: 0.893
+    max_abs_second_difference: 8.45
     second_difference_at_splitter:
-    - -0.8892
-    - -0.89
-    slope_across_splitter: 0.171
+    - 5.4245
+    - -8.45
+    slope_across_splitter: 0.7242
     slope_neighbours:
-    - 0.263
-    - 0.0493
+    - 0.1628
+    - -0.4317
   solidity:
-    max_abs_second_difference: 0.7656
+    max_abs_second_difference: 69.5202
     second_difference_at_splitter:
-    - -0.4862
-    - -0.279
-    slope_across_splitter: -2.996
+    - 55.8162
+    - -69.5202
+    slope_across_splitter: 2.8591
     slope_neighbours:
-    - -2.9457
-    - -3.0341
+    - -2.9179
+    - -6.6513
   kappa1_deg:
     max_abs_second_difference: 74.1738
     second_difference_at_splitter:
@@ -1209,61 +1436,61 @@ smoothness:
     - 45.9179
     - 32.075
   kappa2_deg:
-    max_abs_second_difference: 101.5771
+    max_abs_second_difference: 141.2397
     second_difference_at_splitter:
-    - 24.4658
-    - 79.5608
-    slope_across_splitter: 2.6167
+    - 19.2926
+    - 65.3127
+    slope_across_splitter: 2.0692
     slope_neighbours:
-    - 0.0845
-    - 13.5007
+    - 0.0725
+    - 11.004
   t_c:
     max_abs_second_difference: 0.2728
     second_difference_at_splitter:
-    - -0.1634
-    - -0.0773
+    - -0.1645
+    - -0.0778
     slope_across_splitter: -0.0734
     slope_neighbours:
-    - -0.0565
-    - -0.084
+    - -0.0564
+    - -0.0841
 tubes:
 - name: tube 1
   stream: inner
   span_fraction: 0.0565
   r1_m: 0.26303
-  r2_m: 0.33224
+  r2_m: 0.33116
   A1_m2: 0.09532
-  A2_m2: 0.12001
+  A2_m2: 0.11549
   mass_flow_kg_s: 19.1887
   U1_m_s: 145.49
-  U2_m_s: 183.77
+  U2_m_s: 183.17
   V1_m_s: 197.63
   W1_m_s: 245.41
   beta1_deg: 36.36
   M1rel: 0.7469
-  Vm2_m_s: 130.18
-  Vt2_m_s: 122.7
-  rVt2_m2_s: 40.765
-  V2_m_s: 178.89
-  W2_m_s: 143.8
-  beta2_deg: 25.134
-  M2rel: 0.4179
-  Vm2_over_Vm1: 0.6587
+  Vm2_m_s: 134.89
+  Vt2_m_s: 120.17
+  rVt2_m2_s: 39.795
+  V2_m_s: 180.66
+  W2_m_s: 148.88
+  beta2_deg: 25.035
+  M2rel: 0.4333
+  Vm2_over_Vm1: 0.6825
   kappa1_deg: 33.36
-  kappa2_deg: 23.825
-  camber_deg: 9.535
+  kappa2_deg: 23.569
+  camber_deg: 9.791
   incidence_deg: 3.0
-  deviation_deg: 1.309
-  solidity: 4.0888
+  deviation_deg: 1.466
+  solidity: 3.4237
   pitch_m: 0.06886
-  chord_m: 0.28156
-  t_c: 0.08424
-  front_camber_share: 0.4816
+  chord_m: 0.23576
+  t_c: 0.08425
+  front_camber_share: 0.4815
   x_max: 0.4623
-  covered_fraction: 0.1279
-  ss_turn_deg: -5.534
-  diffusion_factor: 0.4441
-  D_eq: 1.9555
+  covered_fraction: 0.1526
+  ss_turn_deg: -4.828
+  diffusion_factor: 0.4282
+  D_eq: 1.8974
   R_AM9:
     zone: subsonic (Lieblein DF limit)
     DF_limit: 0.5887
@@ -1275,58 +1502,58 @@ tubes:
   M_passage: 0.7469
   loss_breakdown:
     profile:
-      loss: 0.11744
-      delta_eta: 0.13565
+      loss: 0.08753
+      delta_eta: 0.10314
     shock:
       loss: 0.0
       delta_eta: 0.0
     endwall:
-      loss: 0.03036
-      delta_eta: 0.03506
+      loss: 0.02623
+      delta_eta: 0.03091
     tip:
       loss: 0.0
       delta_eta: 0.0
-  Pt_ratio: 1.24496
-  Tt_ratio: 1.0779
-  efficiency_meanline: 0.82929
+  Pt_ratio: 1.25009
+  Tt_ratio: 1.07605
+  efficiency_meanline: 0.86596
   notes: []
 - name: tube 2
   stream: inner
   span_fraction: 0.1532
   r1_m: 0.31548
-  r2_m: 0.38123
+  r2_m: 0.37909
   A1_m2: 0.09532
-  A2_m2: 0.09958
+  A2_m2: 0.09842
   mass_flow_kg_s: 19.1887
   U1_m_s: 174.5
-  U2_m_s: 210.87
+  U2_m_s: 209.69
   V1_m_s: 197.63
   W1_m_s: 263.64
   beta1_deg: 41.444
   M1rel: 0.8024
-  Vm2_m_s: 153.28
-  Vt2_m_s: 135.97
-  rVt2_m2_s: 51.837
-  V2_m_s: 204.9
-  W2_m_s: 170.6
-  beta2_deg: 26.04
-  M2rel: 0.4949
-  Vm2_over_Vm1: 0.7756
+  Vm2_m_s: 154.99
+  Vt2_m_s: 133.94
+  rVt2_m2_s: 50.774
+  V2_m_s: 204.84
+  W2_m_s: 172.51
+  beta2_deg: 26.047
+  M2rel: 0.5009
+  Vm2_over_Vm1: 0.7842
   kappa1_deg: 38.444
-  kappa2_deg: 23.981
-  camber_deg: 14.463
+  kappa2_deg: 23.722
+  camber_deg: 14.722
   incidence_deg: 3.0
-  deviation_deg: 2.059
-  solidity: 3.8106
+  deviation_deg: 2.325
+  solidity: 3.0865
   pitch_m: 0.08259
-  chord_m: 0.31472
-  t_c: 0.08083
-  front_camber_share: 0.5256
-  x_max: 0.4773
-  covered_fraction: 0.1494
-  ss_turn_deg: -3.532
-  diffusion_factor: 0.3908
-  D_eq: 1.7856
+  chord_m: 0.25492
+  t_c: 0.08086
+  front_camber_share: 0.5255
+  x_max: 0.4772
+  covered_fraction: 0.1842
+  ss_turn_deg: -2.42
+  diffusion_factor: 0.3923
+  D_eq: 1.7786
   R_AM9:
     zone: subsonic (Lieblein DF limit)
     DF_limit: 0.5694
@@ -1338,58 +1565,58 @@ tubes:
   M_passage: 0.8024
   loss_breakdown:
     profile:
-      loss: 0.07017
-      delta_eta: 0.07173
+      loss: 0.05612
+      delta_eta: 0.05851
     shock:
       loss: 0.0
       delta_eta: 0.0
     endwall:
-      loss: 0.02154
-      delta_eta: 0.02202
+      loss: 0.01867
+      delta_eta: 0.01947
     tip:
       loss: 0.0
       delta_eta: 0.0
-  Pt_ratio: 1.35106
-  Tt_ratio: 1.09906
-  efficiency_meanline: 0.90625
+  Pt_ratio: 1.34972
+  Tt_ratio: 1.09703
+  efficiency_meanline: 0.92202
   notes: []
 - name: tube 3
   stream: inner
   span_fraction: 0.236
   r1_m: 0.36037
-  r2_m: 0.41876
+  r2_m: 0.4165
   A1_m2: 0.09532
-  A2_m2: 0.08907
+  A2_m2: 0.08859
   mass_flow_kg_s: 19.1887
   U1_m_s: 199.33
-  U2_m_s: 231.63
+  U2_m_s: 230.38
   V1_m_s: 197.63
   W1_m_s: 280.7
   beta1_deg: 45.246
   M1rel: 0.8543
-  Vm2_m_s: 168.4
-  Vt2_m_s: 147.02
-  rVt2_m2_s: 61.566
-  V2_m_s: 223.55
-  W2_m_s: 188.46
-  beta2_deg: 26.675
-  M2rel: 0.5454
-  Vm2_over_Vm1: 0.8521
+  Vm2_m_s: 169.34
+  Vt2_m_s: 144.94
+  rVt2_m2_s: 60.366
+  V2_m_s: 222.89
+  W2_m_s: 189.67
+  beta2_deg: 26.774
+  M2rel: 0.5494
+  Vm2_over_Vm1: 0.8569
   kappa1_deg: 42.246
-  kappa2_deg: 23.988
-  camber_deg: 18.258
+  kappa2_deg: 23.728
+  camber_deg: 18.518
   incidence_deg: 3.0
-  deviation_deg: 2.687
-  solidity: 3.5667
+  deviation_deg: 3.046
+  solidity: 2.8449
   pitch_m: 0.09435
-  chord_m: 0.3365
-  t_c: 0.07615
+  chord_m: 0.2684
+  t_c: 0.07619
   front_camber_share: 0.5479
   x_max: 0.4901
-  covered_fraction: 0.1666
-  ss_turn_deg: -1.723
-  diffusion_factor: 0.3753
-  D_eq: 1.732
+  covered_fraction: 0.2086
+  ss_turn_deg: -0.269
+  diffusion_factor: 0.3827
+  D_eq: 1.7368
   R_AM9:
     zone: subsonic (Lieblein DF limit)
     DF_limit: 0.5528
@@ -1401,58 +1628,58 @@ tubes:
   M_passage: 0.8543
   loss_breakdown:
     profile:
-      loss: 0.05341
-      delta_eta: 0.0513
+      loss: 0.04308
+      delta_eta: 0.04218
     shock:
       loss: 0.0
       delta_eta: 0.0
     endwall:
-      loss: 0.01395
-      delta_eta: 0.01339
+      loss: 0.01234
+      delta_eta: 0.01208
     tip:
       loss: 0.0
       delta_eta: 0.0
-  Pt_ratio: 1.44108
-  Tt_ratio: 1.11765
-  efficiency_meanline: 0.93531
+  Pt_ratio: 1.4368
+  Tt_ratio: 1.11536
+  efficiency_meanline: 0.94574
   notes: []
 - name: tube 4
   stream: outer
   span_fraction: 0.3602
   r1_m: 0.42774
-  r2_m: 0.46968
+  r2_m: 0.46765
   A1_m2: 0.2383
-  A2_m2: 0.19521
+  A2_m2: 0.19557
   mass_flow_kg_s: 47.9718
   U1_m_s: 236.6
-  U2_m_s: 259.8
+  U2_m_s: 258.67
   V1_m_s: 197.63
   W1_m_s: 308.28
   beta1_deg: 50.128
   M1rel: 0.9382
-  Vm2_m_s: 187.47
-  Vt2_m_s: 160.66
-  rVt2_m2_s: 75.461
-  V2_m_s: 246.9
-  W2_m_s: 212.07
-  beta2_deg: 27.869
-  M2rel: 0.6115
-  Vm2_over_Vm1: 0.9486
+  Vm2_m_s: 187.4
+  Vt2_m_s: 160.78
+  rVt2_m2_s: 75.191
+  V2_m_s: 246.92
+  W2_m_s: 211.42
+  beta2_deg: 27.581
+  M2rel: 0.6098
+  Vm2_over_Vm1: 0.9482
   kappa1_deg: 47.128
-  kappa2_deg: 24.313
-  camber_deg: 22.816
+  kappa2_deg: 23.985
+  camber_deg: 23.144
   incidence_deg: 3.0
-  deviation_deg: 3.557
-  solidity: 3.1946
+  deviation_deg: 3.596
+  solidity: 3.2
   pitch_m: 0.11198
-  chord_m: 0.35774
-  t_c: 0.06703
+  chord_m: 0.35835
+  t_c: 0.06707
   front_camber_share: 0.555
   x_max: 0.5093
-  covered_fraction: 0.1923
-  ss_turn_deg: 0.868
-  diffusion_factor: 0.3739
-  D_eq: 1.7044
+  covered_fraction: 0.1915
+  ss_turn_deg: 0.913
+  diffusion_factor: 0.3769
+  D_eq: 1.7102
   R_AM9:
     zone: subsonic (Lieblein DF limit)
     DF_limit: 0.528
@@ -1464,58 +1691,58 @@ tubes:
   M_passage: 0.9382
   loss_breakdown:
     profile:
-      loss: 0.03895
-      delta_eta: 0.03614
+      loss: 0.03912
+      delta_eta: 0.03653
     shock:
       loss: 0.0
       delta_eta: 0.0
     endwall:
-      loss: 0.00454
-      delta_eta: 0.00421
+      loss: 0.00455
+      delta_eta: 0.00425
     tip:
       loss: 0.0
       delta_eta: 0.0
-  Pt_ratio: 1.57403
-  Tt_ratio: 1.14421
-  efficiency_meanline: 0.95965
+  Pt_ratio: 1.57134
+  Tt_ratio: 1.14369
+  efficiency_meanline: 0.95922
   notes: []
 - name: tube 5
   stream: outer
   span_fraction: 0.5096
   r1_m: 0.50874
-  r2_m: 0.52871
+  r2_m: 0.52708
   A1_m2: 0.2383
-  A2_m2: 0.17503
+  A2_m2: 0.17588
   mass_flow_kg_s: 47.9718
   U1_m_s: 281.4
-  U2_m_s: 292.44
+  U2_m_s: 291.55
   V1_m_s: 197.63
   W1_m_s: 343.87
   beta1_deg: 54.92
   M1rel: 1.0465
-  Vm2_m_s: 203.66
-  Vt2_m_s: 171.52
-  rVt2_m2_s: 90.686
-  V2_m_s: 266.26
-  W2_m_s: 236.85
-  beta2_deg: 30.699
-  M2rel: 0.679
-  Vm2_over_Vm1: 1.0305
+  Vm2_m_s: 202.96
+  Vt2_m_s: 171.48
+  rVt2_m2_s: 90.386
+  V2_m_s: 265.7
+  W2_m_s: 235.81
+  beta2_deg: 30.607
+  M2rel: 0.6761
+  Vm2_over_Vm1: 1.027
   kappa1_deg: 51.92
-  kappa2_deg: 26.33
-  camber_deg: 25.589
+  kappa2_deg: 25.629
+  camber_deg: 26.291
   incidence_deg: 3.0
-  deviation_deg: 4.369
-  solidity: 2.7413
+  deviation_deg: 4.978
+  solidity: 2.2063
   pitch_m: 0.13319
-  chord_m: 0.3651
-  t_c: 0.05448
-  front_camber_share: 0.5215
-  x_max: 0.5325
-  covered_fraction: 0.2283
-  ss_turn_deg: 3.242
-  diffusion_factor: 0.3922
-  D_eq: 1.7147
+  chord_m: 0.29385
+  t_c: 0.05451
+  front_camber_share: 0.5216
+  x_max: 0.5324
+  covered_fraction: 0.2823
+  ss_turn_deg: 5.312
+  diffusion_factor: 0.4159
+  D_eq: 1.744
   R_AM9:
     zone: supersonic (solidity floor)
     DF_limit: null
@@ -1524,61 +1751,61 @@ tubes:
     DF_check: not applied
     solidity_check: pass
     rule: pass
-  M_passage: 1.1825
+  M_passage: 1.2191
   loss_breakdown:
     profile:
-      loss: 0.02974
-      delta_eta: 0.02802
+      loss: 0.02518
+      delta_eta: 0.02387
     shock:
-      loss: 0.01127
-      delta_eta: 0.01062
+      loss: 0.01834
+      delta_eta: 0.01739
     endwall:
       loss: 2.0e-05
       delta_eta: 2.0e-05
     tip:
       loss: 0.0
       delta_eta: 0.0
-  Pt_ratio: 1.71485
-  Tt_ratio: 1.1733
-  efficiency_meanline: 0.96134
+  Pt_ratio: 1.7097
+  Tt_ratio: 1.17273
+  efficiency_meanline: 0.95873
   notes: []
 - name: tube 6
   stream: outer
   span_fraction: 0.6382
   r1_m: 0.57851
-  r2_m: 0.57791
+  r2_m: 0.57666
   A1_m2: 0.2383
-  A2_m2: 0.16711
+  A2_m2: 0.16797
   mass_flow_kg_s: 47.9718
   U1_m_s: 319.99
-  U2_m_s: 319.66
+  U2_m_s: 318.97
   V1_m_s: 197.63
   W1_m_s: 376.1
   beta1_deg: 58.3
   M1rel: 1.1446
-  Vm2_m_s: 209.64
-  Vt2_m_s: 176.17
-  rVt2_m2_s: 101.809
-  V2_m_s: 273.83
-  W2_m_s: 254.05
-  beta2_deg: 34.391
-  M2rel: 0.7235
-  Vm2_over_Vm1: 1.0608
+  Vm2_m_s: 208.94
+  Vt2_m_s: 177.81
+  rVt2_m2_s: 102.537
+  V2_m_s: 274.36
+  W2_m_s: 252.15
+  beta2_deg: 34.043
+  M2rel: 0.7178
+  Vm2_over_Vm1: 1.0572
   kappa1_deg: 55.3
-  kappa2_deg: 29.529
-  camber_deg: 25.772
+  kappa2_deg: 28.545
+  camber_deg: 26.755
   incidence_deg: 3.0
-  deviation_deg: 4.862
-  solidity: 2.3475
+  deviation_deg: 5.497
+  solidity: 1.9522
   pitch_m: 0.15145
-  chord_m: 0.35554
-  t_c: 0.044
+  chord_m: 0.29566
+  t_c: 0.04402
   front_camber_share: 0.456
   x_max: 0.5524
-  covered_fraction: 0.27
-  ss_turn_deg: 4.355
-  diffusion_factor: 0.4246
-  D_eq: 1.7574
+  covered_fraction: 0.3222
+  ss_turn_deg: 6.189
+  diffusion_factor: 0.4518
+  D_eq: 1.7919
   R_AM9:
     zone: supersonic (solidity floor)
     DF_limit: null
@@ -1587,61 +1814,61 @@ tubes:
     DF_check: not applied
     solidity_check: pass
     rule: pass
-  M_passage: 1.2832
+  M_passage: 1.3146
   loss_breakdown:
     profile:
-      loss: 0.02604
-      delta_eta: 0.02581
+      loss: 0.02279
+      delta_eta: 0.02253
     shock:
-      loss: 0.03199
-      delta_eta: 0.03171
+      loss: 0.0417
+      delta_eta: 0.04123
     endwall:
-      loss: 0.00586
-      delta_eta: 0.00581
+      loss: 0.00587
+      delta_eta: 0.0058
     tip:
       loss: 0.0
       delta_eta: 0.0
-  Pt_ratio: 1.79665
-  Tt_ratio: 1.19456
-  efficiency_meanline: 0.93668
+  Pt_ratio: 1.79708
+  Tt_ratio: 1.19595
+  efficiency_meanline: 0.93043
   notes: []
 - name: tube 7
   stream: outer
   span_fraction: 0.7529
   r1_m: 0.64072
-  r2_m: 0.6222
+  r2_m: 0.62124
   A1_m2: 0.2383
-  A2_m2: 0.16684
+  A2_m2: 0.16751
   mass_flow_kg_s: 47.9718
   U1_m_s: 354.4
-  U2_m_s: 344.16
+  U2_m_s: 343.62
   V1_m_s: 197.63
   W1_m_s: 405.78
   beta1_deg: 60.854
   M1rel: 1.2349
-  Vm2_m_s: 207.91
-  Vt2_m_s: 178.28
-  rVt2_m2_s: 110.925
-  V2_m_s: 273.88
-  W2_m_s: 265.98
-  beta2_deg: 38.584
-  M2rel: 0.7513
-  Vm2_over_Vm1: 1.052
+  Vm2_m_s: 207.37
+  Vt2_m_s: 180.52
+  rVt2_m2_s: 112.144
+  V2_m_s: 274.93
+  W2_m_s: 263.83
+  beta2_deg: 38.187
+  M2rel: 0.7448
+  Vm2_over_Vm1: 1.0493
   kappa1_deg: 57.854
-  kappa2_deg: 33.454
-  camber_deg: 24.4
+  kappa2_deg: 32.52
+  camber_deg: 25.334
   incidence_deg: 3.0
-  deviation_deg: 5.129
-  solidity: 1.9948
+  deviation_deg: 5.667
+  solidity: 1.7396
   pitch_m: 0.16774
-  chord_m: 0.3346
+  chord_m: 0.29181
   t_c: 0.03624
   front_camber_share: 0.3688
-  x_max: 0.5702
-  covered_fraction: 0.3231
-  ss_turn_deg: 4.469
-  diffusion_factor: 0.4657
-  D_eq: 1.8189
+  x_max: 0.5701
+  covered_fraction: 0.3674
+  ss_turn_deg: 5.739
+  diffusion_factor: 0.491
+  D_eq: 1.8514
   R_AM9:
     zone: supersonic (solidity floor)
     DF_limit: null
@@ -1650,61 +1877,61 @@ tubes:
     DF_check: not applied
     solidity_check: pass
     rule: pass
-  M_passage: 1.3675
+  M_passage: 1.389
   loss_breakdown:
     profile:
-      loss: 0.02504
-      delta_eta: 0.02631
+      loss: 0.02283
+      delta_eta: 0.02385
     shock:
-      loss: 0.05624
-      delta_eta: 0.0591
+      loss: 0.06453
+      delta_eta: 0.06742
     endwall:
-      loss: 0.02161
-      delta_eta: 0.0227
+      loss: 0.02194
+      delta_eta: 0.02292
     tip:
       loss: 0.0
       delta_eta: 0.0
-  Pt_ratio: 1.83321
-  Tt_ratio: 1.21198
-  efficiency_meanline: 0.89189
+  Pt_ratio: 1.83739
+  Tt_ratio: 1.21431
+  efficiency_meanline: 0.8858
   notes: []
 - name: tube 8
   stream: outer
   span_fraction: 0.8575
   r1_m: 0.69741
-  r2_m: 0.66616
+  r2_m: 0.66562
   A1_m2: 0.2383
-  A2_m2: 0.18901
+  A2_m2: 0.19136
   mass_flow_kg_s: 47.9718
   U1_m_s: 385.76
-  U2_m_s: 368.47
+  U2_m_s: 368.17
   V1_m_s: 197.63
   W1_m_s: 433.44
   beta1_deg: 62.873
   M1rel: 1.3191
-  Vm2_m_s: 185.46
-  Vt2_m_s: 194.18
-  rVt2_m2_s: 129.353
-  V2_m_s: 268.52
-  W2_m_s: 254.51
-  beta2_deg: 43.222
-  M2rel: 0.7059
-  Vm2_over_Vm1: 0.9385
+  Vm2_m_s: 183.5
+  Vt2_m_s: 197.12
+  rVt2_m2_s: 131.204
+  V2_m_s: 269.31
+  W2_m_s: 250.86
+  beta2_deg: 42.991
+  M2rel: 0.695
+  Vm2_over_Vm1: 0.9285
   kappa1_deg: 59.873
-  kappa2_deg: 38.058
-  camber_deg: 21.816
+  kappa2_deg: 37.522
+  camber_deg: 22.351
   incidence_deg: 3.0
-  deviation_deg: 5.164
-  solidity: 1.6723
+  deviation_deg: 5.469
+  solidity: 1.5544
   pitch_m: 0.18258
-  chord_m: 0.30533
+  chord_m: 0.2838
   t_c: 0.03141
-  front_camber_share: 0.2658
+  front_camber_share: 0.2659
   x_max: 0.5863
-  covered_fraction: 0.3954
-  ss_turn_deg: 3.738
-  diffusion_factor: 0.5675
-  D_eq: 2.0381
+  covered_fraction: 0.4231
+  ss_turn_deg: 4.297
+  diffusion_factor: 0.5902
+  D_eq: 2.0788
   R_AM9:
     zone: supersonic (solidity floor)
     DF_limit: null
@@ -1713,61 +1940,61 @@ tubes:
     DF_check: not applied
     solidity_check: pass
     rule: pass
-  M_passage: 1.4354
+  M_passage: 1.4449
   loss_breakdown:
     profile:
-      loss: 0.03508
-      delta_eta: 0.03705
+      loss: 0.03529
+      delta_eta: 0.037
     shock:
-      loss: 0.0788
-      delta_eta: 0.08325
+      loss: 0.08285
+      delta_eta: 0.08686
     endwall:
-      loss: 0.04639
-      delta_eta: 0.04901
+      loss: 0.04698
+      delta_eta: 0.04926
     tip:
-      loss: 0.06436
-      delta_eta: 0.06799
-  Pt_ratio: 1.83039
-  Tt_ratio: 1.24719
-  efficiency_meanline: 0.76271
+      loss: 0.06888
+      delta_eta: 0.07221
+  Pt_ratio: 1.83407
+  Tt_ratio: 1.25073
+  efficiency_meanline: 0.75467
   notes: []
 - name: tube 9
   stream: outer
   span_fraction: 0.9541
   r1_m: 0.74982
-  r2_m: 0.71256
+  r2_m: 0.71244
   A1_m2: 0.2383
-  A2_m2: 0.21298
+  A2_m2: 0.21406
   mass_flow_kg_s: 47.9718
   U1_m_s: 414.75
-  U2_m_s: 394.14
+  U2_m_s: 394.07
   V1_m_s: 197.63
   W1_m_s: 459.43
   beta1_deg: 64.522
   M1rel: 1.3982
-  Vm2_m_s: 165.48
-  Vt2_m_s: 208.93
-  rVt2_m2_s: 148.878
-  V2_m_s: 266.52
-  W2_m_s: 248.36
-  beta2_deg: 48.22
-  M2rel: 0.6772
-  Vm2_over_Vm1: 0.8373
+  Vm2_m_s: 164.48
+  Vt2_m_s: 209.09
+  rVt2_m2_s: 148.961
+  V2_m_s: 266.02
+  W2_m_s: 247.53
+  beta2_deg: 48.359
+  M2rel: 0.6747
+  Vm2_over_Vm1: 0.8323
   kappa1_deg: 61.522
-  kappa2_deg: 43.297
-  camber_deg: 18.225
+  kappa2_deg: 43.514
+  camber_deg: 18.008
   incidence_deg: 3.0
-  deviation_deg: 4.923
-  solidity: 1.3735
+  deviation_deg: 4.845
+  solidity: 1.3886
   pitch_m: 0.1963
-  chord_m: 0.26962
+  chord_m: 0.27259
   t_c: 0.0296
-  front_camber_share: 0.1507
+  front_camber_share: 0.1506
   x_max: 0.6013
-  covered_fraction: 0.5002
-  ss_turn_deg: 2.355
-  diffusion_factor: 0.6534
-  D_eq: 2.2207
+  covered_fraction: 0.496
+  ss_turn_deg: 2.276
+  diffusion_factor: 0.6533
+  D_eq: 2.2257
   R_AM9:
     zone: supersonic (solidity floor)
     DF_limit: null
@@ -1776,23 +2003,23 @@ tubes:
     DF_check: not applied
     solidity_check: pass
     rule: pass
-  M_passage: 1.4895
+  M_passage: 1.4881
   loss_breakdown:
     profile:
-      loss: 0.05218
-      delta_eta: 0.05458
+      loss: 0.05391
+      delta_eta: 0.05639
     shock:
-      loss: 0.09768
-      delta_eta: 0.10217
+      loss: 0.09708
+      delta_eta: 0.10154
     endwall:
-      loss: 0.07802
-      delta_eta: 0.0816
+      loss: 0.07762
+      delta_eta: 0.08118
     tip:
-      loss: 0.08073
-      delta_eta: 0.08444
-  Pt_ratio: 1.85275
-  Tt_ratio: 1.2845
-  efficiency_meanline: 0.6772
+      loss: 0.0803
+      delta_eta: 0.08398
+  Pt_ratio: 1.85289
+  Tt_ratio: 1.28466
+  efficiency_meanline: 0.67691
   notes: []
 kappa2_blend_check:
   rule: 'R-AM.12 (M1 step 4f): kappa2(f) monotonic over the splitter blend region
@@ -1803,12 +2030,12 @@ kappa2_blend_check:
   - 0.52371
   direction: rising
   kappa2_ends_deg:
-  - 23.7367
-  - 26.6261
-  largest_reverse_step_deg: 8.4e-05
+  - 23.462
+  - 25.8811
+  largest_reverse_step_deg: 7.4e-05
   tolerance_deg: 0.001
-  max_abs_d2kappa2_df2_deg: 99.95
-  max_abs_d2kappa2_dr2_deg_per_m2: 339.9
+  max_abs_d2kappa2_df2_deg: 87.07
+  max_abs_d2kappa2_dr2_deg_per_m2: 296.1
   curvature_limit_deg: 339.76
   curvature_limit_tag: H from KS (largest |d2 kappa2/df2| of Rotor 67, Table I te_metal_angle;
     blading.kappa2_blend_curvature_limit)
@@ -1828,23 +2055,23 @@ tip_region:
     iterations: 38
   tubes_M1:
   - - 0.0565
-    - 0.8293
+    - 0.866
   - - 0.1532
-    - 0.9062
+    - 0.922
   - - 0.236
-    - 0.9353
+    - 0.9457
   - - 0.3602
-    - 0.9596
+    - 0.9592
   - - 0.5096
-    - 0.9613
+    - 0.9587
   - - 0.6382
-    - 0.9367
+    - 0.9304
   - - 0.7529
-    - 0.8919
+    - 0.8858
   - - 0.8575
-    - 0.7627
+    - 0.7547
   - - 0.9541
-    - 0.6772
+    - 0.6769
   tubes_rotor67:
   - - 0.1128
     - 0.9602
@@ -1868,15 +2095,15 @@ tip_region:
   eta_gap_limit_tag: T (user rule, M1 step 4f)
   bands:
   - band_span_min: 0.8
-    eta_M1: 0.71695
+    eta_M1: 0.71333
     eta_rotor67_model: 0.71343
-    gap_M1_minus_rotor67: 0.00352
+    gap_M1_minus_rotor67: -0.00011
     tubes_M1: 2
     tubes_rotor67: 2
   - band_span_min: 0.7
-    eta_M1: 0.76682
+    eta_M1: 0.76263
     eta_rotor67_model: 0.74849
-    gap_M1_minus_rotor67: 0.01833
+    gap_M1_minus_rotor67: 0.01414
     tubes_M1: 3
     tubes_rotor67: 3
   tag: H
@@ -1896,20 +2123,21 @@ mechanical:
   - 0.7277
   area_coefficient_rotor67_tag: H from KS (Table I TNPC integrated along the camber
     line)
-  chord_root_m: 0.25836
-  chord_tip_m: 0.24976
+  chord_root_m: 0.22288
+  chord_tip_m: 0.26598
   chord_note: '[H] chord(f) of the smooth blade at f = 0 (inlet hub) and f = 1 (inlet
     tip); the root chord is the smallest that meets the R-AM.9 needs, the taper band
     and the stress margin (R-AM.13)'
   tc_root: 0.08496
   tc_tip: 0.02983
-  tc_note: '[T] Rotor 67 t/c fit (blade_profile.rotor67_fits, KS sections) at f =
-    0 and 1 used as an analogue (fixed t/c); CFM56-7B blade thickness doğrulanmadı'
-  thickness_root_mm: 21.95
-  thickness_tip_mm: 7.45
-  area_root_cm2: 37.807
-  area_tip_cm2: 12.405
-  taper_ratio: 0.3281
+  tc_note: '[T analogue] Rotor 67 t/c benchmark (blade.tc_benchmark_rotor67: largest
+    TNPC / chord per Table I section [H from KS], cubic fit in the inlet span fraction)
+    at f = 0 and 1; CFM56-7B blade thickness doğrulanmadı'
+  thickness_root_mm: 18.94
+  thickness_tip_mm: 7.93
+  area_root_cm2: 28.137
+  area_tip_cm2: 14.068
+  taper_ratio: 0.5
   taper_tag: H (A_tip / A_root of the designed blade)
   taper_band:
   - 0.3
@@ -1919,53 +2147,53 @@ mechanical:
   taper_rotor67_tag: H from KS (Table I section 14 / section 1 area)
   area_profile_cm2:
   - - 0.0
-    - 37.807
+    - 28.137
   - - 0.05
-    - 43.799
+    - 30.896
   - - 0.1
-    - 48.988
+    - 33.184
   - - 0.15
-    - 53.147
+    - 34.937
   - - 0.2
-    - 56.124
+    - 36.112
   - - 0.25
-    - 57.836
+    - 36.891
   - - 0.3
-    - 58.274
+    - 46.101
   - - 0.35
-    - 57.493
+    - 57.301
   - - 0.4
-    - 55.604
+    - 49.522
   - - 0.45
-    - 52.766
+    - 35.503
   - - 0.5
-    - 49.172
+    - 31.76
   - - 0.55
-    - 45.036
+    - 29.668
   - - 0.6
-    - 40.577
+    - 27.417
   - - 0.65
-    - 36.008
+    - 25.108
   - - 0.7
-    - 31.524
+    - 22.837
   - - 0.75
-    - 27.287
+    - 20.694
   - - 0.8
-    - 23.419
+    - 18.757
   - - 0.85
-    - 19.996
+    - 17.09
   - - 0.9
-    - 17.043
+    - 15.74
   - - 0.95
-    - 14.536
+    - 14.731
   - - 1.0
-    - 12.405
-  area_max_over_root: 1.5417
-  area_max_span_fraction: 0.29
-  root_stress_MPa: 360.8
-  max_section_stress_MPa: 360.8
+    - 14.068
+  area_max_over_root: 2.0429
+  area_max_span_fraction: 0.355
+  root_stress_MPa: 366.3
+  max_section_stress_MPa: 366.3
   max_section_stress_span_fraction: 0.0
-  root_stress_linear_taper_MPa: 223.5
+  root_stress_linear_taper_MPa: 261.0
   root_stress_linear_taper_note: '[H] cross-check: same taper, area linear in radius'
   root_stress_uniform_blade_MPa: 370.1
   strength_used: yield_strength
@@ -1975,8 +2203,8 @@ mechanical:
     safety factor [T]'
   safety_factor: 1.5
   allowable_MPa: 733.3
-  margin_root: 1.033
-  margin: 1.033
+  margin_root: 1.002
+  margin: 1.002
   margin_required: 1.0
   margin_note: '[H] margin = allowable / largest section stress - 1 (the design requirement,
     R-AM.13); margin_root at the root section'
@@ -1984,18 +2212,18 @@ mechanical:
   blade_mass:
     method: '[H] rho x integral of the section area from the inlet hub to the tip
       radius (airfoil only: no dovetail, platform, edge circles or fillets)'
-    per_blade_kg: 9.783
+    per_blade_kg: 7.275
     blade_count: 24
-    set_kg: 234.78
+    set_kg: 174.61
     check_set_kg: 118.0
     check_per_blade_kg: 4.917
     check_tag: KS weak (Mirghani 2023 Table 3, printed p. 49, PDF p. 67, citing other
       sources)
-    set_over_check: 1.9897
+    set_over_check: 1.4797
   mass_diagnosis:
     method: '[H] mass = rho k int(t/c chord^2 dr); factors and re-sized chord variants
       (fan_design.mass_diagnosis); variants are sensitivities, not valid blades'
-    mass_over_check: 1.9897
+    mass_over_check: 1.4797
     check_note: check value is a whole blade (airfoil + dovetail) set mass [KS weak];
       this mass is the airfoil only, so the airfoil-to-airfoil ratio is at least this
       value
@@ -2019,21 +2247,21 @@ mechanical:
         c rectangle); the Rotor 67 sections would make the blade heavier, so k is
         not the cause'
     thickness:
-      tc_chord2_weighted: 0.05614
+      tc_chord2_weighted: 0.0551
       tc_root: 0.08496
       tc_tip: 0.02983
-      equivalent_mean_thickness_mm: 12.41
+      equivalent_mean_thickness_mm: 10.6
       tag: T analogue (Rotor 67 fit); CFM56-7B thickness doğrulanmadı
-      tc_scale_for_check: 0.5026
+      tc_scale_for_check: 0.6758
     chord:
-      mean_chord_m: 0.32817
-      root_solidity: 4.2462
-      chord_scale_for_check: 0.7089
+      mean_chord_m: 0.2856
+      root_solidity: 3.6631
+      chord_scale_for_check: 0.8221
       needs_m:
       - 0.06886
       - 0.08259
       - 0.09435
-      - 0.35773
+      - 0.35835
       - 0.2907
       - 0.2951
       - 0.29181
@@ -2041,47 +2269,123 @@ mechanical:
       - 0.26962
       active_needs:
       - tube 4
-      - tube 9
+      - tube 7
     variants:
     - case: stress loop off (LP chord only, R-AM.13 margin not met)
-      chord_root_m: 0.20551
-      chord_max_m: 0.37564
-      mass_kg: 9.435
-      mass_over_design: 0.9645
-      margin: 0.295
+      chord_root_m: 0.22067
+      chord_max_m: 0.3585
+      mass_kg: 7.267
+      mass_over_design: 0.9989
+      margin: 0.964
       taper: 0.5
     - case: need of tube 4 dropped (stress loop on)
       chord_root_m: 0.22067
       chord_max_m: 0.2966
-      mass_kg: 6.704
-      mass_over_design: 0.6853
+      mass_kg: 6.706
+      mass_over_design: 0.9217
       margin: 1.115
       taper: 0.5
       stress_steps: 0
       tube: tube 4
       span_fraction: 0.3602
-      need_m: 0.35773
-      need_solidity: 3.1945
-    - case: need of tube 9 dropped (stress loop on)
-      chord_root_m: 0.25603
-      chord_max_m: 0.36444
-      mass_kg: 9.664
-      mass_over_design: 0.9878
-      margin: 1.029
-      taper: 0.3
-      stress_steps: 50
-      tube: tube 9
-      span_fraction: 0.9541
-      need_m: 0.26962
-      need_solidity: 1.3735
+      need_m: 0.35835
+      need_solidity: 3.2
+    - case: need of tube 7 dropped (stress loop on)
+      chord_root_m: 0.22402
+      chord_max_m: 0.35847
+      mass_kg: 7.275
+      mass_over_design: 1.0
+      margin: 1.025
+      taper: 0.4909
+      stress_steps: 1
+      tube: tube 7
+      span_fraction: 0.7529
+      need_m: 0.29181
+      need_solidity: 1.7396
     dominant_chord_driver: need of tube 4 dropped (stress loop on)
-    dominant_chord_driver_mass_reduction_kg: 3.079
+    dominant_chord_driver_mass_reduction_kg: 0.569
+    chord_law_variants:
+    - case: chord law quadratic (same needs, stress loop on)
+      chord_root_m: 0.25821
+      chord_max_m: 0.36594
+      mass_kg: 9.811
+      mass_over_design: 1.3485
+      margin: 1.024
+      taper: 0.3281
+      stress_steps: 23
+      law: quadratic
+      chord_at_tubes_m:
+      - 0.28159
+      - 0.315
+      - 0.33694
+      - 0.35835
+      - 0.36578
+      - 0.35616
+      - 0.33507
+      - 0.30559
+      - 0.26962
+    - case: chord law cubic (same needs, stress loop on)
+      chord_root_m: 0.24894
+      chord_max_m: 0.35936
+      mass_kg: 9.439
+      mass_over_design: 1.2974
+      margin: 1.008
+      taper: 0.5
+      stress_steps: 11
+      law: cubic
+      chord_at_tubes_m:
+      - 0.2879
+      - 0.33295
+      - 0.35302
+      - 0.35835
+      - 0.33882
+      - 0.31259
+      - 0.292
+      - 0.28289
+      - 0.28834
+    - case: chord law quadratic_local_bump (same needs, stress loop on)
+      chord_root_m: 0.22288
+      chord_max_m: 0.35848
+      mass_kg: 7.275
+      mass_over_design: 1.0
+      margin: 1.002
+      taper: 0.5
+      stress_steps: 1
+      law: quadratic_local_bump
+      chord_at_tubes_m:
+      - 0.23576
+      - 0.25492
+      - 0.2684
+      - 0.35835
+      - 0.29385
+      - 0.29567
+      - 0.29181
+      - 0.2838
+      - 0.27258
+    chord_law_variants_note: '[H] same R-AM.9 needs (last pass), taper band and stress
+      loop, chord law changed only: step 4f quadratic, cubic, step 4g quadratic +
+      local bump'
+    local_need_at_balanced_work:
+      tube: tube 4
+      span_fraction: 0.3602
+      need_solidity_design_state: 3.2
+      work_design_state_J_kg: 54044.0
+      work_balanced_J_kg: 41590.2
+      need_solidity_at_balanced_work: 1.0
+      met: true
+      solidity_of_blade: 3.2
+      DF_balanced: 0.3769
+      DF_limit: 0.528
+      note: '[H, diagnostic] R-AM.9 need of the local-need tube evaluated as an isolated
+        tube on the final exit geometry at the work the balanced blade actually gives
+        (radial equilibrium), instead of the vortex design target; the design keeps
+        the design-state need (rule unchanged)'
     tag: H
   tag: H
 achieved:
-  FPR: 1.765002
+  FPR: 1.765004
   eta_fan_outer: 0.89513
-  pr_fan_inner: 1.343986
+  pr_fan_inner: 1.343987
   eta_fan_inner: 0.88713
   W2: 345.397
   W13: 287.8309
@@ -2105,10 +2409,10 @@ achieved_tags:
 budget_check:
 - item: FPR
   budget: 1.765
-  achieved: 1.7650019517208282
+  achieved: 1.7650042287953096
   unit: '-'
   kind: pressure_ratio
-  deviation: 1.1057908375633474e-06
+  deviation: 2.395918022424226e-06
   tolerance: 0.01
   tolerance_type: relative
   result: pass
@@ -2123,10 +2427,10 @@ budget_check:
   result: pass
 - item: pr_fan_inner
   budget: 1.344
-  achieved: 1.3439859512441366
+  achieved: 1.3439869849495176
   unit: '-'
   kind: pressure_ratio
-  deviation: -1.045294335089153e-05
+  deviation: -9.68381732324719e-06
   tolerance: 0.01
   tolerance_type: relative
   result: pass
