@@ -60,6 +60,16 @@ blading:
     value: quadratic_local_bump
     tag: T
     note: 'M1 step 4g (R-AM.13 chord law): chord(f) = quadratic + a (1 - x^2)^3, x = (f - f_b) / w_b, |x| < 1 (C2 compact bump, a >= 0); f_b = span fraction of the tube whose R-AM.9 need stands highest above both neighbour needs, w_b = smaller distance to its neighbour tubes, so the bump is zero at both neighbour tube centres [T rule]. Reason: the step 4f quadratic spread the single high need of tube 4 (first bypass tube above the splitter) over mid span; a cubic does not keep it local either (fan_design.mass_diagnosis chord_law_variants). Lowest mean chord, R-AM.9 needs, taper band and root stress loop unchanged'
+  need_basis:
+    value: balanced_state
+    tag: T
+    note: 'R-AM.9 need basis (M1 step 4h, user requirement): each tube''s solidity need from the work the blade actually does on the balanced state (radial equilibrium with the current blade), iterated blade -> equilibrium -> needs -> chord until no solidity need moves by more than 1e-3 (fan_design.NEED_STABLE); pass 0 sizes on the design-target needs; design-target needs reported as information. The R-AM.14 bump is placed from these needs'
+  chord_smoothness_limit:
+    value: 1.2685
+    unit: per unit span fraction squared
+    tag: H
+    source: 'records/REVIEW.md 2026-10-27 (R-AM.17): largest |second divided difference| of c / c_mean over the 14 Rotor 67 Table I sections (rotor67_geometry.yaml chord [H from KS], Strazisar et al. NASA TP-2879 via BladeAtlas, docs/sources.md #41)'
+    note: 'R-AM.17 (M1 step 4h): the limit is recomputed in code (blade_profile.rotor67_chord_smoothness) and must equal this recorded value to 4 decimals; the M1 metric at the tube centres is checked against it (pass/fail reported, not imposed in the chord sizing)'
   thickness_chord:
     value: rotor67_table1_benchmark
     tag: T
@@ -148,6 +158,10 @@ mechanical:
     unit: '-'
     tag: G
     note: 'upper end of the section-area taper band; same status as area_taper_min. Replaces the step 4e bound area_taper_max = 1.0 (applied at the blade ends only)'
+  area_monotonic:
+    value: true
+    tag: G
+    note: 'R-AM.16 (M1 step 4h): section area A(f) = k t/c(f) chord(f)^2 non-increasing from root to tip, dA/df <= 1e-9 A_root on the 201-point span grid; a linear constraint of the chord programme (cutting planes, fan_design.lowest_chord_monotonic) together with the taper band. Supersedes the R-AM.13 sentence No monotonic-area constraint'
   stress_margin_min:
     value: 1.0
     unit: '-'

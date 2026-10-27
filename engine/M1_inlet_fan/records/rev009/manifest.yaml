@@ -1,0 +1,15 @@
+revision: rev009
+parent_revision: rev008
+revision_type: design
+date: '2026-10-27T18:07:39Z'
+summary: 'M1 step 4h: R-AM.9 needs from balanced work; R-AM.15 every-section stress
+  pass; R-AM.16 monotonic area fail (infeasible for quadratic chord); R-AM.17 chord
+  smoothness 1.5231 > 1.2685 fail; 6.706 kg/blade'
+reason: User requirement M1 step 4h (rules R-AM.9 need basis, R-AM.15, R-AM.16, R-AM.17)
+change_request: null
+code_commit: 7eb92c5bb8fa5c66171dc12093d92b4ba4adf77b
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: e86ba93db1d0441e3fe79eeede6c993e138612887a21afb59ecec485aa062cfb
+- file: analysis/results.yaml
+  sha256: e7a38d59f9a59184bae60d4c815e077cc4d8db0ba6a4036e8d7016fe8c4783e3
