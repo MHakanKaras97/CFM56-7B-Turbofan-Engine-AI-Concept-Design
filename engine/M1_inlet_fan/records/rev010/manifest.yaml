@@ -1,0 +1,16 @@
+revision: rev010
+parent_revision: rev009
+revision_type: design
+date: '2026-10-28T20:35:26Z'
+summary: 'M1 step 4i-c: R-AM.18 hub solidity floor 3.11; R-AM.16 A_root 40.55 cm2
+  from mid/tip t/c (tip at lower bound); hub t/c 0.170 known deviation (user-accepted);
+  stress 225.0 MPa root; roughness ~0; 6.504 kg/blade; FPR 1.765'
+reason: User requirement M1 step 4i-b/4i-c (R-AM.16 level on mid/tip thirds, R-AM.18,
+  R-AM.17 roughness)
+change_request: null
+code_commit: c3254b51130cb33d498d3b4b32d18f9df748f92d
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: ba85d336a4c1227f1add9b5ba0ed7cc3a3cee030cf8828d06b3fba794b7e319b
+- file: analysis/results.yaml
+  sha256: 58bb143cbe771d3d3562b1d94470072800680e17be2c681ed06b5e1706cedfab

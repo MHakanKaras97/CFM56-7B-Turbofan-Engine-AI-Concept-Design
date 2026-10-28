@@ -57,23 +57,28 @@ blading:
     tag: T
     note: 'R-AM.11: multiple-circular-arc type section (two-arc camber line joined at chord fraction 0.5 [T], parabolic thickness [T]); front camber share, t/c and x_max smooth in span from Rotor 67 Table I fits (analysis/blade_profile.py) [T analogue of KS]. DCA (front share 0.5, x_max 0.5) is the special case defined in NASA SP-36 PDF p. 204 (printed p. 186) [K]. Rotor 67 profile family not named in TP-2879 (PDF p. 6 refers to its refs. 11-12): doğrulanmadı'
   chord_law:
-    value: quadratic_local_bump
+    value: quadratic
     tag: T
-    note: 'M1 step 4g (R-AM.13 chord law): chord(f) = quadratic + a (1 - x^2)^3, x = (f - f_b) / w_b, |x| < 1 (C2 compact bump, a >= 0); f_b = span fraction of the tube whose R-AM.9 need stands highest above both neighbour needs, w_b = smaller distance to its neighbour tubes, so the bump is zero at both neighbour tube centres [T rule]. Reason: the step 4f quadratic spread the single high need of tube 4 (first bypass tube above the splitter) over mid span; a cubic does not keep it local either (fan_design.mass_diagnosis chord_law_variants). Lowest mean chord, R-AM.9 needs, taper band and root stress loop unchanged'
+    note: 'M1 step 4i (R-AM.16 amendment): chord(f) = c0 + c1 f + c2 f^2 from the aero rules only, lowest mean chord with every tube at or above its R-AM.9 balanced-state need (linear programme, fan_design.size_chord); no taper or stress row. The step 4g/4h R-AM.14 local bump (quadratic_local_bump) is dropped. Step 4i-b: plus the R-AM.18 root chord floor row (root_chord_floor)'
+  root_chord_floor:
+    value: rotor67_hub_solidity
+    tag: KS
+    source: 'Rotor 67 hub solidity 3.11, Strazisar et al. NASA TP-2879 (1989) p. 2, read from learning/rotor67_reference.yaml design.solidity_hub (not repeated here)'
+    note: 'R-AM.18 (M1 step 4i-b, user requirement): hub solidity = chord(0) / inlet pitch at f 0 (2 pi r_hub1 / blade count) not below the Rotor 67 hub solidity; a constraint row of the lowest-mean-chord linear programme together with the R-AM.9 balanced-state needs (fan_design.root_chord_floor, chord_constraints)'
   need_basis:
     value: balanced_state
     tag: T
-    note: 'R-AM.9 need basis (M1 step 4h, user requirement): each tube''s solidity need from the work the blade actually does on the balanced state (radial equilibrium with the current blade), iterated blade -> equilibrium -> needs -> chord until no solidity need moves by more than 1e-3 (fan_design.NEED_STABLE); pass 0 sizes on the design-target needs; design-target needs reported as information. The R-AM.14 bump is placed from these needs'
+    note: 'R-AM.9 need basis (M1 step 4h, user requirement): each tube''s solidity need from the work the blade actually does on the balanced state (radial equilibrium with the current blade), iterated blade -> equilibrium -> needs -> chord until no solidity need moves by more than 1e-3 (fan_design.NEED_STABLE); pass 0 sizes on the design-target needs; design-target needs reported as information'
   chord_smoothness_limit:
-    value: 1.2685
-    unit: per unit span fraction squared
+    value: 0.003880
+    unit: '-'
     tag: H
-    source: 'records/REVIEW.md 2026-10-27 (R-AM.17): largest |second divided difference| of c / c_mean over the 14 Rotor 67 Table I sections (rotor67_geometry.yaml chord [H from KS], Strazisar et al. NASA TP-2879 via BladeAtlas, docs/sources.md #41)'
-    note: 'R-AM.17 (M1 step 4h): the limit is recomputed in code (blade_profile.rotor67_chord_smoothness) and must equal this recorded value to 4 decimals; the M1 metric at the tube centres is checked against it (pass/fail reported, not imposed in the chord sizing)'
+    source: 'records/REVIEW.md 2026-10-27 step 4i (R-AM.17): chord roughness = largest |c/c_mean - least-squares quadratic of c/c_mean| over the 14 Rotor 67 Table I sections (rotor67_geometry.yaml chord [H from KS], span = leading-edge radius fraction; Strazisar et al. NASA TP-2879 via BladeAtlas, docs/sources.md #41); largest at section 6, RMS 0.001975'
+    note: 'R-AM.17 (M1 step 4i, replaces the step 4h second-difference limit 1.2685): the limit is recomputed in code (blade_profile.rotor67_chord_roughness) and must equal this recorded value to 4 significant digits; the M1 metric at the tube centres is checked against it (pass/fail reported, not imposed in the chord sizing)'
   thickness_chord:
-    value: rotor67_table1_benchmark
-    tag: T
-    note: 'M1 step 4g: t/c(f) = cubic fit of the Rotor 67 Table I sections, t/c = largest TNPC (thickness normal to the mean camber line, TP-2879 PDF p. 22, printed p. 18 [KS]) / section chord [H from KS], section span = leading-edge radius fraction (same as the M1 inlet span fraction); benchmark in results.yaml blade.tc_benchmark_rotor67. Applied to the CFM56-7B27 fan as an analogue [T]; CFM56-7B thickness doğrulanmadı'
+    value: derived_from_area_law
+    tag: H
+    note: 'M1 step 4i (R-AM.16 amendment): t/c(f) = A(f) / (k chord(f)^2), k = 2/3, derived from the section area law (mechanical.area_law) and the quadratic chord, used by the R-AM.11 profile builder (fan_design.tc_at) and checked at f 0 / 0.5 / 1 against mechanical.tc_check_ranges; not imposed. The Rotor 67 cubic t/c fit (blade.tc_benchmark_rotor67) is only the start value of pass 0. CFM56-7B thickness doğrulanmadı'
   vortex:
     value: free_vortex_splitter_blend
     tag: T
@@ -147,26 +152,43 @@ mechanical:
   area_method:
     value: integrated_section_area
     tag: T
-    note: 'R-AM.13 (M1 step 4f): section area A(f) = k t/c(f) chord(f)^2 with k = 2/3 (parabolic thickness arcs of the R-AM.11 profile) [H from T]; t/c fixed by the Rotor 67 fit (analogue) [T]; root stress, the stress of every section and the blade mass integrate A along the span; the chord LP keeps the taper band and the root chord is raised until every section has stress_margin_min. Replaces the step 4e endpoint taper with a linear area (smooth_blade_tc_chord_squared), which ignored the mid-span chord (rules/aero_method.md R-AM.13)'
+    note: 'R-AM.13/16 (M1 step 4i): the section area A(f) is its own law (area_law); root stress, the stress of every section and the blade mass integrate A along the span (Simpson, 200 intervals). Replaces the step 4f-4h area k t/c chord^2 with t/c from the Rotor 67 fit'
   area_taper_min:
     value: 0.3
     unit: '-'
     tag: G
-    note: 'lower end of the section-area taper A_tip/A_root band (chord LP constraint); no source with a page in the M1 source set (Sjögren, SP-36, Mirghani searched; SP-36 printed p. 34, PDF p. 52 defines a stress taper factor for turbine blades, not this range): doğrulanmadı. Rotor 67 Table I gives 0.335 [H from KS, blade_profile.rotor67_section_areas]'
+    note: 'lower end of the section-area taper A_tip/A_root band (area law taper, step 4i); no source with a page in the M1 source set (Sjögren, SP-36, Mirghani searched; SP-36 printed p. 34, PDF p. 52 defines a stress taper factor for turbine blades, not this range): doğrulanmadı. Rotor 67 Table I gives 0.335 [H from KS, blade_profile.rotor67_section_areas]'
   area_taper_max:
     value: 0.5
     unit: '-'
     tag: G
-    note: 'upper end of the section-area taper band; same status as area_taper_min. Replaces the step 4e bound area_taper_max = 1.0 (applied at the blade ends only)'
+    note: 'upper end of the section-area taper band (area law taper, step 4i); same status as area_taper_min'
   area_monotonic:
     value: true
     tag: G
-    note: 'R-AM.16 (M1 step 4h): section area A(f) = k t/c(f) chord(f)^2 non-increasing from root to tip, dA/df <= 1e-9 A_root on the 201-point span grid; a linear constraint of the chord programme (cutting planes, fan_design.lowest_chord_monotonic) together with the taper band. Supersedes the R-AM.13 sentence No monotonic-area constraint'
+    note: 'R-AM.16 (M1 step 4i): section area A(f) non-increasing from root to tip, dA/df <= 1e-9 A_root on the 201-point span grid; met by the area law itself (fan_design.area_law), checked in fan_design.blade_mechanics'
+  area_law:
+    value: linear_tc_level_mid_tip
+    tag: T
+    note: 'R-AM.16 (M1 step 4i-c, user decision): A(f) = A_root g(f), g = 1 - (1 - taper) f (linear); level A_root = the smallest root area that puts the derived t/c at mid (f 0.5) and tip (f 1) inside the Rotor 67 mid and tip ranges of tc_check_ranges (fan_design.tc_level_root_area), recomputed on every pass of the blade -> equilibrium -> needs -> chord loop; empty window intersection -> AreaLevelUndetermined. Replaces the step 4i-b structural level (undetermined: the steady stress does not depend on A_root). The stress rule (stress_margin_min) is a check that stops the run if violated (fan_design.StressRuleViolated)'
+  area_taper:
+    value: rotor67
+    tag: T
+    note: 'taper A_tip / A_root of the area law: Rotor 67 Table I section 14 / section 1 area, 0.335 (blade_profile.rotor67_section_areas) [H from KS], used as analogue [T]; inside the band 0.3-0.5 (checked in fan_design.area_law). Every taper of the band meets the stress rule with the linear law, so the stress rule does not fix it; the band ends are reported as sensitivity (mechanical.area_monotonic_r_am16.area_law.band_end_sensitivity)'
+  tc_check_ranges:
+    value:
+      hub: [0.07147, 0.08513]
+      mid: [0.04567, 0.06531]
+      tip: [0.02979, 0.03999]
+    unit: '-'
+    tag: H
+    source: 'records/REVIEW.md 2026-10-27 step 4i: min-max of the Rotor 67 Table I section t/c (blade_profile.rotor67_tc_benchmark) with span in [0, 1/3] (sections 1-5), [1/3, 2/3] (6-9), [2/3, 1] (10-14) [H from KS]'
+    note: 'R-AM.16 (M1 step 4i): derived t/c at f 0 (hub), 0.5 (mid), 1 (tip) checked against these ranges; recomputed in code (fan_design.tc_ranges_rotor67) and must equal these values to 4 significant digits; mid / tip outside -> fail, reported, not tuned; mid and tip also set the area level (area_law, step 4i-c); hub outside -> known deviation (user-accepted, step 4i-c), reported, not a fail'
   stress_margin_min:
     value: 1.0
     unit: '-'
     tag: T
-    note: 'required margin allowable / sigma - 1 at every section (largest section stress; the root for this blade), allowable = yield / safety_factor (user requirement: root margin >= 1.0, M1 step 4f); the design raises the root chord in 1 % steps until it holds'
+    note: 'R-AM.13/15 (M1 step 4i wording): steady centrifugal stress <= half the allowable (allowable = yield / safety_factor) at every section of the span grid; the other half is headroom for vibratory and bending stress, which are not computed [T]. Equivalent to margin allowable / sigma - 1 >= 1.0. Since step 4i the stress depends on the area law shape only (fan_design.area_law), so there is no root chord raise'
   blade_set_mass_check:
     value: 118
     unit: kg
@@ -177,4 +199,4 @@ mechanical:
     value: 1.5
     unit: '-'
     tag: T
-    note: 'on the yield strength (materials.yaml ti6al4v yield_strength [KS]); centrifugal stress only, no gas bending, dovetail or fatigue'
+    note: 'on the yield strength (materials.yaml ti6al4v yield_strength [KS]); allowable = yield / 1.5; the steady centrifugal stress may use half of it (stress_margin_min); no gas bending, vibratory, dovetail or fatigue computed'
