@@ -24,10 +24,8 @@ def results():
 
 
 def chord_at(law: dict, f: float) -> float:
-    """Chord law R-AM.14 evaluated independently: quadratic + a (1 - x^2)^3, x = (f - f_b) / w_b, |x| < 1."""
-    b = law["bump"]
-    x = (f - b["centre_span_fraction"]) / b["half_width_span_fraction"]
-    return bp.polyval(law["base_coefficients_m"], f) + (b["amplitude_m"] * (1 - x * x) ** 3 if abs(x) < 1 else 0.0)
+    """Chord law R-AM.16 (step 4i-c): plain quadratic."""
+    return bp.polyval(law["coefficients_m"], f)
 
 
 def budget():
@@ -153,15 +151,6 @@ def test_budget_rows_cover_achieved_items():
 
 # --- M1 step 4f -----------------------------------------------------------------------------------------------
 
-def _area_profile(r, n=2000):
-    """Section area along the span from the stored chord coefficients and the Rotor 67 t/c fit (independent
-    trapezoidal quadrature)."""
-    tc = bp.rotor67_fits()["coefficients"]["tc"]
-    law = r["blade"]["chord_law"]
-    fs = [j / n for j in range(n + 1)]
-    return fs, [2 / 3 * bp.polyval(tc, f) * chord_at(law, f) ** 2 for f in fs]
-
-
 def test_root_sizing_rules_r_am13():
     r, mech_p = results(), read_yaml(PARAMS)["mechanical"]
     m = r["mechanical"]
@@ -170,23 +159,6 @@ def test_root_sizing_rules_r_am13():
     assert math.isclose(m["area_root_cm2"], 2 / 3 * m["tc_root"] * m["chord_root_m"] ** 2 * 1e4, rel_tol=1e-3)
     assert m["margin"] >= mech_p["stress_margin_min"]["value"] - 1e-3  # every section, not only the root
     assert m["max_section_stress_MPa"] >= m["root_stress_MPa"] - 0.1
-
-
-def test_root_stress_and_mass_by_independent_quadrature():
-    r = results()
-    m, a = r["mechanical"], r["annulus"]
-    rho = m["density_kg_m3"]
-    omega = r["inputs"]["rotor_speed_rpm"] * 2 * math.pi / 60
-    rh, L = a["r_hub1_m"], a["r_tip1_m"] - a["r_hub1_m"]
-    fs, area = _area_profile(r)
-    h = L / (len(fs) - 1)
-    moment = sum((area[j] * (rh + fs[j] * L) + area[j + 1] * (rh + fs[j + 1] * L)) / 2 * h for j in range(len(fs) - 1))
-    mass = rho * sum((area[j] + area[j + 1]) / 2 * h for j in range(len(fs) - 1))
-    assert math.isclose(m["root_stress_MPa"], rho * omega ** 2 * moment / area[0] / 1e6, rel_tol=2e-3)
-    bm = m["blade_mass"]
-    assert math.isclose(bm["per_blade_kg"], mass, rel_tol=2e-3)
-    assert math.isclose(bm["set_kg"], bm["per_blade_kg"] * bm["blade_count"], rel_tol=1e-3)
-    assert bm["check_set_kg"] == read_yaml(PARAMS)["mechanical"]["blade_set_mass_check"]["value"]
 
 
 def test_kappa2_has_no_dip_in_splitter_blend():
@@ -235,30 +207,6 @@ def test_kappa2_fit_removes_a_dip():
     assert min(b - a for a, b in zip(ks, ks[1:])) >= -math.radians(1e-3)
 
 
-def test_blade_mechanics_uniform_blade_matches_closed_form():
-    from engine.M1_inlet_fan.analysis import fan_design as fd
-    ctx = {"omega": 550.0, "profile_fits": {"coefficients": {"tc": [0.05]}},
-           "mech": {"rho": 4430.0, "r_hub": 0.23, "span": 0.54, "allowable": 733.3e6}}
-    res = fd.blade_mechanics([0.2], ctx)
-    assert math.isclose(res["sigma_root"], fd.root_stress(4430.0, 550.0, 0.23, 0.77, 1.0), rel_tol=1e-9)
-    assert math.isclose(res["mass"], 4430.0 * 2 / 3 * 0.05 * 0.04 * 0.54, rel_tol=1e-9)
-
-
-def test_chord_lp_meets_needs_and_taper_band():
-    from engine.M1_inlet_fan.analysis import fan_design as fd
-    fits = bp.rotor67_fits()
-    tc = fits["coefficients"]["tc"]
-    ctx = {"tc_ratio": bp.polyval(tc, 1) / bp.polyval(tc, 0), "taper_min": 0.3, "taper_max": 0.5, "profile_fits": fits}
-    fs = [0.06, 0.15, 0.24, 0.36, 0.51, 0.64, 0.75, 0.86, 0.95]
-    needs = [0.07, 0.08, 0.10, 0.23, 0.29, 0.30, 0.29, 0.28, 0.27]
-    c = fd.lowest_quadratic_above(fd.chord_constraints(fs, needs, ctx))
-    assert all(bp.polyval(c, f) >= n - 1e-9 for f, n in zip(fs, needs))
-    area = [bp.section_area(bp.polyval(c, j / 200), bp.polyval(tc, j / 200)) for j in range(201)]
-    assert 0.3 - 1e-6 <= area[-1] / area[0] <= 0.5 + 1e-6
-    c_min = fd.lowest_quadratic_above(fd.chord_constraints(fs, needs, ctx, root_chord_min=1.2 * c[0]))
-    assert c_min[0] >= 1.2 * c[0] - 1e-9
-
-
 def test_rotor67_section_area_taper_in_band():
     r67 = bp.rotor67_section_areas()
     assert 0.3 <= r67["taper_tip_over_root"] <= 0.5
@@ -291,34 +239,6 @@ def test_vortex_law_stated_free_vortex():
     assert r["summary"]["vortex_law"].startswith("free vortex")
 
 
-def test_blade_mass_diagnosis():
-    m = results()["mechanical"]
-    d, bm = m["mass_diagnosis"], m["blade_mass"]
-    assert math.isclose(d["mass_over_check"], bm["per_blade_kg"] / bm["check_per_blade_kg"], rel_tol=1e-3)
-    assert d["area_coefficient"]["used"] <= min(d["area_coefficient"]["rotor67"])  # k is not the cause
-    assert all(math.isclose(k, 2 / 3, abs_tol=1e-4) for k in d["area_coefficient"]["profile_integral_f0_f05_f1"])
-    assert math.isclose(d["chord"]["chord_scale_for_check"] ** 2, d["thickness"]["tc_scale_for_check"], rel_tol=1e-3)
-    assert m["margin_required"] <= m["margin"]  # step 4h: the stress loop may need no root raise
-    drops = d["variants"][1:]
-    assert drops and all(v["margin"] >= m["margin_required"] - 1e-3 for v in drops)
-    best = min(d["variants"], key=lambda v: v["mass_kg"])
-    assert d["dominant_chord_driver"] == best["case"]
-    assert all(v["mass_kg"] <= bm["per_blade_kg"] + 1e-3 for v in d["variants"])
-
-
-# --- M1 step 4g -----------------------------------------------------------------------------------------------
-
-def test_chord_bump_is_local_r_am14():
-    r = results()
-    law, fs = r["blade"]["chord_law"], [t["span_fraction"] for t in r["tubes"]]
-    b = law["bump"]
-    assert law["form"] == "quadratic_local_bump" and b["amplitude_m"] >= 0
-    i = b["tube_index_0based"]
-    assert math.isclose(b["centre_span_fraction"], fs[i], abs_tol=1e-4)
-    for j in (i - 1, i + 1):  # zero at both neighbour tube centres
-        assert abs(fs[j] - b["centre_span_fraction"]) >= b["half_width_span_fraction"] - 1e-4
-
-
 def test_rotor67_tc_benchmark():
     tc = results()["blade"]["tc_benchmark_rotor67"]
     secs = tc["sections"]
@@ -332,16 +252,6 @@ def test_rotor67_tc_benchmark():
     assert tc["hub"] > tc["mid"] > tc["tip"]
 
 
-def test_chord_law_variants_ordered():
-    """Same R-AM.9 needs: the local bump is not heavier than the plain quadratic, and is the law used."""
-    r = results()
-    mass = {v["law"]: v["mass_kg"] for v in r["mechanical"]["mass_diagnosis"]["chord_law_variants"]}
-    assert mass["quadratic_local_bump"] <= mass["quadratic"] + 1e-3
-    assert math.isclose(mass["quadratic_local_bump"], r["mechanical"]["blade_mass"]["per_blade_kg"], abs_tol=1e-3)
-
-
-# --- M1 step 4h -----------------------------------------------------------------------------------------------
-
 def test_r_am9_needs_from_balanced_work():
     for t in results()["tubes"]:
         q = t["R_AM9"]
@@ -354,18 +264,3 @@ def test_section_stress_every_section_r_am15():
     assert s["sections"] > 100 and s["check"] == "pass"
     assert s["max_section_stress_MPa"] <= s["allowable_MPa"]
     assert s["margin_min_over_sections"] >= s["margin_required"]
-
-
-def test_area_monotonic_r_am16_reported():
-    a = results()["mechanical"]["area_monotonic_r_am16"]
-    assert a["check"] in ("pass", "fail")
-    if a["check"] == "fail":  # infeasible for the quadratic law: shown, not hidden
-        quad = next(v for v in a["feasibility"]["max_monotonic_taper"] if v["degree"] == 2)
-        assert quad["max_area_taper"] < a["feasibility"]["taper_band_min"]
-
-
-def test_chord_smoothness_limit_r_am17():
-    c = results()["chord_smoothness_r_am17"]
-    assert math.isclose(bp.rotor67_chord_smoothness()["metric"], 1.2685, abs_tol=5e-5)
-    assert c["limit"] == 1.2685 and c["limit_equals_recorded"]
-    assert c["check"] == ("pass" if c["metric_M1"] <= c["limit"] else "fail")

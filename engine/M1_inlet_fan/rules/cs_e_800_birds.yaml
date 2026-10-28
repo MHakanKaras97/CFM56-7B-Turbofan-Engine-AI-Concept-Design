@@ -1,7 +1,7 @@
 description: CS-E 800 bird quantities and masses by engine inlet throat area A (m2); read by analysis/bird_class.py
 source:
   primary: EASA Easy Access Rules for Engines (CS-E), Amendment 5, CS-E 800 (b)(1)(ii), (c)(1)(iii), (d)(1)(v)(B), Table A, pp. 180-184
-  file: engine/M1_inlet_fan/learning/sources/regulation/easa_cs-e_easy_access_amdt5.pdf
+  file: <archive>/M1_inlet_fan/regulation/easa_cs-e_easy_access_amdt5.pdf
   tag: K
   note: bands are lower <= A < upper; upper null = no upper limit; read with pdftotext -raw
 large_single:

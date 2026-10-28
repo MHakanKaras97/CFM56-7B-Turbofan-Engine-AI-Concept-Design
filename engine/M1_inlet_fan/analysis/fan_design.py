@@ -1,18 +1,26 @@
-"""CFM56-7B27 fan rotor design at the M0 design point (SLS ISA, max take-off), M1 step 4h (smooth blade, structure-driven root,
-local chord law, balanced-state R-AM.9 needs, section stress along the span, monotonic section area, chord smoothness).
+"""CFM56-7B27 fan rotor design at the M0 design point (SLS ISA, max take-off), M1 step 4i (smooth blade, chord from
+the aero rules, section area as its own law, derived t/c, balanced-state R-AM.9 needs, chord roughness).
 
-Step 4h (rules/aero_method.md "Step 4h rules"):
-- R-AM.9 need basis: the chord (solidity) needs are computed from the work each tube actually does on the balanced
-  state (balanced_needs: required_solidity at the radial-equilibrium Tt ratio on the balanced exit geometry); the
-  loop blade -> equilibrium -> needs -> chord repeats until no solidity need moves by more than NEED_STABLE and the
-  shape is stable. Pass 0 sizes on the design-target needs; design-target needs are reported as information. The
-  R-AM.14 bump is placed from the balanced needs.
-- R-AM.15: centrifugal stress at every section of the span grid (blade_mechanics) <= yield / 1.5; R-AM.13 margin
-  >= 1.0 at every section kept.
-- R-AM.16: section area non-increasing root to tip (dA/df <= 0, linear in the chord coefficients, area_slope_row)
-  as cutting planes in the chord programme (lowest_chord_monotonic), together with the taper band.
-- R-AM.17: largest |second divided difference| of c / c_mean at the tube centres against the same metric on the
-  Rotor 67 Table I sections (blade_profile.rotor67_chord_smoothness); checked and reported, not imposed.
+Step 4i (rules/aero_method.md "Step 4i amendments"; supersedes the step 4g/4h chord law, R-AM.13 root raise and the
+second-difference R-AM.17):
+- chord(f) plain quadratic, lowest mean chord with every tube at or above its R-AM.9 balanced-state need
+  (size_chord; no taper or stress row, the R-AM.14 local bump is dropped).
+- R-AM.16: section area A(f) = A_root g(f), its own smooth non-increasing law (area_law): linear
+  g = 1 - (1 - taper) f, taper = Rotor 67 taper inside the band 0.3-0.5 [T analogue]; level (step 4i-c, user
+  decision) A_root = smallest root area with the derived t/c at mid (f 0.5) and tip (f 1) inside the Rotor 67 mid
+  and tip third ranges (tc_level_root_area), re-evaluated on every pass of the blade -> equilibrium -> needs -> chord
+  loop; replaces the step 4i-b structural level (undetermined: the stress does not depend on A_root). The stress
+  rule stays a check (StressRuleViolated).
+- R-AM.18 (step 4i-b): hub solidity (chord / inlet pitch at f 0) >= Rotor 67 hub solidity 3.11 [KS]
+  (rotor67_reference.yaml solidity_hub), a row of the chord linear programme (root_chord_floor).
+  t/c(f) = A / (k chord^2), k = 2/3, is derived (derived_tc), used by the R-AM.11 profile builder (tc_at) and
+  checked at f 0 / 0.5 / 1 against the Rotor 67 range of the span third (thickness_check); mid / tip outside ->
+  fail; hub outside -> "known deviation (user-accepted)" (step 4i-c), not a fail.
+- R-AM.13/15: steady centrifugal stress <= half the allowable (yield / 1.5) at every section of the span grid;
+  the other half is headroom for vibratory and bending stress, not computed [T]. The stress depends on g only.
+- R-AM.17: chord roughness = largest |c/c_mean - least-squares quadratic| at the tube centres against the same
+  metric on the Rotor 67 Table I sections (blade_profile.rotor67_chord_roughness); checked, not imposed.
+- R-AM.9 need basis (step 4h) unchanged: loop blade -> equilibrium -> needs -> chord until stable.
 
 Method (rules/aero_method.md R-AM.7, R-AM.9 (step 4e), R-AM.10, R-AM.11, R-AM.12, R-AM.13; ADR-015 budget-efficiency
 branch; tools/meanline.py used unchanged):
@@ -24,13 +32,13 @@ branch; tools/meanline.py used unchanged):
   continuous blade from hub to tip.
 - One smooth blade (span fraction f = (r1 - r_hub1) / (r_tip1 - r_hub1) of the tube centre), few parameters:
   * kappa1(f) = beta1(f) - design incidence (uniform inlet: beta1 = atan(U / V1) is smooth in radius) [T incidence];
-  * chord(f) = quadratic + C2 compact bump at the local R-AM.9 need (step 4g, 4 coefficients, chord_law), solidity
-    = chord x blade count / (2 pi r1); the bump keeps a single tube's high need (tube 4, first bypass tube) local;
+  * chord(f) = quadratic (step 4i, chord_law), solidity = chord x blade count / (2 pi r1);
   * kappa2(f) = cubic + k4 B(f) (5 coefficients, B = C2 quintic smoothstep across the splitter) plus one offset
     per stream applied through the same blend, delta_inner (1 - B) + delta_outer B (R-AM.12) [T]: a C2 term,
     so the offsets cannot put a kink into the continuous blade at the splitter;
   * section profile (R-AM.11): MCA camber line + parabolic thickness (analysis/blade_profile.py), front camber
-    share, t/c and x_max smooth in span from Rotor 67 fits [T analogue]; it gives each tube's Tube.ss_turn.
+    share and x_max smooth in span from Rotor 67 fits [T analogue], t/c derived from the area law (step 4i); it
+    gives each tube's Tube.ss_turn.
 - Loss model = rotor67.FULL_MODEL forms: radial equilibrium (solve_rotor_re), endwall and tip clearance losses
   (blade height = mean of inlet and exit annulus heights [T], chord from chord(f), running tip clearance [T]), no
   shock loss for subsonic inlet relative flow, all loss multipliers 1 (ADR-014 calibration not applied).
@@ -42,9 +50,8 @@ branch; tools/meanline.py used unchanged):
 - Coupling (design()): per pass (1) stream levels 1 + (PR_target^((g-1)/g) - 1) / eta (budget eta in pass 0, then
   the meanline stream eta of the last balanced solution); (2) design-mode radial equilibrium (design_state: every
   tube at its vortex Tt target and the stream eta, no loss correlation); on it the chord each tube needs under
-  R-AM.9 (step 4e), the lowest chord(f) of the step 4g law above all needs with the section-area taper band (linear
-  programme, minimum mean chord) and the root chord raised until every section has the stress margin (R-AM.13),
-  kappa2 per tube for its vortex target at the new chord, least-squares fit of the kappa2 basis with kappa2
+  R-AM.9 (step 4e, information; sizing on the balanced-state needs of the last pass, step 4h), the lowest-mean
+  quadratic chord above the needs, the area law and the derived t/c (step 4i), kappa2 per tube for its vortex target at the new chord, least-squares fit of the kappa2 basis with kappa2
   monotonic over the splitter blend (R-AM.12, step 4f); (3) 2x2 Newton on (delta_inner, delta_outer) with the fixed blade in solve_rotor_re until each
   stream's mass-averaged PR equals its ICD target, only physical solutions (RotorSolution.physical). Repeat until
   the reshaped chord and kappa2 stop moving; the last balanced blade is the result.
@@ -53,9 +60,9 @@ branch; tools/meanline.py used unchanged):
   Rotor 67 solidity at the same relative span (3.11 hub to 1.29 tip, linear, Strazisar p. 2 [KS]).
 - Efficiency (R-AM.10, ADR-015): achieved stream efficiencies = ICD budget values [T]; T13, T21 from target PR and
   budget efficiency; meanline efficiencies are information [H, unvalidated model].
-- Structure (R-AM.13, step 4f): section area A(f) = (2/3) t/c(f) chord(f)^2 (parabolic thickness of R-AM.11)
-  with the Rotor 67 t/c benchmark fit (blade_profile.rotor67_tc_benchmark) [T analogue]; centrifugal stress of every section and the blade mass integrated along
-  the span between the inlet hub and tip radius [G]; A_tip/A_root within the taper band [G].
+- Structure (R-AM.13/15/16, step 4i): section area law A(f) (area_law); centrifugal stress of every section and
+  the blade mass integrated along the span between the inlet hub and tip radius [G]; A_tip/A_root within the taper
+  band [G].
 - Tip check (step 4f): tip-region meanline efficiency of this fan against the same model on Rotor 67 (tip_region).
   Not modelled: OGV, inlet recovery, streamline curvature, gas bending, dovetail.
 
@@ -195,14 +202,16 @@ def pitch(t: dict, ctx: dict) -> float:
 
 
 def make_tube(t: dict, kappa1: float, kappa2: float, solidity: float, ctx: dict) -> Tube:
-    """Stream tube with the FULL_MODEL loss forms and the ss_turn of the R-AM.11 section profile."""
+    """Stream tube with the FULL_MODEL loss forms and the ss_turn of the R-AM.11 section profile (front share and
+    x_max from the Rotor 67 fits, t/c derived from the current blade, tc_at)."""
     chord = solidity * pitch(t, ctx)
     ew = Endwall(t["span"], ctx["blade_height"], chord, ctx["tip_clearance"])
     cov = covered_fraction(kappa1, kappa2, solidity)
     fam = bp.family_at(ctx["profile_fits"], t["span"])
+    tc = tc_at(t["span"], ctx)  # step 4i: derived t/c of the current blade
     return Tube(name=t["name"], r1=t["r1"], r2=t["r2"], A1=t["A1"], A2=t["A2"], kappa1=kappa1, kappa2=kappa2,
                 solidity=solidity, covered_fraction=cov, endwall=ew,
-                ss_turn=bp.ss_turn(kappa1, kappa2, fam["front"], fam["tc"], fam["x_max"], cov),
+                ss_turn=bp.ss_turn(kappa1, kappa2, fam["front"], tc, fam["x_max"], cov),
                 subsonic_shock_taper=False)
 
 
@@ -390,78 +399,23 @@ def balanced_needs(geo: list[dict], results, ctx: dict) -> dict:
             "work_J_kg": work}
 
 
-# --- chord law (M1 step 4g) --------------------------------------------------------------------------------
+# --- chord law (M1 step 4i: plain quadratic from the aero rules) ---------------------------------------------
 
-def chord_bump_kernel(x: float) -> float:
-    """C2 compact kernel (1 - x^2)^3 for |x| < 1, else 0 [T form]: value, slope and curvature vanish at |x| = 1."""
-    return (1 - x * x) ** 3 if abs(x) < 1 else 0.0
-
-
-BUMP_MEAN = 32.0 / 35.0  # integral of chord_bump_kernel over -1 <= x <= 1
-
-
-def local_need(fs: list[float], needs: list[float]) -> dict | None:
-    """Local chord need of the step 4g law: the interior tube whose need stands highest above both neighbour needs
-    (need_i - max(need_i-1, need_i+1) > 0); bump centre = its span fraction, half-width = the smaller distance to
-    its neighbour tubes, so the bump is zero at both neighbour tube centres [T rule]. None if no tube is a local
-    peak of the needs."""
-    best = None
-    for i in range(1, len(fs) - 1):
-        excess = needs[i] - max(needs[i - 1], needs[i + 1])
-        if excess > 0 and (best is None or excess > best[0]):
-            best = (excess, i)
-    if best is None:
-        return None
-    i = best[1]
-    return {"tube_index": i, "centre": fs[i], "half_width": min(fs[i] - fs[i - 1], fs[i + 1] - fs[i]),
-            "excess_m": best[0]}
+def chord_law(ctx: dict) -> dict:
+    """Chord law of the design (blading.chord_law): 'quadratic' (step 4i, R-AM.16 amendment: the chord comes from
+    the aero rules only; the R-AM.14 local bump is dropped); 'cubic' only as a diagnostic variant."""
+    form = ctx["chord_law"]
+    return {"form": form, "degree": {"quadratic": 2, "cubic": 3}[form]}
 
 
 def chord_basis(f: float, law: dict) -> list[float]:
-    """Basis of the chord law: polynomial 1, f, ..., f^degree, plus the local bump if the law has one."""
-    row = [f ** k for k in range(law["degree"] + 1)]
-    if law.get("bump"):
-        b = law["bump"]
-        row.append(chord_bump_kernel((f - b["centre"]) / b["half_width"]))
-    return row
-
-
-def chord_basis_slope(f: float, law: dict) -> list[float]:
-    """d/df of chord_basis: k f^(k-1), and for the bump dK/dx / w_b with dK/dx = -6 x (1 - x^2)^2 (|x| < 1)."""
-    row = [k * f ** (k - 1) if k else 0.0 for k in range(law["degree"] + 1)]
-    if law.get("bump"):
-        b = law["bump"]
-        x = (f - b["centre"]) / b["half_width"]
-        row.append(-6 * x * (1 - x * x) ** 2 / b["half_width"] if abs(x) < 1 else 0.0)
-    return row
-
-
-def area_slope_row(f: float, law: dict, ctx: dict) -> list[float]:
-    """R-AM.16 row a with a . coefficients = -(tc'(f) c(f) + 2 tc(f) c'(f)). For c > 0,
-    dA/df = k c (tc' c + 2 tc c') = -k c (a . coefficients), so dA/df <= 0 is the linear constraint a . coeff >= 0."""
-    tc = ctx["profile_fits"]["coefficients"]["tc"]
-    t, dt = bp.polyval(tc, f), bp.polyder(tc, f)
-    return [-(dt * x + 2 * t * y) for x, y in zip(chord_basis(f, law), chord_basis_slope(f, law))]
-
-
-def area_slope(chord, f: float, ctx: dict) -> float:
-    """dA/df of A = k t/c(f) chord(f)^2 (m^2 per unit span fraction)."""
-    tc = ctx["profile_fits"]["coefficients"]["tc"]
-    c = chord_value(chord, f)
-    dc = (sum(a * x for a, x in zip(chord["coefficients"], chord_basis_slope(f, chord))) if isinstance(chord, dict)
-          else bp.polyder(chord, f))
-    return bp.AREA_COEFFICIENT * c * (bp.polyder(tc, f) * c + 2 * bp.polyval(tc, f) * dc)
+    """Basis of the polynomial chord law: 1, f, ..., f^degree."""
+    return [f ** k for k in range(law["degree"] + 1)]
 
 
 def chord_mean_weights(law: dict) -> list[float]:
-    """Mean over 0 <= f <= 1 of every basis function (objective of the chord linear programme). The bump lies
-    inside the blade (between its neighbour tubes), so its mean is half_width x 32/35."""
-    w = [1.0 / (k + 1) for k in range(law["degree"] + 1)]
-    if law.get("bump"):
-        b = law["bump"]
-        assert 0.0 <= b["centre"] - b["half_width"] and b["centre"] + b["half_width"] <= 1.0
-        w.append(b["half_width"] * BUMP_MEAN)
-    return w
+    """Mean over 0 <= f <= 1 of every basis function (objective of the chord linear programme)."""
+    return [1.0 / (k + 1) for k in range(law["degree"] + 1)]
 
 
 def chord_value(chord, f: float) -> float:
@@ -472,37 +426,25 @@ def chord_value(chord, f: float) -> float:
 
 
 def chord_report(law: dict) -> dict:
-    """Chord law for results.yaml: form, polynomial base coefficients (ascending, m) and the bump."""
-    d = law["degree"] + 1
-    out = {"form": law["form"], "base_coefficients_m": [round(c, 6) for c in law["coefficients"][:d]]}
-    if law.get("bump"):
-        b = law["bump"]
-        out["bump"] = {"amplitude_m": round(law["coefficients"][d], 6), "centre_span_fraction": round(b["centre"], 6),
-                       "half_width_span_fraction": round(b["half_width"], 6), "tube_index_0based": b["tube_index"],
-                       "need_excess_over_neighbours_m": round(b["excess_m"], 5)}
-    return out
+    """Chord law for results.yaml: form and polynomial coefficients (ascending, m)."""
+    return {"form": law["form"], "coefficients_m": [round(c, 6) for c in law["coefficients"]]}
 
 
-def chord_constraints(fs: list[float], needs: list[float], ctx: dict, root_chord_min: float = 0.0,
-                      law: dict | None = None) -> list[tuple]:
-    """Linear constraints (a, b), a . coefficients >= b, on the chord law (default: quadratic, the step 4f law):
-    - R-AM.9 need at every tube: c(f_i) >= need_i;
-    - section-area taper A(1)/A(0) = (t/c tip / t/c root) (c(1)/c(0))^2 within [area_taper_min, area_taper_max]
-      (R-AM.13): c(1) - a_lo c(0) >= 0 and a_hi c(0) - c(1) >= 0, a = sqrt(taper / tc_ratio);
-    - root chord at least root_chord_min (raised by the stress loop until every section has the stress margin);
-    - local bump amplitude >= 0 (the bump only adds chord, it cannot carve a waist into the blade).
-    The R-AM.16 monotonic-area rows (step 4h) are added by size_chord / lowest_chord_monotonic as cutting planes on
-    the span grid (area_slope_row), not here. All constraints are linear in the coefficients."""
-    law = law or {"degree": 2, "bump": None}
+def chord_constraints(fs: list[float], needs: list[float], law: dict | None = None,
+                      floors: list[tuple] | None = None) -> list[tuple]:
+    """Linear constraints (a, b), a . coefficients >= b, of the chord sizing: the R-AM.9 balanced-state need at
+    every tube, c(f_i) >= need_i, and the chord floors (f, chord_min) (step 4i-b: R-AM.18 root chord floor at
+    f 0, root_chord_floor). No taper band and no stress row: since step 4i the section area is its own law
+    (area_law), so the chord does not enter the stress (R-AM.16 amendment)."""
+    law = law or {"degree": 2}
     rows = [(chord_basis(f, law), n) for f, n in zip(fs, needs)]
-    tcr = ctx["tc_ratio"]
-    a_lo, a_hi = math.sqrt(ctx["taper_min"] / tcr), math.sqrt(ctx["taper_max"] / tcr)
-    b0, b1 = chord_basis(0.0, law), chord_basis(1.0, law)
-    rows += [([x - a_lo * y for x, y in zip(b1, b0)], 0.0), ([a_hi * y - x for x, y in zip(b1, b0)], 0.0)]
-    rows.append((b0, root_chord_min))
-    if law.get("bump"):
-        rows.append(([0.0] * (law["degree"] + 1) + [1.0], 0.0))
-    return rows
+    return rows + [(chord_basis(f, law), c) for f, c in (floors or [])]
+
+
+def root_chord_floor(ctx: dict) -> tuple[float, float]:
+    """R-AM.18 (step 4i-b): hub solidity (chord / inlet pitch at f 0, pitch 2 pi r_hub1 / blade count) not below
+    the Rotor 67 hub solidity (rotor67_reference.yaml solidity_hub [KS], ctx['r67']['hub']). Returns (0, chord_min)."""
+    return 0.0, ctx["r67"]["hub"] * 2 * math.pi * ctx["mech"]["r_hub"] / ctx["blades"]
 
 
 def lowest_chord_above(rows: list[tuple], weights: list[float]) -> list[float]:
@@ -526,8 +468,7 @@ def lowest_chord_above(rows: list[tuple], weights: list[float]) -> list[float]:
 
 
 def lowest_quadratic_above(rows: list[tuple]) -> list[float]:
-    """Step 4f law: quadratic c(f) = c0 + c1 f + c2 f^2 with the smallest mean (c0 + c1/2 + c2/3) subject to
-    `rows` (chord_constraints with the default law)."""
+    """Quadratic c(f) = c0 + c1 f + c2 f^2 with the smallest mean (c0 + c1/2 + c2/3) subject to `rows`."""
     return lowest_chord_above(rows, [1.0, 0.5, 1.0 / 3.0])
 
 
@@ -547,132 +488,172 @@ def solve_linear(rows: list[list[float]]) -> list[float]:
     return [a[i][n] / a[i][i] for i in range(n)]
 
 
-class AreaMonotonicInfeasible(ValueError):
-    """The chord programme has a solution without R-AM.16 but none with it."""
+def size_chord(fs: list[float], needs: list[float], ctx: dict, law: dict | None = None) -> dict:
+    """Chord sizing (step 4i, 4i-b): lowest-mean chord of the law (chord_law unless given) with every tube at or
+    above its R-AM.9 need and the chord floors ctx['chord_floors'] (R-AM.18 root floor; none if absent)
+    (chord_constraints); the chord must stay positive over the blade."""
+    law = dict(law or chord_law(ctx))
+    rows = chord_constraints(fs, needs, law, ctx.get("chord_floors"))
+    law["coefficients"] = lowest_chord_above(rows, chord_mean_weights(law))
+    c_min = min(chord_value(law, j / MECH_GRID) for j in range(MECH_GRID + 1))
+    if c_min <= 0:
+        raise ValueError(f"chord law {law['form']} not positive over the blade (min {c_min:.4f} m)")
+    return law
 
 
-def lowest_chord_monotonic(rows: list[tuple], weights: list[float], law: dict, ctx: dict) -> tuple[list[float], int]:
-    """lowest_chord_above with the R-AM.16 constraint dA/df <= 0 at every point of the span grid (MECH_GRID + 1
-    points, the R-AM.13 Simpson grid): cutting planes, the most violated grid point is added to the rows until none
-    is violated (vertex enumeration stays small). Returns (coefficients, number of grid rows added)."""
-    grid = [j / MECH_GRID for j in range(MECH_GRID + 1)]
-    cuts: list[tuple] = []
-    while True:
-        try:
-            c = lowest_chord_above(rows + cuts, weights)
-        except ValueError:
-            if cuts:
-                raise AreaMonotonicInfeasible(f"no chord of law {law['form']} meets the R-AM.16 monotonic area with "
-                                              "the other chord constraints") from None
-            raise
-        slack = [(sum(a * x for a, x in zip(area_slope_row(f, law, ctx), c)), f) for f in grid]
-        worst, f = min(slack)
-        if worst >= -1e-12:
-            return c, len(cuts)
-        if len(cuts) > MECH_GRID:
-            raise ValueError("R-AM.16 cutting planes did not settle")
-        cuts.append((area_slope_row(f, law, ctx), 0.0))
+# --- section area law and derived t/c (M1 step 4i, R-AM.16 amendment) -----------------------------------------
+
+def area_shape(degree: int, taper: float) -> list[float]:
+    """A(f) / A_root of the lowest-order monotone area law (ascending coefficients) [T form]: degree 1 is the linear
+    law 1 - (1 - taper) f, non-increasing for taper <= 1. Higher orders are not implemented: area_law stops if the
+    linear law fails the stress rule, so the order cannot change silently."""
+    if degree != 1:
+        raise NotImplementedError(f"area law of degree {degree} not implemented (step 4i: the linear law failed "
+                                  "the stress rule)")
+    return [1.0, taper - 1.0]
 
 
-def max_monotonic_taper(degree: int, ctx: dict) -> dict:
-    """Largest section-area taper A(1)/A(0) a polynomial chord of the given degree can have with dA/df <= 0 on the
-    span grid (R-AM.16), independent of the R-AM.9 needs [H]: linear programme max c(1) with c(0) = 1 (cutting
-    planes). The R-AM.14 bump is zero at both blade ends (its support lies between interior tubes), so the
-    quadratic + bump law has the quadratic value at the ends and the same bound (the end-point slope limits of
-    R-AM.16 alone fix it)."""
-    law = {"form": f"polynomial degree {degree}", "degree": degree, "bump": None}
-    b0, b1 = chord_basis(0.0, law), chord_basis(1.0, law)
-    rows = [(b0, 1.0), ([-x for x in b0], -1.0), ([-x for x in b1], -10.0)]
-    rows += [(area_slope_row(f, law, ctx), 0.0) for f in (0.0, 0.5, 1.0)]  # start rows so that a vertex exists
-    c, _ = lowest_chord_monotonic(rows, [-x for x in b1], law, ctx)
-    ratio = chord_value(dict(law, coefficients=c), 1.0)
-    return {"degree": degree, "max_chord_ratio_tip_root": round(ratio, 5),
-            "max_area_taper": round(ctx["tc_ratio"] * ratio * ratio, 5)}
+class AreaLevelUndetermined(ValueError):
+    """R-AM.16 level rule has no solution (step 4i-c: the mid and tip t/c windows of A_root do not overlap)."""
+
+    def __init__(self, message: str, info: dict):
+        super().__init__(message)
+        self.info = info
 
 
-def chord_law(fs: list[float], needs: list[float], ctx: dict) -> dict:
-    """Chord law of the design (blading.chord_law): 'quadratic_local_bump' (step 4g: quadratic base + C2 compact
-    bump at the local need, local_need); 'quadratic' (step 4f) and 'cubic' as diagnostic variants."""
-    form = ctx["chord_law"]
-    if form == "quadratic":
-        return {"form": form, "degree": 2, "bump": None}
-    if form == "cubic":
-        return {"form": form, "degree": 3, "bump": None}
-    assert form == "quadratic_local_bump", form
-    return {"form": form, "degree": 2, "bump": local_need(fs, needs)}
+class StressRuleViolated(ValueError):
+    """R-AM.13/15 check failed: steady centrifugal stress above half the allowable at some section."""
 
 
-def size_chord(fs: list[float], needs: list[float], ctx: dict, stress: bool = True,
-               law: dict | None = None) -> tuple[dict, dict, int]:
-    """R-AM.13 chord sizing: lowest-mean chord of the law (chord_law unless given) under chord_constraints and the
-    R-AM.16 monotonic section area (step 4h, ctx area_monotonic, cutting planes on the span grid), then (stress
-    True) the root chord lower bound raised in STRESS_STEP steps until every section has the required stress
-    margin. Returns (chord law with coefficients, blade_mechanics result, number of stress steps)."""
-    law = dict(law or chord_law(fs, needs, ctx))
-    weights = chord_mean_weights(law)
-    root_min, steps = 0.0, 0
-    while True:
-        rows = chord_constraints(fs, needs, ctx, root_min, law)
-        law["area_monotonic_status"] = "not imposed"
-        if ctx.get("area_monotonic", True):
-            try:
-                law["coefficients"], law["area_cuts"] = lowest_chord_monotonic(rows, weights, law, ctx)
-                law["area_monotonic_status"] = "imposed"
-            except AreaMonotonicInfeasible:
-                # R-AM.16 cannot be met with this law and the other constraints (max_monotonic_taper): sized
-                # without it so that the other rules are still evaluated; reported as an R-AM.16 failure
-                law["coefficients"] = lowest_chord_above(rows, weights)
-                law["area_monotonic_status"] = "infeasible (sized without R-AM.16, reported as fail)"
-        else:
-            law["coefficients"] = lowest_chord_above(rows, weights)
-        mech = blade_mechanics(law, ctx)
-        if not stress or mech["margin"] >= ctx["mech"]["margin_min"]:
-            return law, mech, steps
-        steps += 1
-        if steps > MAX_STRESS_STEPS:
-            raise ValueError(f"root stress margin {mech['margin']:.3f} not reached by raising the root chord")
-        root_min = chord_value(law, 0.0) * STRESS_STEP
+TC_LEVEL_POINTS = (("mid", 0.5), ("tip", 1.0))  # R-AM.16 step 4i-c: span points that set the area level
+HUB_DEVIATION = "known deviation (user-accepted)"  # step 4i-c status of a hub t/c outside the Rotor 67 hub range
 
 
-# --- blade mechanics (R-AM.13) --------------------------------------------------------------------------------
+def tc_level_root_area(law: dict, chord: dict, ctx: dict) -> dict:
+    """R-AM.16 level (step 4i-c, user decision): A_root = the smallest root area that puts the derived t/c at mid
+    (f 0.5) and tip (f 1) inside the Rotor 67 mid and tip third ranges (ctx['tc_ranges'], equal to records/REVIEW.md).
+    t/c(f) = A_root g(f) / (k c(f)^2) is linear in A_root, so each point admits the window
+    [tc_min, tc_max] x k c(f)^2 / g(f); the level is the lower end of the intersection of both windows [H].
+    Empty intersection -> AreaLevelUndetermined (no other value is picked)."""
+    windows = {}
+    for name, f in TC_LEVEL_POINTS:
+        c = chord_value(chord, f)
+        scale = bp.AREA_COEFFICIENT * c * c / bp.polyval(law["shape"], f)
+        r = ctx["tc_ranges"][name]
+        windows[name] = (r["min"] * scale, r["max"] * scale)
+    lo = max(w[0] for w in windows.values())
+    hi = min(w[1] for w in windows.values())
+    binding = max(windows, key=lambda k: windows[k][0])
+    info = {"windows_A_root_m2": {k: [w[0], w[1]] for k, w in windows.items()}, "A_root_m2": lo,
+            "binding_point": binding, "upper_end_m2": hi}
+    if lo > hi:
+        raise AreaLevelUndetermined(
+            f"R-AM.16 (step 4i-c) level undetermined: the A_root windows of the mid and tip t/c ranges do not overlap "
+            f"({ {k: [round(x * 1e4, 3) for x in w] for k, w in windows.items()} } cm^2)", info)
+    return info
 
-def blade_mechanics(chord: list[float], ctx: dict) -> dict:
-    """Section area A(f) = k t/c(f) chord(f)^2 (k = blade_profile.AREA_COEFFICIENT) of the smooth blade between
-    the inlet hub (root) and tip radius, r = r_hub1 + f L; Simpson's rule over MECH_GRID intervals [H]:
-    root centrifugal stress rho omega^2 int(A r dr) / A(0), the largest section stress
-    rho omega^2 int_f^1 (A r dr) / A(f) at every grid section (R-AM.15, step 4h: even nodes by Simpson, odd nodes
-    by the even-node value minus the one-interval integral of the same parabola), the largest dA/df on the grid
-    (R-AM.16) and the blade mass rho int(A dr) (airfoil only)."""
+
+def area_law(chord: dict, ctx: dict) -> dict:
+    """Section area law A(f) = A_root g(f) (step 4i R-AM.16 amendment, step 4i-c level) [T form, H level]:
+    - g linear, 1 - (1 - taper) f, taper ctx['area_taper'] (Rotor 67 0.335) inside the band [area_taper_min,
+      area_taper_max] [G], non-increasing from root to tip;
+    - level A_root = smallest root area with the derived t/c at mid and tip inside the Rotor 67 ranges
+      (tc_level_root_area, step 4i-c; replaces the step 4i-b structural level, undetermined because the steady
+      stress does not depend on A_root). The chord enters through the derived t/c only.
+    - stress rule (R-AM.13/15, <= half the allowable at every section) is a check: StressRuleViolated if not met."""
+    taper = ctx["area_taper"]
+    if not ctx["taper_min"] - 1e-12 <= taper <= ctx["taper_max"] + 1e-12:
+        raise ValueError(f"area taper {taper:.4f} outside the band [{ctx['taper_min']}, {ctx['taper_max']}]")
+    law = {"degree": 1, "taper": taper, "shape": area_shape(1, taper), "A_root": 1.0}
+    level = tc_level_root_area(law, chord, ctx)
+    law = dict(law, A_root=level["A_root_m2"], level=level)
+    mech = blade_mechanics(law, ctx)
+    if not mech["area_monotonic"]:
+        raise ValueError("R-AM.16: linear area law not monotonic")
+    if not mech["stress_ok"]:
+        raise StressRuleViolated(
+            f"R-AM.13/15: steady stress {mech['sigma_max'] / 1e6:.1f} MPa at f {mech['f_sigma_max']:.3f} > "
+            f"{mech['steady_limit'] / 1e6:.1f} MPa (half the allowable)")
+    return law
+
+
+def area_value(area: dict, f: float) -> float:
+    return area["A_root"] * bp.polyval(area["shape"], f)
+
+
+def derived_tc(thickness: dict, f: float) -> float:
+    """t/c(f) = A(f) / (k chord(f)^2), k = 2/3 (step 4i: derived, not imposed)."""
+    c = chord_value(thickness["chord"], f)
+    return area_value(thickness["area"], f) / (bp.AREA_COEFFICIENT * c * c)
+
+
+def tc_at(f: float, ctx: dict) -> float:
+    """t/c used by the R-AM.11 profile builder: derived from the current blade (ctx['thickness'] = {'chord',
+    'area'}); before the first blade exists (pass 0 needs) the Rotor 67 t/c fit is the start value [T]."""
+    th = ctx.get("thickness")
+    if th is None:
+        return bp.polyval(ctx["profile_fits"]["coefficients"]["tc"], f)
+    return derived_tc(th, f)
+
+
+def tc_ranges_rotor67(geometry: dict | None = None) -> dict:
+    """Rotor 67 t/c range per span third [H from KS]: min and max of the Table I section t/c (blade_profile.
+    rotor67_tc_benchmark) with span fraction in [0, 1/3] (hub), [1/3, 2/3] (mid), [2/3, 1] (tip)."""
+    secs = bp.rotor67_tc_benchmark(geometry)["sections"]
+    out = {}
+    for name, lo, hi in (("hub", 0.0, 1 / 3), ("mid", 1 / 3, 2 / 3), ("tip", 2 / 3, 1.0)):
+        sel = [s for s in secs if lo - 1e-9 <= s["span_fraction"] <= hi + 1e-9]
+        out[name] = {"sections": [s["section"] for s in sel], "min": min(s["t_c"] for s in sel),
+                     "max": max(s["t_c"] for s in sel)}
+    return out
+
+
+def sig4(x: float) -> float:
+    """x rounded to 4 significant digits (comparison with the values recorded in records/REVIEW.md)."""
+    return float(f"{x:.4g}")
+
+
+# --- blade mechanics (R-AM.13/15, step 4i wording) ------------------------------------------------------------
+
+def blade_mechanics(area: dict, ctx: dict) -> dict:
+    """Section area law A(f) = A_root g(f) (area_law) of the smooth blade between the inlet hub (root) and tip
+    radius, r = r_hub1 + f L; Simpson's rule over MECH_GRID intervals [H]: root centrifugal stress
+    rho omega^2 int(A r dr) / A(0), the stress rho omega^2 int_f^1 (A r dr) / A(f) at every grid section (even
+    nodes by Simpson, odd nodes by the even-node value minus the one-interval integral of the same parabola), the
+    stress rule sigma <= allowable / (1 + margin_min) = half the allowable (steady stress; the other half is
+    headroom for vibratory and bending stress, not computed [T]), the largest dA/df on the grid (R-AM.16) and the
+    blade mass rho int(A dr) (airfoil only)."""
     m = ctx["mech"]
     rho, omega, r_h, L = m["rho"], ctx["omega"], m["r_hub"], m["span"]
-    tc = ctx["profile_fits"]["coefficients"]["tc"]
     n = MECH_GRID
     fs = [j / n for j in range(n + 1)]
-    area = [bp.section_area(chord_value(chord, f), bp.polyval(tc, f)) for f in fs]
+    areas = [area_value(area, f) for f in fs]
     w = [1 if j in (0, n) else (4 if j % 2 else 2) for j in range(n + 1)]
     h = L / n
 
     def simpson(vals, j0=0):  # integral from fs[j0] to 1 (j0 even)
         return h / 3 * sum((1 if j in (j0, n) else (4 if (j - j0) % 2 else 2)) * vals[j] for j in range(j0, n + 1))
 
-    ar = [a * (r_h + f * L) for a, f in zip(area, fs)]
+    ar = [a * (r_h + f * L) for a, f in zip(areas, fs)]
     moment = h / 3 * sum(wj * x for wj, x in zip(w, ar))
-    sigma_root = rho * omega ** 2 * moment / area[0]
+    sigma_root = rho * omega ** 2 * moment / areas[0]
     tail = [0.0] * (n + 1)  # int_{f_j}^1 A r dr
     for j in range(0, n, 2):
         tail[j] = simpson(ar, j)
     for j in range(1, n, 2):
         tail[j] = tail[j - 1] - h / 12 * (5 * ar[j - 1] + 8 * ar[j] - ar[j + 1])
-    sigma = [rho * omega ** 2 * tail[j] / area[j] for j in range(n + 1)]
+    sigma = [rho * omega ** 2 * tail[j] / areas[j] for j in range(n + 1)]
     j_max = max(range(n + 1), key=lambda j: sigma[j])
-    mass = rho * h / 3 * sum(wj * a for wj, a in zip(w, area))
-    slopes = [area_slope(chord, f, ctx) for f in fs]
+    mass = rho * h / 3 * sum(wj * a for wj, a in zip(w, areas))
+    slopes = [area["A_root"] * bp.polyder(area["shape"], f) for f in fs]
     j_slope = max(range(n + 1), key=lambda j: slopes[j])
-    return {"area": area, "fs": fs, "sigma": sigma, "sigma_root": sigma_root, "sigma_max": sigma[j_max],
+    limit = m["allowable"] / (1 + m["margin_min"])
+    return {"area": areas, "fs": fs, "sigma": sigma, "sigma_root": sigma_root, "sigma_max": sigma[j_max],
             "f_sigma_max": fs[j_max], "margin_root": m["allowable"] / sigma_root - 1,
-            "margin": m["allowable"] / sigma[j_max] - 1, "mass": mass, "taper": area[-1] / area[0],
+            "margin": m["allowable"] / sigma[j_max] - 1, "mass": mass, "taper": areas[-1] / areas[0],
+            "steady_limit": limit, "stress_ok": sigma[j_max] <= limit * (1 + 1e-12),
             "area_slope_max": slopes[j_slope], "area_slope_max_f": fs[j_slope],
-            "area_monotonic": slopes[j_slope] <= AREA_MONO_TOL * area[0]}
+            "area_monotonic": slopes[j_slope] <= AREA_MONO_TOL * areas[0]}
 
 
 def stream_average(results, layout: list[dict], name: str, gas: Gas) -> dict:
@@ -746,6 +727,7 @@ def design(layout: list[dict], stream_targets: dict, stream_eta: dict, masses: l
         if the first leaves the physical branch, backtracking); every solve warm-starts from the last accepted
         equilibrium."""
         off, log = dict(blade["offsets"]), []
+        ctx["thickness"] = blade["thickness"]  # profile builder uses the derived t/c of this blade
         keys = ("inner", "outer")
         for it in range(1, MAX_NEWTON + 1):
             sol, err = re(with_off(blade, off))
@@ -787,10 +769,11 @@ def design(layout: list[dict], stream_targets: dict, stream_eta: dict, masses: l
     def reshape(eta, offsets, bal):
         """Design-mode state for the vortex targets at the stream levels of `eta`; design-target chord needs on it
         (information); sizing needs = the balanced-state needs `bal` of the last balanced blade (R-AM.9 need basis,
-        step 4h; pass 0 has no balanced state and uses the design-target needs); lowest chord of the law under the
-        R-AM.13 taper band and the R-AM.16 monotonic area, root chord raised until every section has the stress
-        margin, kappa2 per tube at the new chord, monotonic-blend least-squares fit of the kappa2 basis (offsets of
-        the last balance in the blend constraint)."""
+        step 4h; pass 0 has no balanced state and uses the design-target needs); lowest-mean quadratic chord above
+        the needs and the R-AM.18 root floor (step 4i/4i-b, aero rules only); section area law of the lowest monotone
+        linear law, level from the mid / tip derived t/c of this chord (area_law, step 4i-c); derived t/c into the profile builder; kappa2 per tube at the new
+        chord and t/c, monotonic-blend least-squares fit of the kappa2 basis (offsets of the last balance in the
+        blend constraint)."""
         levels = {k: 1 + (stream_targets[k] ** (1 / gas.k) - 1) / eta[k] for k in streams}
         vt = vortex(layout, masses, levels, ctx)
         dgeo = design_state(layout, masses, vt["targets"], [eta[t["stream"]] for t in layout], ctx, ann)
@@ -800,11 +783,15 @@ def design(layout: list[dict], stream_targets: dict, stream_eta: dict, masses: l
             needs.append(req["solidity"] * pitch(t, ctx))
             met.append(req["met"])
         sizing = needs if bal is None else bal["chord_m"]
-        chord, mech, stress_steps = size_chord(fs, sizing, ctx)
+        chord = size_chord(fs, sizing, ctx)
+        thickness = {"chord": chord, "area": area_law(chord, ctx)}
+        mech = blade_mechanics(thickness["area"], ctx)
+        ctx["thickness"] = thickness  # kappa2 per tube with the derived t/c of the new blade
         k2 = [kappa2_for(t, ctx["kappa1"][i], chord_value(chord, t["span"]) / pitch(t, ctx), goal, m, ctx, None)
               for i, (t, goal, m) in enumerate(zip(dgeo, vt["targets"], masses))]
         fit = kappa2_fit(fs, k2, ctx, offsets)
-        new = {"chord": chord, "kappa2": fit["coefficients"], "offsets": {"inner": 0.0, "outer": 0.0}}
+        new = {"chord": chord, "thickness": thickness, "kappa2": fit["coefficients"],
+               "offsets": {"inner": 0.0, "outer": 0.0}}
         resid = max(abs(blade_kappa2(new, f, ctx) - k) for f, k in zip(fs, k2))
         info = {"design_efficiency": {k: round(x, 6) for k, x in eta.items()},
                 "levels": {k: round(x, 6) for k, x in levels.items()},
@@ -815,8 +802,10 @@ def design(layout: list[dict], stream_targets: dict, stream_eta: dict, masses: l
                 "chord_needs_design_target_m": [round(x, 5) for x in needs], "need_met_design_target": met,
                 "chord_needs_sizing_m": [round(x, 5) for x in sizing],
                 "chord_law": chord_report(chord),
-                "root_stress_steps": stress_steps, "stress_margin": round(mech["margin"], 4),
+                "area_degree": thickness["area"]["degree"], "stress_margin": round(mech["margin"], 4),
+                "max_section_stress_MPa": round(mech["sigma_max"] / 1e6, 1),
                 "area_taper": round(mech["taper"], 4),
+                "tc_hub_mid_tip_derived": [round(derived_tc(thickness, f), 5) for f in (0.0, 0.5, 1.0)],
                 "kappa2_per_tube_deg": [round(math.degrees(x), 4) for x in k2],
                 "kappa2_fit_max_residual_deg": round(math.degrees(resid), 4),
                 "kappa2_blend_constraint": {"sign": fit["sign"], "active_points": fit["active_points"],
@@ -840,6 +829,7 @@ def design(layout: list[dict], stream_targets: dict, stream_eta: dict, masses: l
             if d_c < CHORD_STABLE and d_k < KAPPA2_STABLE and d_n < NEED_STABLE:
                 converged = True
                 history.append({"pass": p, **info, "note": "shape stable: the last balanced blade is kept"})
+                ctx["thickness"] = blade["thickness"]  # restore the kept blade's derived t/c
                 break
         shape, vt = new, vt_new
         sol, blade, log = balance(dict(new, offsets=blade["offsets"] if blade else new["offsets"]))
@@ -891,230 +881,193 @@ def mechanical_inputs(p: dict, ann: dict) -> dict:
             "margin_min": v(mech["stress_margin_min"]), "r_hub": ann["r_hub1"], "span": ann["r_tip1"] - ann["r_hub1"]}
 
 
-def mass_diagnosis(blade: dict, layout: list[dict], needs: list[float], ctx: dict, check_per_blade: float,
-                   balanced: dict | None = None) -> dict:
-    """M1 step 4f/4g: why the airfoil mass differs from the check value [H]. Factors of the mass
-    rho k int(t/c c^2 dr): density (materials.yaml), area coefficient k (profile integral vs Rotor 67 Table I), t/c
-    (Rotor 67 benchmark fit) and chord (R-AM.9 needs + R-AM.13 stress loop). Chord attribution by re-sizing
-    (size_chord) with the stress loop off and with each active chord need dropped in turn; chord law variants
-    (quadratic, cubic, quadratic + local bump) on the same needs; the local-need tube's R-AM.9 need at the work the
-    balanced blade gives (`balanced`: final geo, results, design-state works). Sensitivities only, the variant
-    blades are not valid designs."""
-    mi, fits = ctx["mech"], ctx["profile_fits"]
-    base = blade_mechanics(blade["chord"], ctx)
-    m0, grid, n = base["mass"], base["fs"], MECH_GRID
-    w = [1 if j in (0, n) else (4 if j % 2 else 2) for j in range(n + 1)]
+def area_taper(p: dict) -> float:
+    """Taper A_tip / A_root of the step 4i area law (mechanical.area_taper): 'rotor67' = Rotor 67 Table I section 14 /
+    section 1 area (blade_profile.rotor67_section_areas) [T analogue of H from KS]."""
+    choice = p["mechanical"]["area_taper"]["value"]
+    assert choice == "rotor67", choice
+    return bp.rotor67_section_areas()["taper_tip_over_root"]
 
-    def integ(vals):  # int_0^1 ... df
-        return sum(wj * x for wj, x in zip(w, vals)) / (3 * n)
 
-    c = [chord_value(blade["chord"], f) for f in grid]
-    tc = [bp.polyval(fits["coefficients"]["tc"], f) for f in grid]
-    mean_chord = integ(c)
-    eq_thickness = integ(base["area"]) / mean_chord
-    tc_eff = integ([t * x * x for t, x in zip(tc, c)]) / integ([x * x for x in c])
-    k_profile = [bp.profile_area_coefficient(bp.family_at(fits, f)["x_max"]) for f in (0.0, 0.5, 1.0)]
-    k_r67 = [s["area_coefficient"] for s in bp.rotor67_section_areas()["sections"]]
+def check_recorded_tc_ranges(p: dict, ranges: dict) -> None:
+    """The Rotor 67 t/c ranges recomputed in code must equal the values recorded in records/REVIEW.md (fan_params
+    mechanical.tc_check_ranges) to 4 significant digits."""
+    rec = p["mechanical"]["tc_check_ranges"]["value"]
+    for k, r in ranges.items():
+        if [sig4(r["min"]), sig4(r["max"])] != [sig4(x) for x in rec[k]]:
+            raise ValueError(f"t/c range {k} {r} differs from the recorded {rec[k]}")
+
+
+def mass_diagnosis(blade: dict, layout: list[dict], needs: list[float], ctx: dict, check_per_blade: float) -> dict:
+    """Mass review [H]: with the area law the airfoil mass is rho A_root L int(g df), so it depends on the area
+    level A_root and the taper only; reported factors and the active rows of the chord programme."""
+    mi = ctx["mech"]
+    th = blade["thickness"]
+    base = blade_mechanics(th["area"], ctx)
+    m0 = base["mass"]
     fs = [t["span"] for t in layout]
-    root_pitch = 2 * math.pi * mi["r_hub"] / ctx["blades"]
-
-    def variant(chord, mech, label, steps=None):
-        return {"case": label, "chord_root_m": round(chord_value(chord, 0.0), 5),
-                "chord_max_m": round(max(chord_value(chord, f) for f in grid), 5),
-                "mass_kg": round(mech["mass"], 3), "mass_over_design": round(mech["mass"] / m0, 4),
-                "margin": round(mech["margin"], 3), "taper": round(mech["taper"], 4),
-                **({} if steps is None else {"stress_steps": steps})}
-
-    ch_ns, mech_ns, _ = size_chord(fs, needs, ctx, stress=False)
-    variants = [variant(ch_ns, mech_ns, "stress loop off (LP chord only, R-AM.13 margin not met)")]
-    active = [i for i, (f, nd) in enumerate(zip(fs, needs)) if chord_value(blade["chord"], f) - nd < 1e-4]
-    for i in active:
-        drop = [0.0 if j == i else nd for j, nd in enumerate(needs)]
-        ch, mech, st = size_chord(fs, drop, ctx)
-        variants.append({**variant(ch, mech, f"need of {layout[i]['name']} dropped (stress loop on)", st),
-                         "tube": layout[i]["name"], "span_fraction": round(fs[i], 4),
-                         "need_m": round(needs[i], 5), "need_solidity": round(needs[i] / pitch(layout[i], ctx), 4)})
-    reductions = [(m0 - v_["mass_kg"], v_["case"]) for v_ in variants]
-    dominant = max(reductions)
-    ratio = m0 / check_per_blade
-    laws = []
-    for form in ("quadratic", "cubic", "quadratic_local_bump"):
-        ch, mech, st = size_chord(fs, needs, dict(ctx, chord_law=form))
-        laws.append({**variant(ch, mech, f"chord law {form} (same needs, stress loop on)", st), "law": form,
-                     "chord_at_tubes_m": [round(chord_value(ch, f), 5) for f in fs]})
-    local = None
-    bump = blade["chord"].get("bump") if isinstance(blade["chord"], dict) else None
-    if bump and balanced is not None:
-        i = bump["tube_index"]
-        t, r = balanced["geo"][i], balanced["results"][i]
-        req = required_solidity(t, i, r.Tt_ratio, r.mass_flow, ctx, None)
-        local = {"tube": layout[i]["name"], "span_fraction": round(fs[i], 4),
-                 "need_solidity_used_in_sizing": round(needs[i] / pitch(layout[i], ctx), 4),
-                 "work_design_state_J_kg": round(balanced["design_work"][i], 1),
-                 "work_balanced_J_kg": round(ctx["gas"].cp * ctx["Tt"] * (r.Tt_ratio - 1), 1),
-                 "need_solidity_at_balanced_work": round(req["solidity"], 4), "met": req["met"],
-                 "solidity_of_blade": round(chord_value(blade["chord"], fs[i]) / pitch(layout[i], ctx), 4),
-                 "DF_balanced": round(r.diffusion_factor, 4), "DF_limit": round(df_limit(ctx["blading"], fs[i]), 4),
-                 "note": "[H, diagnostic] R-AM.9 need of the local-need tube evaluated as an isolated tube on the "
-                         "final exit geometry at the work the balanced blade actually gives (radial equilibrium), "
-                         "instead of the vortex design target; since step 4h the design itself sizes on the "
-                         "balanced-state needs (R-AM.9 need basis), so this is a cross-check of that need"}
+    active = [layout[i]["name"] for i, (f, nd) in enumerate(zip(fs, needs)) if chord_value(blade["chord"], f) - nd < 1e-6]
+    g_mean = bp.polyval([c / (k + 1) for k, c in enumerate(th["area"]["shape"])], 1.0)
+    c0 = chord_value(blade["chord"], 0.0)
     return {
-        "method": "[H] mass = rho k int(t/c chord^2 dr); factors and re-sized chord variants (fan_design."
-                  "mass_diagnosis); variants are sensitivities, not valid blades",
-        "mass_over_check": round(ratio, 4),
+        "method": "[H] mass = rho A_root L int_0^1 g(f) df (area law, step 4i-c t/c level)",
+        "mass_kg": round(m0, 4), "mass_over_check": round(m0 / check_per_blade, 4),
         "check_note": "check value is a whole blade (airfoil + dovetail) set mass [KS weak]; this mass is the "
-                      "airfoil only, so the airfoil-to-airfoil ratio is at least this value",
-        "density": {"value_kg_m3": mi["rho"], "tag": "KS", "note": "Ti-6Al-4V handbook value; not a driver"},
-        "area_coefficient": {"used": round(bp.AREA_COEFFICIENT, 5),
-                             "profile_integral_f0_f05_f1": [round(x, 5) for x in k_profile],
-                             "rotor67": [round(min(k_r67), 4), round(max(k_r67), 4)],
-                             "mass_factor_if_rotor67": [round(min(k_r67) / bp.AREA_COEFFICIENT, 4),
-                                                        round(max(k_r67) / bp.AREA_COEFFICIENT, 4)],
-                             "note": "[H] k = 2/3 is already the integral of the R-AM.11 profile (not a t x c "
-                                     "rectangle); the Rotor 67 sections would make the blade heavier, so k is not "
-                                     "the cause"},
-        "thickness": {"tc_chord2_weighted": round(tc_eff, 5), "tc_root": round(tc[0], 5), "tc_tip": round(tc[-1], 5),
-                      "equivalent_mean_thickness_mm": round(eq_thickness * 1e3, 2),
-                      "tag": "T analogue (Rotor 67 fit); CFM56-7B thickness doğrulanmadı",
-                      "tc_scale_for_check": round(check_per_blade / m0, 4)},
-        "chord": {"mean_chord_m": round(mean_chord, 5), "root_solidity": round(c[0] / root_pitch, 4),
-                  "chord_scale_for_check": round(math.sqrt(check_per_blade / m0), 4),
-                  "needs_m": [round(x, 5) for x in needs],
-                  "active_needs": [layout[i]["name"] for i in active]},
-        "variants": variants,
-        "dominant_chord_driver": dominant[1],
-        "dominant_chord_driver_mass_reduction_kg": round(dominant[0], 3),
-        "chord_law_variants": laws,
-        "chord_law_variants_note": "[H] same R-AM.9 needs (last pass), taper band and stress loop, chord law "
-                                   "changed only: step 4f quadratic, cubic, step 4g quadratic + local bump",
-        **({"local_need_at_balanced_work": local} if local else {}),
+                      "airfoil only",
+        "density_kg_m3": mi["rho"], "area_coefficient": round(bp.AREA_COEFFICIENT, 5),
+        "chord_root_m": round(c0, 5), "area_root_cm2": round(th["area"]["A_root"] * 1e4, 4),
+        "area_shape_mean": round(g_mean, 5), "span_m": round(mi["span"], 5),
+        "active_needs": active,
+        "chord_root_scale_for_check": round(math.sqrt(check_per_blade / m0), 4),
+        "note": "[H] the root chord is the quadratic extrapolated to f = 0 from the active R-AM.9 needs; the derived "
+                "t/c away from the hub then follows A / (k c^2) (thickness_check)",
         "tag": "H",
     }
 
 
-def r_am16_feasibility(blade: dict, layout: list[dict], needs: list[float], ctx: dict) -> dict:
-    """R-AM.16 feasibility [H]: largest monotonic-area taper of the quadratic (R-AM.14 base) and cubic chord against
-    the taper band minimum; and, as information only, the cubic chord sized on the same balanced needs with R-AM.16,
-    the taper band and the stress loop (a sensitivity, not the rule law)."""
-    fs = [t["span"] for t in layout]
-    bounds = [max_monotonic_taper(d, ctx) for d in (2, 3)]
-    ch, mech, steps = size_chord(fs, needs, dict(ctx, chord_law="cubic"))
-    chords = [chord_value(ch, f) for f in fs]
-    sm = bp.chord_smoothness_metric(fs, chords)
-    a0 = mech["area"][0]
-    return {
-        "law_used": blade["chord"]["form"] if isinstance(blade["chord"], dict) else "quadratic",
-        "sizing_status": blade["chord"].get("area_monotonic_status") if isinstance(blade["chord"], dict) else None,
-        "taper_band_min": ctx["taper_min"],
-        "max_monotonic_taper": bounds,
-        "explanation": "[H] with dA/df <= 0, the Rotor 67 t/c cubic (slope dtc/df "
-                       f"{bp.polyder(ctx['profile_fits']['coefficients']['tc'], 0.0):+.4f} at the root, "
-                       f"{bp.polyder(ctx['profile_fits']['coefficients']['tc'], 1.0):+.4f} at the tip) caps the chord "
-                       "slope at both blade ends; a quadratic then cannot reach the taper band minimum whatever the "
-                       "R-AM.9 needs; the R-AM.14 bump is zero at both ends and does not change this",
-        "cubic_variant_info": {
-            "note": "information only (not the R-AM.14 law): cubic chord on the same balanced needs with R-AM.16, "
-                    "taper band and stress loop",
-            "status": ch.get("area_monotonic_status"), "chord_at_tubes_m": [round(x, 5) for x in chords],
-            "chord_root_m": round(chord_value(ch, 0.0), 5), "chord_tip_m": round(chord_value(ch, 1.0), 5),
-            "mass_kg": round(mech["mass"], 3), "margin": round(mech["margin"], 3), "taper": round(mech["taper"], 4),
-            "stress_steps": steps, "area_max_over_root": round(max(mech["area"]) / a0, 4),
-            "max_dA_df_over_A_root": float(f"{mech['area_slope_max'] / a0:.3e}"),
-            "smoothness_metric": round(sm["metric"], 4)},
-        "tag": "H"}
+def area_law_report(blade: dict, ctx: dict) -> dict:
+    """R-AM.16 (step 4i) area law of the blade and, as information, the same order at both taper band ends (stress,
+    derived t/c at hub/mid/tip, mass) [H]; sensitivities only, the band-end blades are not the design."""
+    th = blade["thickness"]
+    lev = th["area"]["level"]
+    out = {"law": f"A(f) = A_root g(f), g linear (degree {th['area']['degree']}) [T form]",
+           "shape_coefficients": [round(c, 6) for c in th["area"]["shape"]], "taper": round(th["area"]["taper"], 5),
+           "A_root_cm2": round(th["area"]["A_root"] * 1e4, 4),
+           "level_rule": "A_root = smallest root area with the derived t/c at mid (f 0.5) and tip (f 1) inside the "
+                         "Rotor 67 mid and tip third ranges (step 4i-c, tc_level_root_area); stress rule is a check",
+           "level_windows_A_root_cm2": {k: [round(x * 1e4, 4) for x in w]
+                                        for k, w in lev["windows_A_root_m2"].items()},
+           "level_binding_point": lev["binding_point"],
+           "band_end_sensitivity": []}
+    for taper in (ctx["taper_min"], ctx["taper_max"]):
+        area = {**th["area"], "taper": taper, "shape": area_shape(th["area"]["degree"], taper)}
+        mech = blade_mechanics(area, ctx)
+        alt = {"chord": th["chord"], "area": area}
+        out["band_end_sensitivity"].append({
+            "taper": taper, "max_section_stress_MPa": round(mech["sigma_max"] / 1e6, 1),
+            "stress_rule": "pass" if mech["stress_ok"] else "fail", "mass_kg": round(mech["mass"], 4),
+            "tc_hub_mid_tip": [round(derived_tc(alt, f), 5) for f in (0.0, 0.5, 1.0)]})
+    out["tag"] = "H"
+    return out
 
 
-def mechanical(p: dict, ann: dict, omega: float, blade: dict, ctx: dict,
-               diagnosis: dict | None = None, feasibility: dict | None = None) -> dict:
-    mi, fits = ctx["mech"], ctx["profile_fits"]
+def thickness_check(blade: dict, ctx: dict) -> dict:
+    """Derived t/c at hub (f 0), mid (f 0.5) and tip (f 1) against the Rotor 67 range of the span third (R-AM.16
+    amendment, step 4i); mid / tip outside -> fail; hub outside -> HUB_DEVIATION status (step 4i-c, user-accepted
+    known deviation), reported, not a fail; nothing tuned."""
+    ranges = ctx["tc_ranges"]
+    out = {"rule": "R-AM.16 (step 4i, 4i-c): t/c(f) = A(f) / (k chord(f)^2), k = 2/3, derived; checked at f = 0, 0.5, "
+                   "1 against min-max of the Rotor 67 Table I section t/c in the span thirds [0, 1/3], [1/3, 2/3], "
+                   "[2/3, 1] [H from KS]; hub outside its range = known deviation (user-accepted, step 4i-c)",
+           "ranges_tag": "H from KS (fan_design.tc_ranges_rotor67, recorded in records/REVIEW.md step 4i)",
+           "points": {}}
+    for name, f in (("hub", 0.0), ("mid", 0.5), ("tip", 1.0)):
+        tc = derived_tc(blade["thickness"], f)
+        r = ranges[name]
+        inside = r["min"] - 5e-6 <= tc <= r["max"] + 5e-6
+        out["points"][name] = {"span_fraction": f, "t_c": round(tc, 5),
+                               "thickness_mm": round(tc * chord_value(blade["chord"], f) * 1e3, 3),
+                               "range": [r["min"], r["max"]], "rotor67_sections": r["sections"],
+                               "in_range": inside,
+                               "check": "pass" if inside else (HUB_DEVIATION if name == "hub" else "fail")}
+    out["check"] = "fail" if any(p["check"] == "fail" for p in out["points"].values()) else "pass"
+    out["failed_points"] = [k for k, p in out["points"].items() if p["check"] == "fail"]
+    out["known_deviations"] = [k for k, p in out["points"].items() if p["check"] == HUB_DEVIATION]
+    out["tag"] = "H"
+    return out
+
+
+def mechanical(p: dict, ann: dict, omega: float, blade: dict, ctx: dict, diagnosis: dict | None = None) -> dict:
+    mi = ctx["mech"]
     mech = p["mechanical"]
-    res = blade_mechanics(blade["chord"], ctx)
+    th = blade["thickness"]
+    res = blade_mechanics(th["area"], ctx)
     c_root, c_tip = chord_value(blade["chord"], 0.0), chord_value(blade["chord"], 1.0)
-    tc_root, tc_tip = bp.family_at(fits, 0.0)["tc"], bp.family_at(fits, 1.0)["tc"]
+    tc_root, tc_tip = derived_tc(th, 0.0), derived_tc(th, 1.0)
     a_root, a_tip = res["area"][0], res["area"][-1]
     sigma = res["sigma_root"] / 1e6
     sigma_linear = root_stress(mi["rho"], omega, ann["r_hub1"], ann["r_tip1"], res["taper"]) / 1e6
     sigma_uniform = root_stress(mi["rho"], omega, ann["r_hub1"], ann["r_tip1"], 1.0) / 1e6
     allowable = mi["allowable"] / 1e6
+    half = res["steady_limit"] / 1e6
     n_blades = ctx["blades"]
     set_check = v(mech["blade_set_mass_check"])
     r67 = bp.rotor67_section_areas()
     coeffs = [s["area_coefficient"] for s in r67["sections"]]
     step = max(1, len(res["fs"]) // 20)
+    ok = res["stress_ok"]
     return {
-        "method": "[G] centrifugal stress at the blade root (inlet hub radius, the longer span) from the integrated "
-                  "section area A(f) = k t/c(f) chord(f)^2 of the smooth blade (Simpson, "
-                  f"{MECH_GRID} intervals): sigma_root = rho omega^2 int(A r dr) / A_root; no gas bending, dovetail "
-                  "or platform load (R-AM.13)",
+        "method": "[G] centrifugal stress from the section area law A(f) = A_root g(f) of the smooth blade (step 4i, "
+                  f"Simpson, {MECH_GRID} intervals): sigma(f) = rho omega^2 int_f^1 (A r dr) / A(f); no gas bending, "
+                  "vibratory, dovetail or platform load (R-AM.13/15)",
         "density_kg_m3": mi["rho"], "density_tag": "KS (tools/data/materials.yaml ti6al4v, Mirghani 2023 Table 2 p. 17)",
         "area_coefficient": round(bp.AREA_COEFFICIENT, 5),
         "area_coefficient_tag": "H from T: two parabolic thickness arcs of the R-AM.11 profile enclose 2/3 of t x c",
         "area_coefficient_rotor67": [round(min(coeffs), 4), round(max(coeffs), 4)],
         "area_coefficient_rotor67_tag": "H from KS (Table I TNPC integrated along the camber line)",
         "chord_root_m": round(c_root, 5), "chord_tip_m": round(c_tip, 5),
-        "chord_note": "[H] chord(f) of the smooth blade at f = 0 (inlet hub) and f = 1 (inlet tip); the root chord "
-                      "is the smallest that meets the R-AM.9 needs, the taper band and the stress margin (R-AM.13)",
+        "chord_note": "[H] quadratic chord(f) at f = 0 (inlet hub) and f = 1 (inlet tip): lowest mean chord with every "
+                      "tube at or above its R-AM.9 balanced-state need (aero rules only, step 4i)",
         "tc_root": round(tc_root, 5), "tc_tip": round(tc_tip, 5),
-        "tc_note": "[T analogue] Rotor 67 t/c benchmark (blade.tc_benchmark_rotor67: largest TNPC / chord per Table I "
-                   "section [H from KS], cubic fit in the inlet span fraction) at f = 0 and 1; CFM56-7B blade "
-                   "thickness doğrulanmadı",
-        "thickness_root_mm": round(tc_root * c_root * 1e3, 2), "thickness_tip_mm": round(tc_tip * c_tip * 1e3, 2),
-        "area_root_cm2": round(a_root * 1e4, 3), "area_tip_cm2": round(a_tip * 1e4, 3),
+        "tc_note": "[H] derived t/c = A / (k chord^2) (step 4i); A_root level = smallest with mid and tip t/c inside "
+                   "the Rotor 67 ranges (step 4i-c) [T analogue]; CFM56-7B blade thickness doğrulanmadı",
+        "thickness_root_mm": round(tc_root * c_root * 1e3, 3), "thickness_tip_mm": round(tc_tip * c_tip * 1e3, 3),
+        "area_root_cm2": round(a_root * 1e4, 4), "area_tip_cm2": round(a_tip * 1e4, 4),
         "taper_ratio": round(res["taper"], 4),
-        "taper_tag": "H (A_tip / A_root of the designed blade)",
+        "taper_tag": "T (blading area law: Rotor 67 taper as analogue, H from KS, inside the band)",
         "taper_band": [v(mech["area_taper_min"]), v(mech["area_taper_max"])],
         "taper_band_tag": "G (no source with a page in the M1 source set; doğrulanmadı)",
         "taper_rotor67": round(r67["taper_tip_over_root"], 4),
         "taper_rotor67_tag": "H from KS (Table I section 14 / section 1 area)",
-        "area_profile_cm2": [[round(res["fs"][j], 3), round(res["area"][j] * 1e4, 3)]
-                             for j in range(0, len(res["fs"]), step)],
-        "area_max_over_root": round(max(res["area"]) / res["area"][0], 4),
-        "area_max_span_fraction": round(res["fs"][res["area"].index(max(res["area"]))], 3),
+        "area_profile_over_root": [[round(res["fs"][j], 3), round(res["area"][j] / a_root, 4)]
+                                   for j in range(0, len(res["fs"]), step)],
         "root_stress_MPa": round(sigma, 1),
         "max_section_stress_MPa": round(res["sigma_max"] / 1e6, 1),
         "max_section_stress_span_fraction": round(res["f_sigma_max"], 3),
         "root_stress_linear_taper_MPa": round(sigma_linear, 1),
-        "root_stress_linear_taper_note": "[H] cross-check: same taper, area linear in radius",
+        "root_stress_linear_taper_note": "[H] cross-check: closed form for an area linear in radius, same taper",
         "root_stress_uniform_blade_MPa": round(sigma_uniform, 1),
         "strength_used": "yield_strength", "yield_strength_MPa": mi["yield_MPa"], "uts_MPa": mi["uts_MPa"],
-        "strength_note": "[KS] yield, not UTS: the root must not yield under steady load; safety factor [T]",
+        "strength_note": "[KS] yield, not UTS; safety factor [T]",
         "safety_factor": mi["safety_factor"], "allowable_MPa": round(allowable, 1),
+        "steady_stress_limit_MPa": round(half, 1),
+        "steady_stress_limit_note": "[T] steady centrifugal stress <= half the allowable (allowable = yield / 1.5); the "
+                                    "other half is headroom for vibratory and bending stress, which are not computed",
         "margin_root": round(allowable / sigma - 1, 3),
         "margin": round(res["margin"], 3), "margin_required": mi["margin_min"],
-        "margin_note": "[H] margin = allowable / largest section stress - 1 (the design requirement, R-AM.13); "
-                       "margin_root at the root section",
-        "margin_uniform_blade": round(allowable / sigma_uniform - 1, 3),
+        "margin_note": "[H] margin = allowable / largest section stress - 1; margin >= 1.0 is the same condition as "
+                       "sigma <= allowable / 2",
         "section_stress_r_am15": {
-            "rule": "R-AM.15: sigma(f) = rho omega^2 int_f^1 (A r dr) / A(f) at every section of the span grid "
-                    f"({len(res['fs'])} sections, Simpson grid of R-AM.13) <= allowable = yield / safety factor; "
-                    "R-AM.13 margin >= margin_required at every section kept",
+            "rule": "R-AM.13/15 (step 4i wording): steady centrifugal stress sigma(f) = rho omega^2 int_f^1 (A r dr) / "
+                    f"A(f) at every section of the span grid ({len(res['fs'])} sections) <= half the allowable "
+                    "(allowable = yield / safety factor); the other half is headroom for vibratory and bending stress, "
+                    "not computed [T]",
             "sections": len(res["fs"]), "allowable_MPa": round(allowable, 1),
+            "steady_stress_limit_MPa": round(half, 1),
             "max_section_stress_MPa": round(res["sigma_max"] / 1e6, 1),
             "max_section_stress_span_fraction": round(res["f_sigma_max"], 3),
             "root_stress_MPa": round(sigma, 1), "margin_root": round(allowable / sigma - 1, 3),
             "margin_min_over_sections": round(res["margin"], 3), "margin_required": mi["margin_min"],
             "stress_profile_MPa": [[round(res["fs"][j], 3), round(res["sigma"][j] / 1e6, 1)]
                                    for j in range(0, len(res["fs"]), step)],
-            "check": "pass" if res["sigma_max"] <= mi["allowable"] else "fail",
-            "margin_check": "pass" if res["margin"] >= mi["margin_min"] - 1e-9 else "fail", "tag": "H"},
+            "check": "pass" if ok else "fail", "tag": "H"},
         "area_monotonic_r_am16": {
-            "rule": "R-AM.16: dA/df <= tolerance x A_root at every point of the span grid; chord sizing constraint "
-                    "(cutting planes) with the taper band",
+            "rule": "R-AM.16 (step 4i): the section area is its own law, smooth and non-increasing (dA/df <= tolerance "
+                    "x A_root on the span grid), taper in the band; chord from the aero rules; t/c derived",
             "max_dA_df_over_A_root": float(f"{res['area_slope_max'] / a_root:.3e}"),
             "at_span_fraction": round(res["area_slope_max_f"], 3), "tolerance": AREA_MONO_TOL,
-            "grid_rows_added_in_last_sizing": blade["chord"].get("area_cuts") if isinstance(blade["chord"], dict) else None,
-            "sizing_status": blade["chord"].get("area_monotonic_status") if isinstance(blade["chord"], dict) else None,
-            **({"feasibility": feasibility} if feasibility is not None else {}),
+            "taper_in_band": v(mech["area_taper_min"]) - 1e-9 <= res["taper"] <= v(mech["area_taper_max"]) + 1e-9,
+            "area_law": area_law_report(blade, ctx),
             "check": "pass" if res["area_monotonic"] else "fail", "tag": "H"},
+        "thickness_check": thickness_check(blade, ctx),
         "blade_mass": {
             "method": "[H] rho x integral of the section area from the inlet hub to the tip radius (airfoil only: "
                       "no dovetail, platform, edge circles or fillets)",
-            "per_blade_kg": round(res["mass"], 3), "blade_count": n_blades,
-            "set_kg": round(res["mass"] * n_blades, 2),
+            "per_blade_kg": round(res["mass"], 4), "blade_count": n_blades,
+            "set_kg": round(res["mass"] * n_blades, 3),
             "check_set_kg": set_check, "check_per_blade_kg": round(set_check / n_blades, 3),
             "check_tag": "KS weak (Mirghani 2023 Table 3, printed p. 49, PDF p. 67, citing other sources)",
-            "set_over_check": round(res["mass"] * n_blades / set_check, 4)},
+            "per_blade_over_check": round(res["mass"] * n_blades / set_check, 4)},
         **({"mass_diagnosis": diagnosis} if diagnosis is not None else {}),
         "tag": "H",
     }
@@ -1129,7 +1082,7 @@ def budget_exit_temperature(Tt: float, pr: float, eta: float, gas: Gas) -> float
     return Tt * (1 + (pr ** (1 / gas.k) - 1) / eta)
 
 
-second_differences = bp.second_differences  # one implementation for the M1 tubes and the R-AM.17 Rotor 67 limit
+second_differences = bp.second_differences  # spanwise smoothness report (step 4e); R-AM.17 uses chord roughness
 
 
 def smoothness(rows: list[dict], n_inner: int) -> dict:
@@ -1137,7 +1090,7 @@ def smoothness(rows: list[dict], n_inner: int) -> dict:
     inner and the first outer tube), and the first-difference ratio across the splitter to its neighbours."""
     fs = [r["span_fraction"] for r in rows]
     out = {"note": "[H] second divided differences in span fraction over the tube values; the blade functions "
-                   "are smooth (chord quadratic + C2 local bump, kappa2 cubic + C2 splitter blend, t/c cubic, kappa1 from radius), so there is "
+                   "are smooth (chord quadratic, kappa2 cubic + C2 splitter blend, t/c from the linear area law over the quadratic chord squared, kappa1 from radius), so there is "
                    "no jump at the splitter by construction",
            "splitter_between": [rows[n_inner - 1]["name"], rows[n_inner]["name"]]}
     for key in ("chord_m", "solidity", "kappa1_deg", "kappa2_deg", "t_c"):
@@ -1267,13 +1220,20 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
            "tip_clearance": v(p["losses"]["tip_clearance_running"]) * MM, "r67": rotor67_solidity_ends(),
            "profile_fits": fits, "r_tip2": ann["r_tip2"],
            "taper_min": v(p["mechanical"]["area_taper_min"]), "taper_max": v(p["mechanical"]["area_taper_max"]),
-           "tc_ratio": bp.family_at(fits, 1.0)["tc"] / bp.family_at(fits, 0.0)["tc"],
+           "tc_ranges": tc_ranges_rotor67(),
+           "area_taper": area_taper(p),
            "mech": mechanical_inputs(p, ann),
            "f_split": (ann["r_split1"] - ann["r_hub1"]) / (ann["r_tip1"] - ann["r_hub1"]),
            "blend_start": v(bl["splitter_blend_start"]), "blend_width": v(bl["splitter_blend_width"]),
            "k2_direction": {"rising": 1.0, "falling": -1.0}[bl["kappa2_blend_direction"]["value"]],
-           "chord_law": bl["chord_law"]["value"], "area_monotonic": bool(p["mechanical"]["area_monotonic"]["value"])}
-    assert bl["thickness_chord"]["value"] == "rotor67_table1_benchmark"
+           "chord_law": bl["chord_law"]["value"]}
+    assert bl["chord_law"]["value"] == "quadratic"
+    assert bl["root_chord_floor"]["value"] == "rotor67_hub_solidity"
+    ctx["chord_floors"] = [root_chord_floor(ctx)]  # R-AM.18 (step 4i-b)
+    assert bl["thickness_chord"]["value"] == "derived_from_area_law"
+    assert p["mechanical"]["area_monotonic"]["value"] is True
+    assert p["mechanical"]["area_law"]["value"] == "linear_tc_level_mid_tip"
+    check_recorded_tc_ranges(p, ctx["tc_ranges"])
     assert bl["need_basis"]["value"] == "balanced_state"
     assert bl["kappa2_blend_curvature_limit"]["value"] == "rotor67_max"
     masses = [inp["W2"] * t["A1"] / total_area for t in layout]
@@ -1290,7 +1250,8 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
     tubes, res = sol.tubes, sol.results
     n_inner = sum(1 for t in layout if t["stream"] == "inner")
 
-    mech_res = blade_mechanics(blade["chord"], ctx)
+    th = blade["thickness"]
+    mech_res = blade_mechanics(th["area"], ctx)
     a_root = mech_res["area"][0]
     rows = []
     for i, (t, tube, r) in enumerate(zip(layout, tubes, res)):
@@ -1313,7 +1274,8 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
             "kappa1_deg": deg(tube.kappa1), "kappa2_deg": deg(tube.kappa2), "camber_deg": deg(tube.kappa1 - tube.kappa2),
             "incidence_deg": deg(r.incidence), "deviation_deg": deg(r.deviation),
             "solidity": round(tube.solidity, 4), "pitch_m": round(pitch(t, ctx), 5), "chord_m": round(tube.endwall.chord, 5),
-            "t_c": round(fam["tc"], 5), "front_camber_share": round(fam["front"], 4), "x_max": round(fam["x_max"], 4),
+            "t_c": round(derived_tc(th, t["span"]), 5), "t_c_tag": "H (derived A / (k c^2), step 4i)",
+            "front_camber_share": round(fam["front"], 4), "x_max": round(fam["x_max"], 4),
             "covered_fraction": round(tube.covered_fraction, 4), "ss_turn_deg": deg(tube.ss_turn),
             "diffusion_factor": round(r.diffusion_factor, 4), "D_eq": round(r.deq, 4),
             "R_AM9": {"zone": "supersonic (solidity floor)" if sup else "subsonic (Lieblein DF limit)",
@@ -1330,8 +1292,8 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
                       "chord_need_design_target_m_info": design_needs["chord_needs_design_target_m"][i],
                       "need_met_design_target_info": design_needs["need_met_design_target"][i],
                       "work_balanced_J_kg": round(needs["work_J_kg"][i], 1)},
-            "section_area_cm2": round(bp.section_area(tube.endwall.chord, fam["tc"]) * 1e4, 3),
-            "section_area_over_root": round(bp.section_area(tube.endwall.chord, fam["tc"]) / a_root, 4),
+            "section_area_cm2": round(area_value(th["area"], t["span"]) * 1e4, 4),
+            "section_area_over_root": round(area_value(th["area"], t["span"]) / a_root, 5),
             "M_passage": round(r.M_passage, 4),
             "loss_breakdown": {k: {"loss": round(x["loss"], 5), "delta_eta": round(x["delta_eta"], 5)}
                                for k, x in loss_breakdown(r).items()},
@@ -1375,39 +1337,39 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
     k2_total[0] += off["inner"]
     k2_total[4] += off["outer"] - off["inner"]
     work = [gas.cp * Tt * (r.Tt_ratio - 1) for r in res]
-    r67_smooth = bp.rotor67_chord_smoothness()
-    smooth_limit = r67_smooth["metric"]
+    r67_rough = bp.rotor67_chord_roughness()
+    rough_limit = r67_rough["metric"]
     recorded = float(bl["chord_smoothness_limit"]["value"])
-    m1_smooth = bp.chord_smoothness_metric([t["span"] for t in layout],
-                                           [chord_value(blade["chord"], t["span"]) for t in layout])
-    r_am17 = {"rule": "R-AM.17: largest |second divided difference| of c(f) / c_mean at the M1 tube centres <= the "
-                      "same metric on the 14 Rotor 67 Table I sections (span = leading-edge radius fraction); "
-                      "checked, not imposed; fail reported",
-              "metric_M1": round(m1_smooth["metric"], 4),
-              "metric_at_span_fraction": round(m1_smooth["at_span_fraction"], 4),
-              "metric_at_tube": layout[m1_smooth["at_station_0based"]]["name"],
-              "c_mean_m": round(m1_smooth["c_mean"], 5),
-              "second_differences_M1": [round(x, 4) for x in m1_smooth["second_differences"]],
-              "limit": round(smooth_limit, 4), "limit_tag": "H from KS (blade_profile.rotor67_chord_smoothness)",
-              "limit_rotor67_section": r67_smooth["section"],
-              "limit_rotor67_span_fraction": round(r67_smooth["at_span_fraction"], 4),
-              "limit_rotor67_c_mean_cm": round(r67_smooth["c_mean_cm"], 4),
+    m1_rough = bp.chord_roughness_metric([t["span"] for t in layout],
+                                         [chord_value(blade["chord"], t["span"]) for t in layout])
+    r_am17 = {"rule": "R-AM.17 (step 4i): chord roughness = largest |c/c_mean - q(f)| over the M1 tube centres, q = "
+                      "least-squares quadratic of c/c_mean over the same stations, <= the same metric on the 14 "
+                      "Rotor 67 Table I sections (span = leading-edge radius fraction); checked, not imposed",
+              "metric_M1": float(f"{m1_rough['metric']:.4e}"),
+              "metric_at_span_fraction": round(m1_rough["at_span_fraction"], 4),
+              "metric_at_tube": layout[m1_rough["at_station_0based"]]["name"],
+              "c_mean_m": round(m1_rough["c_mean"], 5),
+              "residuals_M1": [float(f"{x:.3e}") for x in m1_rough["residuals"]],
+              "limit": round(rough_limit, 6), "limit_tag": "H from KS (blade_profile.rotor67_chord_roughness)",
+              "limit_rotor67_section": r67_rough["section"],
+              "limit_rotor67_span_fraction": round(r67_rough["at_span_fraction"], 4),
+              "limit_rotor67_c_mean_cm": round(r67_rough["c_mean_cm"], 4),
+              "limit_rotor67_rms": round(r67_rough["rms"], 6),
               "limit_recorded_REVIEW_md": recorded,
-              "limit_equals_recorded": round(smooth_limit, 4) == recorded,
-              "check": "pass" if m1_smooth["metric"] <= smooth_limit else "fail", "tag": "H"}
+              "limit_equals_recorded": sig4(rough_limit) == sig4(recorded),
+              "check": "pass" if m1_rough["metric"] <= rough_limit else "fail", "tag": "H"}
     if not r_am17["limit_equals_recorded"]:
-        raise ValueError(f"R-AM.17 limit {smooth_limit:.4f} differs from the recorded value {recorded}")
+        raise ValueError(f"R-AM.17 limit {rough_limit:.6f} differs from the recorded value {recorded}")
     tip = tip_region(p, res, layout, gas)
     controlled = tip["decision"].startswith("controlled vortex required")
     if controlled:
         raise NotImplementedError("tip check asks for a controlled vortex (R-AM.12 / tip_check); not implemented")
-    design_work = [(x - 1) * gas.cp * Tt for x in vt["targets"]]
     diag = mass_diagnosis(blade, layout, needs["chord_m"], ctx,
-                          v(p["mechanical"]["blade_set_mass_check"]) / ctx["blades"],
-                          balanced={"geo": out["geo"], "results": res, "design_work": design_work})
+                          v(p["mechanical"]["blade_set_mass_check"]) / ctx["blades"])
+    mech_out = mechanical(p, ann, omega, blade, ctx, diag)
 
     return {
-        "description": "M1 fan rotor design at the M0 design point (SLS ISA, max take-off), M1 step 4h smooth "
+        "description": "M1 fan rotor design at the M0 design point (SLS ISA, max take-off), M1 step 4i-c smooth "
                        "blade; generated by engine/M1_inlet_fan/analysis/fan_design.py, do not edit",
         "icd_revision": icd["source"]["revision"],
         "inputs": {"tag": "H/KS from the ICD", "W2_kg_s": inp["W2"], "W21_kg_s": inp["W21"], "Tt2_K": Tt,
@@ -1432,12 +1394,17 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
             "tag": "H (parameters from the design loop; forms T)",
             "span_variable": "f = (r1 - r_hub1) / (r_tip1 - r_hub1), inlet radius of the tube centre",
             "chord_law": chord_report(blade["chord"]),
-            "chord_form": "chord(f) = c0 + c1 f + c2 f^2 + a K((f - f_b) / w_b), K(x) = (1 - x^2)^3 for |x| < 1 else 0 "
-                          "(C2 compact bump) [T form, M1 step 4g]; f_b = span fraction of the tube whose R-AM.9 need "
-                          "stands highest above both neighbour needs, w_b = smaller distance to its neighbour tubes "
-                          "(bump zero at both neighbour tube centres), a >= 0; lowest mean chord with every tube at "
-                          "or above its R-AM.9 need, the R-AM.13 taper band and the root raised for the stress margin "
-                          "(linear programme)",
+            "chord_form": "chord(f) = c0 + c1 f + c2 f^2 [T form, M1 step 4i]: lowest mean chord with every tube at "
+                          "or above its R-AM.9 balanced-state need (linear programme); aero rules only, no taper or "
+                          "stress row (the R-AM.14 local bump is dropped)",
+            "area_law": {"form": "A(f) = A_root g(f), g = 1 - (1 - taper) f [T form]; A_root = smallest root area "
+                                 "with the derived t/c at mid (f 0.5) and tip (f 1) inside the Rotor 67 mid and tip "
+                                 "third ranges (step 4i-c), stress rule checked",
+                         "level_binding_point": th["area"]["level"]["binding_point"],
+                         "degree": th["area"]["degree"], "taper": round(th["area"]["taper"], 5),
+                         "A_root_cm2": round(th["area"]["A_root"] * 1e4, 4), "tag": "H"},
+            "thickness_form": "t/c(f) = A(f) / (k chord(f)^2), k = 2/3, derived (step 4i) and used by the R-AM.11 "
+                              "profile builder",
             "tc_benchmark_rotor67": bp.rotor67_tc_benchmark(),
             "kappa2_deg_coefficients_shape": [round(math.degrees(c), 5) for c in blade["kappa2"]],
             "kappa2_offsets_deg": {k: round(math.degrees(x), 5) for k, x in blade["offsets"].items()},
@@ -1451,7 +1418,7 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
             "profile_family": "MCA (R-AM.11): two-arc camber line, transition at chord fraction "
                               f"{bp.X_TRANSITION} [T], parabolic thickness [T]",
             "profile_fits_rotor67": {"front_camber_share": [round(c, 6) for c in fits["coefficients"]["front"]],
-                                     "t_c": [round(c, 6) for c in fits["coefficients"]["tc"]],
+                                     "t_c_pass0_start_only": [round(c, 6) for c in fits["coefficients"]["tc"]],
                                      "x_max": [round(c, 6) for c in fits["coefficients"]["x_max"]],
                                      "rms": {k: round(x, 5) for k, x in fits["rms"].items()},
                                      "tag": "H fit of KS sections (Table I), used for the M1 fan as T analogue"},
@@ -1497,8 +1464,7 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
                         "outer_passes": sum(1 for h in out["history"] if h.get("pass", 0) >= 1),
                         "scheme": "pass: stream levels from the target PR and the stream eta (budget in pass 0, then "
                                   "meanline); design-mode radial equilibrium at the vortex targets; R-AM.9 chord needs, "
-                                  "lowest chord (quadratic + local bump, step 4g) with the taper band and the root "
-                                  "stress loop, kappa2 basis fit (cubic + splitter "
+                                  "lowest-mean quadratic chord (step 4i), area law and derived t/c, kappa2 basis fit (cubic + splitter "
                                   "blend); 2x2 Newton on the blended stream offsets with fixed-blade solve_rotor_re "
                                   "until each stream PR = target (physical solutions only); repeat until the reshaped "
                                   "chord and kappa2 are stable",
@@ -1523,9 +1489,13 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
             "R_AM9_pass_count": f"{len(rows) - len(rule_fail)}/{len(rows)}",
             "R_AM9_need_basis": "balanced state, iterated until no solidity need moves by more than "
                                 f"{NEED_STABLE} (step 4h); design-target needs per tube as information",
-            "R_AM15_check": "pass" if mech_res["sigma_max"] <= ctx["mech"]["allowable"] else "fail",
-            "R_AM13_margin_check": "pass" if mech_res["margin"] >= ctx["mech"]["margin_min"] - 1e-9 else "fail",
+            "R_AM15_check": "pass" if mech_res["stress_ok"] else "fail",
+            "R_AM15_rule": "steady centrifugal stress <= half the allowable at every section (headroom for "
+                           "vibratory and bending stress, not computed) [T]",
             "R_AM16_check": "pass" if mech_res["area_monotonic"] else "fail",
+            "R_AM16_tc_check": mech_out["thickness_check"]["check"],
+            "R_AM16_tc_failed_points": mech_out["thickness_check"]["failed_points"],
+            "R_AM16_tc_known_deviations": mech_out["thickness_check"]["known_deviations"],
             "R_AM17_check": r_am17["check"],
             "solidity_min": round(min(sols), 4), "solidity_max": round(max(sols), 4),
             "chord_min_m": min(chords), "chord_max_m": max(chords),
@@ -1546,15 +1516,32 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
         "tubes": rows,
         "kappa2_blend_check": kappa2_blend_check(blade, ctx, ann),
         "tip_region": tip,
-        "mechanical": mechanical(p, ann, omega, blade, ctx, diag,
-                                 r_am16_feasibility(blade, layout, needs["chord_m"], ctx)),
+        "mechanical": mech_out,
         "achieved": {k: round(x, 6) for k, x in achieved.items()},
         "achieved_tags": {"FPR": "H (meanline)", "pr_fan_inner": "H (meanline)", "eta_fan_outer": "T (budget, ADR-015)",
                           "eta_fan_inner": "T (budget, ADR-015)", "W2": "H", "W13": "H", "W21": "H",
                           "T13": "H from target FPR and budget eta", "T21": "H from target PR and budget eta",
                           "power_outer_fan": "H", "power_inner_fan": "H"},
         "budget_check": checks,
+        "open_items": open_items(mech_out["thickness_check"]),
     }
+
+
+def open_items(tc_check: dict) -> list[dict]:
+    """Open items recorded with the design (step 4i-c) [H]."""
+    tip, hub = tc_check["points"]["tip"], tc_check["points"]["hub"]
+    return [
+        {"id": "tip_tc_lower_bound",
+         "item": "tip t/c at the lower bound of the Rotor 67 tip-third range (smallest A_root, step 4i-c): check bird "
+                 "strike (R-BS, rules/bird_strike.md) and flutter when those analyses exist",
+         "tip_t_c": tip["t_c"], "tip_range": tip["range"],
+         "at_lower_bound": abs(tip["t_c"] - tip["range"][0]) <= 5e-5, "status": "open", "tag": "H"},
+        {"id": "hub_tc_known_deviation",
+         "item": "hub t/c outside the Rotor 67 hub-third range: known deviation, user-accepted (step 4i-c), revisit "
+                 "later",
+         "hub_t_c": hub["t_c"], "hub_range": hub["range"], "in_range": hub["in_range"], "status": "open",
+         "tag": "H"},
+    ]
 
 
 def main() -> None:
@@ -1583,14 +1570,10 @@ def main() -> None:
           f"{m['blade_mass']['set_kg']} kg (check {m['blade_mass']['check_set_kg']})")
     s15, s16, s17 = m["section_stress_r_am15"], m["area_monotonic_r_am16"], result["chord_smoothness_r_am17"]
     print(f"R-AM.15 max section stress {s15['max_section_stress_MPa']} MPa at f {s15['max_section_stress_span_fraction']} "
-          f"({s15['check']}, margin min {s15['margin_min_over_sections']} {s15['margin_check']}); R-AM.16 max dA/df/A_root "
-          f"{s16['max_dA_df_over_A_root']} at f {s16['at_span_fraction']} ({s16['check']}); R-AM.17 {s17['metric_M1']} vs "
-          f"{s17['limit']} ({s17['check']}); R-AM.9 {s['R_AM9_pass_count']}")
-    d = m["mass_diagnosis"]
-    print(f"mass/check {d['mass_over_check']}; dominant chord driver: {d['dominant_chord_driver']} "
-          f"(-{d['dominant_chord_driver_mass_reduction_kg']} kg)")
-    for x in d["variants"]:
-        print("  ", x)
+          f"limit {s15['steady_stress_limit_MPa']} ({s15['check']}); R-AM.16 area {s16['check']} taper {m['taper_ratio']}; "
+          f"t/c {m['thickness_check']['points']}; R-AM.17 {s17['metric_M1']} vs {s17['limit']} ({s17['check']}); "
+          f"R-AM.9 {s['R_AM9_pass_count']}")
+    print("mass diagnosis", m["mass_diagnosis"])
     print("kappa2 blend", result["kappa2_blend_check"])
     print("tip region", result["tip_region"]["bands"], result["tip_region"]["decision"])
     for row in result["budget_check"]:

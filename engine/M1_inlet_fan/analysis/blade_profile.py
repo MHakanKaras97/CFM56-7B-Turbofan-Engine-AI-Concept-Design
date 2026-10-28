@@ -30,7 +30,8 @@ t/c benchmark (M1 step 4g, rotor67_tc_benchmark): t/c = largest tabulated TNPC o
 the mean camber line, TP-2879 Table I symbol list, PDF p. 22, printed p. 18 [KS]) divided by the section chord
 (straight line between the extreme points of the edge circles in the (m, r theta) plane, rotor67_geometry.yaml
 `chord` [H from KS]). Hub = section 1, tip = section 14, mid = linear interpolation at span fraction 0.5 between
-sections 7 and 8 [H from KS]. The cubic fit of these 14 values is the t/c(f) of the M1 blade [T analogue].
+sections 7 and 8 [H from KS]. Since M1 step 4i the M1 t/c is derived from its area law (fan_design.derived_tc);
+the cubic fit of these 14 values is only the pass-0 start value of the profile builder.
 """
 
 import math
@@ -248,28 +249,31 @@ def rotor67_kappa2_curvature(geometry: dict | None = None) -> dict:
 
 def second_differences(fs: list[float], ys: list[float]) -> list[float]:
     """Second divided differences 2 [(y3 - y2)/(f3 - f2) - (y2 - y1)/(f2 - f1)] / (f3 - f1) at the inner points
-    (uneven spacing allowed); used by fan_design.second_differences and the R-AM.17 limit."""
+    (uneven spacing allowed); used by fan_design.smoothness (spanwise smoothness report)."""
     return [2 * ((ys[i + 1] - ys[i]) / (fs[i + 1] - fs[i]) - (ys[i] - ys[i - 1]) / (fs[i] - fs[i - 1]))
             / (fs[i + 1] - fs[i - 1]) for i in range(1, len(fs) - 1)]
 
 
-def chord_smoothness_metric(fs: list[float], chords: list[float]) -> dict:
-    """R-AM.17 metric [H]: largest |second divided difference| of c / c_mean over the span stations, c_mean =
-    arithmetic mean of the station chords (per unit span fraction squared); also where it occurs."""
+def chord_roughness_metric(fs: list[float], chords: list[float]) -> dict:
+    """R-AM.17 metric (M1 step 4i) [H]: chord roughness = largest |c/c_mean - q(f)| over the span stations, q =
+    least-squares quadratic fit of c/c_mean over the same stations, c_mean = arithmetic mean of the station chords.
+    A plain quadratic scores 0, a local bump high. Also where it occurs and the RMS residual."""
     c_mean = sum(chords) / len(chords)
-    d2 = second_differences(fs, [c / c_mean for c in chords])
-    j = max(range(len(d2)), key=lambda i: abs(d2[i]))
-    return {"metric": abs(d2[j]), "at_station_0based": j + 1, "at_span_fraction": fs[j + 1], "c_mean": c_mean,
-            "second_differences": d2}
+    ys = [c / c_mean for c in chords]
+    q = polyfit(fs, ys, 2)
+    res = [y - polyval(q, f) for f, y in zip(fs, ys)]
+    j = max(range(len(res)), key=lambda i: abs(res[i]))
+    return {"metric": abs(res[j]), "at_station_0based": j, "at_span_fraction": fs[j], "c_mean": c_mean,
+            "residuals": res, "rms": math.sqrt(sum(x * x for x in res) / len(res)), "fit": q}
 
 
-def rotor67_chord_smoothness(geometry: dict | None = None) -> dict:
-    """R-AM.17 limit [H from KS]: chord_smoothness_metric on the 14 Rotor 67 Table I sections, chord from
+def rotor67_chord_roughness(geometry: dict | None = None) -> dict:
+    """R-AM.17 limit [H from KS]: chord_roughness_metric on the 14 Rotor 67 Table I sections, chord from
     rotor67_geometry.yaml (cm), span fraction = leading-edge radius fraction (rotor67_section_spans, as R-AM.14)."""
     geo = geometry or read_yaml(R67_GEOMETRY)
     fs = rotor67_section_spans(geo)
     chords = [s["chord"]["value"] for s in geo["sections"]]
-    out = chord_smoothness_metric(fs, chords)
+    out = chord_roughness_metric(fs, chords)
     out["section"] = out.pop("at_station_0based") + 1
     out["c_mean_cm"] = out.pop("c_mean")
     return out

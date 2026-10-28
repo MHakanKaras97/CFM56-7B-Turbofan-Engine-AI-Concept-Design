@@ -1,9 +1,9 @@
 # M1 Bird Strike
 
-Summary of `learning/sources/bird_strike/`. Values are what each study used, not requirements.
+Summary of `<archive>/M1_inlet_fan/bird_strike/` (index: `learning/sources/INDEX.md`). Values are what each study used, not requirements.
 
 ## Certification requirement: CS-E 800 [K]
-Source: EASA Easy Access Rules for Engines (CS-E), Amendment 5, CS-E 800 (ED Decision 2018/014/R), pp. 180-187 (`learning/sources/regulation/easa_cs-e_easy_access_amdt5.pdf`). Summary in our words; the regulation text governs.
+Source: EASA Easy Access Rules for Engines (CS-E), Amendment 5, CS-E 800 (ED Decision 2018/014/R), pp. 180-187 (`<archive>/M1_inlet_fan/regulation/easa_cs-e_easy_access_amdt5.pdf`, index: `learning/sources/INDEX.md`). Summary in our words; the regulation text governs.
 
 Which basis applies: EASA TCDS E.004 lists, for the CFM56-7B27 "SAC" build, JAR-E Change 8 plus Special Condition No. 1 "Bird strikes" [K]; later builds (/3, E) list CS-E 800 (CS-E dated 24 Oct 2003) [K]. The special condition text was not read (doğrulanmadı). M1 designs to current CS-E 800 (Amdt 5) (user decision, M1 step 2b).
 
