@@ -6,6 +6,8 @@ Inputs read at run time, never copied:
 - M1 station 21 annulus: engine/M1_inlet_fan/geometry/flowpath.yaml (M2_station_21, read-only, rev014).
 - Rotor blade counts: rules/known_values.md table (fixed inputs [KS], R-AM2.3).
 - Method choices: analysis/booster_params.yaml.
+- Spanwise distribution (aero_method.md, step 3): booster_params spanwise_distribution; tp1523_shape reads the
+  hub/mean/tip shape ratios from learning/tp1523_reference.yaml (a1_case rotor 23B, stator20_exit) [T transfer].
 eta_booster is an isentropic efficiency: engine/M0_engine/analysis/cycle.py lines 11 and 75 ("isentropic
 efficiencies"), used in compressor_is at line 193. Each stage gets the same polytropic efficiency, solved so that
 the overall isentropic efficiency equals eta_booster [H] (no efficiency prediction, ADR-015).
@@ -14,8 +16,8 @@ The code gives velocity triangles, angles, DF, solidity, chords, blade counts an
 (R-AM2.2 DF limits, TP-1523 tip solidity range, hub/tip vs the rig) are reported, never tuned away. Rotor counts
 and chords are fixed by R-AM2.3; only the stator count follows from R-KV2.1.
 
-Validation status: A-1 (a1_validation.py) decides the tag of the computed aero values: pass -> [H],
-fail -> [T] (unvalidated placeholder, stopping rule).
+Validation status: A-1 (a1_validation.py) checks the section code with the rig's tabulated distribution. Section
+values are [H] only if A-1 passes and the booster spanwise distribution is not a [T] choice; otherwise [T].
 
 Run: python -m engine.M2_booster.analysis.booster_meanline  (writes analysis/meanline_results.yaml)
 """
@@ -28,6 +30,7 @@ from core.budgets import check_budget, read_icd
 from core.util import read_yaml, write_yaml
 from engine.M2_booster.analysis import a1_validation
 from engine.M2_booster.analysis import stage_aero as sa
+from engine.M2_booster.analysis.a1_validation import section_shapes, table
 from tools.thermo import NasaGas, compressor, compressor_isentropic_eff
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -77,9 +80,25 @@ def stator_count(gas, inlet: sa.Plane, exit_: sa.Plane, chord: float, neighbours
     return z_found, met
 
 
+def spanwise_shapes(params: dict, ref: dict | None = None) -> dict:
+    """Shape ratios (hub, mean, tip) for the booster (aero_method.md Spanwise distribution)."""
+    kind = p(params, "spanwise_distribution")
+    ones = (1.0, 1.0, 1.0)
+    if kind == "free_vortex":
+        return {"work": ones, "rotor_exit_vx": ones, "stator_exit_vx": ones}
+    if kind != "tp1523_shape":
+        raise ValueError(f"unknown spanwise_distribution {kind!r}")
+    ref = ref or read_yaml(REF_FILE)
+    rig = section_shapes({r["station"]: r for r in table(ref, "a1_case")})
+    st = {r["station"]: r for r in table(ref, "stator20_exit")}
+    return {"work": rig["work"], "rotor_exit_vx": rig["vx_out"],
+            "stator_exit_vx": tuple(st[s]["v_out"] / st["mid"]["v_out"] for s in ("hub", "mid", "tip"))}
+
+
 def run(icd: dict | None = None, params: dict | None = None) -> dict:
     icd = icd or read_icd("M2 booster meanline")
     params = params or read_yaml(PARAMS_FILE)
+    shapes = spanwise_shapes(params)
     gas = NasaGas()
     budget = icd["modules"]["M2"]["budget"]
     st = icd["stations"]
@@ -113,7 +132,10 @@ def run(icd: dict | None = None, params: dict | None = None) -> dict:
         Pt_rotor = inlet.Pt * math.exp((gas.phi(Tt_out) - gas.phi(inlet.Tt) - split * ds) / gas.R_s())
         K = w / omega + inlet.K  # Euler work on every streamline: w = omega (r Vt)_2 - omega (r Vt)_1
         rotor_exit = sa.plane_from_mach(gas, Tt_out, Pt_rotor, W, r_hub, mach_x, K, inlet.r_tip)
+        rotor_exit = sa.with_profile(rotor_exit, shapes["rotor_exit_vx"],
+                                     sa.rotor_exit_swirl(inlet, rotor_exit, omega, w, shapes["work"]))
         stage_exit = sa.plane_from_mach(gas, Tt_out, Pt_out, W, r_hub, mach_x, 0.0, rotor_exit.r_tip)
+        stage_exit = sa.with_profile(stage_exit, shapes["stator_exit_vx"])
 
         c_r = (inlet.height + rotor_exit.height) / 2 / ar_r
         rotor = {s: sa.rotor_section(gas, inlet, rotor_exit, omega, s, c_r, zr[i]) for s in sa.SECTIONS}
@@ -130,6 +152,8 @@ def run(icd: dict | None = None, params: dict | None = None) -> dict:
             "U_tip_inlet": U_tip, "inlet": inlet, "rotor_exit": rotor_exit, "stage_exit": stage_exit,
             "rotor": rotor, "stator": stator, "z_rotor": zr[i], "z_stator": zs, "stator_df_met": met,
             "chord_rotor": c_r, "chord_stator": c_s,
+            "closure_rotor_exit": sa.simpson_closure(rotor_exit, shapes["work"]),
+            "closure_stator_exit": sa.simpson_closure(stage_exit),
         })
         planes += [rotor_exit, stage_exit]
         inlet = stage_exit
@@ -140,7 +164,7 @@ def run(icd: dict | None = None, params: dict | None = None) -> dict:
     eta_achieved = (h_is - gas.h(Tt21)) / (gas.h(p24.Tt) - gas.h(Tt21))
     achieved = {"pr_booster": p24.Pt / Pt21, "eta_booster": eta_achieved, "duct_25_24": Pt25 / p24.Pt,
                 "W25": W, "T25": p24.Tt, "power": W * (gas.h(p24.Tt) - gas.h(Tt21)) / 1e6}
-    return {"gas": gas, "omega": omega, "rpm": rpm, "mach_x": mach_x, "e_poly": e_poly, "W": W,
+    return {"gas": gas, "omega": omega, "shapes": shapes, "rpm": rpm, "mach_x": mach_x, "e_poly": e_poly, "W": W,
             "stages": stages, "p21": p21, "p24": p24, "Pt25": Pt25, "achieved": achieved,
             "budget_rows": check_budget("M2", achieved), "params": params, "icd": icd}
 
@@ -168,7 +192,7 @@ def rule_checks(res: dict, ref: dict, a1: dict) -> list[dict]:
     rig_ht = ref["rig"]["hub_tip_ratio"]["value"]
     ranges = blade_table_ranges(ref)
     rig_hub = next(r["section"] for r in a1["rows"] if r["station"] == "hub")
-    rig_psi_hub = a1["w"] / rig_hub["U2"] ** 2
+    rig_psi_hub = (rig_hub["U2"] * rig_hub["Vt2"] - rig_hub["U1"] * rig_hub["Vt1"]) / rig_hub["U2"] ** 2
     rig_turn_hub = rig_hub["beta1"] - rig_hub["beta2"]
     rows = []
     for s in res["stages"]:
@@ -195,9 +219,10 @@ def rule_checks(res: dict, ref: dict, a1: dict) -> list[dict]:
                          "value": round(ht, 4), "limit": rig_ht,
                          "result": "outside (below the only tested value, #57)" if ht < rig_ht else "at or above rig"})
         hub = s["rotor"]["hub"]
-        rows.append({"check": "rotor hub loading w / U_hub^2 vs TP-1523 rotor 23B (info, #57)", "stage": s["stage"],
-                     "row": "rotor", "section": "hub", "value": round(s["w"] / hub["U2"] ** 2, 4),
-                     "limit": round(rig_psi_hub, 4), "result": "above rig" if s["w"] / hub["U2"] ** 2 > rig_psi_hub
+        psi_hub = (hub["U2"] * hub["Vt2"] - hub["U1"] * hub["Vt1"]) / hub["U2"] ** 2
+        rows.append({"check": "rotor hub section loading w_hub / U_hub^2 (Euler) vs TP-1523 rotor 23B A-1 (info, #57)",
+                     "stage": s["stage"], "row": "rotor", "section": "hub", "value": round(psi_hub, 4),
+                     "limit": round(rig_psi_hub, 4), "result": "above rig" if psi_hub > rig_psi_hub
                      else "at or below rig"})
         turn = hub["beta1"] - hub["beta2"]
         rows.append({"check": "rotor hub relative turning, deg, vs TP-1523 rotor 23B A-1 run (info, #57)",
@@ -233,9 +258,15 @@ def _table(sections: dict, cols: list[str]) -> list[list]:
 
 def to_yaml(res: dict, a1: dict, checks: list[dict]) -> dict:
     gas = res["gas"]
-    tag = "H" if a1["passed"] else "T"
-    status = ("validated by A-1" if a1["passed"] else
-              "UNVALIDATED placeholder [T]: A-1 failed (analysis/a1_validation.yaml); stopping rule, no tuning")
+    span = res["params"]["spanwise_distribution"]
+    tag = "H" if (a1["passed"] and span["tag"] in ("K", "KS", "H")) else "T"
+    if not a1["passed"]:
+        status = "UNVALIDATED placeholder [T]: A-1 failed (analysis/a1_validation.yaml); stopping rule, no tuning"
+    elif tag == "T":
+        status = ("A-1 pass (section code with the rig's tabulated distribution); booster spanwise distribution "
+                  f"{span['value']!r} is a [T] design choice, so section values stay [T]")
+    else:
+        status = "validated by A-1"
     icd = res["icd"]
     st = icd["stations"]
     consistency = []
@@ -262,6 +293,11 @@ def to_yaml(res: dict, a1: dict, checks: list[dict]) -> dict:
                              "note": "R-KV2.1" + ("" if s["stator_df_met"] else "; DF limit not met within the search")},
             "rotor_chord": {"value": _r(s["chord_rotor"], 5), "unit": "m", "tag": "T", "note": "AR 2.0 (R-AM2.3)"},
             "stator_chord": {"value": _r(s["chord_stator"], 5), "unit": "m", "tag": "T", "note": "AR 1.2 (R-AM2.3)"},
+            "spanwise_closure": {
+                "tag": "H", "note": "Simpson 1/4/1 on r Vx, uniform density; reported, not re-normalised (aero_method.md)",
+                "rotor_te_mass_flow_ratio": _r(s["closure_rotor_exit"]["mass_flow_ratio"]),
+                "rotor_mass_averaged_work_ratio": _r(s["closure_rotor_exit"]["work_ratio"]),
+                "stator_te_mass_flow_ratio": _r(s["closure_stator_exit"]["mass_flow_ratio"])},
             "planes": {"tag": tag, "rotor_le": _plane(s["inlet"], gas), "rotor_te": _plane(s["rotor_exit"], gas),
                        "stator_te": _plane(s["stage_exit"], gas)},
             "rotor_sections": {"tag": tag, "units": "m, m/s, deg", "columns": ROTOR_COLS,
@@ -270,7 +306,7 @@ def to_yaml(res: dict, a1: dict, checks: list[dict]) -> dict:
                                 "rows": _table(s["stator"], STATOR_COLS)},
         })
     return {
-        "description": "M2 booster meanline (step 2); generated by engine/M2_booster/analysis/booster_meanline.py, "
+        "description": "M2 booster meanline (step 3 spanwise distribution); generated by engine/M2_booster/analysis/booster_meanline.py, "
                        "do not edit by hand. Inputs: ICD (read_icd), M1 flowpath station 21, known_values.md, "
                        "booster_params.yaml.",
         "icd_revision": icd["source"]["revision"],
@@ -281,8 +317,12 @@ def to_yaml(res: dict, a1: dict, checks: list[dict]) -> dict:
                                        "note": "engine/M0_engine/analysis/cycle.py:11 and :75; compressor_is at :193"},
             "stage_polytropic_efficiency": {"value": _r(res["e_poly"], 5), "unit": "-", "tag": "H",
                                             "note": "equivalent of eta_booster over pr_booster (ADR-015)"},
+            "spanwise_distribution": {"value": span["value"], "unit": "-", "tag": span["tag"],
+                                      "note": "aero_method.md Spanwise distribution; booster_params.yaml"},
+            "shape_ratios": {"tag": "H", "note": "hub, mean, tip; mean = 1; from TP-1523 [K] via the rule above [T]",
+                             **{k: [_r(x) for x in v] for k, v in res["shapes"].items()}},
             "axial_mach_station21": {"value": _r(res["mach_x"]), "unit": "-", "tag": "H",
-                                     "note": "kept constant at every plane (plan step 5)"},
+                                     "note": "1-D (mean) value, kept constant at every plane (plan step 5)"},
         },
         "station_21": _plane(res["p21"], gas),
         "stages": stages,

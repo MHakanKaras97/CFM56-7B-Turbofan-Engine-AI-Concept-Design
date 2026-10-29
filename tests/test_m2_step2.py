@@ -1,4 +1,5 @@
 """Proposed tests for M2 step 2 (A-1 validation run, booster meanline). Moved to tests/ by M0.
+Step 3 (#63) superseded the A-1 fail and step-2 rotor DF assertions; they live in tests/test_m2_step3.py.
 
 Run: .venv/Scripts/python -m pytest -q --tb=short tests/test_m2_step2.py
 """
@@ -47,16 +48,6 @@ def test_a1_reproduces_recorded_file(a1):
     assert a1_validation.to_yaml(a1) == read_yaml(A1_FILE)
 
 
-def test_a1_result_vs_criteria_as_recorded():
-    data = read_yaml(A1_FILE)
-    result = {c["item"]: c["result"] for c in data["criteria"]}
-    assert data["result"] == "fail"
-    assert result == {"DF tip": "fail", "beta2_rel tip": "pass", "DF mid": "pass", "beta2_rel mid": "pass",
-                      "DF hub": "fail", "beta2_rel hub": "pass", "rotor PR": "pass"}
-    for c in data["criteria"]:
-        assert (abs(c["delta"]) <= c["tolerance"]) == (c["result"] == "pass"), c["item"]
-
-
 def test_a1_df_formula_reproduces_table_velocities():
     """The DF code itself is right: on the Table 2(b) triangles it gives the table D-FACT within 0.002."""
     for s in read_yaml(A1_FILE)["sections"]:
@@ -64,22 +55,10 @@ def test_a1_df_formula_reproduces_table_velocities():
         assert d["value"] == pytest.approx(d["table"], abs=0.002), s["station"]
 
 
-@pytest.mark.xfail(strict=True, reason="A-1 fails: free vortex + uniform Vx under-predicts tip/hub D (open issue)")
-def test_a1_passes(a1):
-    assert a1["passed"]
-
-
 # --- meanline ---------------------------------------------------------------------------
 
 def test_meanline_reproducible(results, recorded):
     assert results == recorded
-
-
-def test_unvalidated_placeholder_tag(recorded):
-    assert recorded["validation"]["a1_result"] == "fail"
-    assert "UNVALIDATED" in recorded["validation"]["status"]
-    for s in recorded["stages"]:
-        assert s["rotor_sections"]["tag"] == s["stator_sections"]["tag"] == s["planes"]["tag"] == "T"
 
 
 def test_results_derive_from_read_icd(recorded):
@@ -143,22 +122,6 @@ def test_chords_from_aspect_ratio(recorded):
 def test_stator_df_within_limit(recorded):
     for r in checks(recorded, "R-AM2.2 DF", row="stator"):
         assert r["result"] == "pass", r
-
-
-def test_rotor_hub_mean_df_within_limit(recorded):
-    for r in checks(recorded, "R-AM2.2 DF", row="rotor"):
-        if r["section"] != "tip":
-            assert r["result"] == "pass", r
-
-
-def test_stage1_rotor_tip_df_within_limit(recorded):
-    assert checks(recorded, "R-AM2.2 DF", row="rotor", section="tip", stage=1)[0]["result"] == "pass"
-
-
-@pytest.mark.parametrize("stage", [2, 3])
-@pytest.mark.xfail(strict=True, reason="known violation: rotor tip D > 0.45 (R-AM2.2), open issue; not tuned")
-def test_rotor_tip_df_limit_known_violation(recorded, stage):
-    assert checks(recorded, "R-AM2.2 DF", row="rotor", section="tip", stage=stage)[0]["result"] == "pass"
 
 
 def test_tip_solidity_in_tested_range(recorded):

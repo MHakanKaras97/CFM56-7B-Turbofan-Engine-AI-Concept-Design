@@ -1,12 +1,16 @@
 """A-1: M2 meanline validation on NASA TP-1523 rotor 23B at the design point (aero_method.md, analyses.md).
 
-The case runs the same code path as the booster (stage_aero): design mode with the rotor PR and the efficiency
-from the PR/TR pair (Table 2(a)), free-vortex exit swirl, uniform axial velocity from continuity on the rig
-annulus, rig chords and blade count (Table 8 via blade_tables). Compared with Table 2(b): D at tip/mid/hub
-+-0.02, exit relative flow angle +-1.5 deg, rotor PR within 1 %. No tuning: a failure is reported as is.
+Step 3 method (aero_method.md "Spanwise distribution"): the case runs the same section code as the booster
+(stage_aero.with_profile, rotor_exit_swirl, rotor_section) with the rig's own tabulated hub/mid/tip inputs from
+Table 2(b) p. 21: radii, rpm, inlet and exit meridional velocity, zero inlet swirl, section work from the total
+temperature ratio w_sec = cp Tt1 (TR_sec - 1), rig chords and blade count (Table 8 via blade_tables). No continuity,
+no blockage. Outputs (exit swirl, relative angles, W1/W2, solidity, DF) are compared with Table 2(b): D at
+tip/mid/hub +-0.02, exit relative flow angle +-1.5 deg, rotor PR within 1 % (mean section Euler work with the
+efficiency from the PR/TR pair, Table 2(a)). No tuning: a failure is reported as is.
 
-Note: in design mode the PR criterion is met by construction (the work comes from PR and eta; the Euler work of
-the computed triangles is converted back with the same eta). It checks the code chain, not the physics.
+What it checks: the section triangles, solidity and DF given the spanwise distribution. It does not validate a
+spanwise distribution that the booster chooses itself (step 3 booster shape is a [T] transfer). The PR criterion
+follows from the tabulated mid-span TR and the PR/TR efficiency; it checks the code chain, not the physics.
 
 Run: python -m engine.M2_booster.analysis.a1_validation  (writes analysis/a1_validation.yaml)
 """
@@ -37,6 +41,16 @@ def rig_gas() -> ConstantCp:
     return ConstantCp(CP, GAMMA, R_value=CP * (GAMMA - 1) / GAMMA)
 
 
+def section_shapes(case: dict) -> dict:
+    """Rig shape ratios (hub, mean, tip) from Table 2(b) rows: inlet/exit meridional velocity and work, mid = 1."""
+    st = ("hub", "mid", "tip")
+    return {
+        "vx_in": tuple(case[s]["vm_in"] / case["mid"]["vm_in"] for s in st),
+        "vx_out": tuple(case[s]["vm_out"] / case["mid"]["vm_out"] for s in st),
+        "work": tuple((case[s]["tt_ratio"] - 1) / (case["mid"]["tt_ratio"] - 1) for s in st),
+    }
+
+
 def run(ref: dict | None = None) -> dict:
     ref = ref or read_yaml(REF_FILE)
     gas = rig_gas()
@@ -52,12 +66,17 @@ def run(ref: dict | None = None) -> dict:
     PR = cc["rotor_pressure_ratio"]["value"]
     TR = ref["a1_case"]["rotor_total_temperature_ratio"]["value"]
     eta = (PR ** ((GAMMA - 1) / GAMMA) - 1) / (TR - 1)
+    shapes = section_shapes(case)
 
-    inlet = sa.Plane(Tt1, Pt1, case["hub"]["r_in_cm"] / 100, case["tip"]["r_in_cm"] / 100, case["mid"]["vm_in"], 0.0)
-    W = inlet.mean_static(gas).rho * inlet.Vx * inlet.area
-    Tt2, Pt2, w = compressor_is(Tt1, Pt1, PR, eta, gas)
-    exit_ = sa.plane_from_area(gas, Tt2, Pt2, W, case["hub"]["r_out_cm"] / 100, case["tip"]["r_out_cm"] / 100,
-                               w / omega)
+    inlet = sa.with_profile(
+        sa.Plane(Tt1, Pt1, case["hub"]["r_in_cm"] / 100, case["tip"]["r_in_cm"] / 100, case["mid"]["vm_in"], 0.0),
+        shapes["vx_in"], (0.0, 0.0, 0.0))
+    W = sa.Plane(Tt1, Pt1, inlet.r_hub, inlet.r_tip, inlet.Vx, 0.0).mean_static(gas).rho * inlet.Vx * inlet.area
+    w_mid = gas.h(Tt1 * case["mid"]["tt_ratio"]) - gas.h(Tt1)  # cp Tt1 (TR_mid - 1)
+    w = gas.h(Tt1 * TR) - gas.h(Tt1)
+    exit0 = sa.Plane(Tt1 * TR, Pt1 * PR, case["hub"]["r_out_cm"] / 100, case["tip"]["r_out_cm"] / 100,
+                     case["mid"]["vm_out"], w_mid / omega)
+    exit_ = sa.with_profile(exit0, shapes["vx_out"], sa.rotor_exit_swirl(inlet, exit0, omega, w_mid, shapes["work"]))
 
     rows, results = [], {}
     for station, section in STATION_TO_SECTION.items():
@@ -84,8 +103,8 @@ def run(ref: dict | None = None) -> dict:
     pr_item = {"achieved": PR_mean, "target": PR, "tol": TOL_PR, "delta": PR_mean / PR - 1}
     pr_item["pass"] = abs(pr_item["delta"]) <= TOL_PR
     passed = pr_item["pass"] and all(i["pass"] for r in results.values() for i in r.values())
-    return {"eta": eta, "omega": omega, "W": W, "inlet": inlet, "exit": exit_, "w": w, "rows": rows,
-            "results": results, "pr": pr_item, "passed": passed}
+    return {"eta": eta, "omega": omega, "W": W, "inlet": inlet, "exit": exit_, "w": w, "w_mid": w_mid,
+            "shapes": shapes, "rows": rows, "results": results, "pr": pr_item, "passed": passed}
 
 
 def _r(x, n=4):
@@ -102,7 +121,7 @@ def to_yaml(res: dict) -> dict:
     p = res["pr"]
     criteria.append({"item": "rotor PR", "achieved": _r(p["achieved"]), "target": p["target"], "tolerance": p["tol"],
                      "delta": _r(p["delta"], 6), "result": "pass" if p["pass"] else "fail",
-                     "note": "design mode: met by construction (work from PR and eta, converted back with the same eta)"})
+                     "note": "mean-section Euler work (from the tabulated mid-span TR) converted with the PR/TR efficiency; checks the code chain, not the physics"})
     sections = []
     for r in res["rows"]:
         s, t = r["section"], r["table"]
@@ -120,7 +139,8 @@ def to_yaml(res: dict) -> dict:
     return {
         "description": "A-1 validation, TP-1523 rotor 23B design point; generated by "
                        "engine/M2_booster/analysis/a1_validation.py, do not edit by hand. Values [H] from code, "
-                       "targets [K] TP-1523 Table 2(b) p. 21; criteria [T] aero_method.md.",
+                       "targets [K] TP-1523 Table 2(b) p. 21; criteria [T] aero_method.md. Step 3 method: rig "
+                       "tabulated section inputs (aero_method.md Spanwise distribution).",
         "tag": "H",
         "result": "pass" if res["passed"] else "fail",
         "inputs": {
@@ -128,8 +148,14 @@ def to_yaml(res: dict) -> dict:
                                "note": "(PR^((gamma-1)/gamma) - 1) / (TR - 1), PR 1.257, TR 1.072 Table 2(a) [K]"},
             "mass_flow_from_inlet": {"value": _r(res["W"], 3), "unit": "kg/s", "tag": "H",
                                      "note": "rho V_x A on the rig annulus without blockage; Table 2(a) gives 9.457 kg/s [K]"},
-            "exit_axial_velocity": {"value": _r(res["exit"].Vx, 2), "unit": "m/s", "tag": "H",
-                                    "note": "uniform, continuity on the rig exit annulus"},
+            "method": {"value": "tabulated_section_inputs", "unit": "-", "tag": "K",
+                       "note": "aero_method.md Spanwise distribution: Table 2(b) p. 21 radii, rpm, vm_in, vm_out, "
+                               "TR per section, zero inlet swirl; Table 8 chords and blade count; no continuity, "
+                               "no blockage"},
+            "shape_ratios": {"tag": "H", "note": "hub, mean, tip; mid = 1; from Table 2(b) [K]",
+                             **{k: [_r(x) for x in v] for k, v in res["shapes"].items()}},
+            "mid_section_work": {"value": _r(res["w_mid"] / 1e3, 3), "unit": "kJ/kg", "tag": "H",
+                                 "note": "cp Tt1 (TR_mid - 1), cp 1004 (p. 11), Tt1 288.2, TR_mid 1.071 [K]"},
         },
         "criteria": criteria,
         "sections": sections,

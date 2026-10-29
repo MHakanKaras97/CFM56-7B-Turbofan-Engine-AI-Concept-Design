@@ -52,6 +52,38 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
 ### Hub/tip ratio
 - nu = r_hub / r_tip at the blade-row leading edge plane [G]. TP-1523: 0.8, constant through the stage [K].
 
+### Spanwise distribution (hub/mean/tip) [step 3, written before the step 3 runs]
+- The meanline carries one-dimensional values at the mean radius r_m = (r_hub + r_tip) / 2 of each plane: stage work
+  w (from the stage PR and the polytropic efficiency, R-AM2.4) and the plane axial velocity Vx_1D from continuity on
+  the geometric annulus (uniform over the span, no blockage, see below). The annulus rule (plan step 5) uses Vx_1D only.
+- Hub and tip sections are local values from fixed shape ratios, mean section = 1:
+  - work: w_sec = g_sec x w (g_mean = 1); rotor exit swirl from Euler on the section radii,
+    Vt2_sec = (g_sec w + U1_sec Vt1_sec) / U2_sec, U = omega r (r1 on the LE plane, r2 on the TE plane);
+  - axial velocity: Vx_sec = f_sec x Vx_1D (f_mean = 1), one shape per plane (rotor LE, rotor TE, stator TE);
+  - inlet swirl Vt1_sec comes from the upstream plane (zero here: stator exit swirl 0 [T], station 21 no swirl);
+  - triangles, DF and solidity per section by the definitions above (`stage_aero.rotor_section`, `stator_section`).
+- Free vortex is the special case g = f = 1 (uniform work, uniform axial velocity, r Vt constant).
+- No radial equilibrium or streamline curvature is solved; the shape ratios replace it [T]. Continuity and the
+  mass-averaged work are closed on the mean section only; hub/tip ratios are not re-normalised. The code reports the
+  three-point (Simpson, weights 1/4/1 on r Vx, uniform density) mass-flow and work deviation of each profile [H].
+- A-1 uses the rig's own tabulated section values (TP-1523 Table 2(b) p. 21, rotor 23B hub/mid/tip): radii, rpm,
+  inlet and exit meridional velocity, zero inlet swirl, total temperature ratio (work w_sec = cp Tt1 (TR_sec - 1),
+  cp 1004 p. 11), chord and blade count (Table 8). In A-1 the mean section also uses the tabulated values, not
+  continuity.
+- Booster design choice (step 3) [T]: shape ratios transferred from the rig (proportional rule, no CFM56 source),
+  read by code from `learning/tp1523_reference.yaml`:
+  - g from rotor 23B Table 2(b): g_sec = (TR_sec - 1) / (TR_mid - 1);
+  - f at the rotor TE from rotor 23B Table 2(b) exit meridional velocity / mid value;
+  - f at the stator TE from stator 20 Table 2(c) p. 22 exit absolute velocity / mid value (exit swirl 0); the next
+    rotor LE is the same plane; stage 1 rotor LE (station 21) is uniform (M1 gives no profile).
+  - The rig's mid-span TR 1.071 against the overall 1.072 (Table 2(a)) [K] supports mean-section work = stage work.
+
+### Blockage
+- TP-1523 p. 2: the streamline design program included boundary-layer blockage factors [K]; the report gives no
+  values (doğrulanamadı). M2 uses **no blockage**: continuity on the geometric annulus. The rig mass flow 9.457 kg/s
+  (Table 2(a)) against rho Vx A on the geometric inlet annulus (`a1_validation.yaml`) is reported for information
+  only and is not used as a factor.
+
 ## Meanline plan (run in step 2: `analysis/booster_meanline.py`, inputs `analysis/booster_params.yaml`)
 1. Inlet: station 21 (`read_icd`: Tt, Pt, W) and the M1 station 21 annulus (`engine/M1_inlet_fan/geometry/flowpath.yaml`,
    read-only, rev014). N1 = ICD `shafts.LP.speed_refs.girao_nominal` [KS].
@@ -61,7 +93,8 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
    geometry only; it does not predict efficiency.
 5. Annulus: constant hub radius (Lolis 2014 Table 4.10, method assumption [KS]); tip radius from continuity with
    axial Mach number equal to the station 21 value [T]. Lolis' inlet Mach 0.5 differs from station 21 (0.393 [H]); user decision (#58 closed): keep the M1 station 21 area, no CR; Lolis 0.5 is a method assumption only.
-6. Per row: mean-line triangles plus hub and tip with free vortex [G]; DF by the definition above; solidity from R-AM2.2.
+6. Per row: mean-line triangles plus hub and tip by the spanwise distribution above (step 2: free vortex [G];
+   step 3: TP-1523 shape transfer [T]); DF by the definition above; solidity from R-AM2.2.
 7. Exit: station 24 (booster exit), then the transition duct `duct_25_24` to station 25. VBV: M2 models only the
    station 25 outlet; no VBV open/closed state (user decision; VBV closed at high power, Girão PDF p. 47 [KS]).
 
@@ -100,3 +133,7 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
   +-1.5 deg of Table 2(b); rotor PR within 1 % of 1.257 with the efficiency from PR/TR.
 - Step 2 result: fail (D tip and hub outside +-0.02; exit angles and PR pass, PR by construction in design mode).
   Stopping rule: no tuning; the booster meanline values are tagged [T] (unvalidated placeholder) until A-1 passes.
+- Step 3 (#63): A-1 re-run with the rig's tabulated section inputs (Spanwise distribution above; criteria,
+  tolerances and stopping rule unchanged): pass on all seven criteria (`a1_validation.yaml`). This checks the section
+  triangles, solidity and DF given a spanwise distribution; it does not validate the booster's own [T] shape
+  transfer, so booster section values stay [T] (`booster_meanline.py` tag rule).

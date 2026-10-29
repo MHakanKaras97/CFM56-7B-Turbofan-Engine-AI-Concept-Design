@@ -147,3 +147,16 @@ a1_case:
   repairs:
   - {cell: tip REL BETAM OUT, raw: '"5E.0"', value: 58.0, tag: K, note: 'atan((243.9 - 93.8) / 93.7) = 58.0 deg'}
   - {cell: mid MERID VEL OUT, raw: '"i02.5"', value: 102.5, tag: K, note: 'atan((219.5 - 93.4) / 102.5) = 50.9 deg = REL BETAM OUT'}
+stator20_exit:
+  description: >-
+    Stator 20 design exit velocities, Table 2(c) p. 22 (stage 23B-20), tip / mid-span (RP5) / hub, m/s. Exit absolute
+    flow angle 0 at every radius, so exit meridional velocity = exit absolute velocity. Used only for the step 3
+    booster spanwise shape at the stator exit (aero_method.md, [T] transfer). The table is heavily OCR-damaged; only
+    the ABS VEL OUT column is used, cross-checked with ABS MACH NO OUT (ratios agree within 0.002). Read in M2 step 3.
+  page: 22
+  tag: K
+  columns: [station, v_out, mach_out, status, raw]
+  rows:
+  - [tip, 95.6, 0.272, trusted, 'REL VEL OUT column garbled "55.6"; ABS VEL OUT 95.6 as printed']
+  - [mid, 100.5, 0.286, trusted, 'MERID VEL OUT garbled "156.5"; ABS and REL VEL OUT 100.5']
+  - [hub, 91.6, 0.261, trusted, '']

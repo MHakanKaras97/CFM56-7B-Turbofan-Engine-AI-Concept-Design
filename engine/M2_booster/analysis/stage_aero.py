@@ -1,18 +1,20 @@
-"""M2 shared meanline pieces: static states, annulus planes, free-vortex section triangles, DF and solidity.
+"""M2 shared meanline pieces: static states, annulus planes, spanwise section triangles, DF and solidity.
 
 Used by the booster meanline (booster_meanline.py) and the A-1 validation (a1_validation.py), so that A-1
 checks the same code path. Definitions: engine/M2_booster/rules/aero_method.md.
 - Gas: any tools.thermo gas (NasaGas or ConstantCp): h, T_from_h, phi, R, R_s, gamma.
 - Angles from the axial direction, degrees in outputs. Rotor relative tangential velocity Wt = U - Vt.
-- Free vortex [G]: no inlet swirl, exit Vt(r) = w / (omega r), so the Euler work w is the same on every streamline
-  and the axial velocity is uniform over the span (simple radial equilibrium); one axial velocity per plane.
+- Spanwise distribution (aero_method.md "Spanwise distribution"): each plane carries the 1-D axial velocity Vx
+  (continuity, used by the annulus rule) and the swirl constant K = r Vt at the mean radius; hub/tip sections use
+  shape ratios: Vx_sec = vx_shape[sec] x Vx and, behind a rotor, Vt_sec from Euler with work w_sec = g_sec x w
+  (rotor_exit_swirl). Default shapes (all 1, vt_sec None) are the free vortex [G]: r Vt constant, uniform Vx.
 - DF: Lieblein with radius change (tools.meanline.diffusion_factor, RM E53D01 eq. 13) [K form].
 - Solidity: sigma = c z / (2 pi (r_LE + r_TE) / 2) [H definition, aero_method.md].
 Efficiency is never predicted here (ADR-015): total states come from the caller.
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from tools.meanline import diffusion_factor
 
@@ -43,6 +45,8 @@ class Plane:
     r_tip: float
     Vx: float
     K: float  # r Vt [m2/s]
+    vx_shape: tuple = (1.0, 1.0, 1.0)  # Vx_sec / Vx for (hub, mean, tip)
+    vt_sec: tuple | None = None  # section Vt (hub, mean, tip); None -> free vortex K / r
 
     @property
     def r_mean(self) -> float:
@@ -65,6 +69,14 @@ class Plane:
 
     def vt(self, r: float) -> float:
         return self.K / r
+
+    def vx_at(self, section: str) -> float:
+        return self.Vx * self.vx_shape[SECTIONS.index(section)]
+
+    def vt_at(self, section: str) -> float:
+        if self.vt_sec is None:
+            return self.vt(self.radius(section))
+        return self.vt_sec[SECTIONS.index(section)]
 
     def mean_static(self, gas) -> Static:
         return static_state(gas, self.Tt, self.Pt, math.hypot(self.Vx, self.vt(self.r_mean)))
@@ -118,6 +130,32 @@ def plane_from_mach(gas, Tt: float, Pt: float, W: float, r_hub: float, mach_x: f
     return Plane(Tt, Pt, r_hub, r_tip, solve_vx((r_hub + r_tip) / 2), K)
 
 
+def with_profile(plane: Plane, vx_shape: tuple, vt_sec: tuple | None = None) -> Plane:
+    """Same 1-D plane with section shapes attached (annulus and mean-line state unchanged)."""
+    return replace(plane, vx_shape=tuple(vx_shape), vt_sec=None if vt_sec is None else tuple(vt_sec))
+
+
+def rotor_exit_swirl(inlet: Plane, exit_: Plane, omega: float, w: float, work_shape: tuple) -> tuple:
+    """Section exit swirl from Euler with section work g_sec x w: Vt2 = (g w + U1 Vt1) / U2."""
+    out = []
+    for sec, g in zip(SECTIONS, work_shape):
+        r1, r2 = inlet.radius(sec), exit_.radius(sec)
+        out.append((g * w + omega * r1 * inlet.vt_at(sec)) / (omega * r2))
+    return tuple(out)
+
+
+def simpson_closure(plane: Plane, work_shape: tuple | None = None) -> dict:
+    """Three-point (Simpson 1/4/1 on r Vx, uniform density) mass-flow ratio of the section profile against the
+    1-D continuity value, and the mass-averaged work ratio (aero_method.md: reported, not re-normalised)."""
+    wts = (1.0, 4.0, 1.0)
+    r = [plane.radius(s) for s in SECTIONS]
+    m = [k * ri * f for k, ri, f in zip(wts, r, plane.vx_shape)]
+    out = {"mass_flow_ratio": sum(m) / sum(k * ri for k, ri in zip(wts, r))}
+    if work_shape is not None:
+        out["work_ratio"] = sum(mi * g for mi, g in zip(m, work_shape)) / sum(m)
+    return out
+
+
 def solidity(chord: float, z: int, r_le: float, r_te: float) -> float:
     return chord * z / (2 * math.pi * (r_le + r_te) / 2)
 
@@ -126,15 +164,16 @@ def rotor_section(gas, inlet: Plane, exit_: Plane, omega: float, section: str, c
     """Rotor triangles at one section (LE radius on the inlet plane, TE radius on the exit plane)."""
     r1, r2 = inlet.radius(section), exit_.radius(section)
     U1, U2 = omega * r1, omega * r2
-    Vt1, Vt2 = inlet.vt(r1), exit_.vt(r2)
+    Vt1, Vt2 = inlet.vt_at(section), exit_.vt_at(section)
+    Vx1, Vx2 = inlet.vx_at(section), exit_.vx_at(section)
     Wt1, Wt2 = U1 - Vt1, U2 - Vt2
-    W1, W2 = math.hypot(inlet.Vx, Wt1), math.hypot(exit_.Vx, Wt2)
-    s1 = static_state(gas, inlet.Tt, inlet.Pt, math.hypot(inlet.Vx, Vt1))
+    W1, W2 = math.hypot(Vx1, Wt1), math.hypot(Vx2, Wt2)
+    s1 = static_state(gas, inlet.Tt, inlet.Pt, math.hypot(Vx1, Vt1))
     sig = solidity(chord, z, r1, r2)
     return {
-        "r_le": r1, "r_te": r2, "U1": U1, "U2": U2, "Vx1": inlet.Vx, "Vx2": exit_.Vx, "Vt1": Vt1, "Vt2": Vt2,
-        "W1": W1, "W2": W2, "beta1": math.degrees(math.atan2(Wt1, inlet.Vx)),
-        "beta2": math.degrees(math.atan2(Wt2, exit_.Vx)), "alpha2": math.degrees(math.atan2(Vt2, exit_.Vx)),
+        "r_le": r1, "r_te": r2, "U1": U1, "U2": U2, "Vx1": Vx1, "Vx2": Vx2, "Vt1": Vt1, "Vt2": Vt2,
+        "W1": W1, "W2": W2, "beta1": math.degrees(math.atan2(Wt1, Vx1)),
+        "beta2": math.degrees(math.atan2(Wt2, Vx2)), "alpha2": math.degrees(math.atan2(Vt2, Vx2)),
         "M1rel": W1 / s1.a, "W2_W1": W2 / W1, "solidity": sig,
         "DF": diffusion_factor(W1, W2, r1, r2, Wt1, Wt2, sig),
     }
@@ -143,13 +182,14 @@ def rotor_section(gas, inlet: Plane, exit_: Plane, omega: float, section: str, c
 def stator_section(gas, inlet: Plane, exit_: Plane, section: str, chord: float, z: int) -> dict:
     """Stator triangles in the absolute frame at one section."""
     r1, r2 = inlet.radius(section), exit_.radius(section)
-    Vt1, Vt2 = inlet.vt(r1), exit_.vt(r2)
-    V1, V2 = math.hypot(inlet.Vx, Vt1), math.hypot(exit_.Vx, Vt2)
+    Vt1, Vt2 = inlet.vt_at(section), exit_.vt_at(section)
+    Vx1, Vx2 = inlet.vx_at(section), exit_.vx_at(section)
+    V1, V2 = math.hypot(Vx1, Vt1), math.hypot(Vx2, Vt2)
     s1 = static_state(gas, inlet.Tt, inlet.Pt, V1)
     sig = solidity(chord, z, r1, r2)
     return {
-        "r_le": r1, "r_te": r2, "Vx1": inlet.Vx, "Vx2": exit_.Vx, "Vt1": Vt1, "Vt2": Vt2, "V1": V1, "V2": V2,
-        "alpha1": math.degrees(math.atan2(Vt1, inlet.Vx)), "alpha2": math.degrees(math.atan2(Vt2, exit_.Vx)),
+        "r_le": r1, "r_te": r2, "Vx1": Vx1, "Vx2": Vx2, "Vt1": Vt1, "Vt2": Vt2, "V1": V1, "V2": V2,
+        "alpha1": math.degrees(math.atan2(Vt1, Vx1)), "alpha2": math.degrees(math.atan2(Vt2, Vx2)),
         "M1": V1 / s1.a, "V2_V1": V2 / V1, "solidity": sig,
         "DF": diffusion_factor(V1, V2, r1, r2, Vt1, Vt2, sig),
     }
