@@ -126,3 +126,8 @@ Acceptance criterion of the geometry-digitisation check changed from |dPR|/PR < 
   inner -1.04e-4. The 2026-10-29 entries above that say "inner -1.46e-4, outer -1.04e-4" have the labels swapped; the rule text is corrected.
 - Open (user): the inlet-pitch floor is below Rotor 67 by the paper definition on tube 5 (expanding tube, -1.8 %), so "one-sided" does not hold
   on every tube.
+
+## 2026-10-29 Concept acceptance (M1 step 4j, ADR-016)
+- Fan rotor blade (M1.1.1) concept-accepted at rev011. Criteria checked: active record reproduces (tests/test_m1_sources.py::test_m1_active_record_verifies),
+  budget 9/9 pass + 2 info, R-AM.15 stress check pass (225.0 MPa at the root, margin 2.26 >= 1.0), known deviations listed in docs/open_issues.md.
+- No design, rule, tolerance or code change; no new revision. Disk, case, OGV and frame: not started (not accepted).

@@ -5,7 +5,7 @@ CFM56-7B27 sınıfı (temel, SAC) turbofan için konsept seviyesinde çoklu agen
 M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenmek + belgelemek.
 
 ## Temel kararlar
-- Mimari: docs/architecture.md, ADR-001..011.
+- Mimari: docs/architecture.md, ADR-001..016. Konsept kabulü: ADR-016; açık konular ve bilinen sapmalar: docs/open_issues.md.
 - Tek doğru kaynak: bom.yaml + kod; Fusion sadece görünüm (STEP).
 - Revizyonlar değişmez; aktif = records/ACTIVE. Değişiklik yalnızca CR + kullanıcı onayı.
 - Güven etiketleri: K, KS, H, G, T. Sayılar koddan gelir, LLM metninden değil.
@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- M1 adım 4j: **konsept kabulü** (ADR-016: yeniden üretilebilir aktif kayıt + M0 bütçe + yapısal güvenlik + sapmalar docs/open_issues.md'de). M1 fan kanadı rev011 kabul edildi (bütçe 9/9 + 2 bilgi, R-AM.15 geçti, pay 2.26); disk, kasa, OGV, çerçeve başlamadı. docs/open_issues.md 22 satır (M1 18, M0 4). Tasarım, kural, kod değişikliği yok. Eski status maddeleri (CR impact.by, UI faz 1, araç yolları) architecture.md, ui_spec.md, tools.md'de.
 - M1 adım 4i-f: **M1 rev011**. Solidite = veter x 24 / (2 pi r_ort) (R-AM.18 göbek 3.110 [H]); ses üstü R-AM.9 tabanı giriş adımında (bilinen sapma: çoğu tüpte muhafazakâr, makale tanımıyla tüp 5'te (genişleyen) Rotor 67'nin %1.8 altında; kullanıcı kabulü, M0 v2 ile yeniden bakılacak). Sonuç [H]: FPR 1.765004 / iç 1.343987, veter 0.2176/0.2669 m, A_kök 42.21 cm², t/c 0.134/0.0495/0.0298, 225.0 MPa kökte, 6.769 kg/kanat. Bütçe 9/9 + 2 bilgi, entegrasyon geçti (SFC -1.2e-6, EGT -0.002 K), CR yok. fan_params solidity_definition etiketi -> KS. results.yaml yazıcı etiketleri (çok sözcüklü) sonraki revizyona.
 - M1 adım 4i-e (COMMIT YOK, kayıt yok, rev010 aktif): solidite tanımı = gerçek veter / kesit ortalama yarıçapındaki adım (Rotor 67 3.11/1.29 [KS], Tablo I 3.116/1.285 [H, KS'den]; 1.106 iddiası geri alındı). R-AM.18 ve ses üstü R-AM.9 tabanına uygulandı -> **tasarım yok**: PR dengesi 1. geçişte takılıyor (dış -1.46e-4, iç -1.04e-4, tol 2e-5). Tanı: yalnız taban yeni tanımla (ses üstü ihtiyaç giriş adımında) yakınsıyor: FPR 1.765004, veter 0.2176/0.2669 m, A_kök 42.21 cm², t/c göbek 0.134 uç 0.0298 -> bağlayan değişiklik ses üstü ihtiyaç (uç veteri 0.267 -> 0.254). CLAUDE.md iki adımlı revizyon commit kuralı eklendi. Önerilen testler engine/M1_inlet_fan/agent/proposed_test_m1_step4i_e.py (3 test tests/test_m1_step4i.py'de kalıyor).
 - M1 adım 4i-c: **M1 rev010**. R-AM.16 seviyesi = orta ve uç t/c'yi Rotor 67 aralığına sokan en küçük A_kök 40.55 cm² [H] (uç bağlıyor, alt sınırda 0.0298 -> açık konu: kuş çarpması, flutter); göbek t/c 0.170 bilinen sapma (kullanıcı kabulü, sonra yeniden bakılacak; raporlanır, kaldırmaz). Gerekçe doğrulandı [H]: uç/göbek t/c = taper (c_göbek/c_uç)² -> M1 (r_göbek/r_uç 0.300) 0.175, Rotor 67 oranı 0.375 ile bile 0.274, gereken 0.350-0.560 (>= 0.424 gerekir); oran katkı, tek neden değil. 4i-b: R-AM.18 göbek solidite >= 3.11 [KS]; yapısal seviye tanımsızdı (gerilme A_kök'ten bağımsız). Sonuç [H]: FPR 1.765004 / iç 1.343988, veter kök 0.1892 (solidite 3.110) uç 0.2616 m, taper 0.3352, t/c 0.170/0.0483/0.0298, en büyük gerilme 225.0 MPa kökte (<= 366.7), pürüzlülük ~1e-15, R-AM.9 9/9, 6.504 kg/kanat (kontrol 4.917 [KS zayıf], x1.32). Bütçe 9/9 + 2 bilgi, entegrasyon geçti (SFC -1.2e-6, EGT -0.002 K), CR yok. Testler: tests/test_m1_step4i.py, test_m1_step4i_c.py; emekli testler REVIEW.md.
@@ -55,13 +56,10 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Verim -0.01 (itki sabit) ΔEGT, model / Martins: fan 3.1/4, booster 1.9/3, HPC 4.3/8, HPT 5.3/12, LPT 5.5/6 K.
 
 ## Açık konular
-- HPC ve HPT verim kaybının EGT etkisi Martins'in yaklaşık yarısı: sabit geometri yok (ADR-010). M0 v2 ile çözülecek.
-- Δη = +0.017 sınanmamış bir varsayım; tolerans ve entegrasyon sınırları [T].
-- .step ilişkilendirmesi kullanıcıda bekliyor. Bennett künyesi doğrulanmadı. Indriyati HPC havası tanım farkı.
-- M1: motor giriş boğaz alanı (vekil fan yüzü [T]; orta kuş bandı kenarına %0.9) ve 7B27 SAC özel koşul No. 1 metni, Ti-6Al-4V yorulma değeri koşulsuz, OGV sayısı, kasa/spinner/OGV malzemesi: doğrulanmadı. Rotor 67: OCR açı sütunlarında %6 son basamak hatası kaldı (en çok 0.22°; etkisi küçük, duyarlılık bkz. adım 3). M1 fan: RE + kayıplarla A-1 kalıyor (ADR-015 bütçe verimi dalı); uç tüplerde meanline η 0.66-0.73 (şok + uç boşluğu), OGV kaybı yok, kanat sayısı çelişkisi (CFM 1997: 22; NTSB üretim motorları: 24, 1997 makalesi daha erken bir tasarımı anlatıyor olabilir). Kanca ve agent için Claude Code yeniden başlatılmalı.
+- Tek liste: docs/open_issues.md (modül, konu, etiket, kabul gerekçesi, yeniden bakma tetikleyicisi).
 
 ## Sıradaki adımlar
-1. M1 açık konular: uç t/c alt sınırda (kuş çarpması, flutter); göbek t/c sapması; ses üstü taban sapması (M0 v2); results.yaml yazıcı etiketleri tek sözcüğe.
+1. M1 sonraki parça (disk, kasa, OGV veya çerçeve; kullanıcı seçer). Sonraki M1 revizyonunda results.yaml yazıcı etiketleri tek sözcüğe (open_issues #11).
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 
