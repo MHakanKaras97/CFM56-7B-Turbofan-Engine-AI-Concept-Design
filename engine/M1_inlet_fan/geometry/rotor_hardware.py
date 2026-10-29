@@ -39,27 +39,39 @@ def densities() -> dict:
     return out
 
 
-def disk_profile(L: dict) -> dict:
-    """Meridional rim / web / bore sizes [H from T ratios]."""
+def disk_profile(L: dict, step: int = 0) -> dict:
+    """Meridional rim / web / bore sizes [H from T ratios] after `step` growth steps of R-DISK.1 (rules/disk.md):
+    bore width, bore height and web thickness = initial x (1 + step_fraction x step), each capped by its envelope
+    (bore width <= rim width; web thickness <= bore width; bore outer radius <= live-rim inner radius - minimum web
+    height). Fixed: slots, slot bottom, live rim (depth, width), bore inner radius, disk axial centre."""
     g = dv.rotor_params()["disk"]
+    sz = dv.rotor_params()["disk_sizing"]
     W = L["x_b"] - L["x_a"]
     x_m = (L["x_a"] + L["x_b"]) / 2
     r_ri = L["r_slot_bottom"] - fr.v(g["rim_depth_below_slot_over_neck"]) * L["b_n"]
-    t_w = fr.v(g["web_thickness_over_rim_width"]) * W
-    w_b = fr.v(g["bore_width_over_rim_width"]) * W
     r_bi = fr.v(g["bore_inner_radius_over_rim_radius"]) * L["r_rim"]
-    r_bo = r_bi + fr.v(g["bore_height_over_bore_width"]) * w_b
+    t_w0 = fr.v(g["web_thickness_over_rim_width"]) * W
+    w_b0 = fr.v(g["bore_width_over_rim_width"]) * W
+    h_b0 = fr.v(g["bore_height_over_bore_width"]) * w_b0
+    h_max = r_ri - fr.v(sz["web_height_min_over_neck"]) * L["b_n"] - r_bi
+    f = 1 + fr.v(sz["step_fraction"]) * step
+    w_b = min(W, w_b0 * f)
+    h_b = min(h_max, h_b0 * f)
+    t_w = min(w_b, t_w0 * f)
+    caps = {"bore_width": w_b >= W, "bore_height": h_b >= h_max, "web_thickness": t_w >= w_b}
+    r_bo = r_bi + h_b
     if not r_bi < r_bo < r_ri < L["r_slot_bottom"]:
         raise ValueError("disk radii out of order (bore, web, rim, slot bottom)")
     pts = [(L["x_a"], r_ri), (L["x_a"], L["r_rim"]), (L["x_b"], L["r_rim"]), (L["x_b"], r_ri),
            (x_m + t_w / 2, r_ri), (x_m + t_w / 2, r_bo), (x_m + w_b / 2, r_bo), (x_m + w_b / 2, r_bi),
            (x_m - w_b / 2, r_bi), (x_m - w_b / 2, r_bo), (x_m - t_w / 2, r_bo), (x_m - t_w / 2, r_ri)]
+    pts = [q for i, q in enumerate(pts) if q != pts[i - 1]]  # coinciding corners when a variable is capped
     return {"W": W, "x_mid": x_m, "r_rim_inner": r_ri, "t_web": t_w, "w_bore": w_b, "r_bore_in": r_bi,
-            "r_bore_out": r_bo, "points": pts}
+            "r_bore_out": r_bo, "points": pts, "step": step, "caps": caps, "all_capped": all(caps.values())}
 
 
-def disk(L: dict, slot: cq.Solid, n: int) -> tuple[cq.Solid, dict]:
-    prof = disk_profile(L)
+def disk(L: dict, slot: cq.Solid, n: int, step: int = 0) -> tuple[cq.Solid, dict]:
+    prof = disk_profile(L, step)
     body = fr.revolve_closed(prof["points"])
     slots = cq.Compound.makeCompound([slot if k == 0 else fr.rotate_about_axis(slot, k * 360.0 / n) for k in range(n)])
     cut = body.cut(slots).Solids()
@@ -119,18 +131,23 @@ def pull(solid: cq.Solid, rho: float, omega: float) -> dict:
 
 @lru_cache(maxsize=2)
 def build(rev: str | None = None, root: Path = records.ROOT) -> dict:
+    """Rotor hardware; the disk is sized by R-DISK.1 (the rim dead loads do not depend on web and bore)."""
     root_model = dv.build(rev, root)
     fp, L = root_model["flowpath"], root_model["layout"]
     n = fp["blade"]["inputs"]["blades"]
-    d, prof = disk(L, root_model["slot"], n)
-    return dict(root_model, disk=d, disk_profile=prof, platform=platform(fp, L, root_model["slot"], n), lug=lug_ring(d, L), n=n)
+    d0, prof0 = disk(L, root_model["slot"], n, 0)
+    model = dict(root_model, disk=d0, disk_profile=prof0, platform=platform(fp, L, root_model["slot"], n),
+                 lug=lug_ring(d0, L), n=n)
+    sizing = size_disk(L, _inputs(model))
+    d, prof = disk(L, root_model["slot"], n, sizing["step"])
+    model.update(disk=d, disk_profile=prof, disk_initial=d0, disk_profile_initial=prof0, disk_sizing=sizing)
+    return model
 
 
-def stress(model: dict) -> dict:
-    """Analytic disk check at N1 [G method, H values]."""
-    fp, L, prof, n = model["flowpath"], model["layout"], model["disk_profile"], model["n"]
-    rec = fr.record(fp["revision"])
-    mech = rec["params"]["mechanical"]
+def _inputs(model: dict) -> dict:
+    """Speed, material values, allowable and the rim dead load (blade, shim, spacer, platform, lug per slot) [H]."""
+    fp, n = model["flowpath"], model["n"]
+    mech = fr.record(fp["revision"])["params"]["mechanical"]
     ti = read_yaml(MATERIALS)["materials"]["ti6al4v"]
     rho_d = densities()
     rpm = fr.v(read_icd("M1 agent")["shafts"]["LP"]["speed_refs"]["girao_nominal"])
@@ -139,17 +156,50 @@ def stress(model: dict) -> dict:
              "platform": ("platform", "aluminium_alloy")}
     loads = {k: pull(model[s], rho_d[m]["value"], omega) for k, (s, m) in parts.items()}
     loads["lug"] = ring_pull_per_slot(model["lug"], rho_d["ti6al4v"]["value"], omega, n)
-    per_slot = sum(x["pull_N"] for x in loads.values())
-    F = per_slot * n
-    segs = [(prof["r_bore_in"], prof["r_bore_out"], prof["w_bore"]), (prof["r_bore_out"], prof["r_rim_inner"], prof["t_web"]),
+    return {"rpm": rpm, "omega": omega, "loads": loads, "F": sum(x["pull_N"] for x in loads.values()) * n,
+            "E": fr.v(ti["youngs_modulus"]) * 1e9, "nu": fr.v(ti["poissons_ratio"]), "rho": rho_d["ti6al4v"]["value"],
+            "allowable": fr.v(ti["yield_strength"]) * 1e6 / fr.v(mech["safety_factor"]),
+            "margin_min": fr.v(mech["stress_margin_min"])}
+
+
+def solve_profile(prof: dict, L: dict, inp: dict) -> dict:
+    """Stepped-disk solution of a profile; margin = allowable / largest von Mises over all sections - 1 [H]."""
+    segs = [(prof["r_bore_in"], prof["r_bore_out"], prof["w_bore"]),
+            (prof["r_bore_out"], prof["r_rim_inner"], prof["t_web"]),
             (prof["r_rim_inner"], L["r_slot_bottom"], prof["W"])]
-    E, nu, rho = fr.v(ti["youngs_modulus"]) * 1e9, fr.v(ti["poissons_ratio"]), rho_d["ti6al4v"]["value"]
-    sigma_rim = F / (2 * math.pi * L["r_slot_bottom"] * prof["W"])
-    sol = disk_stress.solve(segs, rho, omega, E, nu, sigma_rim)
-    allowable = fr.v(ti["yield_strength"]) * 1e6 / fr.v(mech["safety_factor"])
-    m_min = fr.v(mech["stress_margin_min"])
+    sigma_rim = inp["F"] / (2 * math.pi * L["r_slot_bottom"] * prof["W"])
+    sol = disk_stress.solve(segs, inp["rho"], inp["omega"], inp["E"], inp["nu"], sigma_rim)
+    return {"segments": segs, "sigma_rim": sigma_rim, "sol": sol,
+            "margin": inp["allowable"] / sol["peak"]["von_mises"] - 1}
+
+
+def size_disk(L: dict, inp: dict) -> dict:
+    """R-DISK.1 (rules/disk.md): steps 0, 1, 2, ...; stop at the first step with margin >= margin_min over all
+    sections, or at the first step where every growth variable is at its envelope cap (rule not met)."""
+    history = []
+    for step in range(int(fr.v(dv.rotor_params()["disk_sizing"]["max_steps"])) + 1):
+        prof = disk_profile(L, step)
+        m = solve_profile(prof, L, inp)["margin"]
+        history.append({"step": step, "margin": m, "w_bore": prof["w_bore"],
+                        "h_bore": prof["r_bore_out"] - prof["r_bore_in"], "t_web": prof["t_web"],
+                        "caps": dict(prof["caps"])})
+        if m >= inp["margin_min"]:
+            return {"step": step, "result": "pass", "history": history}
+        if prof["all_capped"]:
+            return {"step": step, "result": "envelope", "history": history,
+                    "binding": "bore width = rim width, bore height at the minimum web height, web = bore width"}
+    return {"step": step, "result": "max_steps", "history": history}
+
+
+def stress(model: dict) -> dict:
+    """Analytic disk check at N1 [G method, H values] of the sized disk."""
+    L, prof, n = model["layout"], model["disk_profile"], model["n"]
+    inp = _inputs(model)
+    rpm, omega, loads, F = inp["rpm"], inp["omega"], inp["loads"], inp["F"]
+    sp = solve_profile(prof, L, inp)
+    segs, sigma_rim, sol, margin = sp["segments"], sp["sigma_rim"], sp["sol"], sp["margin"]
+    rho, allowable, m_min = inp["rho"], inp["allowable"], inp["margin_min"]
     peak = sol["peak"]
-    margin = allowable / peak["von_mises"] - 1
     # local root checks [G]: blade neck tension and lug tension at the lobe level (average stress)
     length = (L["x_b"] - L["x_a"]) / math.cos(L["gamma"])
     pitch_n = 2 * math.pi * L["z2"] / n * math.cos(L["gamma"])
@@ -165,7 +215,7 @@ def stress(model: dict) -> dict:
                  "sigma_t_MPa": peak["sigma_t"] / 1e6, "sigma_r_MPa": peak["sigma_r"] / 1e6},
         "mean_hoop_MPa": disk_stress.mean_hoop_stress(segs, rho, omega, F) / 1e6,
         "allowable_MPa": allowable / 1e6, "margin": margin, "margin_min": m_min,
-        "check": "pass" if margin >= m_min else "fail",
+        "check": "pass" if margin >= m_min else "fail", "sizing": model.get("disk_sizing"),
         "neck": {"stress_MPa": neck / 1e6, "margin": allowable / neck - 1},
         "lug": {"width_at_lobe_m": lug_w, "stress_MPa": lug_s / 1e6,
                 "margin": allowable / lug_s - 1 if lug_w > 0 else -1.0},

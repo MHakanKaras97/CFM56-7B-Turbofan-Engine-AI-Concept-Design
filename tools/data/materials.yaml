@@ -59,10 +59,16 @@ materials:
     used_by: [M1.1.4]
     source:
       primary: Fox, Rossey, Raguet, J Fail. Anal. and Preven. 23, 2023, p. 1439 (shim material)
-    properties: none recorded yet
+      properties: Special Metals Corporation, INCONEL alloy 718, Publication Number SMC-045 (Sept 2007), Table 2 Physical Constants, p. 1 (docs/sources.md #44)
+      license: manufacturer technical bulletin, copyright Special Metals; facts only, own wording
+    density:
+      value: 8193
+      unit: kg/m3
+      tag: K
+      note: 0.296 lb/in3 annealed x 27679.9 = 8193 kg/m3 [H from K]; annealed and aged 0.297 lb/in3 = 8221 kg/m3; typical values, not for specification (bulletin); shim sheet condition doğrulanamadı, annealed used
   aluminium_alloy:
     name: Aluminium alloy (grade not stated)
     used_by: [M1.1.6, M1.4]
     source:
       primary: Fox et al. 2023, p. 1439 (blade platforms); Girão 2023 via docs/learning/cfm56_7b_module_facts.md (fan frame)
-    properties: none recorded yet
+    properties: none recorded yet (grade not stated in any source, so no sourced density; modules use their own [T] value, open issue #36)

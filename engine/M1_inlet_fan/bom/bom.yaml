@@ -66,7 +66,7 @@ parts:
   material: ti6al4v
   status: draft
   mass:
-    value: 69.6648
+    value: 79.5464
     unit: kg
     tag: H
   loads:
@@ -82,7 +82,7 @@ parts:
     script: engine/M1_inlet_fan/geometry/rotor_hardware.py
     params:
       revision: rev011
-  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Shaft interface owned by M8 (CR via M0). Geometry step 5c: rim/web/bore [T]; analytic bore margin 0.717 below the R-AM.13/15 rule (open issue #32).'
+  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Shaft interface owned by M8 (CR via M0). Geometry step 5c/5h: rim [T], web and bore sized by R-DISK.1 (rules/disk.md); analytic bore margin 1.007 meets the R-AM.13/15 rule; lug margin 0.715 below it (open issue #33).'
 - id: M1.1.3
   name: Fan Stage 1 Spinner
   parent: M1.1
@@ -129,7 +129,7 @@ parts:
     script: engine/M1_inlet_fan/geometry/dovetail.py
     params:
       revision: rev011
-  notes: 'Material and process: Fox, Rossey, Raguet 2023, p. 1439. Count one per slot [T]. Density not in tools/data/materials.yaml; [T] 8190 kg/m3 fallback (#36).'
+  notes: 'Material and process: Fox, Rossey, Raguet 2023, p. 1439. Count one per slot [T]. Density 8193 kg/m3 [K] from tools/data/materials.yaml (Special Metals SMC-045, docs/sources.md #44).'
 - id: M1.1.5
   name: Fan Stage 1 Blade Spacer
   parent: M1.1
@@ -169,7 +169,7 @@ parts:
     script: engine/M1_inlet_fan/geometry/rotor_hardware.py
     params:
       revision: rev011
-  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Count one per blade gap [T]. Density not in tools/data/materials.yaml; [T] 2800 kg/m3 fallback (#36).'
+  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Count one per blade gap [T]. Aluminium density not in tools/data/materials.yaml (grade not stated); [T] 2800 kg/m3 fallback (#36).'
 - id: M1.2
   name: Fan Stage 1 Case
   parent: null

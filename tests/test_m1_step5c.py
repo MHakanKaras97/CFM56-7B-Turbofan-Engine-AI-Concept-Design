@@ -3,7 +3,8 @@ analytic disk check (analysis/disk_stress.py).
 
 Acceptance (M0 step 5c): every slot mates with its dovetail (common volume 0, clearance [T]), disk analytic stress
 reported, masses = volume x density, valid solids with volume > 0, STEP per part. Heavy solids built once per module.
-The disk margin is below the R-AM.13/15 rule at rev011 (strict xfail, open issue in docs/open_issues.md).
+Since step 5h the disk web and bore are sized by R-DISK.1 (rules/disk.md) and the disk margin meets the R-AM.13/15
+rule; the lug margin stays below it (strict xfail, open issue #33).
 """
 
 import math
@@ -118,9 +119,14 @@ def test_rim_load_is_sum_of_pulls(stress, model):
     assert stress["check"] == ("pass" if stress["margin"] >= stress["margin_min"] else "fail")
 
 
-@pytest.mark.xfail(strict=True, reason="disk bore margin below the R-AM.13/15 rule at rev011 (step 5c open issue)")
 def test_disk_margin_meets_rule(stress):
     assert stress["margin"] >= stress["margin_min"]
+    assert stress["check"] == "pass" and stress["sizing"]["result"] == "pass"
+
+
+@pytest.mark.xfail(strict=True, reason="lug margin below the R-AM.13/15 rule (open issue #33, dovetail proportions)")
+def test_lug_margin_meets_rule(stress):
+    assert stress["lug"]["margin"] >= stress["margin_min"]
 
 
 def test_step_exports(model):

@@ -80,7 +80,7 @@ def test_bom_parts_materials_status(bom):
     assert set(bu.SCRIPTS) | {"M1.1", "M1.2", "M1.3", "M1.4"} <= set(by_id)
     assert all(p["material"] != "tbd" for p in bom["parts"])
     assert all(p["status"] in ("draft", "review") for p in bom["parts"])
-    assert by_id["M1.1.2"]["status"] == "draft" and by_id["M1.1"]["status"] == "draft"  # disk margin, #32
+    assert by_id["M1.1.2"]["status"] == "draft" and by_id["M1.1"]["status"] == "draft"  # disk lug margin, #33
     assert by_id["M1.3"]["material"] is None and by_id["M1.4"]["material"] is None
     for pid in bu.SCRIPTS:
         assert by_id[pid]["geometry"] == {"script": bu.SCRIPTS[pid], "params": {"revision": bu.GEOMETRY_REVISION}}

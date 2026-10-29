@@ -84,11 +84,33 @@ materials_fallback:
     value: 8190
     unit: kg/m3
     tag: T
-    note: tools/data/materials.yaml alloy718 has no properties; handbook-level value used until M0 adds a sourced
-      density (request in the step 5c report); doğrulanamadı
+    note: not used since step 5h; tools/data/materials.yaml alloy718 now has a sourced density (8193 kg/m3 [K],
+      Special Metals SMC-045, docs/sources.md #44), which rotor_hardware.densities reads first
   aluminium_alloy_density:
     value: 2800
     unit: kg/m3
     tag: T
     note: tools/data/materials.yaml aluminium_alloy has no properties and no grade; typical wrought Al value until
       M0 adds a sourced density; doğrulanamadı
+disk_sizing:
+  rule:
+    value: R-DISK.1
+    unit: '-'
+    tag: T
+    note: rules/disk.md; bore width, bore height and web thickness grow together in equal fractional steps of their
+      initial values, each capped by its envelope, until the stepped-disk margin meets the R-AM.13/15 rule
+  step_fraction:
+    value: 0.1
+    unit: '-'
+    tag: T
+    note: growth per step as a fraction of the initial (disk ratio) value
+  max_steps:
+    value: 100
+    unit: '-'
+    tag: T
+    note: safety limit of the loop; the envelope caps normally end it first
+  web_height_min_over_neck:
+    value: 0.5
+    unit: '-'
+    tag: T
+    note: smallest radial web height left between the bore outer radius and the live-rim inner radius

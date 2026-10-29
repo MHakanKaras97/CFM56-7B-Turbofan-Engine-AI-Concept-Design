@@ -3,8 +3,9 @@
 Changes: materials for the tbd parts (all [T], aluminium per rules/materials.md), unit mass from the assembly mass
 table [H], geometry script per part, notes with tags and sources, and the parts missing from the BOM: M1.3 becomes
 the OGV row assembly with M1.3.1 the vane (qty 51 [T]); M1.4 becomes the frame assembly with M1.4.1-M1.4.5.
-Status: "review" for the parts built at concept level in steps 5a-5f; "draft" for the disk M1.1.2 (analytic bore
-margin 0.717 below the rule, open issue #32) and for the rotor assembly M1.1 that contains it. Never "approved".
+Status: "review" for the parts built at concept level in steps 5a-5f; "draft" for the disk M1.1.2 and the rotor
+assembly M1.1 that contains it: the bore meets R-DISK.1 / R-AM.13/15 since step 5h (margin 1.007), but the disk lugs
+(disk rim material between the slots) stay below the rule (lug margin 0.715, open issue #33). Never "approved".
 proposed() is idempotent: applied to its own output it returns the same data. The BOM is written only through core.bom.write and validated with core.bom.check_data first.
 
 Usage (M0): from engine.M1_inlet_fan.geometry import bom_update as b; data, rep = b.apply()  # dry run
@@ -34,14 +35,19 @@ SCRIPTS = {
 }
 EXTRA_NOTES = {
     "M1.1.1": "Geometry step 5a-5c: airfoil from the record, trimmed to the record annulus, shank and single-lobe dovetail [T] (open issues #29, #33-35).",
-    "M1.1.2": "Geometry step 5c: rim/web/bore [T]; analytic bore margin 0.717 below the R-AM.13/15 rule (open issue #32).",
+    "M1.1.2": "Geometry step 5c/5h: rim [T], web and bore sized by R-DISK.1 (rules/disk.md); analytic bore margin 1.007 meets the R-AM.13/15 rule; lug margin 0.715 below it (open issue #33).",
     "M1.1.3": "Material aluminium_alloy chosen [T] (rules/materials.md lists spinner, case, containment and OGV as aluminium or composite [T], no source); tangent ogive [T] (#41).",
-    "M1.1.4": "Density not in tools/data/materials.yaml; [T] 8190 kg/m3 fallback (#36).",
-    "M1.1.6": "Density not in tools/data/materials.yaml; [T] 2800 kg/m3 fallback (#36).",
+    "M1.1.4": "Density 8193 kg/m3 [K] from tools/data/materials.yaml (Special Metals SMC-045, docs/sources.md #44).",
+    "M1.1.6": "Aluminium density not in tools/data/materials.yaml (grade not stated); [T] 2800 kg/m3 fallback (#36).",
     "M1.2.1": "Material aluminium_alloy chosen [T]; inner surface = casing wall (tip line + 3.0 mm [T], #16, #28).",
     "M1.2.2": "Material aluminium_alloy placeholder [T], doğrulanamadı; thickness proportional rule [T] (#39, #40).",
 }
-STALE_NOTES = {"M1.2.2": "Material not selected."}  # outdated note text removed by the update
+STALE_NOTES = {  # outdated note texts removed by the update
+    "M1.2.2": ["Material not selected."],
+    "M1.1.2": ["Geometry step 5c: rim/web/bore [T]; analytic bore margin 0.717 below the R-AM.13/15 rule (open issue #32)."],
+    "M1.1.4": ["Density not in tools/data/materials.yaml; [T] 8190 kg/m3 fallback (#36)."],
+    "M1.1.6": ["Density not in tools/data/materials.yaml; [T] 2800 kg/m3 fallback (#36)."],
+}
 NEW_PARTS = [
     {"id": "M1.3.1", "name": "Fan Stage 1 Outlet Guide Vane", "parent": "M1.3",
      "qty": {"value": 51, "unit": "ea", "tag": "T"}, "function": "Remove the bypass swirl (station 13)",
@@ -90,7 +96,8 @@ def proposed(model: dict | None = None, path: Path = BOM) -> dict:
         p["mass"] = {"value": round(row["unit_kg"], 4), "unit": "kg", "tag": "H"}
         p["geometry"] = {"script": SCRIPTS[pid], "params": {"revision": GEOMETRY_REVISION}}
         if pid in STALE_NOTES:
-            p["notes"] = p.get("notes", "").replace(STALE_NOTES[pid], "").strip()
+            for old in STALE_NOTES[pid]:
+                p["notes"] = " ".join(p.get("notes", "").replace(old, "").split())
         if pid in EXTRA_NOTES and EXTRA_NOTES[pid] not in p.get("notes", ""):
             p["notes"] = (p.get("notes", "") + " " + EXTRA_NOTES[pid]).strip()
     for pid in ("M1.1", *ASSEMBLIES, *SCRIPTS):
