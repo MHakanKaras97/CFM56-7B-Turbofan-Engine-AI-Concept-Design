@@ -84,6 +84,27 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
   (Table 2(a)) against rho Vx A on the geometric inlet annulus (`a1_validation.yaml`) is reported for information
   only and is not used as a factor.
 
+### Closure ratios (what 0.973 and 1.030 measure) [#64 follow-up, #68]
+- Code: `analysis/stage_aero.py:147-156` (`simpson_closure`), called at `analysis/booster_meanline.py:155-156`, written
+  at `:296-300` (`meanline_results.yaml` stages[*].spanwise_closure) [H].
+- Mass ratio 0.973 (rotor TE; stator TE 0.978): numerator = three-point Simpson (weights 1/4/1 on hub/mean/tip) of
+  r x Vx_sec = r x f_sec x Vx_1D at uniform density; denominator = the same sum with f = 1, which is exact for the
+  linear r and equals the 1-D continuity flow W / rho on the geometric annulus. It is the section-profile flow over
+  the meanline (ICD) flow at that plane.
+- Work ratio 1.030 (rotor TE): sum(m_sec x g_sec) / sum(m_sec), m_sec the Simpson-weighted r x Vx_sec above, i.e.
+  the mass-averaged section work over the mean-section work (= the stage work w of the meanline).
+- Cause: the spanwise rule itself. It fixes the mean section at the 1-D values (f_mean = g_mean = 1) while the
+  transferred rig ratios have f_hub, f_tip < 1 (0.926 / 0.914 rotor TE, 0.911 / 0.951 stator TE) and
+  g_hub, g_tip > 1 (1.070 / 1.113), and the hub/tip ratios are not re-normalised. Hence the deficit and excess do not
+  depend materially on the annulus or blade choice (within 0.0005 in all three stages and all annulus variants of
+  `analysis/sensitivity_64.py`); free vortex (f = g = 1) gives exactly 1. A three-point profile drops the rig's
+  interior profile and its blockage (rig 9.457 kg/s against 9.667 kg/s geometric continuity, `a1_validation.yaml`,
+  info only, not used as a factor).
+- ICD check (`sensitivity_64.closure_budget`, via `check_budget`): if the section profile were taken as the flow,
+  W25 would be -2.2 % (flow tolerance +-1 %: fail) and pr_booster +1.9 % from the 3 % work excess at the same
+  polytropic efficiency (+-1 %: fail); T25 +2.3 K (+-10 K: pass). The meanline's own budget rows pass by
+  construction (1-D values). Recorded as open issue #68; no re-normalisation is applied (rule unchanged).
+
 ## Meanline plan (run in step 2: `analysis/booster_meanline.py`, inputs `analysis/booster_params.yaml`)
 1. Inlet: station 21 (`read_icd`: Tt, Pt, W) and the M1 station 21 annulus (`engine/M1_inlet_fan/geometry/flowpath.yaml`,
    read-only, rev014). N1 = ICD `shafts.LP.speed_refs.girao_nominal` [KS].
