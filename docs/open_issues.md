@@ -21,7 +21,7 @@ ne zaman yeniden bakılacağını kaydeder. Kapanan satır silinmez, durumuna "k
 | 11 | M1 | results.yaml yazıcısı 9 çok sözcüklü etiket üretiyor (ör. "H from KS", "T (model choice)") | — | Sayılar ve kayıt doğrulaması etkilenmiyor; yalnız etiket biçimi | Sonraki M1 revizyonu (yazıcı tek sözcüklü etiket + not) | engine/M1_inlet_fan/analysis/results.yaml |
 | 12 | M1 | Motor giriş boğaz alanı yerine fan yüzü vekili 1.716 m² (orta kuş bandı kenarına 0.9 %) | [T] | Nasel kapsam dışı; CS-E 800 kuş sınıfı vekille aynı | Nasel/boğaz alanı kaynağı veya A-7 analizi | rules/bird_strike.md |
 | 13 | M1 | 7B27 SAC Özel Koşul No. 1 "Bird strikes" metni okunmadı | doğrulanmadı | Tasarım güncel CS-E 800 (Amdt 5) ile (kullanıcı kararı) | Metin bulunursa | rules/bird_strike.md |
-| 14 | M1 | OGV kanat sayısı doğrulanmadı; OGV kaybı modelde yok | doğrulanmadı | OGV tasarımı başlamadı | OGV tasarımı | rules/bom.md M1.3 |
+| 14 | M1 | OGV kanat sayısı doğrulanmadı; OGV kaybı modelde yok | doğrulanmadı | OGV tasarımı başlamadı | OGV tasarımı (5e: kural V = 51 [T], #42; doğrulanamadı, açık) | rules/bom.md M1.3 |
 | 15 | M1 | Rotor 67 OCR açı sütunlarında ~6 % son basamak hatası (en çok 0.22°) | [KS] | Duyarlılık ölçütü 1.5 % içinde (REVIEW.md 2026-10-26) | Temiz açı verisi bulunursa | REVIEW.md; tests/test_m1_rotor67.py |
 | 16 | M1 | Çalışma uç boşluğu 3.0 mm (Rotor 67'den ölçekli); CFM değeri yok | [T] | Uç kaybı ve uç tüp verimi bilgi amaçlı (#8) | Kaynak bulunursa veya kayıp modeli değişirse | aero_method.md |
 | 17 | M1 | Uçtan %70'te şok azaltma kuralı şok kaybı uyguluyor, lazer verisinde geçit şoku yok (kaynak-ölçüm çatışması) | [KS] çatışma | Model biçimi açık noktası; verim bütçeden (#8) | Kayıp modeli biçim değişikliği | aero_method.md |
@@ -57,6 +57,10 @@ Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki 
 | 39 | M1 | Muhafaza halkası kalınlığı oran kuralıyla (0.02 r_tip = 15.5 mm); enerji dengesi kuralı/A-8 el hesabı yok; kanat kopma enerjisi ~211 kJ [H] yalnız bilgi | [T] | Kural kaynağı yok | A-8 analizi veya kaynak | case_params.yaml |
 | 40 | M1 | Spinner, kasa ve muhafaza malzemesi alüminyum seçildi (kural: alüminyum veya kompozit), yoğunluk geri dönüş değeri; muhafaza malzemesi doğrulanamadı | [T] | Kaynak yok; #36 yoğunluk kararına bağlı | Malzeme kaynağı veya materials.yaml kararı | case_params.yaml |
 | 41 | M1 | Spinner ogive boyu, kabuk/flanş kalınlıkları, kasa kalınlığı ve flanşları oran kuralı; cıvata ve delik yok; spinner flanşı yuva uçlarını kapatıyor (eksenel tutma, kavram) | [T] | Konsept seviyesi | Ayrıntılı tasarım veya FEM | case_params.yaml |
+| 42 | M1 | OGV sayısı 51, kural V = ceil(2.1 B) (Tyler-Sofrin kesim mantığı [G]); CFM değeri doğrulanmadı (#14 açık kalır) | [T] | Kaynak bulunamadı | Kaynak bulunursa veya akustik analiz | ogv_params.yaml |
+| 43 | M1 | OGV kesiti: MCA (ön pay 0.5), t/c 0.08, sıfır hücum, Carter sapması, eksenel çıkış; düzlemsel kesitler, radyal hücum kenarı; kayıp ve OGV basınç düşümü modelde yok | [T] | Konsept seviyesi | OGV kayıp modeli veya 3B aero | ogv.py |
+| 44 | M1 | OGV eksenel boyu 5b yer tutucusundan (x 0.321-0.478); katılık sonuç olarak 1.90-2.84 (yüksek, ağırlık); uç DF 0.588 (bilgi) | [H] | Eksenel konum oran kuralıyla (#27) | OGV boyutlandırma kuralı veya M7 kanalı | ogv.py |
+| 45 | M1 | OGV üstündeki dış kanal duvarı ve splitter duvarı katı parça değil; kanat iki ucta sabit kabul edildi (bağlantı detayı yok) | [T] | Çerçeve 5f'de | Adım 5f çerçeve | ogv.py |
 
 ## M0 Motor
 

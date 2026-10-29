@@ -1,0 +1,67 @@
+description: M1 step 5e inputs for the outlet guide vane row (M1.3) (hand-written). No value here is a CFM56-7B
+  dimension; the vane count is not verified (open issue #14).
+vane_count_rule:
+  value: 2.1
+  unit: '-'
+  tag: T
+  note: V = ceil(this x fan blade count). Rotor-stator interaction tone cut-off logic (Tyler-Sofrin, V > about 2 B
+    for the blade-passing-frequency modes) [G]; CFM56-7B OGV count not found in the M1/M0 sources (doğrulanmadı)
+material:
+  value: aluminium_alloy
+  unit: '-'
+  tag: T
+  note: BOM M1.3 note aluminium or composite [T]; aluminium chosen, no source
+incidence:
+  value: 0.0
+  unit: deg
+  tag: T
+  note: metal inlet angle = flow inlet angle
+exit_flow_angle:
+  value: 0.0
+  unit: deg
+  tag: T
+  note: axial exit (swirl removed at station 13)
+deviation_rule:
+  value: carter
+  unit: '-'
+  tag: G
+  note: Carter's rule for a circular-arc camber line, delta = m theta / sqrt(sigma), m = 0.23 + 0.1 (stagger / 50
+    deg) [G]; solved for kappa2 so that the flow leaves at the exit flow angle
+camber_front_share:
+  value: 0.5
+  unit: '-'
+  tag: T
+  note: R-AM.11 MCA family with equal front and rear camber (circular-arc like)
+thickness_to_chord:
+  value: 0.08
+  unit: '-'
+  tag: T
+  note: constant along the span; no source
+x_max:
+  value: 0.45
+  unit: '-'
+  tag: T
+  note: chord fraction of the largest thickness
+axial_extent:
+  value: flowpath_placeholder
+  unit: '-'
+  tag: T
+  note: vane leading edge at the 5b OGV placeholder x_ogv_le, trailing edge at the station 13 plane; chord = axial
+    length / cos(stagger), so solidity is a result
+span:
+  value: splitter_to_casing_wall
+  unit: '-'
+  tag: T
+  note: vane from the splitter wall r_split2 to the casing wall (r_tip2 + tip clearance), no gap (fixed at both
+    ends); outer duct wall and splitter over the OGV are frame / splitter parts (step 5f)
+n_sections:
+  value: 11
+  unit: '-'
+  tag: T
+  note: loft sections, equally spaced over the span extended by 5 % at each end before the trim
+swirl_transport:
+  value: same_tube_angles
+  unit: '-'
+  tag: T
+  note: constant-radius duct from the rotor exit to the OGV (5b), each outer tube keeps r Vt and Vm, so the OGV
+    inlet flow angle at radius r2 is atan(Vt2 / Vm2) of the record tube (interpolated in r2, held at the ends)
