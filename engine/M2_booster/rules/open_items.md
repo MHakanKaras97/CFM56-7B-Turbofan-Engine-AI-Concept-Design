@@ -37,3 +37,24 @@ Suggested updates of existing rows (wording for M0):
 
 Note for M0 (no open issue): shared frame module recommendation in `rules/geometry.md` (end of file); it needs a CR
 (core/ and M1 are outside M2).
+
+## Geometry step 2 drafts for `docs/open_issues.md` (M0 copies verbatim)
+
+Values from `geometry/hardware.py` (`checks`, `m1_overlap`), rev001, step 2 rules R-G2.9-17.
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 75 | M2 | R-G2.10 "yuva iki jant yüzünde açık" şartı sağlanmıyor: her rotor yuvası ön yüzde açık, arka yüzde bir sonraki statorun tambur duvarı (sızdırmazlık dişi tabanı) yuva tabanının üstünde kalıyor; kapalı yükseklik kademe 1/2/3 17.70/13.22/10.05 mm [H]. Parça kurulabiliyor, kök bloğu yuvaya önden giriyor | [H] | Kural oranlarıyla çıkan sonuç; oran ayarlanmadı (dur kuralı: geometri olduğu gibi, yer tutucu) | Bağlantı tipi kaynağı (J2-2, eksenel/çevresel kırlangıç doğrulanamadı), tutucu tasarımı veya yapısal aşama (A-4) | rules/geometry.md R-G2.10/11; geometry/hardware.py |
+| 76 | M2 | Tambur - fan diski arayüzü kapanmıyor: tambur ön flanşı ist. 21 düzleminde (x 0.235369 m, iç yarıçap 0.172952 m, cıvata dairesi 0.186545 m [T]); M1 disk jantı arka yüzü x 0.140291 m (rev014, salt okunur) -> eksenel boşluk 0.095078 m [H]. M1 diskinde arka kol/flanş yok; ya M1 diske arka kol ekler (M1 değişikliği, CR) ya da M2 tamburu ist. 21 düzlemini geçen bir ön koni alır (sınır kuralı değişikliği) | [T] | M2 parçası ist. 21'i geçmez kuralı (R-G2.13); M1 kabul edilmiş, CR açılmadı | M0/kullanıcı kararı (hangi taraf köprüler), son montaj veya J2-1 tasarımı | rules/geometry.md R-G2.13; rules/joints.md J2-1; M1 geometry/rotor_hardware.py |
+| 77 | M2 | M1 rev014 parçaları booster hacmiyle çakışıyor (ortak hacim / küçük parça hacmi, yalnız rapor): fan çerçevesi x 0.478-0.635 m booster kademe 2-3 üstünde; çekirdek dikmesi R3 kanadı 0.653, S3 kanadı 0.550, R3 kök bloğu 0.468, S2 kanadı 0.137, tambur 0.092; splitter halkası (r 0.4248-0.4335) tüm kanat uçlarında 0.041-0.119; M2 kasası (r >= 0.433488) baypas dikmesi 0.021 ve OGV 0.019 ile, ayaklar 0.093-0.178 [H]. M1 #49 tetikleyicisi (M2 akış yolu tasarımı) gerçekleşti | [H] | M1 parçaları M2 komşusu değil (R-G2.17); M2 kuralları değiştirilmedi, M1'e dokunulmadı, CR yok | M0/kullanıcı kararı: M1 çerçeve/splitter yerleşimi (CR) veya booster kasa yarıçapı/uzunluğu (yeni M2 revizyonu) | geometry/hardware.py m1_overlap; M1 geometry/fan_frame.py, ogv.py |
+
+Notes for M0 (no open issue, no CR):
+- Drum ownership (R-G2.15): the drum is assumed M2's part M2.0.1 [T] (bom.md plan; architecture.md section 4 gives M8
+  shafts, bearing supports and sumps). M8 `known_values.md` carries the booster spool LLP life (22,900 vs 23,600 EFC,
+  open) as a source value only. Not decided here.
+- BOM proposal for the BOM step (not written): inner shrouds as `M2.<n>.4 Booster Stage <n> Inner Shroud` (qty 1, full
+  ring at concept level); root blocks and vane feet stay inside M2.n.1 / M2.n.2; abradable liners M2.n.3 not modelled.
+- The M1 hub ring (r 0.2935-0.3021 m) and bearing flange lie inside the M2 drum without common volume; a stationary
+  M1 part inside the rotating drum is part of #77.
+- `tests/test_m2_geometry1.py::test_rules_linked_and_tagged` counts lines starting with `| R-G2.` and expects 8; the
+  step 2 ids are written in bold (`| **R-G2.9** |`) so that the step 1 count holds. Suggest counting R-G2.1-8 explicitly.

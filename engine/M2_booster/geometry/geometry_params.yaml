@@ -73,3 +73,127 @@ radius_tolerance_m:
   unit: m
   tag: T
   note: R-G2.8; root/tip vertex radius vs the flow path line
+hw_running_gap_over_row_gap:
+  value: 0.2
+  unit: '-'
+  tag: T
+  note: R-G2.9 (step 2); axial running gap between rotating and stationary flow path surfaces / inter-row gap; no
+    booster source
+hw_slot_width_over_normal_pitch:
+  value: 0.5
+  unit: '-'
+  tag: T
+  note: R-G2.10; rotor slot width / (hub pitch x cos hub stagger); leaves a rim lug of the same order between slots
+hw_slot_depth_over_rotor_chord:
+  value: 0.25
+  unit: '-'
+  tag: T
+  note: R-G2.10; slot depth below the smallest rim hub radius / rotor chord; no source (doğrulanamadı)
+hw_rim_depth_over_slot_depth:
+  value: 1.0
+  unit: '-'
+  tag: T
+  note: R-G2.10; live rim depth below the slot bottom / slot depth; same ratio idea as M1 rotor_params
+    rim_depth_below_slot_over_neck (analogy, not a source)
+hw_drum_wall_over_hub_radius:
+  value: 0.015
+  unit: '-'
+  tag: T
+  note: R-G2.10; drum wall thickness / smallest stator hub radius; structural sizing later (A-4)
+hw_fit_clearance_over_slot_width:
+  value: 0.02
+  unit: '-'
+  tag: T
+  note: R-G2.10/R-G2.12; root block and vane foot fit clearance / slot width (rotor) or groove depth (stator)
+hw_shroud_thickness_over_stator_chord:
+  value: 0.08
+  unit: '-'
+  tag: T
+  note: R-G2.11; inner shroud radial thickness / stator chord
+hw_land_thickness_over_stator_chord:
+  value: 0.06
+  unit: '-'
+  tag: T
+  note: R-G2.11; seal land radial thickness / stator chord (land material not chosen)
+hw_land_length_over_shroud_length:
+  value: 0.7
+  unit: '-'
+  tag: T
+  note: R-G2.11; seal land axial length / shroud axial length, centred
+hw_tooth_count:
+  value: 2
+  unit: '-'
+  tag: T
+  note: R-G2.11; seal teeth per stator land
+hw_tooth_width_over_land_length:
+  value: 0.1
+  unit: '-'
+  tag: T
+  note: R-G2.11; rectangular tooth axial width / land length
+hw_tooth_height_over_land_thickness:
+  value: 1.0
+  unit: '-'
+  tag: T
+  note: R-G2.11; tooth radial height / land thickness
+hw_seal_clearance_over_tip_clearance:
+  value: 1.0
+  unit: '-'
+  tag: T
+  note: R-G2.11; radial seal clearance / R-G2.6 tip clearance of the upstream rotor
+hw_casing_thickness_over_radius:
+  value: 0.02
+  unit: '-'
+  tag: T
+  note: R-G2.12; casing wall / casing radius; same ratio as the M1 splitter wall (fan_frame_params, analogy only)
+hw_vane_slot_margin_over_row_width:
+  value: 0.1
+  unit: '-'
+  tag: T
+  note: R-G2.12; casing vane groove axial margin each side / stator row axial width
+hw_vane_slot_depth_over_stator_chord:
+  value: 0.05
+  unit: '-'
+  tag: T
+  note: R-G2.12; casing vane groove depth / stator chord
+hw_foot_span_over_pitch:
+  value: 0.95
+  unit: '-'
+  tag: T
+  note: R-G2.12; vane foot angular span / vane pitch angle
+hw_flange_thickness_over_drum_wall:
+  value: 2.0
+  unit: '-'
+  tag: T
+  note: R-G2.13; forward flange axial thickness / stage 1 drum wall thickness
+hw_common_volume_tolerance:
+  value: 1.0e-06
+  unit: '-'
+  tag: T
+  note: R-G2.17; common volume / smaller solid volume treated as zero (touching faces)
+hw_min_wall_m:
+  value: 0.001
+  unit: m
+  tag: T
+  note: R-G2.17; smallest wall (live rim, drum wall, casing behind the groove) for a buildable part, not a structural
+    criterion
+m1_disk_aft_face_x_m:
+  value: 0.140291
+  unit: m
+  tag: H
+  note: R-G2.13; M1 rev014 fan disk rim aft face x_b (engine/M1_inlet_fan/geometry/rotor_hardware.py build layout),
+    read-only copy; test recomputes it
+m1_disk_live_rim_inner_m:
+  value: 0.172952
+  unit: m
+  tag: H
+  note: R-G2.13; M1 rev014 disk_profile r_rim_inner, read-only copy; test recomputes it
+m1_disk_slot_bottom_m:
+  value: 0.200138
+  unit: m
+  tag: H
+  note: R-G2.13; M1 rev014 layout r_slot_bottom, read-only copy; test recomputes it
+m1_disk_rim_m:
+  value: 0.226773
+  unit: m
+  tag: H
+  note: R-G2.13; M1 rev014 layout r_rim (disk outer radius at the rim), read-only copy; test recomputes it
