@@ -84,15 +84,6 @@ def test_station21_annulus_from_m1(recorded):
     assert recorded["station_21"]["area"] == pytest.approx(s21["area_m2"], rel=1e-4)
 
 
-def test_constant_hub_and_axial_mach(recorded):
-    mach = recorded["inputs"]["axial_mach_station21"]["value"]
-    for s in recorded["stages"]:
-        for name in ("rotor_le", "rotor_te", "stator_te"):
-            plane = s["planes"][name]
-            assert plane["r_hub"] == recorded["station_21"]["r_hub"]
-            assert plane["Mx"] == pytest.approx(mach, abs=1e-4)
-
-
 # --- rules ------------------------------------------------------------------------------
 
 def test_rotor_counts_are_known_values(recorded):

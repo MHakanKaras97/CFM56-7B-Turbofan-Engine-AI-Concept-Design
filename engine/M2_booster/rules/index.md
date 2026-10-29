@@ -25,5 +25,7 @@ Workflow (M2 agent):
 Acceptance (ADR-016) applies from the start: reproducible record, M0 budget pass, structural safety rules pass,
 deviations in `docs/open_issues.md`.
 
-Status: step 3 (A-1 with the rig's tabulated section inputs: pass; booster meanline `analysis/booster_meanline.py`
-with the [T] TP-1523 spanwise shape transfer, section values [T]). No revision, no geometry; `bom/bom.yaml` has no parts.
+Status: step 4 (#68 spanwise normalisation, closure ratios 1; #64 levers in a written order: L2 constant tip radius
+applied, L1/L3 not; remaining rotor tip violations stage 2 and 3, drafted as #69/#70 in `open_items.md`). A-1 pass.
+Booster section values [T]. M3 interface: `geometry/flowpath.py` -> `geometry/flowpath.yaml` (station 25 annulus).
+No revision; `bom/bom.yaml` has no parts.

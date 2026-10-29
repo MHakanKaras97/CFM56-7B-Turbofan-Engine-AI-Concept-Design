@@ -63,9 +63,10 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
   - inlet swirl Vt1_sec comes from the upstream plane (zero here: stator exit swirl 0 [T], station 21 no swirl);
   - triangles, DF and solidity per section by the definitions above (`stage_aero.rotor_section`, `stator_section`).
 - Free vortex is the special case g = f = 1 (uniform work, uniform axial velocity, r Vt constant).
-- No radial equilibrium or streamline curvature is solved; the shape ratios replace it [T]. Continuity and the
-  mass-averaged work are closed on the mean section only; hub/tip ratios are not re-normalised. The code reports the
-  three-point (Simpson, weights 1/4/1 on r Vx, uniform density) mass-flow and work deviation of each profile [H].
+- No radial equilibrium or streamline curvature is solved; the shape ratios replace it [T]. Step 3 closed continuity
+  and work on the mean section only (ratios not re-normalised, #68); from step 4 the profiles are normalised by the
+  rule "Spanwise normalisation" below. The code reports the three-point (Simpson, weights 1/4/1 on r Vx, uniform
+  density) mass-flow and work ratio of each profile [H].
 - A-1 uses the rig's own tabulated section values (TP-1523 Table 2(b) p. 21, rotor 23B hub/mid/tip): radii, rpm,
   inlet and exit meridional velocity, zero inlet swirl, total temperature ratio (work w_sec = cp Tt1 (TR_sec - 1),
   cp 1004 p. 11), chord and blade count (Table 8). In A-1 the mean section also uses the tabulated values, not
@@ -77,6 +78,23 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
   - f at the stator TE from stator 20 Table 2(c) p. 22 exit absolute velocity / mid value (exit swirl 0); the next
     rotor LE is the same plane; stage 1 rotor LE (station 21) is uniform (M1 gives no profile).
   - The rig's mid-span TR 1.071 against the overall 1.072 (Table 2(a)) [K] supports mean-section work = stage work.
+
+### Spanwise normalisation (#68) [step 4, written before the step 4 runs]
+- Rule: the spanwise profiles are scaled so that the integrated mass flow and the mass-averaged stage work equal the
+  1-D continuity flow and the stage work w exactly. On every plane that carries a profile (rotor TE; stator TE, which
+  is also the next rotor LE):
+  - axial velocity: f_sec = f_raw,sec / M, M = sum(k r f_raw) / sum(k r) (Simpson weights k = 1/4/1 on hub/mean/tip,
+    uniform density), so sum(k r f) = sum(k r) and the section profile carries the continuity flow W;
+  - work (rotor TE only): g_sec = g_raw,sec / G, G = sum(k r f g_raw) / sum(k r f), so the mass-averaged section work
+    equals w. Section swirl then follows from Euler as before (Vt2_sec with g_sec w).
+  - f_raw, g_raw are the shape ratios of "Spanwise distribution" (rig transfer, after any tip work lever below).
+- After normalisation the closure ratios (`simpson_closure`) are 1 within 1e-6 at every plane (tested). The mean
+  section no longer equals the 1-D value (f_mean = 1/M, g_mean = 1/G); the annulus rule (plan step 5) and the ICD
+  budget items still use the 1-D values, which the normalised profile now reproduces.
+- Same quadrature and uniform-density assumption as the closure ratios [T]; no blockage (see below; TP-1523 gives no
+  values). Free vortex is unchanged (M = G = 1).
+- A-1 is not normalised: it uses the rig's own tabulated section values (Table 2(b)), which are the validation
+  inputs, not a transferred shape. A-1 criteria, tolerances and stopping rule are unchanged.
 
 ### Blockage
 - TP-1523 p. 2: the streamline design program included boundary-layer blockage factors [K]; the report gives no
@@ -103,7 +121,42 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
 - ICD check (`sensitivity_64.closure_budget`, via `check_budget`): if the section profile were taken as the flow,
   W25 would be -2.2 % (flow tolerance +-1 %: fail) and pr_booster +1.9 % from the 3 % work excess at the same
   polytropic efficiency (+-1 %: fail); T25 +2.3 K (+-10 K: pass). The meanline's own budget rows pass by
-  construction (1-D values). Recorded as open issue #68; no re-normalisation is applied (rule unchanged).
+  construction (1-D values). Recorded as open issue #68. Step 4: superseded by "Spanwise normalisation"; the ratios
+  are now 1 by construction and the ICD check passes (`learning/duyarlilik_64.md`).
+
+### Design levers for R-AM2.2 (step 4, #64) [rationale written before the step 4 runs]
+- Application rule: levers are taken in the order below, each with one fixed step from the #64 study (no other value,
+  no iteration toward a DF value). A lever is applied only if its engineering rationale holds AND it strictly reduces
+  the number of R-AM2.2 DF violations (18 section checks) of the current baseline (normalised profile plus the levers
+  already applied). The rationale does not use the DF limit. Limits, rotor counts 74/78/74 and 3 stages are fixed.
+- L1 tip work ratio, step k = 0 (g_tip,raw = 1 + k (g_tip,rig - 1), applied before normalisation) [G]: the rig
+  rotor's extra tip work is end-wall compensation: designers raise the work near the casing to make up the total
+  pressure lost in the casing boundary layer and the tip-clearance flow. M2 models neither (no blockage, three-point
+  profile without the end-wall layer), so keeping the compensation without the deficit it compensates over-loads the
+  tip section and gives a station 25 total-pressure profile peaked at the casing, which the HPC (M3) then sees as
+  radial inlet distortion. k = 0 is the uniform-work tip (free-vortex value) of the step set; k = 0.5 has no separate
+  rationale. The hub ratio is not part of this lever (same argument would apply; open, not changed here).
+- L2 constant tip radius, stages 1-3 (tip radius fixed at the station 21 value on every plane 21 -> 24; axial Mach
+  rule unchanged) [G]: on the LP spool the booster runs at fan speed, so blade speed is scarce; with a constant hub
+  the tip and mean radii shrink through the stages and the rear stages do the same work at lower blade speed (higher
+  loading coefficient psi = w / U^2). A constant casing radius keeps the blade speed of the rear stages, and a
+  cylindrical casing keeps one abradable/clearance radius (FM2-3). Cost: the hub radius rises through the booster,
+  so the station 24/25 hub is higher and the transition duct to the HPC must drop further (M3 interface; M3 has not
+  started, interface file written by M2).
+- L3 rotor chord x 1.1, counts fixed (rotor AR 2.0 / 1.1) [G]: booster rotors take the ice shed from the spinner and
+  fan, hail and FOD that pass the splitter (FM2-1); a lower aspect ratio (longer chord at the same height) gives a
+  stiffer blade with a higher first flap frequency and more leading-edge material, the usual robustness choice for
+  front-of-core rows. Lolis' AR 2.0 is a method assumption [KS], not a CFM56 value. The rotor tip solidity must stay
+  in the TP-1523 tested range 0.9-2.0 (x 1.2 leaves it, so it is not a step of this lever).
+- L4 work split: equal stage PR is kept [G/T]: no source gives a CFM56 booster work split; equal PR is the neutral
+  concept choice (plan step 3) and both tested splits only move the violations between stages (#64 study).
+- Step 4 result (`analysis/sensitivity_64.py`, single pass in the order above; table in `learning/duyarlilik_64.md`):
+  normalised baseline 3 violations (1Rt 2Rt 3Rt); L1 3 -> 3, not applied; L2 3 -> 2, applied; L3 2 -> 2, not
+  applied; L4 no change. Remaining: 2Rt, 3Rt (open items). L1 on top of L2 would give 1 (3Rt), but the single-pass
+  rule was fixed before the run; a second pass is a user decision.
+- Axial Mach level (sensitivity only, not a lever in step 4) [T]: axial Mach on the planes downstream of station 21
+  scaled x 0.9 and x 1.1 of the station 21 value (station 21 annulus fixed by M1). Station 21/25 Pt, Tt and W are
+  checked against the ICD in every variant (`read_icd`, `check_budget`).
 
 ## Meanline plan (run in step 2: `analysis/booster_meanline.py`, inputs `analysis/booster_params.yaml`)
 1. Inlet: station 21 (`read_icd`: Tt, Pt, W) and the M1 station 21 annulus (`engine/M1_inlet_fan/geometry/flowpath.yaml`,
@@ -112,8 +165,9 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
 3. Work split: equal stage pressure ratio of `pr_booster` [T] until a source gives another split.
 4. Efficiency: the M0 budget `eta_booster` (ADR-015). The meanline gives velocity triangles, angles, DF, loading and
    geometry only; it does not predict efficiency.
-5. Annulus: constant hub radius (Lolis 2014 Table 4.10, method assumption [KS]); tip radius from continuity with
-   axial Mach number equal to the station 21 value [T]. Lolis' inlet Mach 0.5 differs from station 21 (0.393 [H]); user decision (#58 closed): keep the M1 station 21 area, no CR; Lolis 0.5 is a method assumption only.
+5. Annulus: step 2-3 constant hub radius (Lolis 2014 Table 4.10, method assumption [KS]); from step 4 constant tip
+   radius at the station 21 value (lever L2, "Design levers"), the other radius from continuity with the axial Mach
+   number equal to the station 21 value [T] (`booster_params.yaml` annulus, axial_mach_scale). Lolis' inlet Mach 0.5 differs from station 21 (0.393 [H]); user decision (#58 closed): keep the M1 station 21 area, no CR; Lolis 0.5 is a method assumption only.
 6. Per row: mean-line triangles plus hub and tip by the spanwise distribution above (step 2: free vortex [G];
    step 3: TP-1523 shape transfer [T]); DF by the definition above; solidity from R-AM2.2.
 7. Exit: station 24 (booster exit), then the transition duct `duct_25_24` to station 25. VBV: M2 models only the
@@ -144,6 +198,8 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
   5282 rpm (rig 243.8: -1.7 %); tip relative Mach 0.787 without inlet swirl (rig rotor 23B tip 0.801): subsonic.
 - Stage exits with constant hub and constant axial Mach [T]: hub/tip 0.731 / 0.763 / 0.793, tip speed 228.7 / 219.0 /
   210.6 m/s (down to -14 % against the rig). Stage 1 is an extrapolation in hub/tip -> open issue #57.
+  Step 3 values (constant hub). With the step 4 constant tip the rotor LE hub/tip is 0.697 / 0.760 / 0.808 and the
+  tip speed stays at the station 21 value (`meanline_results.yaml`); stage 1 and 2 stay below the rig 0.8 (#57).
 
 ## Validation case A-1 (run in step 2: `analysis/a1_validation.py` -> `analysis/a1_validation.yaml`)
 - Case: TP-1523 rotor 23B at design point (Table 2(b) p. 21: inlet velocities, rpm 9170, blade angles Table 8 p. 38).

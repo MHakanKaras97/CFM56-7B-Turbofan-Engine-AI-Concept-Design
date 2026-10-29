@@ -141,24 +141,6 @@ def test_section_values_stay_T(recorded):
         assert s["rotor_sections"]["tag"] == s["stator_sections"]["tag"] == s["planes"]["tag"] == "T"
 
 
-def test_free_vortex_option_reproduces_mean_section(recorded):
-    """Mean section is the 1-D value in both options (shape ratio 1 at mean)."""
-    params = read_yaml(PARAMS_FILE)
-    params["spanwise_distribution"] = dict(params["spanwise_distribution"], value="free_vortex")
-    fv = bm.run(params=params)
-    for s_fv, s_rec in zip(fv["stages"], recorded["stages"]):
-        cols = s_rec["rotor_sections"]["columns"]
-        mean = dict(zip(cols, s_rec["rotor_sections"]["rows"][1]))
-        assert s_fv["rotor"]["mean"]["DF"] == pytest.approx(mean["DF"], abs=1e-4)
-
-
-def test_closure_reported(recorded):
-    for s in recorded["stages"]:
-        c = s["spanwise_closure"]
-        assert 0.95 < c["rotor_te_mass_flow_ratio"] < 1.0
-        assert 1.0 < c["rotor_mass_averaged_work_ratio"] < 1.05
-
-
 def test_budget_and_annulus_unchanged(recorded):
     assert all(r["result"] in ("pass", "info") for r in recorded["budget_check"])
     mach = recorded["inputs"]["axial_mach_station21"]["value"]
@@ -171,17 +153,6 @@ def test_budget_and_annulus_unchanged(recorded):
 def test_stator_df_within_limit(recorded):
     for r in checks(recorded, "R-AM2.2 DF", row="stator"):
         assert r["result"] == "pass", r
-
-
-@pytest.mark.parametrize("stage", [1, 2, 3])
-@pytest.mark.xfail(strict=True, reason="#64: rotor tip D > 0.45 (R-AM2.2) with the step 3 spanwise shape; not tuned")
-def test_rotor_tip_df_known_violation(recorded, stage):
-    assert df(recorded, stage, "rotor", "tip")["result"] == "pass"
-
-
-@pytest.mark.xfail(strict=True, reason="#64: stage 3 rotor hub D > 0.58 (R-AM2.2) with the step 3 spanwise shape")
-def test_stage3_rotor_hub_known_violation(recorded):
-    assert df(recorded, 3, "rotor", "hub")["result"] == "pass"
 
 
 def test_other_rotor_hub_mean_within_limit(recorded):

@@ -146,7 +146,8 @@ def rotor_exit_swirl(inlet: Plane, exit_: Plane, omega: float, w: float, work_sh
 
 def simpson_closure(plane: Plane, work_shape: tuple | None = None) -> dict:
     """Three-point (Simpson 1/4/1 on r Vx, uniform density) mass-flow ratio of the section profile against the
-    1-D continuity value, and the mass-averaged work ratio (aero_method.md: reported, not re-normalised)."""
+    1-D continuity value, and the mass-averaged work ratio (aero_method.md "Closure ratios"; 1 after
+    normalised_shapes)."""
     wts = (1.0, 4.0, 1.0)
     r = [plane.radius(s) for s in SECTIONS]
     m = [k * ri * f for k, ri, f in zip(wts, r, plane.vx_shape)]
@@ -154,6 +155,39 @@ def simpson_closure(plane: Plane, work_shape: tuple | None = None) -> dict:
     if work_shape is not None:
         out["work_ratio"] = sum(mi * g for mi, g in zip(m, work_shape)) / sum(m)
     return out
+
+
+def normalised_shapes(plane: Plane, vx_raw: tuple, work_raw: tuple | None = None) -> tuple:
+    """aero_method.md "Spanwise normalisation" (#68): Vx shape / M and work shape / G so that the Simpson closure of
+    the plane is 1 (mass flow, and mass-averaged work if a work shape is given). Returns (vx_shape, work_shape)."""
+    c = simpson_closure(with_profile(plane, vx_raw), work_raw)
+    vx = tuple(f / c["mass_flow_ratio"] for f in vx_raw)
+    g = None if work_raw is None else tuple(x / c["work_ratio"] for x in work_raw)
+    return vx, g
+
+
+def plane_fixed_radius(gas, Tt: float, Pt: float, W: float, mach_x: float, K: float, rule: str, r_fix: float,
+                       guess: tuple) -> Plane:
+    """Axial Mach given, one radius (hub, mean or tip) fixed at r_fix; the other from continuity [T, plan step 5]."""
+    if rule == "hub":
+        return plane_from_mach(gas, Tt, Pt, W, r_fix, mach_x, K, guess[1])
+    rh, rt = guess
+    for _ in range(500):
+        rm = (rh + rt) / 2
+        vt = K / rm
+        vx = _fixed_point(lambda v: mach_x * static_state(gas, Tt, Pt, math.hypot(v, vt)).a, 100.0, "vx")
+        area = W / (static_state(gas, Tt, Pt, math.hypot(vx, vt)).rho * vx)
+        if rule == "tip":
+            new = (math.sqrt(r_fix ** 2 - area / math.pi), r_fix)
+        elif rule == "mean":
+            h = area / (2 * math.pi * r_fix)
+            new = (r_fix - h / 2, r_fix + h / 2)
+        else:
+            raise ValueError(rule)
+        if max(abs(new[0] - rh), abs(new[1] - rt)) < 1e-12:
+            return Plane(Tt, Pt, new[0], new[1], vx, K)
+        rh, rt = new
+    raise ValueError("plane_fixed_radius: no convergence")
 
 
 def solidity(chord: float, z: int, r_le: float, r_te: float) -> float:

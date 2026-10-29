@@ -1,79 +1,73 @@
-# #64 duyarlılık çalışması (rotor D ihlalleri) ve kapanış kontrolü (#68)
+# #64 duyarlılık çalışması (normalize taban, adım 4), kol sırası ve kapanış kontrolü (#68)
+
+**Not (adım 4):** Bu dosyanın önceki tablosu adım 3'ün normalize edilmemiş açıklık kuralıyla (kapanış oranları
+kütle 0.973 / iş 1.030) hesaplanmıştı. O sayıların hepsi aşağıdaki normalize taban sayılarıyla değiştirildi; eski
+kural yalnız "normalize edilmemiş (bilgi)" satırında kaldı.
 
 Kaynak kod: `engine/M2_booster/analysis/sensitivity_64.py` (yalnızca yazdırır; params/results/bom/geometri
-yazmaz). Tüm D değerleri koddan [T] (booster açıklık dağılımı [T] tasarım seçimi olduğu için, `booster_meanline.py`
-etiket kuralı); ihlal sayıları ve bütçe satırları koddan [H]. Sınırlar R-AM2.2 [K]: rotor uç D <= 0.45, diğer
-kesitler D <= 0.58; uç katılığı 0.9-2.0 [K]. Rotor sayıları 74/78/74 [KS] sabit. Hiçbir değişken bir hedefe doğru
-yinelenmedi; her biri yazılı bir kuraldan tek seferde türetildi.
+yazmaz; her varyant `booster_meanline.run` + yazılı parametre değişikliği). D değerleri koddan [T] (booster açıklık
+dağılımı [T] seçim); ihlal sayıları, ICD satırları koddan [H]. Sınırlar R-AM2.2 [K]: rotor uç D <= 0.45, diğer
+kesitler D <= 0.58; uç katılığı 0.9-2.0 [K]. Rotor sayıları 74/78/74 [KS], 3 kademe sabit. Hiçbir varyant bir D
+hedefine doğru yinelenmedi.
 
-## Değişkenler (her seferinde yalnız biri)
+## Normalizasyon kuralı (#68)
+`rules/aero_method.md` "Spanwise normalisation": her profilli düzlemde Vx şekli Simpson kütle oranına, iş şekli
+kütle ortalamalı iş oranına bölünür; kesit profili 1-B süreklilik debisini ve kademe işini tam taşır. Blokaj yok.
+Sonuç [H]: tüm düzlemlerde oranlar 1 (1e-6 içinde). Kesit profili akış kabul edilse de W25, pr_booster, T25 ICD
+toleransında (check_budget: pass). Eski kural: W25 -%2.21, pr_booster +%1.87 (geçmiyor), T25 +2.26 K.
+A-1 normalize edilmez (rigin kendi tablo değerleri); sonuç değişmedi: geçiyor.
 
-| Kol | Kural | Adım |
-|---|---|---|
-| Anülüs | ist. 21 -> 24 arası sabit göbek (taban), sabit ortalama yarıçap, sabit uç yarıçapı; sabit yarıçap ist. 21 değerinde; eksenel Mach tüm varyantlarda ist. 21 değeri [T] | 3 kural |
-| İş bölüşümü | toplam entalpi artışının kademe payları; aynı politropik verim, bu yüzden toplam PR ve eta_booster değişmez [H] | eşit PR (taban), 40/33/27, 30/33/37 |
-| Rotor katılığı | rotor veteri x k, sayılar sabit (eşdeğer rotor AR = 2.0 / k); stator veteri değişmez, stator sayısı R-KV2.1 ile | k = 0.9, 1.1, 1.2 |
-| Uç iş oranı | g_uç = 1 + k (g_uç,rig - 1); göbek oranı ve Vx şekilleri aynı | k = 0.5, 0 (taban 1) |
-| Kapanış normalizasyonu (#68, bilgi) | her düzlemde Vx şekli Simpson kütle oranına, iş şekli kütle ortalamalı iş oranına bölünür | açık/kapalı |
+## Tek kol tablosu (normalize taban: sabit göbek, eşit PR, veter x 1, k = 1)
 
-## Tablo: rotor ve stator D (göbek/orta/uç), kademe 1 | 2 | 3
-
-İhlal kodu: kademe + R/S + g/o/u (ör. 3Ru = kademe 3 rotor uç). nD = R-AM2.2 D ihlali sayısı (18 kontrolden),
-nσ = uç katılığı 0.9-2.0 dışı satır sayısı.
+İhlal kodu: kademe + R/S + g/o/u (ör. 3Ru = kademe 3 rotor uç). nD = D ihlali (18 kontrolden), nσ = uç katılığı
+0.9-2.0 dışı. Tüm satırlarda ist. 21 ve 25 Pt, Tt, W ICD ile tutuyor.
 
 | Kol / varyant | Rotor D 1 | Rotor D 2 | Rotor D 3 | Stator D 1 | Stator D 2 | Stator D 3 | z_stator | nD | nσ | İhlaller |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Taban (sabit göbek, eşit PR, k=1) | 0.5379/0.4684/0.5067 | 0.5397/0.5008/0.5516 | 0.5830/0.5531/0.6235 | 0.5762/0.4554/0.4839 | 0.5780/0.4623/0.4938 | 0.5787/0.4679/0.5023 | 34/43/55 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
-| Anülüs: sabit ortalama | 0.5235/0.4474/0.4883 | 0.5391/0.4820/0.5316 | 0.6002/0.5411/0.6065 | 0.5751/0.4568/0.4878 | 0.5750/0.4635/0.4997 | 0.5779/0.4721/0.5131 | 34/43/54 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
-| Anülüs: sabit uç | 0.4981/0.4161/0.4612 | 0.5204/0.4521/0.5019 | 0.5877/0.5144/0.5776 | 0.5741/0.4590/0.4931 | 0.5797/0.4726/0.5151 | 0.5772/0.4759/0.5231 | 34/42/54 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
-| İş: 40/33/27 | 0.5675/0.5614/0.6197 | 0.5422/0.5019/0.5556 | 0.5124/0.4525/0.5052 | 0.5792/0.4543/0.4716 | 0.5795/0.4655/0.4991 | 0.5748/0.4680/0.5119 | 64/43/33 | 3 | 1 (1S) | 1Ru 2Ru 3Ru |
-| İş: 30/33/37 | 0.5307/0.4568/0.4935 | 0.5376/0.4974/0.5470 | 0.5878/0.5649/0.6381 | 0.5750/0.4549/0.4845 | 0.5786/0.4628/0.4945 | 0.5769/0.4656/0.4983 | 32/42/60 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
-| Rotor veter x 0.9 | 0.5541/0.4827/0.5219 | 0.5597/0.5179/0.5699 | 0.6094/0.5757/0.6479 | taban | taban | taban | 34/43/55 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
-| Rotor veter x 1.1 | 0.5246/0.4567/0.4943 | 0.5234/0.4869/0.5366 | 0.5615/0.5346/0.6036 | taban | taban | taban | 34/43/55 | 3 | 0 | 1Ru 2Ru 3Ru |
-| Rotor veter x 1.2 | 0.5135/0.4469/0.4839 | 0.5098/0.4753/0.5241 | 0.5435/0.5192/0.5869 | taban | taban | taban | 34/43/55 | 3 | 1 (1R 2.054) | 1Ru 2Ru 3Ru |
-| Uç iş k = 0.5 | 0.5379/0.4684/0.4864 | 0.5397/0.5008/0.5297 | 0.5830/0.5531/0.6001 | 0.5762/0.4554/0.4583 | 0.5780/0.4623/0.4682 | 0.5787/0.4679/0.4769 | 34/43/55 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
-| Uç iş k = 0 | 0.5379/0.4684/0.4658 | 0.5397/0.5008/0.5073 | 0.5830/0.5531/0.5757 | 0.5762/0.4554/0.4319 | 0.5780/0.4623/0.4418 | 0.5787/0.4679/0.4505 | 34/43/55 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
-| Kapanış normalizasyonu (#68) | 0.5145/0.4440/0.4856 | 0.5200/0.4792/0.5306 | 0.5632/0.5299/0.6000 | 0.5743/0.4554/0.4855 | 0.5764/0.4620/0.4951 | 0.5800/0.4700/0.5063 | 31/39/49 | 3 | 0 | 1Ru 2Ru 3Ru |
-| En iyi kombinasyon + normalizasyon (sabit uç, eşit PR, veter x 1.1, k = 0) | 0.4676/0.3893/0.3974 | 0.4899/0.4261/0.4328 | 0.5507/0.4822/0.4954 | 0.5753/0.4614/0.4439 | 0.5780/0.4719/0.4610 | 0.5777/0.4769/0.4707 | 32/40/51 | 1 | 0 | 3Ru |
+| Taban (normalize) | 0.5145/0.4440/0.4856 | 0.5200/0.4792/0.5306 | 0.5632/0.5299/0.6000 | 0.5743/0.4554/0.4855 | 0.5764/0.4620/0.4951 | 0.5800/0.4700/0.5063 | 31/39/49 | 3 | 0 | 1Ru 2Ru 3Ru |
+| Anülüs: sabit ortalama | 0.4990/0.4231/0.4673 | 0.5171/0.4605/0.5110 | 0.5764/0.5175/0.5832 | 0.5739/0.4574/0.4900 | 0.5749/0.4647/0.5024 | 0.5776/0.4725/0.5148 | 31/39/49 | 3 | 0 | 1Ru 2Ru 3Ru |
+| Anülüs: sabit uç | 0.4724/0.3919/0.4403 | 0.4969/0.4311/0.4820 | 0.5621/0.4914/0.5550 | 0.5740/0.4605/0.4963 | 0.5755/0.4697/0.5127 | 0.5796/0.4788/0.5274 | 31/39/49 | 2 | 0 | 2Ru 3Ru |
+| İş: 40/33/27 | 0.5509/0.5361/0.5958 | 0.5221/0.4801/0.5344 | 0.4898/0.4316/0.4850 | 0.5795/0.4559/0.4757 | 0.5785/0.4658/0.5010 | 0.5793/0.4736/0.5195 | 55/39/30 | 3 | 1 (3S) | 1Ru 2Ru 3Ru |
+| İş: 30/33/37 | 0.5069/0.4327/0.4728 | 0.5179/0.4758/0.5262 | 0.5689/0.5416/0.6143 | 0.5754/0.4572/0.4889 | 0.5778/0.4633/0.4968 | 0.5784/0.4680/0.5026 | 29/38/53 | 3 | 0 | 1Ru 2Ru 3Ru |
+| Rotor veter x 0.9 | 0.5303/0.4579/0.5003 | 0.5393/0.4957/0.5483 | 0.5886/0.5517/0.6235 | taban | taban | taban | 31/39/49 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
+| Rotor veter x 1.1 | 0.5016/0.4326/0.4735 | 0.5043/0.4658/0.5161 | 0.5424/0.5121/0.5807 | taban | taban | taban | 31/39/49 | 3 | 0 | 1Ru 2Ru 3Ru |
+| Rotor veter x 1.2 | 0.4909/0.4231/0.4634 | 0.4912/0.4546/0.5040 | 0.5251/0.4973/0.5646 | taban | taban | taban | 31/39/49 | 3 | 1 (1R 2.0542) | 1Ru 2Ru 3Ru |
+| Uç iş k = 0.5 | 0.5168/0.4475/0.4696 | 0.5221/0.4827/0.5134 | 0.5652/0.5334/0.5814 | 0.5790/0.4599/0.4648 | 0.5753/0.4607/0.4676 | 0.5758/0.4658/0.4755 | 31/40/51 | 3 | 0 | 1Ru 2Ru 3Ru |
+| Uç iş k = 0 | 0.5191/0.4511/0.4531 | 0.5241/0.4861/0.4955 | 0.5671/0.5369/0.5618 | 0.5763/0.4569/0.4346 | 0.5799/0.4652/0.4459 | 0.5763/0.4661/0.4493 | 32/40/52 | 3 | 0 | 1Ru 2Ru 3Ru |
+| Eksenel Mach x 0.9 | 0.5693/0.4754/0.4858 | 0.5543/0.5041/0.5406 | 0.5953/0.5571/0.6144 | 0.5784/0.4545/0.4785 | 0.5777/0.4592/0.4859 | 0.5779/0.4648/0.4946 | 35/45/58 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
+| Eksenel Mach x 1.1 | 0.4595/0.4079/0.4768 | 0.4889/0.4546/0.5171 | 0.5339/0.5037/0.5827 | 0.5727/0.4579/0.4932 | 0.5753/0.4642/0.5022 | 0.5776/0.4701/0.5108 | 28/35/44 | 3 | 0 | 1Ru 2Ru 3Ru |
+| Normalize edilmemiş (adım 3 kuralı, bilgi) | 0.5379/0.4684/0.5067 | 0.5397/0.5008/0.5516 | 0.5830/0.5531/0.6235 | 0.5762/0.4554/0.4839 | 0.5780/0.4623/0.4938 | 0.5787/0.4679/0.5023 | 34/43/55 | 4 | 0 | 1Ru 2Ru 3Rg 3Ru |
 
-Hücum kenarı göbek/uç oranı [T]: sabit göbek 0.697/0.731/0.763, sabit ortalama 0.697/0.744/0.784, sabit uç
-0.697/0.760/0.808 (kademe 3 rig değeri 0.8'in üstüne çıkıyor; #57 için de olumlu).
+Normalizasyon kendi başına 3Rg'yi kapatıyor ve rotor D'leri 0.02-0.03 düşürüyor (orta kesit akışı 1/0.973 kat
+artıyor, uçtaki fazla iş azalıyor).
 
-## Tek kolun etkisi (özet)
-- Hiçbir tek kol dört ihlali kapatmıyor; en iyi tek kollar 3 ihlale iniyor (veter x 1.1, 40/33/27, normalizasyon).
-- Uç D'yi en çok düşürenler: sabit uç anülüsü (-0.03 ile -0.05) ve uç iş k = 0 (-0.04 ile -0.05). Kademe 3
-  rotor uç her tek kolda >= 0.5052 kalıyor (sınır 0.45).
-- 40/33/27 yükü kademe 1'e taşıyor (1Ru 0.6197) ve stator 1 sayısı 64'e çıkıp uç katılığı aralık dışına çıkıyor;
-  30/33/37 kademe 3'ü kötüleştiriyor. İş bölüşümü ihlali yer değiştiriyor, kapatmıyor.
-- Veter x 1.2 kademe 1 rotor uç katılığını 2.054'e çıkarıyor (TP-1523 test aralığı dışı).
+## Kol sırası (aero_method.md "Design levers", tek geçiş)
+Kural (koşudan önce yazıldı): sırayla, her kol tek sabit adım; gerekçesi geçerli VE mevcut tabanın D ihlal sayısını
+kesin azaltıyorsa uygulanır.
 
-## Kombinasyonlar
-Kontrol edilen ızgara: anülüs {göbek, ortalama, uç} x iş {eşit PR, 40/33/27, 30/33/37} x rotor veter
-{1.0, 0.9, 1.1, 1.2} x uç iş k {1, 0.5, 0} = 108 çalıştırma [H]. Hiçbirinde D ihlali sıfır değil; en az 1 ihlal.
-En iyiler: (sabit uç, eşit PR, veter x 1.1 veya 1.2, k = 0) yalnız 3Ru 0.5073/0.4924; (sabit uç, 40/33/27,
-veter x 1.1/1.2, k = 0) yalnız 1Ru 0.5118/0.5009 ama stator 3 uç katılığı aralık dışı. Bunlara #68 normalizasyonu
-eklenince de 3Ru 0.4954 kalıyor.
+| Kol | Önce nD | Sonra nD | Uygulandı | Neden |
+|---|---|---|---|---|
+| L1 uç iş k = 0 | 3 | 3 | hayır | uçlar düşüyor (1Ru 0.4531) ama sayı azalmıyor |
+| L2 sabit uç yarıçapı | 3 | 2 | evet | 1Ru 0.4403'e iniyor; ist. 24 göbek 0.30213 -> 0.36624 m |
+| L3 rotor veter x 1.1 | 2 | 2 | hayır | 2Ru 0.4682, 3Ru 0.5357; sayı azalmıyor |
+| L4 eşit PR | 2 | 2 | değişiklik yok | kaynak yok, eşit PR kalıyor |
 
-**Hüküm [H]:** Yazılı kurallarla türetilen hiçbir tek kol ve kontrol edilen 108 + 1 kombinasyonun hiçbiri,
-3 kademe, 74/78/74 rotor ve R-AM2.2 sınırlarıyla bütün ihlalleri kapatmıyor; kalan ihlal her zaman bir rotor ucu
-(çoğunlukla kademe 3, D ~0.50). Ara iş bölüşümleri (ör. iki ucu dengeleyen bir pay) denenmedi: bu, bir D hedefine
-doğru ayar olurdu (kural dışı). Eksenel Mach (anülüs kuralının ikinci yarısı) ve kademe sayısı kol olarak
-denenmedi.
+Son taban: sabit uç, eşit PR, veter x 1, k = 1, normalize. Kalan ihlaller 2Ru 0.4820, 3Ru 0.5550.
+Bilgi (uygulanmadı): L2 üstüne L1 (k = 0) 3Ru tek ihlale iniyor (0.5130; ızgara satırı); tek geçiş kuralı koşudan
+önce sabitlendiği için ikinci geçiş kullanıcı kararı.
 
-## Kapanış kontrolü (#68)
-Oranların tanımı ve nedeni `rules/aero_method.md` "Closure ratios" bölümünde. Kesit profili akış kabul edilirse
-[H, check_budget]: W25 56.293 kg/s (-%2.21, tolerans ±%1: geçmiyor), pr_booster 2.0415 (+%1.87, ±%1: geçmiyor),
-T25 395.38 K (+2.26 K, ±10 K: geçiyor). Meanline'ın kendi bütçe satırları 1-B değerlerle yapı gereği geçiyor.
+## Eksenel Mach duyarlılığı (son tabanda, bilgi)
+Eksenel Mach ist. 21 sonrası düzlemlerde ist. 21 değerinin x 0.9 / x 1.1 katı; ist. 21 ve 25 Pt, Tt, W ICD ile
+tutuyor (fark <= 0.0004).
+- x 0.9: rotor D artıyor (1Rg 0.4724 -> 0.5533, 3Rg 0.5858 sınır üstü), nD 4 (1Ru 2Ru 3Rg 3Ru); stator D az
+  değişiyor (göbek -0.002 ile +0.004, uç -0.010 ile -0.013), stator sayısı 35/44/55. İst. 24 göbek 0.35940 m.
+- x 1.1: rotor D düşüyor (1Rg 0.3955, 3Ru 0.5467), nD 2 (2Ru 3Ru); stator uç D artıyor (0.5119/0.5198/0.5279; +0.016/+0.007/+0.001),
+  stator sayısı 28/36/46 ve üç statorun uç katılığı 0.9 altına iniyor (0.8393/0.8664/0.8944; TP-1523 aralığı dışı).
+  İst. 24 göbek 0.37161 m.
+- Hüküm: Mach seviyesi rotor D'yi güçlü etkiliyor, stator D'yi zayıf; x 1.1 bir rotor ihlalini kapatmıyor ve stator
+  katılığını aralık dışına itiyor. Kol olarak uygulanmadı.
 
-## Önerilen değişiklik sırası (uygulanmadı; kullanıcı kararı)
-1. #68: kapanış kuralı (profili 1-B akış ve işi taşıyacak şekilde normalize etmek veya blokaj tanımı). Doğruluk
-   sorunu, ICD toleransını aşıyor; tüm D'leri değiştirir (3Rg'yi kapatıyor, uçları ~0.02 düşürüyor).
-2. Uç iş oranı (uçta serbest girdaba doğru, k = 0): geometri değişmeden en büyük uç D düşüşü; rig oranının
-   aktarımı zaten [T].
-3. Anülüs: sabit uç yarıçapı (uç D -0.03 ile -0.05; göbek/uç rig'e yaklaşır). İst. 24/25 göbek yarıçapı
-   yükselir: M3 ist. 25 arayüzü etkilenir (CR gerekebilir).
-4. Rotor veteri x 1.1 (AR 1.82): kesit katılığı aralıkta kalır; x 1.2 kademe 1 uçta aralık dışı.
-5. İş bölüşümü: kaynak gelmedikçe eşit PR kalsın (verilen payların ikisi de ihlali kapatmıyor).
-Bunlardan sonra kademe 3 rotor ucu (~0.50) kalıyor: kapatmak için kural düzeyinde kullanıcı kararı gerekir
-(R-AM2.2 rotor uç 0.45 kriteri bir verim ölçütü, verim ise M0 bütçesinden geliyor; ya da eksenel Mach / kademe
-sayısı kuralları), bu çalışmada önerilmiyor, yalnız seçenek olarak listeleniyor.
+## Kombinasyonlar (normalize, bilgi)
+Izgara: anülüs {göbek, ortalama, uç} x iş {eşit PR, 40/33/27, 30/33/37} x veter {1.0, 0.9, 1.1, 1.2} x k {1, 0.5,
+0} = 108 çalıştırma [H]. Sıfır D ihlali yok; en az 1 (her zaman 3Ru, ör. sabit uç, eşit PR, veter x 1.1, k = 0:
+0.4954). Kademe 3 rotor ucu bu kollarla kapanmıyor.

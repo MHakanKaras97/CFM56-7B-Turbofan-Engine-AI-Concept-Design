@@ -95,10 +95,33 @@ def spanwise_shapes(params: dict, ref: dict | None = None) -> dict:
             "stator_exit_vx": tuple(st[s]["v_out"] / st["mid"]["v_out"] for s in ("hub", "mid", "tip"))}
 
 
+ANNULUS_RULES = {"constant_hub_constant_axial_mach": "hub", "constant_mean_constant_axial_mach": "mean",
+                 "constant_tip_constant_axial_mach": "tip"}
+
+
+def stage_prs(gas, Tt21: float, pr: float, e_poly: float, n: int, split) -> list[float]:
+    """Equal PR (plan step 3) or work fractions of the total enthalpy rise -> stage PR at constant e_poly [H]."""
+    if split == "equal_stage_pressure_ratio":
+        return [pr ** (1 / n)] * n
+    w_tot = compressor(Tt21, 1.0, pr, e_poly, gas)[2]
+    out, Tt = [], Tt21
+    for f in split:
+        Tt_out = gas.T_from_h(gas.h(Tt) + f * w_tot)
+        out.append(math.exp((gas.phi(Tt_out) - gas.phi(Tt)) * e_poly / gas.R_s()))
+        Tt = Tt_out
+    return out
+
+
 def run(icd: dict | None = None, params: dict | None = None) -> dict:
     icd = icd or read_icd("M2 booster meanline")
     params = params or read_yaml(PARAMS_FILE)
-    shapes = spanwise_shapes(params)
+    shapes = dict(spanwise_shapes(params))
+    k_tip = p(params, "tip_work_ratio_k")
+    g = shapes["work"]
+    shapes["work"] = (g[0], g[1], 1 + k_tip * (g[2] - 1))  # L1 tip work lever (aero_method.md), before normalisation
+    normalise = p(params, "spanwise_normalisation") == "mass_and_work"
+    if p(params, "spanwise_normalisation") not in ("mass_and_work", "none"):
+        raise ValueError("spanwise_normalisation must be mass_and_work or none")
     gas = NasaGas()
     budget = icd["modules"]["M2"]["budget"]
     st = icd["stations"]
@@ -114,30 +137,41 @@ def run(icd: dict | None = None, params: dict | None = None) -> dict:
     if len(zr) != n:
         raise ValueError(f"{len(zr)} rotor counts in known_values.md for {n} stages")
     ar_r, ar_s = p(params, "rotor_aspect_ratio"), p(params, "stator_aspect_ratio")
+    chord_scale = p(params, "rotor_chord_scale")
     split = p(params, "loss_split_rotor")
     df_tip, df_other = p(params, "df_limit_rotor_tip"), p(params, "df_limit_other")
+    annulus = ANNULUS_RULES[p(params, "annulus")]
 
-    pr_stage = pr ** (1 / n)
     e_poly = poly_eff_for(gas, Tt21, pr, eta)
+    prs = stage_prs(gas, Tt21, pr, e_poly, n, p(params, "work_split"))
 
     p21 = sa.plane_from_area(gas, Tt21, Pt21, W, s21["r_hub_m"], s21["r_tip_m"], 0.0)
-    mach_x = sa.axial_mach(gas, p21)
-    r_hub = p21.r_hub
+    mach_21 = sa.axial_mach(gas, p21)
+    mach_x = mach_21 * p(params, "axial_mach_scale")
+    r_fix = p21.radius(annulus)
 
     planes, stages = [p21], []
     inlet = p21
     for i in range(n):
+        pr_stage = prs[i]
         Tt_out, Pt_out, w = compressor(inlet.Tt, inlet.Pt, pr_stage, e_poly, gas)
         ds = gas.phi(Tt_out) - gas.phi(inlet.Tt) - gas.R_s() * math.log(pr_stage)
         Pt_rotor = inlet.Pt * math.exp((gas.phi(Tt_out) - gas.phi(inlet.Tt) - split * ds) / gas.R_s())
         K = w / omega + inlet.K  # Euler work on every streamline: w = omega (r Vt)_2 - omega (r Vt)_1
-        rotor_exit = sa.plane_from_mach(gas, Tt_out, Pt_rotor, W, r_hub, mach_x, K, inlet.r_tip)
-        rotor_exit = sa.with_profile(rotor_exit, shapes["rotor_exit_vx"],
-                                     sa.rotor_exit_swirl(inlet, rotor_exit, omega, w, shapes["work"]))
-        stage_exit = sa.plane_from_mach(gas, Tt_out, Pt_out, W, r_hub, mach_x, 0.0, rotor_exit.r_tip)
-        stage_exit = sa.with_profile(stage_exit, shapes["stator_exit_vx"])
+        rotor_exit = sa.plane_fixed_radius(gas, Tt_out, Pt_rotor, W, mach_x, K, annulus, r_fix,
+                                           (inlet.r_hub, inlet.r_tip))
+        vx_r, g_r = shapes["rotor_exit_vx"], shapes["work"]
+        if normalise:
+            vx_r, g_r = sa.normalised_shapes(rotor_exit, vx_r, g_r)
+        rotor_exit = sa.with_profile(rotor_exit, vx_r, sa.rotor_exit_swirl(inlet, rotor_exit, omega, w, g_r))
+        stage_exit = sa.plane_fixed_radius(gas, Tt_out, Pt_out, W, mach_x, 0.0, annulus, r_fix,
+                                           (rotor_exit.r_hub, rotor_exit.r_tip))
+        vx_s = shapes["stator_exit_vx"]
+        if normalise:
+            vx_s = sa.normalised_shapes(stage_exit, vx_s)[0]
+        stage_exit = sa.with_profile(stage_exit, vx_s)
 
-        c_r = (inlet.height + rotor_exit.height) / 2 / ar_r
+        c_r = chord_scale * (inlet.height + rotor_exit.height) / 2 / ar_r
         rotor = {s: sa.rotor_section(gas, inlet, rotor_exit, omega, s, c_r, zr[i]) for s in sa.SECTIONS}
         c_s = (rotor_exit.height + stage_exit.height) / 2 / ar_s
         neighbours = (zr[i],) + ((zr[i + 1],) if i + 1 < n else ())
@@ -151,8 +185,8 @@ def run(icd: dict | None = None, params: dict | None = None) -> dict:
             "phi": inlet.Vx / U_tip, "psi": w / U_tip ** 2, "psi_is": (h_is - gas.h(inlet.Tt)) / U_tip ** 2,
             "U_tip_inlet": U_tip, "inlet": inlet, "rotor_exit": rotor_exit, "stage_exit": stage_exit,
             "rotor": rotor, "stator": stator, "z_rotor": zr[i], "z_stator": zs, "stator_df_met": met,
-            "chord_rotor": c_r, "chord_stator": c_s,
-            "closure_rotor_exit": sa.simpson_closure(rotor_exit, shapes["work"]),
+            "chord_rotor": c_r, "chord_stator": c_s, "work_shape": g_r,
+            "closure_rotor_exit": sa.simpson_closure(rotor_exit, g_r),
             "closure_stator_exit": sa.simpson_closure(stage_exit),
         })
         planes += [rotor_exit, stage_exit]
@@ -164,7 +198,8 @@ def run(icd: dict | None = None, params: dict | None = None) -> dict:
     eta_achieved = (h_is - gas.h(Tt21)) / (gas.h(p24.Tt) - gas.h(Tt21))
     achieved = {"pr_booster": p24.Pt / Pt21, "eta_booster": eta_achieved, "duct_25_24": Pt25 / p24.Pt,
                 "W25": W, "T25": p24.Tt, "power": W * (gas.h(p24.Tt) - gas.h(Tt21)) / 1e6}
-    return {"gas": gas, "omega": omega, "shapes": shapes, "rpm": rpm, "mach_x": mach_x, "e_poly": e_poly, "W": W,
+    return {"gas": gas, "omega": omega, "shapes": shapes, "rpm": rpm, "mach_x": mach_x, "mach_21": mach_21,
+            "e_poly": e_poly, "W": W, "Tt21": Tt21, "Pt21": Pt21,
             "stages": stages, "p21": p21, "p24": p24, "Pt25": Pt25, "achieved": achieved,
             "budget_rows": check_budget("M2", achieved), "params": params, "icd": icd}
 
@@ -291,10 +326,10 @@ def to_yaml(res: dict, a1: dict, checks: list[dict]) -> dict:
             "rotor_blades": {"value": s["z_rotor"], "unit": "-", "tag": "KS", "note": "#52 p. 159, known_values.md (R-AM2.3)"},
             "stator_vanes": {"value": s["z_stator"], "unit": "-", "tag": "T",
                              "note": "R-KV2.1" + ("" if s["stator_df_met"] else "; DF limit not met within the search")},
-            "rotor_chord": {"value": _r(s["chord_rotor"], 5), "unit": "m", "tag": "T", "note": "AR 2.0 (R-AM2.3)"},
-            "stator_chord": {"value": _r(s["chord_stator"], 5), "unit": "m", "tag": "T", "note": "AR 1.2 (R-AM2.3)"},
+            "rotor_chord": {"value": _r(s["chord_rotor"], 5), "unit": "m", "tag": "T", "note": f"height / AR {p(res['params'], 'rotor_aspect_ratio')} x chord scale {p(res['params'], 'rotor_chord_scale')} (R-AM2.3, L3)"},
+            "stator_chord": {"value": _r(s["chord_stator"], 5), "unit": "m", "tag": "T", "note": f"height / AR {p(res['params'], 'stator_aspect_ratio')} (R-AM2.3)"},
             "spanwise_closure": {
-                "tag": "H", "note": "Simpson 1/4/1 on r Vx, uniform density; reported, not re-normalised (aero_method.md)",
+                "tag": "H", "note": "Simpson 1/4/1 on r Vx, uniform density; after the aero_method.md Spanwise normalisation rule (" + p(res["params"], "spanwise_normalisation") + ")",
                 "rotor_te_mass_flow_ratio": _r(s["closure_rotor_exit"]["mass_flow_ratio"]),
                 "rotor_mass_averaged_work_ratio": _r(s["closure_rotor_exit"]["work_ratio"]),
                 "stator_te_mass_flow_ratio": _r(s["closure_stator_exit"]["mass_flow_ratio"])},
@@ -306,7 +341,7 @@ def to_yaml(res: dict, a1: dict, checks: list[dict]) -> dict:
                                 "rows": _table(s["stator"], STATOR_COLS)},
         })
     return {
-        "description": "M2 booster meanline (step 3 spanwise distribution); generated by engine/M2_booster/analysis/booster_meanline.py, "
+        "description": "M2 booster meanline (step 4: normalised spanwise profile, design levers); generated by engine/M2_booster/analysis/booster_meanline.py, "
                        "do not edit by hand. Inputs: ICD (read_icd), M1 flowpath station 21, known_values.md, "
                        "booster_params.yaml.",
         "icd_revision": icd["source"]["revision"],
@@ -321,14 +356,22 @@ def to_yaml(res: dict, a1: dict, checks: list[dict]) -> dict:
                                       "note": "aero_method.md Spanwise distribution; booster_params.yaml"},
             "shape_ratios": {"tag": "H", "note": "hub, mean, tip; mean = 1; from TP-1523 [K] via the rule above [T]",
                              **{k: [_r(x) for x in v] for k, v in res["shapes"].items()}},
-            "axial_mach_station21": {"value": _r(res["mach_x"]), "unit": "-", "tag": "H",
-                                     "note": "1-D (mean) value, kept constant at every plane (plan step 5)"},
+            "axial_mach_station21": {"value": _r(res["mach_21"]), "unit": "-", "tag": "H",
+                                     "note": "1-D (mean) value at station 21 (M1 annulus)"},
+            "axial_mach_booster": {"value": _r(res["mach_x"]), "unit": "-", "tag": "T",
+                                   "note": "station 21 value x axial_mach_scale, constant on every plane downstream "
+                                           "(plan step 5)"},
+            "annulus": {"value": p(res["params"], "annulus"), "unit": "-", "tag": "T",
+                        "note": "plan step 5; lever L2 (aero_method.md Design levers)"},
+            "levers": {"tag": "T", "note": "aero_method.md Design levers; booster_params.yaml",
+                       **{k: p(res["params"], k) for k in ("tip_work_ratio_k", "rotor_chord_scale", "work_split",
+                                                            "spanwise_normalisation", "axial_mach_scale")}},
         },
         "station_21": _plane(res["p21"], gas),
         "stages": stages,
         "station_24": _plane(res["p24"], gas),
         "station_25": {"Tt": _r(res["p24"].Tt, 2), "Pt_kPa": _r(res["Pt25"] / 1e3, 3), "W": _r(res["W"], 4),
-                       "tag": "H", "note": "duct_25_24 applied to station 24; annulus at 25 not modelled in step 2"},
+                       "tag": "H", "note": "duct_25_24 applied to station 24; duct annulus not modelled: station 25 annulus = station 24 annulus [T] (geometry/flowpath.yaml interfaces.M3_station_25)"},
         "consistency_vs_icd": consistency,
         "budget_check": [{k: (_r(v, 6) if isinstance(v, float) else v) for k, v in row.items()}
                          for row in res["budget_rows"]],

@@ -4,14 +4,18 @@ description: >-
   Station 21 annulus: engine/M1_inlet_fan/geometry/flowpath.yaml (read-only). Rotor blade counts: rules/known_values.md
   (read by code). M2 step 2; spanwise_distribution step 3.
 stage_count: {value: 3, unit: '-', tag: KS, note: 'R-AM2.1; Girão 2023 PDF p. 36, Owner''s Guide s. 10, Lolis 2014 s. 122'}
-work_split: {value: equal_stage_pressure_ratio, unit: '-', tag: T, note: meanline plan step 3}
+work_split: {value: equal_stage_pressure_ratio, unit: '-', tag: T, note: 'meanline plan step 3; lever L4 (aero_method.md Design levers): kept, no source for another split; a list of stage work fractions is the alternative form (#64 study)'}
 stage_efficiency: {value: polytropic_equivalent_of_eta_booster, unit: '-', tag: H, note: 'same polytropic efficiency in every stage, solved so that the overall isentropic efficiency equals the ICD eta_booster (ADR-015, R-AM2.4)'}
 loss_split_rotor: {value: 0.5, unit: '-', tag: T, note: 'share of the stage entropy rise taken in the rotor; only sets the rotor-exit Pt (density for the annulus)'}
-annulus: {value: constant_hub_constant_axial_mach, unit: '-', tag: T, note: 'meanline plan step 5: constant hub radius (Lolis 2014 Table 4.10 [KS]); tip radius from continuity with the station 21 axial Mach number'}
+annulus: {value: constant_tip_constant_axial_mach, unit: '-', tag: T, note: 'meanline plan step 5 (step 4, lever L2, aero_method.md Design levers): tip radius fixed at the station 21 value on every plane 21 -> 24, hub radius from continuity with the station 21 axial Mach number; step 3 value constant_hub_constant_axial_mach (Lolis 2014 Table 4.10 [KS] method assumption); constant_mean_constant_axial_mach is the third rule of the #64 study'}
 stator_exit_swirl: {value: 0.0, unit: deg, tag: T, note: 'stators return the flow to axial (station 21 has no swirl); same inlet triangle for every rotor'}
 spanwise_distribution: {value: tp1523_shape, unit: '-', tag: T, note: 'step 3 design choice (aero_method.md Spanwise distribution): hub/tip work ratio from TP-1523 rotor 23B Table 2(b) (TR - 1 over mid), axial velocity ratio at the rotor TE from rotor 23B exit meridional velocity and at the stator TE from stator 20 Table 2(c) exit velocity, mean section = 1-D values; station 21 uniform; ratios read by code from learning/tp1523_reference.yaml; proportional transfer, no CFM56 source; free_vortex is the alternative value (step 2)'}
+spanwise_normalisation: {value: mass_and_work, unit: '-', tag: T, note: 'aero_method.md Spanwise normalisation (#68, step 4): Vx shape / Simpson mass ratio, work shape / mass-averaged work ratio on every profiled plane; none = step 3 rule'}
+tip_work_ratio_k: {value: 1.0, unit: '-', tag: T, note: 'lever L1 (aero_method.md Design levers): g_tip = 1 + k (g_tip,rig - 1) before normalisation; 1 = rig ratio'}
+axial_mach_scale: {value: 1.0, unit: '-', tag: T, note: 'axial Mach on the planes downstream of station 21 = scale x station 21 value (plan step 5); sensitivity x 0.9 / x 1.1 in sensitivity_64.py'}
 mean_radius: {value: arithmetic, unit: '-', tag: T, note: 'r_m = (r_hub + r_tip) / 2 at each plane'}
 rotor_aspect_ratio: {value: 2.0, unit: '-', tag: KS, note: 'R-AM2.3; Lolis 2014 Table 4.10, method assumption'}
+rotor_chord_scale: {value: 1.0, unit: '-', tag: T, note: 'lever L3 (aero_method.md Design levers): rotor chord = scale x height / rotor_aspect_ratio, counts fixed'}
 stator_aspect_ratio: {value: 1.2, unit: '-', tag: KS, note: 'R-AM2.3; Lolis 2014 Table 4.10, method assumption'}
 df_limit_rotor_tip: {value: 0.45, unit: '-', tag: K, note: 'R-AM2.2; RM E53D01 summary p. 1'}
 df_limit_other: {value: 0.58, unit: '-', tag: K, note: 'R-AM2.2; TP-1523 stage 28B-22, p. 3 and Table 1'}
