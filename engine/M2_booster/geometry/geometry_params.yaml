@@ -1,0 +1,75 @@
+description: 'M2 geometry step 1 rule constants (rules/geometry.md R-G2.1-8). Design values (chords, angles, counts,
+  radii, areas) are not here: the code reads them from the active record. One tag per field.'
+axial_gap_fraction:
+  value: 0.25
+  unit: '-'
+  tag: T
+  note: R-G2.2; axial gap = fraction x axial width of the upstream row; no booster source, order of the usual
+    compressor gap/chord range [G] not verified against a CFM56 value
+rotor_tc_hub:
+  value: 0.06
+  unit: '-'
+  tag: T
+  note: R-G2.3; max thickness / chord at the rotor hub section; order of TP-1523 rotor 23B Table 8 (p. 37) TM / aero
+    chord at the hub, OCR partly unreadable (#59), proportional transfer, no CFM56 value
+rotor_tc_tip:
+  value: 0.03
+  unit: '-'
+  tag: T
+  note: R-G2.3; as rotor_tc_hub, tip section; mean section t/c linear in span fraction between hub and tip
+stator_tc:
+  value: 0.05
+  unit: '-'
+  tag: T
+  note: R-G2.3; constant over span; TP-1523 stator 20 Table 14 (p. 43) chord not read (doğrulanamadı), estimate
+edge_thickness_ratio:
+  value: 0.01
+  unit: '-'
+  tag: T
+  note: R-G2.3; blunt LE/TE thickness / chord; order of TP-1523 TI/TO 0.051 cm on a 5.08 cm chord (Table 8 p. 37)
+span_extension_ratio:
+  value: 0.15
+  unit: '-'
+  tag: T
+  note: R-G2.4; loft extension beyond hub and tip = ratio x row mean height (construction only, trimmed away)
+tip_clearance_source_cm:
+  value: 0.036
+  unit: cm
+  tag: K
+  note: TP-1523 Table 18 p. 47, rotor 23B static tip clearance, arithmetic average
+rig_blade_height_cm:
+  value: 5.08
+  unit: cm
+  tag: K
+  note: TP-1523 rig annulus height (constant-area annulus), aero_method.md Aspect ratio
+tip_clearance_ratio:
+  value: clearance_source_over_rig_height
+  unit: '-'
+  tag: T
+  note: R-G2.6; tip_clearance_source_cm / rig_blade_height_cm computed in code, proportional transfer to the booster
+    rotor mean height
+rotor_material:
+  value: ti6al4v
+  unit: '-'
+  tag: T
+  note: R-G2.7, materials.md (analogy with the M1 fan blade); density from tools/data/materials.yaml
+stator_mass_material:
+  value: ti6al4v
+  unit: '-'
+  tag: T
+  note: R-G2.7; stator material is tbd (materials.md); placeholder density for the informational mass only (#71)
+area_tolerance:
+  value: 0.001
+  unit: '-'
+  tag: T
+  note: R-G2.8; relative; record areas carry 5 decimals (rounding below 1e-4 relative)
+chord_solidity_tolerance:
+  value: 0.005
+  unit: '-'
+  tag: T
+  note: R-G2.8; relative
+radius_tolerance_m:
+  value: 1.0e-05
+  unit: m
+  tag: T
+  note: R-G2.8; root/tip vertex radius vs the flow path line

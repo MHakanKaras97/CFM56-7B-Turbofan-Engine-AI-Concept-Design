@@ -9,6 +9,7 @@
 | `joints.md` | Spool-to-fan-disk joint with M1, blade attachments, abradable, VBV boundary |
 | `analyses.md` | Analyses A-1..A-5: method, acceptance criterion, source |
 | `failure_modes.md` | FM2-1..FM2-5: FOD/ice/hail, stall/surge, tip rub, drum LCF, blade HCF |
+| `geometry.md` | Geometry step 1: frame (M1 convention), axial layout, section profile, trim, flow path, clearance, material for mass, checks (R-G2.1-8) |
 | `known_values.md` | Source values: booster rotor counts 74/78/74 [KS] (#52); stator count rule R-KV2.1 [T] |
 | `open_items.md` | Pointer to the M2 rows in `docs/open_issues.md` |
 

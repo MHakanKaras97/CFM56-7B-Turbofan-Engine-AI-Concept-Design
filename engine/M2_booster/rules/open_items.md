@@ -26,3 +26,14 @@ Suggested updates of existing rows (wording for M0):
 - #57: sabit uç ile rotor hücum kenarı göbek/uç 0.697/0.760/0.808 (kademe 3 rig 0.8 üstünde); kademe 1-2 hâlâ altında.
 - New info for M3 (no CR, M3 not started): ist. 25 göbek yarıçapı 0.36624 m, uç 0.433488 m [T] (ist. 24 anülüsü,
   geçiş kanalı modellenmedi), `engine/M2_booster/geometry/flowpath.yaml` interfaces.M3_station_25.
+
+## Geometry step 1 drafts for `docs/open_issues.md` (M0 copies verbatim)
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 71 | M2 | Booster kanat malzemesi ve yoğunluğu kaynaksız: rotor `ti6al4v` (M1 fan kanadı benzetmesi), stator `tbd`; geometri adım 1 kütlesi statorlar için de `ti6al4v` yoğunluğunu yer tutucu olarak kullanıyor (geometry_params.yaml stator_mass_material); kütle yalnız bilgi | [T] | Konsept seviyesi; kütle kabul değeri değil (#60, #61 ile ilişkili) | CFM56-7B booster malzeme kaynağı, stator bağlantı/örtü seçimi veya kütle bütçesi | rules/materials.md; rules/geometry.md R-G2.7; tools/data/materials.yaml |
+| 72 | M2 | Booster kesit kuralı kaynaksız (R-G2.3-6): dairesel yay kamber, parabolik kalınlık (TP-1523 çift dairesel yay ailesinin yerine), t/c rotor göbek 0.06 / uç 0.03, stator 0.05, kenar 0.01; metal açıları = akış açıları (hücum ve sapma açısı sıfır, Carter/Lieblein sapma kuralı uygulanmadı); eksenel boşluk 0.25 x eksenel genişlik; uç açıklığı TP-1523 rotor 23B oranı (Tablo 18 s. 47) ile orantılı aktarım; stator uç/göbek açıklığı yok | [T] | Konsept geometri; değerler kayda değil geometry_params.yaml'a bağlı, kontrollerin hiçbiri bu sabitlerle ayarlanmadı | Booster kesit/kalınlık kaynağı, sapma kuralı (metal açısı adımı), yapısal analiz (kök gerilmesi, HCF FM2-5) veya uç açıklığı kaynağı | rules/geometry.md; geometry/geometry_params.yaml; TP-1523 Tablo 8 s. 37, Tablo 18 s. 47 |
+| 73 | M2 | İstasyon 24/25 eksenel konumu artık geometriden çıkıyor (x24 = S3 firar kenarı, R-G2.2 [T] kurallarıyla); geometry/flowpath.yaml M3_station_25 arayüzünde x yok ve geçiş kanalı 24 -> 25 modellenmedi (ist. 25 = ist. 24 düzlemi yer tutucu) | [T] | flowpath.yaml rev001 kaydının çıktısı; değiştirmek yeni revizyon ister, bu adımda revizyon yok | Bir sonraki M2 revizyonu veya M3 başlangıcı (x25 ihtiyacı) | geometry/layout.py; geometry/flowpath.yaml |
+
+Note for M0 (no open issue): shared frame module recommendation in `rules/geometry.md` (end of file); it needs a CR
+(core/ and M1 are outside M2).
