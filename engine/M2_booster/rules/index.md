@@ -25,4 +25,4 @@ Workflow (M2 agent):
 Acceptance (ADR-016) applies from the start: reproducible record, M0 budget pass, structural safety rules pass,
 deviations in `docs/open_issues.md`.
 
-Status: step 1 (sources, definitions, lesson, rule book skeleton). No design, no code, no revision; `bom/bom.yaml` has no parts.
+Status: step 2 (A-1 run: fail; booster meanline `analysis/booster_meanline.py`, unvalidated [T]). No revision, no geometry; `bom/bom.yaml` has no parts.

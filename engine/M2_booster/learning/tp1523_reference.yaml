@@ -128,3 +128,22 @@ applicability:
     Subsonic like the rig. Tip speed within 2 % at the booster inlet, falling to about 14 % below the rig at the
     stage 3 exit (constant hub). Hub/tip 0.697 at stage 1 inlet is 13 % below the rig 0.8 (outside); stage 3
     exit 0.79 is inside. Stage 1 is an extrapolation -> open issue #57.
+a1_case:
+  description: >-
+    Validation case A-1 (aero_method.md): rotor 23B design point, Table 2(b) p. 21 tip, mid-span (RP5) and hub rows
+    as printed (velocities m/s, angles deg from axial). Inputs of the M2 meanline are the radii, rpm, mean inlet
+    meridional velocity, inlet total state, rotor PR and TR (table 2(a) p. 20, coefficient_check); the exit rows
+    are comparison values. Read in M2 step 2 from sources_text (values were missing above).
+  page: 21
+  tag: K
+  inlet_total_pressure: {value: 101.3, unit: kPa, tag: K, note: 'table 2(b) TOTAL PRESS IN 10.13 N/cm2 at every radius'}
+  rotor_total_temperature_ratio: {value: 1.072, unit: '-', tag: K, note: 'table 2(a) p. 20, 3 decimals'}
+  rotor_adiabatic_efficiency: {value: doğrulanamadı, unit: '-', tag: K, note: 'OCR "0.9L3"; A-1 uses the PR/TR pair'}
+  columns: [station, r_in_cm, r_out_cm, vm_in, vm_out, vt_out, u_in, u_out, beta_rel_in, beta_rel_out, tt_ratio, df_table]
+  rows:
+  - [tip, 25.400, 25.400, 114.6, 93.7, 93.8, 243.9, 243.9, 64.8, 58.0, 1.079, 0.452]
+  - [mid, 22.856, 22.860, 114.5, 102.5, 93.4, 219.5, 219.5, 62.4, 50.9, 1.071, 0.450]
+  - [hub, 20.320, 20.320, 114.3, 94.9, 113.2, 195.1, 195.1, 59.6, 40.8, 1.076, 0.571]
+  repairs:
+  - {cell: tip REL BETAM OUT, raw: '"5E.0"', value: 58.0, tag: K, note: 'atan((243.9 - 93.8) / 93.7) = 58.0 deg'}
+  - {cell: mid MERID VEL OUT, raw: '"i02.5"', value: 102.5, tag: K, note: 'atan((219.5 - 93.4) / 102.5) = 50.9 deg = REL BETAM OUT'}

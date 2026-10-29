@@ -2,7 +2,7 @@
 
 | Id | Analysis | Method | Acceptance | Source |
 |---|---|---|---|---|
-| A-1 | Meanline validation on TP-1523 rotor 23B | `aero_method.md` A-1 (defined, not run) | D +-0.02, exit angle +-1.5 deg, PR +-1 % [T] | TP-1523 Tables 2, 8 [K] |
+| A-1 | Meanline validation on TP-1523 rotor 23B | `aero_method.md` A-1; `analysis/a1_validation.py` (step 2: fail, see aero_method.md) | D +-0.02, exit angle +-1.5 deg, PR +-1 % [T] | TP-1523 Tables 2, 8 [K] |
 | A-2 | Budget and integration | `core.budgets.check_budget("M2", ...)`; M0 integration check | all budget rows pass (ICD tolerances) | ICD [H] |
 | A-3 | Blade-row rule check | DF per section (R-AM2.2), solidity range, AR, hub/tip vs TP-1523 range | R-AM2.2 met; outside the tested range -> open issue | RM E53D01, TP-1523 [K] |
 | A-4 | Structural safety | blade root pull stress and drum hoop stress, closed form [G] | stress <= yield / 1.5 (same rule as M1 R-AM.15) [T] | M1 rule; material values `tools/data/materials.yaml` |

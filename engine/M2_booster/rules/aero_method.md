@@ -52,7 +52,7 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
 ### Hub/tip ratio
 - nu = r_hub / r_tip at the blade-row leading edge plane [G]. TP-1523: 0.8, constant through the stage [K].
 
-## Meanline plan (not run in step 1)
+## Meanline plan (run in step 2: `analysis/booster_meanline.py`, inputs `analysis/booster_params.yaml`)
 1. Inlet: station 21 (`read_icd`: Tt, Pt, W) and the M1 station 21 annulus (`engine/M1_inlet_fan/geometry/flowpath.yaml`,
    read-only, rev014). N1 = ICD `shafts.LP.speed_refs.girao_nominal` [KS].
 2. Stage count 3 [KS] (Girão 2023 PDF p. 36; Owner's Guide s. 10; Lolis 2014 s. 122 agree).
@@ -72,11 +72,16 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
   - rotor tip D <= 0.45: above about 0.45 rotor-tip element efficiency falls below 0.90 (RM E53D01 summary p. 1) [K];
   - rotor hub/mean and all stator sections D <= 0.58: the highest loading tested in TP-1523 (stage 28B-22, rotor and
     stator 0.58 measured, stall margin 13 %, p. 3 and Table 1) [K]; no extrapolation above the tested range.
-  - Solidity comes from these limits (smallest blade count that meets them), within the TP-1523 tested tip range
+  - Stator solidity comes from these limits (smallest vane count that meets them, R-KV2.1); rotor solidity is an
+    output (rotor counts are fixed inputs, R-AM2.3). All rows are checked against the TP-1523 tested tip range
     0.9-2.0 [K]; outside -> open issue, not a silent extrapolation.
-- **R-AM2.3 Proportional geometry** [T] (no CFM56 source for radii, chords or stator counts; rotor counts 74/78/74 [KS] in `known_values.md` are check values):
+- **R-AM2.3 Proportional geometry** [T] (no CFM56 source for radii, chords or stator counts):
+  - rotor blade counts 74/78/74 are fixed inputs [KS] (#52, `known_values.md`), read by code, not derived;
   - chord from AR: rotor AR 2.0, stator AR 1.2 (Lolis 2014 Table 4.10 method assumptions [KS]);
-  - blade count z = ceil(sigma_req x 2 pi r_m / c), sigma_req from R-AM2.2;
+  - rotor solidity and rotor DF are outputs; counts and chords are never tuned to meet a DF limit; a violation
+    is reported (open issue);
+  - stator vane count by R-KV2.1 [T]: z = ceil(sigma_req x 2 pi r_m / c), sigma_req from R-AM2.2, and z differs
+    from both adjacent rotor counts;
   - radii from step 5 of the meanline plan. These are rules, not values; values come from code.
 - **R-AM2.4 Efficiency** from the M0 budget only (ADR-015).
 
@@ -86,10 +91,12 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
 - Stage exits with constant hub and constant axial Mach [T]: hub/tip 0.731 / 0.763 / 0.793, tip speed 228.7 / 219.0 /
   210.6 m/s (down to -14 % against the rig). Stage 1 is an extrapolation in hub/tip -> open issue #57.
 
-## Validation case A-1 (defined, not run)
+## Validation case A-1 (run in step 2: `analysis/a1_validation.py` -> `analysis/a1_validation.yaml`)
 - Case: TP-1523 rotor 23B at design point (Table 2(b) p. 21: inlet velocities, rpm 9170, blade angles Table 8 p. 38).
 - Run the M2 meanline with the rig geometry and Table 2 inlet conditions. Rotor adiabatic efficiency in Table 2(a) is
   OCR "0.9L3" (0.943 likely; PR/TR 1.257 / 1.072 give 0.938, TR rounded to 3 decimals): doğrulanamadı; A-1 uses the
   PR/TR pair.
 - Pass criteria [T]: D at tip/mid/hub within +-0.02 of 0.452 / 0.450 / 0.571; exit relative flow angle within
   +-1.5 deg of Table 2(b); rotor PR within 1 % of 1.257 with the efficiency from PR/TR.
+- Step 2 result: fail (D tip and hub outside +-0.02; exit angles and PR pass, PR by construction in design mode).
+  Stopping rule: no tuning; the booster meanline values are tagged [T] (unvalidated placeholder) until A-1 passes.

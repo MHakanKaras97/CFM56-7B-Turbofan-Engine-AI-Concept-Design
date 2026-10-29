@@ -12,8 +12,9 @@ Extract and limits: `docs/learning/cfm56_7b_blade_counts.md`.
 | Booster stage 3 | 74 | [KS] | #52, p. 159 |
 
 - Read from the page image (booster stages 1-3 = ST2-ST4 of the "fan & booster" columns), not from OCR text.
-- Use: check value for the rotor count from R-AM2.3 (`aero_method.md`). Whether these counts replace the
-  R-AM2.3 rotor count is a user decision; until then R-AM2.3 sets the design value.
+- Use: fixed design inputs for the rotor counts (R-AM2.3, `aero_method.md`; user decision, M2 step 2). They are read
+  by code from this table and are not derived; chord comes from the AR rule, rotor solidity and DF are outputs.
+  Counts and chords are never tuned to meet a DF limit; violations go to `docs/open_issues.md`.
 
 ## Stator vane counts
 
