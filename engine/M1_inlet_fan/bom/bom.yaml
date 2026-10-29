@@ -1,6 +1,6 @@
 module_id: M1
 module_name: Inlet and Fan
-revision: rev012
+revision: rev013
 parts:
 - id: M1.1
   name: Fan Stage 1 Rotor
