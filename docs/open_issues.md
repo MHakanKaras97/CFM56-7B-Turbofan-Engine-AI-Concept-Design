@@ -60,7 +60,12 @@ Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki 
 | 42 | M1 | OGV sayısı 51, kural V = ceil(2.1 B) (Tyler-Sofrin kesim mantığı [G]); CFM değeri doğrulanmadı (#14 açık kalır) | [T] | Kaynak bulunamadı | Kaynak bulunursa veya akustik analiz | ogv_params.yaml |
 | 43 | M1 | OGV kesiti: MCA (ön pay 0.5), t/c 0.08, sıfır hücum, Carter sapması, eksenel çıkış; düzlemsel kesitler, radyal hücum kenarı; kayıp ve OGV basınç düşümü modelde yok | [T] | Konsept seviyesi | OGV kayıp modeli veya 3B aero | ogv.py |
 | 44 | M1 | OGV eksenel boyu 5b yer tutucusundan (x 0.321-0.478); katılık sonuç olarak 1.90-2.84 (yüksek, ağırlık); uç DF 0.588 (bilgi) | [H] | Eksenel konum oran kuralıyla (#27) | OGV boyutlandırma kuralı veya M7 kanalı | ogv.py |
-| 45 | M1 | OGV üstündeki dış kanal duvarı ve splitter duvarı katı parça değil; kanat iki ucta sabit kabul edildi (bağlantı detayı yok) | [T] | Çerçeve 5f'de | Adım 5f çerçeve | ogv.py |
+| 45 | M1 | OGV üstündeki dış kanal duvarı ve splitter duvarı katı parça değil; kanat iki ucta sabit kabul edildi (bağlantı detayı yok) | [T] | Çerçeve 5f'de | Kapandı (5f): dış halka ve splitter halkası kanal duvarları | ogv.py |
+| 46 | M1 | Çerçeve dikme sayısı 12 + 12 (baypas/çekirdek), düz levha; boyutlar oran kuralı | [T] | Kaynak bulunamadı (doğrulanamadı) | Kaynak veya yapısal analiz | fan_frame_params.yaml |
+| 47 | M1 | Yatak destek flanşı yalnız sınır (iç yarıçap 0.151 m); LP mil ve 1-2 yatakları M8 | [T] | Sahiplik M8; arayüz M0 CR ile | M8 tasarımı veya CR | fan_frame.py |
+| 48 | M1 | VBV açıklıkları yer tutucu (12 adet, r 0.4248-0.4335); VBV sahibi M0 tarafından atanmadı | [T] | Girão 2023 (s. 36-37) [KS] VBV'nin çerçevede olduğunu söylüyor; sahip yok | M0 sahiplik kararı | fan_frame.py |
+| 49 | M1 | Çerçeve içi çekirdek kanalı ist. 21 yarıçaplarıyla sabit (M2 geçiş kanalı yerine yer tutucu); splitter M1.4.3'e verildi | [T] | Girão: çerçeve birincil/ikincil akışı ayırır | M2 akış yolu tasarımı | fan_frame.py |
+| 50 | M1 | M1 toplam kütlesi 519.97 kg, uzunluk 1.10 m [H]; ICD'de kütle/uzunluk kalemi yok, karşılaştırma yapılamadı | [H] | Bütçe yalnız çevrim kalemleri | M0 kütle/uzunluk bütçesi eklerse | assembly.py |
 
 ## M0 Motor
 

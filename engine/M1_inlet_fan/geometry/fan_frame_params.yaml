@@ -1,0 +1,86 @@
+description: M1 step 5f inputs for the fan frame (M1.4) (hand-written). Ratios only; lengths computed by code. No
+  value here is a CFM56-7B dimension. Function and material of the frame from Girão 2023 (PDF p. 36-37) [KS]
+  (forward support of both rotors, separates primary and secondary flow, OGV attach points, houses the VBVs,
+  aluminium); every size below is [T].
+material:
+  value: aluminium_alloy
+  unit: '-'
+  tag: KS
+  note: Girão 2023, PDF p. 37 (7B fan frame made of aluminium); density from rotor_hardware.densities ([T] fallback)
+length_over_tip_axial_chord:
+  value: 1.0
+  unit: '-'
+  tag: T
+  note: frame axial length behind the station 13 plane (OGV trailing edge)
+strut_count:
+  value: 12
+  unit: '-'
+  tag: T
+  note: bypass and core struts at the same angles, strut 0 at top dead centre; CFM56-7B strut count not found in
+    the M1/M0 sources (doğrulanamadı)
+strut_chord_over_length:
+  value: 0.8
+  unit: '-'
+  tag: T
+  note: axial strut chord per frame length, centred in the frame
+strut_thickness_over_chord:
+  value: 0.12
+  unit: '-'
+  tag: T
+  note: flat-sided strut plate (no airfoil fairing)
+outer_ring_thickness_over_tip_radius:
+  value: 0.01
+  unit: '-'
+  tag: T
+  note: outer ring = bypass outer wall from the OGV leading edge (mates with the case rear flange) to the frame end
+splitter_thickness_over_split_radius:
+  value: 0.02
+  unit: '-'
+  tag: T
+  note: splitter / mid ring from the station 21 lip to the frame end; outer face = bypass inner wall at r_split2,
+    inner face drops linearly to r_split2 - thickness over the lip length
+splitter_lip_length_over_thickness:
+  value: 4.0
+  unit: '-'
+  tag: T
+hub_ring_thickness_over_split_thickness:
+  value: 1.0
+  unit: '-'
+  tag: T
+  note: hub ring below the core passage inside the frame, inner face of the core passage at r_hub2
+core_passage:
+  value: station_21_radii
+  unit: '-'
+  tag: T
+  note: core passage through the frame kept at the station 21 hub radius and the splitter inner face; the booster
+    and transition duct are M2 (station 21 -> 25), so these radii are a placeholder boundary
+bearing_flange_inner_over_hub_radius:
+  value: 0.5
+  unit: '-'
+  tag: T
+  note: inward bearing-support flange at the rear of the hub ring; its inner rim is the M8 boundary (LP shaft and
+    bearings 1-2 are M8, not designed here)
+bearing_flange_thickness_over_split_thickness:
+  value: 1.5
+  unit: '-'
+  tag: T
+flange_height_over_outer_ring:
+  value: 2.0
+  unit: '-'
+  tag: T
+  note: front flange of the outer ring, same axial thickness as the case rear flange (mating faces)
+vbv_count:
+  value: 12
+  unit: '-'
+  tag: T
+  note: placeholder VBV openings (core to bypass) through the splitter ring between the struts; VBV owner not set
+    by M0 (rules/bom.md), cut-outs only
+vbv_axial_over_length:
+  value: 0.4
+  unit: '-'
+  tag: T
+vbv_tangential_over_gap:
+  value: 0.4
+  unit: '-'
+  tag: T
+  note: tangential opening width per strut gap at the splitter radius
