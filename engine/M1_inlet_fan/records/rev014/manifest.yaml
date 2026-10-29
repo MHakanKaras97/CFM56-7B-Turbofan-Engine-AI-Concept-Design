@@ -1,0 +1,16 @@
+revision: rev014
+parent_revision: rev013
+revision_type: design
+date: '2026-10-29T12:51:55Z'
+summary: 'M1 step 5i: dovetail/lug rule R-DISK.2, rotor slab 203.4 -> 264.4 mm (k=3),
+  lowest root/lug margin 1.107, bore margin 1.140 (R-DISK.1 re-run); blade 8.299 kg,
+  disk 98.47 kg, M1 total 562.81 kg [H]; params/results identical to rev013'
+reason: 'User brief M1 step 5i: lug margin 0.715 (#33) and flank bearing 0.782 below
+  the margin rule'
+change_request: null
+code_commit: 374277e7266e83d3ef9c6a9a3957ccd589879235
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 02a4e8b11a39cd3d0852f6124a3a0b891747b11cf4f6eba3bea00b1d780da569
+- file: analysis/results.yaml
+  sha256: 7ac7cb350c0bc8adbd80ae17762f260b4abc85e4e0c2f7ef97869e4c97abf6ba
