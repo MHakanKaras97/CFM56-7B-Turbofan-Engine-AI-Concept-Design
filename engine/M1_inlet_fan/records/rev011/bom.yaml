@@ -1,0 +1,186 @@
+module_id: M1
+module_name: Inlet and Fan
+revision: rev011
+parts:
+- id: M1.1
+  name: Fan Stage 1 Rotor
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Fan rotating assembly; adds work to bypass and core flow
+  material: null
+  status: draft
+- id: M1.1.1
+  name: Fan Stage 1 Rotor Blade
+  parent: M1.1
+  qty:
+    value: 24
+    unit: ea
+    tag: KS
+  function: Turn and accelerate the flow (stations 2-13 outer, 2-21 inner)
+  material: ti6al4v
+  process: forged, machined, shot peened; dovetail grit blasted, Cu-Ni-In plasma spray, MoS2 dry-film
+  status: draft
+  joints:
+  - to: M1.1.2
+    type: dovetail
+  loads:
+  - centrifugal
+  - gas bending
+  - dovetail contact and friction
+  - vibration
+  - bird and FOD impact
+  failure_modes:
+  - FM-1
+  - FM-2
+  - FM-3
+  - FM-4
+  - FM-6
+  analyses:
+  - A-1
+  - A-3
+  - A-4
+  - A-5
+  - A-6
+  - A-7
+  - A-9
+  notes: 'Count: Girão 2023 and Fox, Rossey, Raguet 2023, p. 1439. Process: Fox, Rossey, Raguet 2023, p. 1439. No midspan shroud (Girão 2023).'
+- id: M1.1.2
+  name: Fan Stage 1 Disk
+  parent: M1.1
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Carry the blades and transmit LP shaft torque
+  material: ti6al4v
+  status: draft
+  loads:
+  - centrifugal
+  - blade pull
+  - torque
+  failure_modes:
+  - FM-5
+  analyses:
+  - A-3
+  - A-6
+  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Shaft interface owned by M8 (CR via M0).'
+- id: M1.1.3
+  name: Fan Stage 1 Spinner
+  parent: M1.1
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Guide flow into the fan hub
+  material: tbd
+  status: draft
+  joints:
+  - to: M1.1.2
+    type: bolted_flange
+  notes: Material aluminium or composite [T]; joint type [T].
+- id: M1.1.4
+  name: Fan Stage 1 Dovetail Shim
+  parent: M1.1
+  qty:
+    value: 24
+    unit: ea
+    tag: T
+  function: Wear interface between blade and disk contact faces
+  material: alloy718
+  process: MoS2 dry-film on disk-side faces
+  status: draft
+  joints:
+  - to: M1.1.2
+    type: other
+  failure_modes:
+  - FM-1
+  notes: 'Material and process: Fox, Rossey, Raguet 2023, p. 1439. Count one per slot [T].'
+- id: M1.1.5
+  name: Fan Stage 1 Blade Spacer
+  parent: M1.1
+  qty:
+    value: 24
+    unit: ea
+    tag: KS
+  function: Radial restraint of the blade in the slot
+  material: ti6al4v
+  process: elastomer coated
+  status: draft
+  notes: 'One per slot: Fox, Rossey, Raguet 2023, p. 1439.'
+- id: M1.1.6
+  name: Fan Stage 1 Blade Platform
+  parent: M1.1
+  qty:
+    value: 24
+    unit: ea
+    tag: T
+  function: Inner flowpath between blades; circumferential restraint
+  material: aluminium_alloy
+  process: with elastomer seals
+  status: draft
+  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Count one per blade gap [T].'
+- id: M1.2
+  name: Fan Stage 1 Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer flowpath over the fan and blade containment
+  material: null
+  status: draft
+- id: M1.2.1
+  name: Fan Stage 1 Case Shell
+  parent: M1.2
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer flowpath and tip clearance surface
+  material: tbd
+  status: draft
+  failure_modes:
+  - FM-6
+  analyses:
+  - A-9
+  notes: Material aluminium or composite [T].
+- id: M1.2.2
+  name: Fan Stage 1 Containment Ring
+  parent: M1.2
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Contain a released blade
+  material: tbd
+  status: draft
+  failure_modes:
+  - FM-4
+  analyses:
+  - A-8
+  notes: Material not selected.
+- id: M1.3
+  name: Fan Stage 1 Outlet Guide Vane
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: T
+  function: Remove swirl from the bypass flow (station 13)
+  material: tbd
+  status: draft
+  notes: Modelled as one vane row; vane count doğrulanmadı. Material aluminium or composite [T].
+- id: M1.4
+  name: Fan Stage 1 Frame
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Structural frame behind the fan; carries fan case and bearing loads
+  material: aluminium_alloy
+  status: draft
+  notes: 'Aluminium and VBVs inside the frame: Girão 2023 (docs/learning/cfm56_7b_module_facts.md). VBV owner to be set by M0.'

@@ -64,7 +64,16 @@ blading:
     value: rotor67_hub_solidity
     tag: KS
     source: 'Rotor 67 hub solidity 3.11, Strazisar et al. NASA TP-2879 (1989) p. 2, read from learning/rotor67_reference.yaml design.solidity_hub (not repeated here)'
-    note: 'R-AM.18 (M1 step 4i-b, user requirement): hub solidity = chord(0) / inlet pitch at f 0 (2 pi r_hub1 / blade count) not below the Rotor 67 hub solidity; a constraint row of the lowest-mean-chord linear programme together with the R-AM.9 balanced-state needs (fan_design.root_chord_floor, chord_constraints)'
+    note: 'R-AM.18 (M1 step 4i-b, user requirement; definition step 4i-e): hub solidity = chord(0) x blade count / (2 pi r_mean), r_mean = (r_hub1 + r_hub2) / 2 (solidity_definition), not below the Rotor 67 hub solidity; a constraint row of the lowest-mean-chord linear programme together with the R-AM.9 balanced-state needs (fan_design.root_chord_floor, chord_constraints). Step 4i-b to 4i-c used the inlet pitch 2 pi r_hub1 / blade count'
+  solidity_definition:
+    value: chord_count_over_2pi_r_mean
+    tag: KS
+    source: 'Rotor 67 solidity 3.11 hub / 1.29 tip, Strazisar et al. NASA TP-2879 (1989) p. 2 [KS]'
+    note: 'Definition verified numerically (H from KS): the paper does not state the definition; Table I chord and LE/TE radii with 22 blades give 3.116 / 1.285 with the mean-radius pitch (blade_profile.rotor67_solidity_paper). M1 step 4i-e (user decision 2026-10-29): solidity = true chord x blade count / (2 pi r_mean), r_mean = mean of the blade-edge inlet and exit radii (hub line r_hub1, r_hub2; tip line r_tip1, r_tip2; a stream tube: its inlet r1 and exit r2 on the balanced state). Used by R-AM.18 and every reported solidity (step 4i-f: the supersonic R-AM.9 floor uses supersonic_floor_basis). The meanline Tube (DF, covered fraction, loss model) and the subsonic SP-36 DF rule keep the inlet pitch 2 pi r1 / blade count (they do not use the Rotor 67 values)'
+  supersonic_floor_basis:
+    value: inlet_pitch
+    tag: T
+    note: 'M1 step 4i-f (user decision 2026-10-29): supersonic R-AM.9 floor = Rotor 67 solidity at the same span (linear 3.11 -> 1.29 [KS], TP-2879 p. 2) x tube inlet pitch 2 pi r1 / blade count: known conservative deviation (user-accepted, revisit with M0 v2 / off-design), not a definition match. By the paper definition the floor equals the Rotor 67 value x 2 r1 / (r1 + r2): above it on contracting tubes (r2 < r1, tip tube about 2.5 %), below it on expanding tubes (r2 > r1); per tube in results.yaml R_AM9 solidity_floor_over_rotor67_paper_info. With the mean-radius pitch (step 4i-e) the stream PR balance stalls in pass 1'
   need_basis:
     value: balanced_state
     tag: T

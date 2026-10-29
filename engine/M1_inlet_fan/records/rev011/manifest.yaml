@@ -1,0 +1,16 @@
+revision: rev011
+parent_revision: rev010
+revision_type: design
+date: '2026-10-29T06:36:52Z'
+summary: 'M1 step 4i-f: solidity = chord x 24 / (2 pi r_mean); R-AM.18 hub 3.110 on
+  mean pitch; supersonic R-AM.9 floor on inlet pitch (known deviation, tube 5 -1.8
+  %, user-accepted); chord 0.2176/0.2669 m; A_root 42.21 cm2; t/c 0.134/0.0495/0.0298;
+  225.0 MPa root; 6.769 kg/blade; FPR 1.765004'
+reason: User decisions M1 step 4i-e/4i-f (solidity definition, supersonic floor basis)
+change_request: null
+code_commit: 96c9891745bb6e78568c60cd7a9c27ac8825dab7
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 02a4e8b11a39cd3d0852f6124a3a0b891747b11cf4f6eba3bea00b1d780da569
+- file: analysis/results.yaml
+  sha256: 7ac7cb350c0bc8adbd80ae17762f260b4abc85e4e0c2f7ef97869e4c97abf6ba
