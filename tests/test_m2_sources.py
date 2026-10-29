@@ -1,6 +1,7 @@
 """M2 step 1: source index, TP-1523 table checks, definitions, applicability, rule book skeleton, agent."""
 
 import math
+import warnings
 from pathlib import Path
 
 import pytest
@@ -8,6 +9,7 @@ import yaml
 
 from core.bom import load as load_bom
 from core.budgets import read_icd
+from core.records import active_revision, design_drift, read_revision, reproduce, verify
 from tools.meanline import diffusion_factor
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -195,6 +197,21 @@ def test_rule_book_skeleton():
 def test_m2_bom_has_no_parts_yet():
     bom = load_bom(M2 / "bom" / "bom.yaml")
     assert bom["module_id"] == "M2" and bom["parts"] == []  # step 1: parts listed in rules/bom.md only
+
+
+def test_m2_active_record_verifies():
+    rev = active_revision("M2")
+    assert rev is not None
+    assert verify("M2", rev) == []
+    assert read_revision("M2", rev, "params.yaml") and read_revision("M2", rev, "results.yaml")  # else reproduce is empty
+    assert reproduce("M2", rev) == []  # with the record's own code_commit (ADR-013)
+
+
+def test_m2_design_drift_info():
+    """Info only: current code differs from the active record -> new revision needed (ADR-013)."""
+    rev = active_revision("M2")
+    if rev and (keys := design_drift("M2", rev)):
+        warnings.warn(f"M2 {rev}: design drift, new revision needed ({len(keys)} keys: {', '.join(keys[:5])})")
 
 
 def test_m2_agent_definition():
