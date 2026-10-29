@@ -23,3 +23,6 @@ türetilmiş dosyalar değişmez. Kabul durumu status.md, modül `rules/index.md
   CR + kullanıcı onayı) ile yapılır. Yeni revizyon dört koşulu yeniden sağlamalıdır.
 - Kabul kapsamı açıkça yazılır (ör. M1'de yalnız fan kanadı); başlamamış parçalar kabul edilmiş sayılmaz.
 - İlk uygulama: M1 fan kanadı, rev011. Disk, kasa, OGV ve çerçeve başlamadı.
+- İkinci uygulama: M1 modülünün tamamı, rev014 (kullanıcı kararı, 2026-10-29); `records/ACCEPTED` = rev014
+  (`core.records.mark_accepted`). Bilinen boşluklar docs/open_issues.md'de, ör. #53 disk büyük olabilir, #54 sürtünme/temas
+  basıncı analiz edilmedi, #36 Al yoğunluğu [T].

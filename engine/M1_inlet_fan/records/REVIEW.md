@@ -137,3 +137,9 @@ Acceptance criterion of the geometry-digitisation check changed from |dPR|/PR < 
   relative tolerances [T] (tests/test_m1_blade_solid.py): mass 1e-2, chord root/tip 1e-4, A_root 1e-3, area ratio 5e-3, t/c hub/mid/tip 1e-3.
 - Achieved at rev011 [H]: mass +3.46e-3 (cause: thickness normal to the curved camber line, section polygons 0.03-0.56 % above the record's
   A = (2/3) t c; loft vs section integral 1.4e-5), chord +4.6e-6 / +3.8e-6, A_root +3.4e-4, area ratio +2.0e-3, t/c -3.7e-5 / +4.4e-5 / +4.4e-5.
+
+## 2026-10-29 Concept acceptance: M1 module at rev014 (ADR-016)
+- User decision: whole M1 module concept-accepted at rev014; records/ACCEPTED = rev014 (core.records.mark_accepted).
+- Known gaps accepted as listed in docs/open_issues.md, incl. #53 disk may be oversized, #54 friction/contact pressure
+  not analysed, #36 aluminium density [T]. No design, rule, tolerance or code change; no new revision.
+- From now on a design revision of M1 needs an approved CR (ADR-012).

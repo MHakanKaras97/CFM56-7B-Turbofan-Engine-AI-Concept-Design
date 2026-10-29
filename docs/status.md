@@ -22,6 +22,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- M1 **konsept kabulü rev014** (kullanıcı kararı, ADR-016): records/ACCEPTED = rev014; bundan sonra M1 tasarım revizyonu onaylı CR ister (ADR-012). Bilinen boşluklar open_issues: #53 disk büyük olabilir, #54 sürtünme/temas basıncı yok, #36 Al yoğunluğu [T]. Kayıt, BOM, kod değişmedi.
 - M1 adım 5i: **kırlangıç/kulak kuralı R-DISK.2 + M1 rev014**. Tanı (M0 bağımsız + M1): kulak çekmesi en dar kesitte (lob seviyesi z2, kulak 10.46 mm) yönetiyor, pay 0.688-0.715; yanak yatağı 0.782 de kalıyordu. R-DISK.2 (`rules/disk.md`): 6 mod (kulak z2/z1, yanak yatağı, kulak kesme, eğilme, kanat boynu), rotor dilimi boyu (disk jantı = kök) %10 adım; k=3: 203.4 -> 264.4 mm, en düşük pay 1.107 (kulak); yatak 1.233. R-DISK.1 yeniden: bore pay 1.140. Kök 1.727 -> 2.203 kg, kanat 8.299 kg, çekme 1040.6 kN/yuva, disk 98.47 kg. **M1 toplam 562.81 kg**, boy 1.131 m. Disk/rotor review. #33 kapandı; #53-56.
 - M1 adım 5h: **disk boyutlandırma R-DISK.1 + M1 rev013**. Pay tanımı = izin/σ_vm - 1 >= 1.0 (R-AM.13/15 adım 4i: kararlı σ <= izin/2, izin 1100/1.5 = 733.3 MPa); M0 bağımsız kapalı çözümüyle 0.717 (427.0 MPa) doğrulandı, gerçek kalış. R-DISK.1 (`rules/disk.md`): bore genişliği/yüksekliği ve gövde birlikte %10 adım [T]; yuvalar, canlı jant, bore iç r 0.068 (M8) sabit. Adım 2: bore 0.1464 m genişlik, dış r 0.1412, gövde 0.0610 m; 365.3 MPa, **pay 1.007** (M0 kontrol aynı); disk 79.55 kg (+9.88). Kulak payı 0.715 aynı (#33, disk/rotor draft). 718 yoğunluğu 8193 [K] (SMC-045, sources #44); Al [T]. Kanat kütlesi tanımları #52: kayıt 6.769 / kırpılmış 6.095 / BOM 7.823 kg (raporlanan). **M1 toplam 529.85 kg**. #32 kapandı, #51-52.
 - M1 adım 5g: **M1 konsept montajı + rev012** (`geometry/assembly.py`: tek STEP .cache/geometry/M1_inlet_fan/<rev>/m1_assembly.step, parça STEP'leri ayrı; `geometry/bom_update.py` -> bom.yaml core.bom.write ile). Kütle [H]: M1.1 rotor 274.22, M1.2 kasa 83.15, M1.3 OGV 64.02, M1.4 çerçeve 98.58, **toplam 519.97 kg**; boy 1.1006 m, en büyük r 0.801 m. ICD'de kütle/boy kalemi yok -> karşılaştırma yok (#50). BOM: tbd malzemeler Al [T], yeni M1.3.1, M1.4.1-5; durum review, disk ve rotor draft (#32), approved yok. rev012 = rev011 params/results + yeni BOM; ACCEPTED işaretçisi kullanıcıda. Fusion karşılaştırması yapılmadı (MCP bağlı değil). Testler tests/test_m1_step5g.py.
@@ -60,7 +61,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Tek liste: docs/open_issues.md (modül, konu, etiket, kabul gerekçesi, yeniden bakma tetikleyicisi).
 
 ## Sıradaki adımlar
-1. Kullanıcı: M1 rev014 incelemesi ve ACCEPTED kararı; Al yoğunluğu (#36); VBV ve nasel sahipliği (#38, #48). results.yaml yazıcı etiketleri (#11) sonraki tasarım revizyonunda.
+1. Kullanıcı: Al yoğunluğu (#36); VBV ve nasel sahipliği (#38, #48). Sonraki modül (M1 kabul edildi, rev014). results.yaml yazıcı etiketleri (#11) sonraki tasarım revizyonunda.
 
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 

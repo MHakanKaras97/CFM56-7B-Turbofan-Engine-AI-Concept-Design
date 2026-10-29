@@ -21,7 +21,10 @@ Workflow (M1 agent):
 3. Check results with `core.budgets.check_budget("M1", ...)`.
 4. Cross-module needs: CR to M0 via `core/requests.py`, user approval required.
 
-Acceptance (ADR-016): fan rotor blade M1.1.1 concept-accepted at rev011 (step 4j: reproducible active record, budget
+Acceptance (ADR-016): **M1 module concept-accepted at rev014** (user decision 2026-10-29; `records/ACCEPTED` = rev014, set via
+`core.records.mark_accepted`; from now on a design revision needs an approved CR, ADR-012). Known gaps in `docs/open_issues.md`,
+incl. #53 disk may be oversized (R-DISK.2 slab length), #54 dovetail friction/contact pressure not analysed, #36 aluminium density [T].
+Earlier: fan rotor blade M1.1.1 concept-accepted at rev011 (step 4j: reproducible active record, budget
 9/9 + 2 info, R-AM.13/15 stress pass, known deviations in `docs/open_issues.md` #1-#18). Step 5 (5a-5g): all other M1
 parts concept-built from the rev011 params/results, to be recorded as rev012 (same params/results, new BOM); status per part
 as in `bom/bom.yaml` (review; disk M1.1.2 and root sized by R-DISK.2 + R-DISK.1 in steps 5h-5i, `disk.md`). Geometry scripts in `geometry/` (frame.py axes; flowpath, fan_ring, dovetail, rotor_hardware,
