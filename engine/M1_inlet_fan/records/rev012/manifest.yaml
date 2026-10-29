@@ -1,0 +1,17 @@
+revision: rev012
+parent_revision: rev011
+revision_type: design
+date: '2026-10-29T10:00:26Z'
+summary: 'M1 step 5g: concept assembly of all M1 parts (blade ring, dovetail, disk,
+  shim, spacer, platform, spinner, case, containment ring, OGV row, frame); BOM materials,
+  unit masses, new parts M1.3.1, M1.4.1-5; M1 total 519.97 kg [H]; params/results
+  identical to rev011'
+reason: M1 staged completion steps 5b-5g (user brief); disk bore margin 0.717 open
+  (#32)
+change_request: null
+code_commit: 8fc6d6272781b6560f15b4a0e38a351248a90726
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 02a4e8b11a39cd3d0852f6124a3a0b891747b11cf4f6eba3bea00b1d780da569
+- file: analysis/results.yaml
+  sha256: 7ac7cb350c0bc8adbd80ae17762f260b4abc85e4e0c2f7ef97869e4c97abf6ba
