@@ -23,3 +23,5 @@ No source value (#52 gives rotor blades only; open item #62 in `docs/open_issues
 - **R-KV2.1 Stator count** [T]: stator vane count per stage from R-AM2.3 (stator AR 1.2, sigma_req from R-AM2.2);
   the count differs from the adjacent rotor counts (avoid coincident rotor-stator interaction [G]).
   The value comes from code, never from this file.
+- Current stator counts 31/39/49 [T] (stages 1-3) belong to M2 rev001 (step 4 meanline, R-KV2.1 output). A different
+  count is a design change and needs a new M2 revision; it is never changed in geometry or BOM alone.
