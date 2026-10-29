@@ -53,6 +53,10 @@ Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki 
 | 35 | M1 | Kırlangıç, şim, ara parça, platform ve disk oranları boyun genişliğinin [T] katları; yuvarlatma, conta, elastomer yok | [T] | Kaynak yok | Kaynak veya ayrıntılı tasarım | rotor_params.yaml |
 | 36 | M1 | 718 ve Al yoğunlukları 8190 / 2800 kg/m³ [T]; tools/data/materials.yaml'da yok | [T] | Küçük kütle payı (~4.9 kg/takım) | Kaynaklı yoğunluk tools/data'ya eklenince | rotor_params.yaml |
 | 37 | M1 | Serbest bore (LP mil geçmesi yok, M8 arayüzü), ani kalınlık basamakları, ısıl gerilme yok | [G] | Analitik konsept kontrolü | M8 arayüz CR'si veya FEM | disk_stress.py |
+| 38 | M1 | İnlet/nasel dudağı M1'de değil; sınır = kasa ön flanşı x -0.149 m (ist. 2 düzlemi x -0.109 m'nin önünde) | [T] | Nasel sahibi belirlenmedi; flanş oranla konumlandı | M0 nasel/inlet sahipliği kararı veya CR | spinner_case.py |
+| 39 | M1 | Muhafaza halkası kalınlığı oran kuralıyla (0.02 r_tip = 15.5 mm); enerji dengesi kuralı/A-8 el hesabı yok; kanat kopma enerjisi ~211 kJ [H] yalnız bilgi | [T] | Kural kaynağı yok | A-8 analizi veya kaynak | case_params.yaml |
+| 40 | M1 | Spinner, kasa ve muhafaza malzemesi alüminyum seçildi (kural: alüminyum veya kompozit), yoğunluk geri dönüş değeri; muhafaza malzemesi doğrulanamadı | [T] | Kaynak yok; #36 yoğunluk kararına bağlı | Malzeme kaynağı veya materials.yaml kararı | case_params.yaml |
+| 41 | M1 | Spinner ogive boyu, kabuk/flanş kalınlıkları, kasa kalınlığı ve flanşları oran kuralı; cıvata ve delik yok; spinner flanşı yuva uçlarını kapatıyor (eksenel tutma, kavram) | [T] | Konsept seviyesi | Ayrıntılı tasarım veya FEM | case_params.yaml |
 
 ## M0 Motor
 

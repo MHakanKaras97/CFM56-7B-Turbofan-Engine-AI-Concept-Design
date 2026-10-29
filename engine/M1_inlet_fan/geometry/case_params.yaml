@@ -1,0 +1,75 @@
+description: M1 step 5d geometry inputs for the spinner (M1.1.3), case shell (M1.2.1) and containment ring (M1.2.2)
+  (hand-written). Ratios only; lengths are computed by code. No value here is a CFM56-7B dimension.
+spinner:
+  material:
+    value: aluminium_alloy
+    unit: '-'
+    tag: T
+    note: rules/materials.md lists the spinner as tbd (aluminium or composite [T]); aluminium chosen, no source
+  length_over_hub_radius:
+    value: 1.6
+    unit: '-'
+    tag: T
+    note: nose point to the aft edge, tangent ogive (tangent to the constant-radius hub line at r_hub1)
+  shell_thickness_over_hub_radius:
+    value: 0.02
+    unit: '-'
+    tag: T
+    note: radial wall thickness of the ogive shell
+  flange_thickness_over_shell:
+    value: 2.0
+    unit: '-'
+    tag: T
+    note: aft inward flange (axial thickness), bolted to the disk rim front face; bolts and holes not modelled
+  flange_inner_radius:
+    value: disk_rim_inner
+    unit: '-'
+    tag: T
+    note: the flange reaches down to the disk live-rim inner radius (rotor_hardware.disk_profile r_rim_inner) and
+      covers the slot ends (axial blade retention, concept)
+case:
+  material:
+    value: aluminium_alloy
+    unit: '-'
+    tag: T
+    note: rules/materials.md case tbd (aluminium or composite [T]); aluminium chosen, no source
+  shell_thickness_over_tip_radius:
+    value: 0.006
+    unit: '-'
+    tag: T
+  front_margin_over_tip_axial_chord:
+    value: 0.5
+    unit: '-'
+    tag: T
+    note: case front flange this far ahead of the blade tip leading edge; inlet / nacelle lip attaches here (not M1)
+  rear_end:
+    value: ogv_leading_edge
+    unit: '-'
+    tag: T
+    note: case ends with its rear flange at the OGV leading-edge plane (flowpath x_ogv_le); OGV / frame attach (5e/5f)
+  flange_height_over_shell:
+    value: 4.0
+    unit: '-'
+    tag: T
+    note: outward radial flange height
+  flange_thickness_over_shell:
+    value: 2.0
+    unit: '-'
+    tag: T
+containment:
+  material:
+    value: aluminium_alloy
+    unit: '-'
+    tag: T
+    note: material not selected in the BOM; no sourced containment material or strength (rules/bird_strike.md,
+      failure_modes FM-4, analyses A-8 give no rule); aluminium as a placeholder, doğrulanamadı
+  thickness_over_tip_radius:
+    value: 0.02
+    unit: '-'
+    tag: T
+    note: proportional rule, no energy-balance rule in the M1 rules (A-8 hand calc not done); open item
+  axial_margin_over_tip_axial_chord:
+    value: 0.25
+    unit: '-'
+    tag: T
+    note: ring extends this far ahead of the tip leading edge and behind the tip trailing edge (blade plane cover)
