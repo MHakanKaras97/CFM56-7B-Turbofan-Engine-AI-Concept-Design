@@ -50,6 +50,33 @@ Veri dosyaları (sayılar koddan gelir):
 
 Verimler izentropiktir (GasTurb girdileri, Şekil 4.9); politropiğe çevrilmez (v4.1).
 
+### Bileşen verimi tanımı [H]
+
+Kaynak: kod (`engine/M0_engine/analysis/cycle.py:11`, `run()` satır 189-226; `tools/thermo.py`
+`compressor_is` satır 181, `turbine_is_for_work` satır 189). Altı verim de toplamdan toplama
+(total-to-total) izentropik verimdir; gaz özellikleri değişken cp(T, FAR) ile (NASA polinomları),
+phi(T) = ∫cp/T dT entropi fonksiyonu, R_s gaz sabiti, FAR o istasyonun yakıt-hava oranı.
+
+- Kompresör (eta_fan_outer, eta_fan_inner, eta_booster, eta_hpc), PR = Pt_çıkış/Pt_giriş:
+  phi(T_is) = phi(Tt_giriş) + R_s ln(PR);
+  eta = [h(T_is) - h(Tt_giriş)] / [h(Tt_çıkış) - h(Tt_giriş)].
+- Türbin (eta_hpt, eta_lpt), PR = Pt_giriş/Pt_çıkış > 1, iş w kompresör gücünden verilir:
+  h(T_is) = h(Tt_giriş) - w/eta; PR = exp{[phi(Tt_giriş) - phi(T_is)] / R_s};
+  yani eta = [h(Tt_giriş) - h(Tt_çıkış)] / [h(Tt_giriş) - h(T_is)].
+
+| Verim | İstasyonlar | Not |
+|---|---|---|
+| eta_fan_outer | 2 -> 13 | Baypas akışı, PR = FPR |
+| eta_fan_inner | 2 -> 21 | Çekirdek akışı, iç fan |
+| eta_booster | 21 -> 24 | P25/P24 kanal kaybı verime dahil değil |
+| eta_hpc | 25 -> 3 | Kaçak havası HPC işinin leak_bleed_point oranını alır, verim tanımı değişmez |
+| eta_hpt | 41 -> 43 | Giriş = NGV soğutması karıştıktan sonra (T41), rotor soğutması 44'te karışır |
+| eta_lpt | 45 -> 5 | Giriş = kaçak havası döndükten ve P45/P44 kanalından sonra |
+
+Nominal durumda (ADR-009) ortak Δη bu izentropik verimlere eklenir. Modüller politropik verime
+ihtiyaç duyarsa dönüşümü `tools.thermo.compressor_isentropic_eff` / `turbine_isentropic_eff`
+ile aynı gaz modeliyle kendileri yapar (ör. M2 kademe politropik verimi); M0 girdisi izentropik kalır.
+
 | Büyüklük | Değer | Not |
 |---|---|---|
 | Dış fan PR (FPR) / izentropik verim | 1.765 / 0.878 | Girdi (ADR-008) |

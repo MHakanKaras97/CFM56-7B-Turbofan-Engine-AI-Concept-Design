@@ -26,6 +26,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- M0 verim tanımı (yalnız doküman): `rules/cycle_inputs.md` altı verim (eta_fan_outer/inner, booster, hpc, hpt, lpt) toplamdan toplama izentropik, değişken cp, istasyonlarıyla [H] (cycle.py:11, thermo.compressor_is/turbine_is_for_work). #66 kapandı.
 - M2 adım 2: **A-1 + booster meanline** (m2-booster; revizyon/BOM/geometri/CR yok). R-AM2.3: rotor sayıları 74/78/74 [KS] girdi, DF/katılık çıktı; stator R-KV2.1 [T] 25/31/39. A-1 (rotor 23B) **kaldı**: D uç 0.4045/0.452, göbek 0.5296/0.571 (orta, açılar, PR geçti) -> durdurma kuralı, ayar yok, booster değerleri [T] (#63). Meanline (`analysis/booster_meanline.py`, eşit PR 1.26076, eta_booster izentropik -> politropik 0.9157 [H]): rotor uç D 0.434/**0.477/0.540** (R-AM2.2 0.45 ihlali kademe 2-3, #64), stator göbek D 0.573-0.579 (<= 0.58), rotor ort. katılık 2.00/1.84/1.51, stator 1.05/1.13/1.23; ist. 24/25 ICD ile tutuyor, check_budget M2 geçti. #57 etkisi rotor göbeklerinde; #65-66. Testler tests/test_m2_step2.py.
 - M3-M9 iskeleti: .claude/agents/m3..m9 (M2 kalıbı; yazma yalnız engine/<modül>/, bütçe yalnız read_icd), rules/index.md + known_values.md (#52 rotor sayıları, #49 ISSUE58 s. 20 LLP ömürleri, ISSUE39 farkı doğrulanamadı; stator/NGV yalnız [T] kural; CFM56_Answers reddedildi), learning/sources/INDEX.md. core.scope genel (m<rakam>- regex), kayıt gerekmedi. İlerleme: docs/m3_m9_progress.md. Tasarım yok.
 - M2 kanat sayıları: `rules/known_values.md` (booster rotor 74/78/74 [KS], #52 s. 159; kontrol değeri, R-AM2.3'ün yerine geçip geçmeyeceği kullanıcı kararı), stator için yalnız [T] kural R-KV2.1; index.md bağlantısı; open_issues #14 notu (M1 kabul, fan 24 #62, OGV 51 [T] açık). Tasarım/kod/revizyon yok.
@@ -61,7 +62,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Tek liste: docs/open_issues.md (modül, konu, etiket, kabul gerekçesi, yeniden bakma tetikleyicisi).
 
 ## Sıradaki adımlar
-1. Kullanıcı kararları: A-1 yöntemi (#63), rotor uç D ihlali (#64), M0 rules'a verim tanımı (#66); Al yoğunluğu (#36), nasel sahipliği (#38). results.yaml yazıcı etiketleri (#11) sonraki tasarım revizyonunda.
+1. Kullanıcı kararları: A-1 yöntemi (#63), rotor uç D ihlali (#64); Al yoğunluğu (#36), nasel sahipliği (#38). results.yaml yazıcı etiketleri (#11) sonraki tasarım revizyonunda.
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 
 ## Çalışma kuralları
