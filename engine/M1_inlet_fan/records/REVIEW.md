@@ -131,3 +131,9 @@ Acceptance criterion of the geometry-digitisation check changed from |dPR|/PR < 
 - Fan rotor blade (M1.1.1) concept-accepted at rev011. Criteria checked: active record reproduces (tests/test_m1_sources.py::test_m1_active_record_verifies),
   budget 9/9 pass + 2 info, R-AM.15 stress check pass (225.0 MPa at the root, margin 2.26 >= 1.0), known deviations listed in docs/open_issues.md.
 - No design, rule, tolerance or code change; no new revision. Disk, case, OGV and frame: not started (not accepted).
+
+## 2026-10-29 Criteria: blade solid acceptance (M1 step 5a)
+- New check, geometry only (no design or rule change): airfoil solid from the active record (geometry/blade_solid.py) against the record,
+  relative tolerances [T] (tests/test_m1_blade_solid.py): mass 1e-2, chord root/tip 1e-4, A_root 1e-3, area ratio 5e-3, t/c hub/mid/tip 1e-3.
+- Achieved at rev011 [H]: mass +3.46e-3 (cause: thickness normal to the curved camber line, section polygons 0.03-0.56 % above the record's
+  A = (2/3) t c; loft vs section integral 1.4e-5), chord +4.6e-6 / +3.8e-6, A_root +3.4e-4, area ratio +2.0e-3, t/c -3.7e-5 / +4.4e-5 / +4.4e-5.

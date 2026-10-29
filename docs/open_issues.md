@@ -27,6 +27,17 @@ ne zaman yeniden bakılacağını kaydeder. Kapanan satır silinmez, durumuna "k
 | 17 | M1 | Uçtan %70'te şok azaltma kuralı şok kaybı uyguluyor, lazer verisinde geçit şoku yok (kaynak-ölçüm çatışması) | [KS] çatışma | Model biçimi açık noktası; verim bütçeden (#8) | Kayıp modeli biçim değişikliği | aero_method.md |
 | 18 | M1 | Akım çizgisi eğriliği, eğim ve geliş açısına bağlı sapma/kayıp modellenmedi | [G] sınırlama | Konsept seviyesinde basit radyal denge | Off-design (M0 v2) veya kayıp modeli revizyonu | aero_method.md |
 
+## M1 kanat katı modeli (adım 5a, `engine/M1_inlet_fan/geometry/blade_solid.py`)
+
+Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki kütle integraliyle aynı idealleştirme.
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 23 | M1 | Hücum ve firar kenarı yarıçapı 0 (keskin kenar); R-AM.11 profili kenar dairelerini yok sayıyor | [T] | Kayıttaki alan/kütle aynı varsayımla; CFM kenar yarıçapı kaynağı yok | Kuş çarpması/erozyon analizi veya kenar yarıçapı kaynağı | blade_solid.py |
+| 24 | M1 | Uç boşluğu kanattan kesilmedi: kanat r_tip1'e kadar (aero modelde çalışma boşluğu 3.0 mm [T], #16) | [T] | Kasa başlamadı; boşluk kasa tarafında tanımlanacak | Fan kasası (M1.2) tasarımı | blade_solid.py |
+| 25 | M1 | Kök köşe yuvarlatması, kanat-kök geçişi, platform ve kırlangıç kuyruğu yok; kanat r_hub1 düzleminde bitiyor, yükselen çıkış göbek hattı (#7) kesilmedi | [T] | Disk ve kök tasarımı başlamadı; kütle yalnız kanat profili (kayıtla aynı) | Disk/kırlangıç kuyruğu (M1.1.2, M1.1.4-6) tasarımı | blade_solid.py |
+| 26 | M1 | Düzlemsel kesitler sabit yarıçapta, kesit ağırlık merkezlerinden radyal yığma (eğim, ok açısı, silindire sarma yok); dönüş yönü (Y işareti) seçilmedi | [T] | Konsept seviyesi; kayıttaki kütle integraliyle tutarlı | Yapısal (FEM) veya 3B aero analizi | blade_solid.py |
+
 ## M0 Motor
 
 | # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
