@@ -26,6 +26,7 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 - Talepler sayfası: tek "Kararı kaydet" düğmesi; (b) seçeneği = ret. Kabul edildi.
 
 ## Son yapılanlar
+- M2 kanat sayıları: `rules/known_values.md` (booster rotor 74/78/74 [KS], #52 s. 159; kontrol değeri, R-AM2.3'ün yerine geçip geçmeyeceği kullanıcı kararı), stator için yalnız [T] kural R-KV2.1; index.md bağlantısı; open_issues #14 notu (M1 kabul, fan 24 #62, OGV 51 [T] açık). Tasarım/kod/revizyon yok.
 - Checkpoint: docs/learning/research_notes_m3_m9.md (ikincil özet, her satır [KS zayıf]; yalnız Owner's Guide ile doğrulanan LLP ömürleri kurala girer) ve cfm56_7b_blade_counts.md (CFMI eğitim el kitabı s. 159, sources #52; fan 24 destekleniyor, stator/NGV açık #62). #58 kapandı. Etiket checkpoint-m1-accepted-m2-step1.
 - M2 adım 1: **kaynaklar, tanımlar, ders, rule book iskeleti** (tasarım/kod/revizyon yok). 7 kaynak arşive taşındı (M2_booster/aero, engine_data, e3; sha256 eşit, depodan silindi, MANIFEST 45 satır), sources_text birebir kopya; INDEX.md, docs/sources.md #45-51; Girão #15 M0'dan. TP-1523 (`learning/tp1523_reference.yaml`): Tablo 1 24 satır AR/uç katılığı tuttu (4 onarım), kanat tabloları 30 satır: 21 güvenilir, 7 onarıldı (9/5, 6/8, 5/3, ondalık), 2 çözülemedi. Tanımlar `rules/aero_method.md`: katılık (r_LE+r_TE)/2'de (M1 ile aynı; TP-1523 Tablo 1 uçta), DF = RM E53D01 denk. 13 (denk. 4 ayrılma ölçütü; TP-1523 B4 doğrulanamadı, Tablo 2 ile sayısal ±0.002), phi = Vx/U_uç, psi_is TP-1523 biçimi. Uygulanabilirlik [H]: ist. 21 göbek/uç 0.697 (TP-1523 0.8, #57), uç hızı 239.8 m/s (-%1.7), ses altı; ist. 21 Mach 0.393 vs Lolis 0.5 (#58). Kurallar R-AM2.1-4, A-1 tanımlı (çalıştırılmadı). VBV: akış işlevi M2, donanım M1 çerçevesi, CR yok. .claude/agents/m2-booster.md (yeniden başlatmadan sonra). #57-61. Testler tests/test_m2_sources.py.
 - M1 **konsept kabulü rev014** (kullanıcı kararı, ADR-016): records/ACCEPTED = rev014; bundan sonra M1 tasarım revizyonu onaylı CR ister (ADR-012). Bilinen boşluklar open_issues: #53 disk büyük olabilir, #54 sürtünme/temas basıncı yok, #36 Al yoğunluğu [T]. Kayıt, BOM, kod değişmedi.
@@ -62,7 +63,6 @@ M0 motor agent'ı + M1–M9 modül agent'ları (Claude Code subagent). Öğrenme
 
 ## Sıradaki adımlar
 1. Claude Code yeniden başlatılınca M2 adım 2 (m2-booster'a devir: meanline, A-1). Kullanıcı: Al yoğunluğu (#36), nasel sahipliği (#38). results.yaml yazıcı etiketleri (#11) sonraki tasarım revizyonunda.
-
 Yol haritası: M0 v2 off-design modeli (sabit A8, A18, HPT NGV kapasitesi, bileşen haritaları); entegrasyon kontrolü ve seyir noktası bunun üzerine kurulur.
 
 ## Çalışma kuralları

@@ -74,7 +74,7 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
     stator 0.58 measured, stall margin 13 %, p. 3 and Table 1) [K]; no extrapolation above the tested range.
   - Solidity comes from these limits (smallest blade count that meets them), within the TP-1523 tested tip range
     0.9-2.0 [K]; outside -> open issue, not a silent extrapolation.
-- **R-AM2.3 Proportional geometry** [T] (no CFM56 source for blade counts, radii, chords):
+- **R-AM2.3 Proportional geometry** [T] (no CFM56 source for radii, chords or stator counts; rotor counts 74/78/74 [KS] in `known_values.md` are check values):
   - chord from AR: rotor AR 2.0, stator AR 1.2 (Lolis 2014 Table 4.10 method assumptions [KS]);
   - blade count z = ceil(sigma_req x 2 pi r_m / c), sigma_req from R-AM2.2;
   - radii from step 5 of the meanline plan. These are rules, not values; values come from code.
