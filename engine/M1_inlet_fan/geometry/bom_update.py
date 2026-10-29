@@ -3,9 +3,10 @@
 Changes: materials for the tbd parts (all [T], aluminium per rules/materials.md), unit mass from the assembly mass
 table [H], geometry script per part, notes with tags and sources, and the parts missing from the BOM: M1.3 becomes
 the OGV row assembly with M1.3.1 the vane (qty 51 [T]); M1.4 becomes the frame assembly with M1.4.1-M1.4.5.
-Status: "review" for the parts built at concept level in steps 5a-5f; "draft" for the disk M1.1.2 and the rotor
-assembly M1.1 that contains it: the bore meets R-DISK.1 / R-AM.13/15 since step 5h (margin 1.007), but the disk lugs
-(disk rim material between the slots) stay below the rule (lug margin 0.715, open issue #33). Never "approved".
+Status: "review" for the parts built at concept level in steps 5a-5i; the disk M1.1.2 and the rotor assembly M1.1
+are "review" only if the disk bore (R-DISK.1) and every dovetail / lug mode (R-DISK.2) meet the margin rule, else
+"draft" (computed from rotor_hardware.stress). Never "approved". The M1.1.1 / M1.1.2 geometry notes are generated
+with the current numbers (replacing any earlier "Geometry step 5" sentence).
 proposed() is idempotent: applied to its own output it returns the same data. The BOM is written only through core.bom.write and validated with core.bom.check_data first.
 
 Usage (M0): from engine.M1_inlet_fan.geometry import bom_update as b; data, rep = b.apply()  # dry run
@@ -18,14 +19,23 @@ from pathlib import Path
 from core import bom as core_bom
 from engine.M1_inlet_fan.geometry import assembly as asm
 from engine.M1_inlet_fan.geometry import frame as fr
+from engine.M1_inlet_fan.geometry import rotor_hardware as rh
 
 BOM = fr.HERE.parent / "bom" / "bom.yaml"
 GEOMETRY_REVISION = "rev011"  # record whose params/results the geometry inputs were built from (fixed, not ACTIVE)
-STATUS = {"M1.1": "draft", "M1.1.2": "draft"}  # every other part listed in SCRIPTS or ASSEMBLIES: "review"
+GEN_MARK = " Geometry step 5"  # generated note text starts here (M1.1.1, M1.1.2)
 ASSEMBLIES = ("M1.2", "M1.3", "M1.4")
 M14_NOTE = "Assembly of M1.4.1-M1.4.5 (step 5f)."
 SCRIPTS = {
     "M1.1.1": "engine/M1_inlet_fan/geometry/dovetail.py", "M1.1.2": "engine/M1_inlet_fan/geometry/rotor_hardware.py",
+    "M1.1.3": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.1.4": "engine/M1_inlet_fan/geometry/dovetail.py",
+    "M1.1.5": "engine/M1_inlet_fan/geometry/dovetail.py", "M1.1.6": "engine/M1_inlet_fan/geometry/rotor_hardware.py",
+    "M1.2.1": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.2.2": "engine/M1_inlet_fan/geometry/spinner_case.py",
+    "M1.3.1": "engine/M1_inlet_fan/geometry/ogv.py", "M1.4.1": "engine/M1_inlet_fan/geometry/fan_frame.py",
+    "M1.4.2": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.3": "engine/M1_inlet_fan/geometry/fan_frame.py",
+    "M1.4.4": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.5": "engine/M1_inlet_fan/geometry/fan_frame.py",
+}
+EXTRA_NOTES = {
     "M1.1.3": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.1.4": "engine/M1_inlet_fan/geometry/dovetail.py",
     "M1.1.5": "engine/M1_inlet_fan/geometry/dovetail.py", "M1.1.6": "engine/M1_inlet_fan/geometry/rotor_hardware.py",
     "M1.2.1": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.2.2": "engine/M1_inlet_fan/geometry/spinner_case.py",
@@ -44,7 +54,6 @@ EXTRA_NOTES = {
 }
 STALE_NOTES = {  # outdated note texts removed by the update
     "M1.2.2": ["Material not selected."],
-    "M1.1.2": ["Geometry step 5c: rim/web/bore [T]; analytic bore margin 0.717 below the R-AM.13/15 rule (open issue #32)."],
     "M1.1.4": ["Density not in tools/data/materials.yaml; [T] 8190 kg/m3 fallback (#36)."],
     "M1.1.6": ["Density not in tools/data/materials.yaml; [T] 2800 kg/m3 fallback (#36)."],
 }
@@ -100,8 +109,23 @@ def proposed(model: dict | None = None, path: Path = BOM) -> dict:
                 p["notes"] = " ".join(p.get("notes", "").replace(old, "").split())
         if pid in EXTRA_NOTES and EXTRA_NOTES[pid] not in p.get("notes", ""):
             p["notes"] = (p.get("notes", "") + " " + EXTRA_NOTES[pid]).strip()
+    st = rh.stress(model["frame"]["spinner_case"]["rotor"])
+    rm, rot = st["root_modes"], model["frame"]["spinner_case"]["rotor"]
+    ok = st["check"] == "pass" and rm["pass"]
+    gen = {
+        "M1.1.1": f"Geometry step 5a-5i: airfoil from the record trimmed to the record annulus; shank and single-lobe "
+                  f"dovetail [T], slab {rot['layout']['x_b'] - rot['layout']['x_a']:.4f} m by R-DISK.2 (rules/disk.md); "
+                  f"blade neck margin {rm['modes']['blade_neck_tension']['margin']:.3f} [H] (open issues #29, #34, #35).",
+        "M1.1.2": f"Geometry step 5c-5i: rim [T]; slab by R-DISK.2, web and bore by R-DISK.1 (rules/disk.md); bore "
+                  f"margin {st['margin']:.3f}, smallest dovetail/lug margin {rm['min_margin']:.3f} "
+                  f"({rm['governing']}) [H]; rule {'met' if ok else 'not met'}.",
+    }
+    for pid, text in gen.items():
+        base = by_id[pid].get("notes", "").split(GEN_MARK)[0]
+        by_id[pid]["notes"] = (base + " " + text).strip()
+    status = {"M1.1": "review" if ok else "draft", "M1.1.2": "review" if ok else "draft"}
     for pid in ("M1.1", *ASSEMBLIES, *SCRIPTS):
-        by_id[pid]["status"] = STATUS.get(pid, "review")
+        by_id[pid]["status"] = status.get(pid, "review")
     parts.sort(key=lambda q: tuple(int(x) for x in q["id"].split(".")[1:]))  # children after their parent
     return data
 

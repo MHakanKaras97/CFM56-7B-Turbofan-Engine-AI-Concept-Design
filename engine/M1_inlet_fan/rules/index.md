@@ -7,7 +7,7 @@
 | `materials.md` | Material selection rules; values in `tools/data/materials.yaml` |
 | `joints.md` | Dovetail, shim, coating stack, spacer/platform, flanges |
 | `analyses.md` | Analyses A-1..A-9: method, tool, acceptance criterion, source |
-| `disk.md` | R-DISK.1 concept disk sizing rule (web and bore growth to the R-AM.13/15 stress rule) |
+| `disk.md` | R-DISK.1 disk web/bore sizing and R-DISK.2 dovetail/lug sizing (slab length), both to the R-AM.13/15 margin rule |
 | `failure_modes.md` | FM-1..FM-6, incl. CFM56-7B dovetail LCF case (Fox 2023) |
 | `bird_strike.md` | Bird models, speeds, methods; certification numbers status |
 | `aero_method.md` | Meanline method steps and loss models (diffusion factor, profile, shock, endwall) |
@@ -24,7 +24,7 @@ Workflow (M1 agent):
 Acceptance (ADR-016): fan rotor blade M1.1.1 concept-accepted at rev011 (step 4j: reproducible active record, budget
 9/9 + 2 info, R-AM.13/15 stress pass, known deviations in `docs/open_issues.md` #1-#18). Step 5 (5a-5g): all other M1
 parts concept-built from the rev011 params/results, to be recorded as rev012 (same params/results, new BOM); status per part
-as in `bom/bom.yaml` (review; disk M1.1.2 sized by R-DISK.1 in step 5h, `disk.md`). Geometry scripts in `geometry/` (frame.py axes; flowpath, fan_ring, dovetail, rotor_hardware,
+as in `bom/bom.yaml` (review; disk M1.1.2 and root sized by R-DISK.2 + R-DISK.1 in steps 5h-5i, `disk.md`). Geometry scripts in `geometry/` (frame.py axes; flowpath, fan_ring, dovetail, rotor_hardware,
 spinner_case, ogv, fan_frame, assembly; BOM update via bom_update.py); one assembly STEP
 `.cache/geometry/M1_inlet_fan/<rev>/m1_assembly.step` plus per-part STEPs (`python -m engine.M1_inlet_fan.geometry.assembly`).
 

@@ -46,8 +46,10 @@ def base_points(airfoil: cq.Solid, hub_curve, tol: float = 2e-4, n: int = 400) -
     return np.array(pts)
 
 
-def layout(fp: dict, airfoil: cq.Solid) -> dict:
-    """Slot frame and all root / slot levels and widths (metres) [H from T ratios]."""
+def layout(fp: dict, airfoil: cq.Solid, slab_step: int = 0) -> dict:
+    """Slot frame and all root / slot levels and widths (metres) [H from T ratios]. Rotor slab (blade root and disk
+    rim axial length): initial = hub leading to trailing edge of the airfoil, grown by R-DISK.2 (rules/disk.md) in
+    steps of slab_step_fraction of the initial length, symmetric about the initial slab mid-plane."""
     gamma = bs.chord_angle(fp["blade"]["sections"][0])
     d = np.array([math.cos(gamma), math.sin(gamma), 0.0])
     n = np.array([-math.sin(gamma), math.cos(gamma), 0.0])
@@ -63,6 +65,9 @@ def layout(fp: dict, airfoil: cq.Solid) -> dict:
     b_l = _p("dovetail", "lobe_width_over_neck") * b_n
     alpha = math.radians(_p("dovetail", "flank_angle_from_tangential"))
     e = fp["rotor_edges"]
+    x_a0, x_b0 = e["le_hub"][0], e["te_hub"][0]
+    grow = 1 + _p("dovetail", "slab_step_fraction") * slab_step
+    x_m, half = (x_a0 + x_b0) / 2, (x_b0 - x_a0) / 2 * grow
     r_rim = e["le_hub"][1] - t_p - c
     z1 = r_rim - _p("dovetail", "neck_height_over_neck") * b_n
     z2 = z1 - (b_l - b_n) / 2 * math.tan(alpha)
@@ -73,7 +78,8 @@ def layout(fp: dict, airfoil: cq.Solid) -> dict:
     return {"gamma": gamma, "d": d, "n": n, "w_c": w_c, "footprint": footprint, "b_n": b_n, "b_l": b_l,
             "alpha": alpha, "c": c, "t_p": t_p, "t_sh": t_sh, "t_sp": t_sp, "r_rim": r_rim, "z1": z1, "z2": z2,
             "z3": z3, "spacer_top": sp_top, "spacer_bottom": sp_bot, "r_slot_bottom": r_sb,
-            "x_a": e["le_hub"][0], "x_b": e["te_hub"][0], "z_top": e["te_hub"][1] + 0.05,
+            "x_a": x_m - half, "x_b": x_m + half, "x_a0": x_a0, "x_b0": x_b0, "slab_step": slab_step,
+            "z_top": e["te_hub"][1] + 0.05,
             "base_w_range": (float(w.min()), float(w.max()))}
 
 
@@ -152,14 +158,25 @@ def slot_cutter(L: dict) -> cq.Solid:
 
 
 @lru_cache(maxsize=2)
-def build(rev: str | None = None, root: Path = records.ROOT) -> dict:
-    """Blade 0 with root (airfoil from the 5b trim + shank/dovetail), shim and spacer of slot 0, and the layout."""
+def base(rev: str | None = None, root: Path = records.ROOT) -> tuple[dict, cq.Solid]:
+    """Flowpath and the 5b trimmed airfoil (independent of the slab), cached."""
     fp = fpm.build(rev, root)
-    airfoil = ring.trimmed_blade(fp)["solid"]
-    L = layout(fp, airfoil)
-    root_part = blade_root(fp, L)
-    blade = fr.boolean("fuse", airfoil, root_part).Solids()
+    return fp, ring.trimmed_blade(fp)["solid"]
+
+
+def parts(rev: str | None = None, root: Path = records.ROOT, slab_step: int = 0) -> dict:
+    """Layout, blade root (shank + dovetail, not fused to the airfoil), shim, spacer and slot cutter of slot 0."""
+    fp, airfoil = base(rev, root)
+    L = layout(fp, airfoil, slab_step)
+    return {"flowpath": fp, "layout": L, "airfoil": airfoil, "root": blade_root(fp, L), "shim": shim(L),
+            "spacer": spacer(L), "slot": slot_cutter(L)}
+
+
+@lru_cache(maxsize=4)
+def build(rev: str | None = None, root: Path = records.ROOT, slab_step: int = 0) -> dict:
+    """Blade 0 with root (airfoil from the 5b trim + shank/dovetail), shim and spacer of slot 0, and the layout."""
+    out = parts(rev, root, slab_step)
+    blade = fr.boolean("fuse", out["airfoil"], out["root"]).Solids()
     if len(blade) != 1 or not blade[0].isValid():
         raise ValueError(f"blade with root: {len(blade)} solids, expected one valid solid")
-    return {"flowpath": fp, "layout": L, "airfoil": airfoil, "root": root_part, "blade": blade[0],
-            "shim": shim(L), "spacer": spacer(L), "slot": slot_cutter(L)}
+    return dict(out, blade=blade[0])

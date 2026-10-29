@@ -44,6 +44,17 @@ dovetail:
     unit: mm
     tag: T
     note: assembly clearance between neighbouring rotor parts (shim to disk, spacer, platform); concept value
+  slab_step_fraction:
+    value: 0.1
+    unit: '-'
+    tag: T
+    note: R-DISK.2 (rules/disk.md) growth step of the rotor slab axial length (blade root dovetail and disk rim) as a
+      fraction of its initial length (airfoil hub leading to trailing edge), symmetric about the initial mid-plane
+  slab_max_steps:
+    value: 5
+    unit: '-'
+    tag: T
+    note: R-DISK.2 stops without a design change if no step k = 0..5 passes every root mode
   spacer_thickness_over_neck:
     value: 0.2
     unit: '-'

@@ -69,7 +69,7 @@ def test_stops_at_first_passing_step(model, stress):
 
 def test_sized_disk_valid_in_envelope_and_mass(model):
     d, L = model["disk"], model["layout"]
-    assert d.isValid() and d.Volume() > model["disk_initial"].Volume()
+    assert d.isValid() and d.Volume() >= model["disk_initial"].Volume()  # equal when R-DISK.1 passes at step 0
     bb = d.BoundingBox()
     assert bb.xmin >= L["x_a"] - 1e-6 and bb.xmax <= L["x_b"] + 1e-6
     rho = rh.densities()["ti6al4v"]["value"]
