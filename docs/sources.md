@@ -68,3 +68,9 @@ Dosyalar kaynak arşivinde `M2_booster/` altında (git dışı); metin olarak ge
 | 49 | Aircraft Commerce, "CFM56-7B maintenance analysis & budget", Issue No. 58, 2008, s. 18-26. `engine_data/oog_issue58_cfm56_7b_mtce.md` | LLP: booster spool 23,600 EFC, -7B27 22,900 EFC (s. 19-20) | yayıncı telifi; lisans beyanı yok; faktler, kendi cümlelerimizle |
 | 50 | General Electric, *Energy Efficient Engine: Integrated Core/Low Spool Design and Performance Report*, NASA CR-168211, contract NAS3-20643 (tarih doğrulanamadı). `e3/ge_e3_cr168211.md` | Yalnız bağlam: çeyrek kademe booster (s. 260); M2 referansı değil | ABD hükümeti sözleşme raporu; faktler, kendi cümlelerimizle |
 | 51 | Davis D.Y., Stearns E.M., *Energy Efficient Engine: Flight Propulsion System Final Design and Analysis*, NASA CR-168219, Ağustos 1985. `e3/davis_stearns_1985_cr168219.md` | Yalnız bağlam (FOD ayırıcı booster) | ABD hükümeti sözleşme raporu; faktler, kendi cümlelerimizle |
+
+## Kanat sayıları (M2-M6)
+
+| # | Kaynak | Kullanım | Lisans |
+|---|---|---|---|
+| 52 | CFM International, *CFM56-ALL Training Manual*, Borescope Inspection, ek "Blade quantities", s. 159, revizyon Eylül 2003. Yalnız kaynak arşivinde (git dışı) | Rotor kanat sayıları kademe başına [KS], sayfa görüntüsünden okundu: fan 24, booster 74/78/74, HPC 1-9, HPT 80, LPT 1-4 (`docs/learning/cfm56_7b_blade_counts.md`); stator/NGV sayıları yok | CFMI tescilli / yalnız eğitim amaçlı notu taşır; metin depoya kopyalanmaz, yalnız s. 159 anılır |

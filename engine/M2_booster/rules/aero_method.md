@@ -60,8 +60,7 @@ Definitions come first and are written once here; every M2 file uses them. Numbe
 4. Efficiency: the M0 budget `eta_booster` (ADR-015). The meanline gives velocity triangles, angles, DF, loading and
    geometry only; it does not predict efficiency.
 5. Annulus: constant hub radius (Lolis 2014 Table 4.10, method assumption [KS]); tip radius from continuity with
-   axial Mach number equal to the station 21 value [T]. Lolis' inlet Mach 0.5 differs from station 21 (0.393 [H]) ->
-   open issue #58.
+   axial Mach number equal to the station 21 value [T]. Lolis' inlet Mach 0.5 differs from station 21 (0.393 [H]); user decision (#58 closed): keep the M1 station 21 area, no CR; Lolis 0.5 is a method assumption only.
 6. Per row: mean-line triangles plus hub and tip with free vortex [G]; DF by the definition above; solidity from R-AM2.2.
 7. Exit: station 24 (booster exit), then the transition duct `duct_25_24` to station 25. VBV: M2 models only the
    station 25 outlet; no VBV open/closed state (user decision; VBV closed at high power, Girão PDF p. 47 [KS]).
