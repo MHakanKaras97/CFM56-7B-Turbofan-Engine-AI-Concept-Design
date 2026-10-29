@@ -74,9 +74,12 @@ def test_ram9_step4e_per_tube():
             ok = t["diffusion_factor"] <= q["DF_limit"] + 1e-4
         else:
             assert math.isclose(q["solidity_floor"], 3.11 + (1.29 - 3.11) * f, abs_tol=2e-3)
-            ok = t["solidity"] >= q["solidity_floor"] - 1e-4
+            assert q["solidity_floor_basis"] == "inlet pitch"
+            ok = t["solidity_inlet_pitch_info"] >= q["solidity_floor"] - 1e-4
         assert q["rule"] == ("pass" if ok else "fail")
     assert r["summary"]["R_AM9_failed_tubes"] == [t["name"] for t in r["tubes"] if t["R_AM9"]["rule"] == "fail"]
+    for t in r["tubes"]:
+        assert math.isclose(t["solidity"], t["chord_m"] * 24 / (math.pi * (t["r1_m"] + t["r2_m"])), abs_tol=2e-4)
 
 
 def test_blade_is_one_smooth_function_of_span():

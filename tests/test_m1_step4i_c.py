@@ -134,7 +134,8 @@ def test_results_chord_plain_quadratic_with_root_floor():
     assert r["blade"]["chord_law"]["form"] == "quadratic"
     for t in r["tubes"]:
         assert math.isclose(t["chord_m"], bp.polyval(coeffs, t["span_fraction"]), abs_tol=2e-5)
-    hub_sol = coeffs[0] * 24 / (2 * math.pi * r["annulus"]["r_hub1_m"])
+    hub_sol = coeffs[0] * 24 / (math.pi * (r["annulus"]["r_hub1_m"] + r["annulus"]["r_hub2_m"]))
+    assert math.isclose(hub_sol, r["summary"]["hub_solidity_paper"], abs_tol=2e-4)
     ref = read_yaml(fd.R67_REFERENCE)
     assert hub_sol >= ref["design"]["solidity_hub"]["value"] - 1e-3
     assert r["chord_smoothness_r_am17"]["check"] == "pass"

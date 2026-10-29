@@ -279,6 +279,24 @@ def rotor67_chord_roughness(geometry: dict | None = None) -> dict:
     return out
 
 
+def rotor67_solidity_paper(geometry: dict | None = None, reference: dict | None = None) -> dict:
+    """Step 4i-e solidity definition check [H from KS]: Rotor 67 hub (section 1) and tip (section 14) solidity from
+    Table I as true chord x blade count / (2 pi r_mean), r_mean = (LE radius + TE radius) / 2 (rotor67_geometry.yaml,
+    cm; blade count rotor67_reference.yaml). Gives the TP-2879 p. 2 pair 3.11 / 1.29 [KS]; the LE-pitch values
+    are returned as 'inlet_pitch' for comparison."""
+    geo = geometry or read_yaml(R67_GEOMETRY)
+    ref = reference or read_yaml(R67_REFERENCE)
+    z = ref["design"]["blade_count"]["value"]
+    out, inlet = {}, {}
+    for name, sec in (("hub", geo["sections"][0]), ("tip", geo["sections"][-1])):
+        c, le, te = sec["chord"]["value"], sec["le_radius"]["value"], sec["te_radius"]["value"]
+        out[name] = c * z / (math.pi * (le + te))
+        inlet[name] = c * z / (2 * math.pi * le)
+    out["inlet_pitch"] = inlet
+    out["blade_count"] = z
+    return out
+
+
 def family_at(fits: dict, span: float) -> dict:
     c = fits["coefficients"]
     return {"front": min(1.0, max(0.0, polyval(c["front"], span))), "tc": polyval(c["tc"], span),

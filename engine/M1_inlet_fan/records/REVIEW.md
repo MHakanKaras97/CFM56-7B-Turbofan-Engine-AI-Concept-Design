@@ -79,3 +79,50 @@ Acceptance criterion of the geometry-digitisation check changed from |dPR|/PR < 
   with helper _area_profile (area = k t/c_R67 c^2 no longer the law; replaced by test_results_stress_and_mass_by_independent_quadrature),
   test_area_monotonic_r_am16_reported (step 4h feasibility branch; replaced by test_results_area_monotonic_and_taper_in_band).
 - Changed: chord_at helper evaluates the plain quadratic (coefficients_m) instead of quadratic + bump.
+
+## 2026-10-29 Criterion: solidity definition (M1 step 4i-e, R-AM.18, R-AM.9 supersonic floor)
+- Definition: solidity = true chord / pitch at the section mean radius (LE + TE)/2. Rotor 67 3.11 / 1.29 [KS] (TP-2879 p. 2, 22 blades);
+  the definition is not stated in the paper, inferred from Table I (3.116 / 1.285) [H from KS]. M1 applies it with 24 blades.
+- Before (rev010): pitch at the inlet hub radius (floor) and at the tube inlet radius (supersonic needs); by the paper's definition the
+  rev010 hub solidity is 2.70, not 3.11.
+- Retracted: step 4i-c entry "Rotor 67 Table I chords (tip/hub 0.971) do not match its published solidity pair (implied 1.106)".
+  The 1.106 used the inlet hub/tip ratio; with mean section radii the pair gives 0.977, consistent with Table I.
+- Kept: hub-third t/c known deviation (user-accepted), step 4i-c area level (smallest A_root with mid and tip t/c in range).
+- Step 4i-d what-if (scratch, floor only): hub chord 0.1892 -> 0.2176 m, A_root 40.55 -> 42.21 cm^2, hub t/c 0.170 -> 0.134, 6.77 kg/blade.
+
+## 2026-10-29 M1 step 4i-e result: no revision
+- No valid design with the solidity definition applied to both R-AM.18 and the supersonic R-AM.9 floor: the stream PR balance stalls in
+  pass 1 (PR error inner -1.46e-4, outer -1.04e-4, tolerance 2e-5); offset scan finds no better point; nothing relaxed. rev010 stays active.
+- Diagnostic (scratch, same code, supersonic needs back on the tube inlet pitch, floor on the hub mean radius): converges, FPR 1.765004,
+  chord 0.2176 / 0.2669 m, A_root 42.21 cm^2, t/c hub 0.134 / tip 0.0298. So the binding change is the supersonic need on the tube mean
+  pitch (tip chord 0.267 -> 0.254 m in pass 1), not the hub floor [H].
+
+## 2026-10-29 Criterion: supersonic R-AM.9 floor on inlet pitch (M1 step 4i-f)
+- User decision: the supersonic floor (Rotor 67 solidity 3.11 -> 1.29 [KS] at the same span) stays on the tube inlet pitch; R-AM.18 hub
+  floor stays on the section mean-radius pitch (step 4i-e).
+- Known deviation: conservative on most tubes; 1.8 % below Rotor 67 on tube 5 (expanding tube) by the paper's definition; user-accepted, revisit with M0 v2
+  (tip tube about 2.6 % above). Not a definition match; supersedes the step 4i-e R-AM.9 bullet.
+- Evidence: mean-radius pitch for the supersonic floor -> PR balance stalls in pass 1 (outer -1.46e-4, inner -1.04e-4 vs 2e-5; step 4i-e).
+- Unchanged: balance tolerance, exit hub ratio 1.30 [T]; no PR-reachability chord rule.
+
+## 2026-10-29 M1 step 4i-f result: valid design, no revision
+- Supersonic R-AM.9 floor on the tube inlet pitch (known deviation, see label above), R-AM.18 on the hub mean-radius pitch:
+  converged, FPR 1.7650, pr_inner 1.3440, R-AM.9 9/9, hub / tip solidity (paper definition) 3.110 / 1.350, chord 0.2176 / 0.2669 m,
+  A_root 42.21 cm^2, t/c hub 0.134 (known deviation) / mid 0.0495 / tip 0.0298, 225.0 MPa at the root, 6.769 kg per blade [H].
+- By the paper definition the floor is above Rotor 67 on contracting tubes (tip +2.6 %) and below it on tube 5 (r2 > r1, -1.8 %): label as
+  above, user-accepted, revisit with M0 v2.
+- Stall diagnosis (scratch): with the mean-radius pitch for the supersonic floor the outer PR maximum on the inner-balanced physical
+  branch is about 2.2e-4 short of 1.765 (true infeasibility, not solver noise or a max() kink). The step 4i-e stall errors are
+  outer -1.46e-4 / inner -1.04e-4 (logged order [outer, inner]); the inner/outer labels in the entries above are swapped.
+
+## 2026-10-29 Tests merged and retired; label correction (M1 step 4i-f, M0)
+- Merged: proposed_test_m1_step4i_e.py -> tests/test_m1_step4i_e.py (definition, floor on hub r_mean, supersonic floor on inlet pitch,
+  paper-definition solidity, results checks).
+- Retired: tests/test_m1_step4i.py::test_rotor67_solidity_need_quadratic_meets_floor (held only while floor and needs both used the inlet
+  hub radius); replaced by test_rotor67_inlet_pitch_needs_below_mean_radius_floor.
+- Changed: test_m1_step4i.py _ctx (blade-edge radii) and R-AM.18 floor test (mean-radius pitch); test_m1_step4i_c.py hub solidity on the
+  mean-radius pitch; test_m1_fan_design.py supersonic check on solidity_inlet_pitch_info, basis "inlet pitch", per-tube paper solidity.
+- Label correction (verified in fan_design.design: err ordered as stream_targets {outer, inner}): the step 4i-e stall is outer -1.46e-4,
+  inner -1.04e-4. The 2026-10-29 entries above that say "inner -1.46e-4, outer -1.04e-4" have the labels swapped; the rule text is corrected.
+- Open (user): the inlet-pitch floor is below Rotor 67 by the paper definition on tube 5 (expanding tube, -1.8 %), so "one-sided" does not hold
+  on every tube.

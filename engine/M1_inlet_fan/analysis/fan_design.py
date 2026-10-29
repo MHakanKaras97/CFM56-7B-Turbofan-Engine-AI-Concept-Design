@@ -11,8 +11,15 @@ second-difference R-AM.17):
   and tip third ranges (tc_level_root_area), re-evaluated on every pass of the blade -> equilibrium -> needs -> chord
   loop; replaces the step 4i-b structural level (undetermined: the stress does not depend on A_root). The stress
   rule stays a check (StressRuleViolated).
-- R-AM.18 (step 4i-b): hub solidity (chord / inlet pitch at f 0) >= Rotor 67 hub solidity 3.11 [KS]
-  (rotor67_reference.yaml solidity_hub), a row of the chord linear programme (root_chord_floor).
+- R-AM.18 (step 4i-b): hub solidity >= Rotor 67 hub solidity 3.11 [KS] (rotor67_reference.yaml solidity_hub), a
+  row of the chord linear programme (root_chord_floor).
+- Solidity definition (step 4i-e, user decision): solidity = true chord x blade count / (2 pi r_mean), r_mean = mean
+  of the blade-edge inlet and exit radii (hub line r_hub1, r_hub2; a tube: its r1 and r2 on the balanced state)
+  [H from KS: reproduces the Rotor 67 TP-2879 p. 2 pair from Table I]. Used by R-AM.18 and every reported solidity.
+  The meanline Tube and the subsonic SP-36 DF rule keep the inlet pitch 2 pi r1 / z.
+- Supersonic R-AM.9 floor basis (step 4i-f, user decision): Rotor 67 solidity at the same span applied with the
+  tube INLET pitch 2 pi r1 / z (SUPERSONIC_FLOOR_BASIS), a known conservative deviation (user-accepted, revisit with
+  M0 v2 / off-design), not a definition match; reported per tube with its paper-definition equivalent.
   t/c(f) = A / (k chord^2), k = 2/3, is derived (derived_tc), used by the R-AM.11 profile builder (tc_at) and
   checked at f 0 / 0.5 / 1 against the Rotor 67 range of the span third (thickness_check); mid / tip outside ->
   fail; hub outside -> "known deviation (user-accepted)" (step 4i-c), not a fail.
@@ -32,7 +39,7 @@ branch; tools/meanline.py used unchanged):
   continuous blade from hub to tip.
 - One smooth blade (span fraction f = (r1 - r_hub1) / (r_tip1 - r_hub1) of the tube centre), few parameters:
   * kappa1(f) = beta1(f) - design incidence (uniform inlet: beta1 = atan(U / V1) is smooth in radius) [T incidence];
-  * chord(f) = quadratic (step 4i, chord_law), solidity = chord x blade count / (2 pi r1);
+  * chord(f) = quadratic (step 4i, chord_law); meanline Tube solidity = chord x blade count / (2 pi r1);
   * kappa2(f) = cubic + k4 B(f) (5 coefficients, B = C2 quintic smoothstep across the splitter) plus one offset
     per stream applied through the same blend, delta_inner (1 - B) + delta_outer B (R-AM.12) [T]: a C2 term,
     so the offsets cannot put a kink into the continuous blade at the splitter;
@@ -102,6 +109,7 @@ MAX_NEWTON = 15
 CHORD_STABLE = 1e-4  # m, outer-pass tolerance on the chord at the tubes
 KAPPA2_STABLE = math.radians(0.01)  # outer-pass tolerance on kappa2 at the tubes
 MAX_OUTER = 20
+SUPERSONIC_FLOOR_BASIS = "inlet_pitch"  # step 4i-f (user decision): supersonic R-AM.9 floor on 2 pi r1 / z
 NEED_STABLE = 1e-3  # R-AM.9 need basis (step 4h): largest change of a tube's solidity need between balanced states
 AREA_MONO_TOL = 1e-9  # R-AM.16: dA/df <= AREA_MONO_TOL x A_root on the span grid
 RE_MAX_ITER = 1000  # solve_rotor_re pass limit (relaxation 0.1 needs more than the default 200 here)
@@ -198,7 +206,26 @@ def covered_fraction(kappa1: float, kappa2: float, solidity: float) -> float:
 
 
 def pitch(t: dict, ctx: dict) -> float:
+    """Inlet pitch 2 pi r1 / blade count: the solidity basis of the meanline Tube (tools.meanline: DF, covered
+    fraction) and of the SP-36 DF rule of R-AM.9 (kept in step 4i-e, it does not use the Rotor 67 values)."""
     return 2 * math.pi * t["r1"] / ctx["blades"]
+
+
+def mean_pitch(r_in: float, r_out: float, blades: int) -> float:
+    """Pitch at the section mean radius (r_in + r_out) / 2 of the blade edges (step 4i-e) [H from KS]."""
+    return math.pi * (r_in + r_out) / blades
+
+
+def tube_mean_pitch(t: dict, ctx: dict) -> float:
+    """Step 4i-e: pitch at the tube mean radius, mean of the tube inlet radius r1 and exit radius r2 of the state
+    the tube dict carries (balanced state after a balance, design state in the design-target needs)."""
+    return mean_pitch(t["r1"], t["r2"], ctx["blades"])
+
+
+def solidity_paper(chord: float, r_in: float, r_out: float, blades: int) -> float:
+    """Solidity by the Rotor 67 paper definition (step 4i-e): true chord x blade count / (2 pi r_mean), r_mean =
+    (r_in + r_out) / 2 at the blade edges [H from KS: TP-2879 p. 2 values reproduced from Table I]."""
+    return chord / mean_pitch(r_in, r_out, blades)
 
 
 def make_tube(t: dict, kappa1: float, kappa2: float, solidity: float, ctx: dict) -> Tube:
@@ -360,12 +387,24 @@ def vortex(geo: list[dict], masses: list[float], levels: dict, ctx: dict) -> dic
 
 
 def required_solidity(t: dict, i: int, goal: float, m: float, ctx: dict, guess: float | None) -> dict:
-    """Lowest solidity meeting R-AM.9 (step 4e) with the tube at its vortex Tt target: subsonic tube
-    (M1rel < 1) DF <= df_limit; supersonic tube solidity >= Rotor 67 solidity at the same span."""
+    """Lowest chord meeting R-AM.9 (step 4e) with the tube at its vortex Tt target, returned as chord_m and as
+    solidity by the paper definition (step 4i-e, pitch at the tube mean radius, tube_mean_pitch) plus the inlet-pitch
+    solidity (information, meanline Tube basis):
+    - supersonic tube: chord >= Rotor 67 solidity at the same span x tube INLET pitch 2 pi r1 / z (step 4i-f, user
+      decision: known conservative deviation, user-accepted; the step 4i-e mean-radius pitch stalls the PR balance);
+    - subsonic tube (M1rel < 1): DF <= df_limit, solidity searched on the inlet pitch (meanline Tube / Lieblein DF,
+      definition unchanged in step 4i-e: the rule does not use the Rotor 67 values)."""
     bl, k1 = ctx["blading"], ctx["kappa1"][i]
     s_min, s_max = v(bl["solidity_min"]), v(bl["solidity_max"])
+    p_in, p_mean = pitch(t, ctx), tube_mean_pitch(t, ctx)
+
+    def out(chord, met, basis):
+        return {"chord_m": chord, "solidity": chord / p_mean, "solidity_inlet_pitch": chord / p_in, "met": met,
+                "basis": basis}
+
     if ctx["supersonic"][i]:
-        return {"solidity": max(s_min, r67_solidity(ctx["r67"], t["span"])), "met": True}
+        return out(max(s_min, r67_solidity(ctx["r67"], t["span"])) * p_in, True,
+                   "inlet pitch (Rotor 67, known conservative deviation, step 4i-f)")
     lim = df_limit(bl, t["span"])
     state = {"k2": guess}
 
@@ -374,29 +413,28 @@ def required_solidity(t: dict, i: int, goal: float, m: float, ctx: dict, guess: 
         return solve_tube(make_tube(t, k1, state["k2"], sigma, ctx), m, ctx["omega"], ctx["Tt"], ctx["Pt"],
                           ctx["gas"]).diffusion_factor
 
+    basis = "inlet pitch (SP-36 DF)"
     if df(s_min) <= lim:
-        return {"solidity": s_min, "met": True}
+        return out(s_min * p_in, True, basis)
     if df(s_max) > lim:
-        return {"solidity": s_max, "met": False}
+        return out(s_max * p_in, False, basis)
     lo, hi = s_min, s_max
     while hi - lo > SIGMA_TOL:
         mid = (lo + hi) / 2
         lo, hi = (mid, hi) if df(mid) > lim else (lo, mid)
-    return {"solidity": hi, "met": True}
+    return out(hi * p_in, True, basis)
 
 
 def balanced_needs(geo: list[dict], results, ctx: dict) -> dict:
     """R-AM.9 need basis (step 4h): each tube's solidity need (required_solidity) at the work the blade actually
     does on the balanced state (Tt ratio and mass flow of the radial-equilibrium result, exit radius and area of
-    the balanced geometry), not at the vortex design target."""
-    sol_need, met, work = [], [], []
-    for i, (t, r) in enumerate(zip(geo, results)):
-        req = required_solidity(t, i, r.Tt_ratio, r.mass_flow, ctx, None)
-        sol_need.append(req["solidity"])
-        met.append(req["met"])
-        work.append(ctx["gas"].cp * ctx["Tt"] * (r.Tt_ratio - 1))
-    return {"solidity": sol_need, "chord_m": [x * pitch(t, ctx) for x, t in zip(sol_need, geo)], "met": met,
-            "work_J_kg": work}
+    the balanced geometry), not at the vortex design target. Solidity by the paper definition (step 4i-e, pitch at
+    the tube mean radius of the balanced state, r1 and r2 of geo); inlet-pitch solidity as information."""
+    reqs = [required_solidity(t, i, r.Tt_ratio, r.mass_flow, ctx, None) for i, (t, r) in enumerate(zip(geo, results))]
+    return {"solidity": [q["solidity"] for q in reqs], "solidity_inlet_pitch": [q["solidity_inlet_pitch"] for q in reqs],
+            "chord_m": [q["chord_m"] for q in reqs], "met": [q["met"] for q in reqs],
+            "basis": [q["basis"] for q in reqs],
+            "work_J_kg": [ctx["gas"].cp * ctx["Tt"] * (r.Tt_ratio - 1) for r in results]}
 
 
 # --- chord law (M1 step 4i: plain quadratic from the aero rules) ---------------------------------------------
@@ -442,9 +480,11 @@ def chord_constraints(fs: list[float], needs: list[float], law: dict | None = No
 
 
 def root_chord_floor(ctx: dict) -> tuple[float, float]:
-    """R-AM.18 (step 4i-b): hub solidity (chord / inlet pitch at f 0, pitch 2 pi r_hub1 / blade count) not below
-    the Rotor 67 hub solidity (rotor67_reference.yaml solidity_hub [KS], ctx['r67']['hub']). Returns (0, chord_min)."""
-    return 0.0, ctx["r67"]["hub"] * 2 * math.pi * ctx["mech"]["r_hub"] / ctx["blades"]
+    """R-AM.18 (step 4i-b, definition step 4i-e): hub solidity by the paper definition (chord(0) / pitch at the hub
+    mean radius (r_hub1 + r_hub2) / 2, ctx['r_hub_edges']) not below the Rotor 67 hub solidity (rotor67_reference.yaml
+    solidity_hub [KS], ctx['r67']['hub']). Returns (0, chord_min)."""
+    r_in, r_out = ctx["r_hub_edges"]
+    return 0.0, ctx["r67"]["hub"] * mean_pitch(r_in, r_out, ctx["blades"])
 
 
 def lowest_chord_above(rows: list[tuple], weights: list[float]) -> list[float]:
@@ -780,7 +820,7 @@ def design(layout: list[dict], stream_targets: dict, stream_eta: dict, masses: l
         needs, met = [], []
         for i, (t, goal, m) in enumerate(zip(dgeo, vt["targets"], masses)):
             req = required_solidity(t, i, goal, m, ctx, None)
-            needs.append(req["solidity"] * pitch(t, ctx))
+            needs.append(req["chord_m"])
             met.append(req["met"])
         sizing = needs if bal is None else bal["chord_m"]
         chord = size_chord(fs, sizing, ctx)
@@ -1202,6 +1242,33 @@ def tip_region(p: dict, res, layout: list[dict], gas: Gas) -> dict:
     return out
 
 
+def solidity_report(blade: dict, ctx: dict) -> dict:
+    """Step 4i-e: hub and tip solidity of the blade by the paper definition (pitch at the edge mean radius of the
+    hub and tip lines), R-AM.18 check, inlet-pitch values as information, and the Rotor 67 Table I reproduction of
+    the published pair (blade_profile.rotor67_solidity_paper)."""
+    z = ctx["blades"]
+    c_hub, c_tip = chord_value(blade["chord"], 0.0), chord_value(blade["chord"], 1.0)
+    (rh1, rh2), (rt1, rt2) = ctx["r_hub_edges"], ctx["r_tip_edges"]
+    hub, tip = solidity_paper(c_hub, rh1, rh2, z), solidity_paper(c_tip, rt1, rt2, z)
+    r67 = bp.rotor67_solidity_paper()
+    return {"definition": "solidity = true chord x blade count / (2 pi r_mean), r_mean = mean of the inlet and exit "
+                          "radii at the blade edges (hub line: r_hub1, r_hub2; tip line: r_tip1, r_tip2) "
+                          "[H from KS: Rotor 67 TP-2879 p. 2 pair reproduced from Table I]",
+            "blade_count": z, "chord_hub_m": round(c_hub, 5), "chord_tip_m": round(c_tip, 5),
+            "r_mean_hub_m": round((rh1 + rh2) / 2, 5), "r_mean_tip_m": round((rt1 + rt2) / 2, 5),
+            "hub_solidity_paper": round(hub, 4), "tip_solidity_paper": round(tip, 4),
+            "hub_solidity_inlet_pitch_info": round(c_hub * z / (2 * math.pi * rh1), 4),
+            "tip_solidity_inlet_pitch_info": round(c_tip * z / (2 * math.pi * rt1), 4),
+            "R_AM18_floor": ctx["r67"]["hub"],
+            "R_AM18_floor_tag": "KS (rotor67_reference.yaml solidity_hub, TP-2879 p. 2)",
+            "rotor67_published": {"hub": ctx["r67"]["hub"], "tip": ctx["r67"]["tip"], "tag": "KS (TP-2879 p. 2)"},
+            "rotor67_table1_paper_definition": {k: round(r67[k], 4) for k in ("hub", "tip")},
+            "rotor67_table1_inlet_pitch": {k: round(x, 4) for k, x in r67["inlet_pitch"].items()},
+            "rotor67_table1_tag": "H from KS (rotor67_geometry.yaml chord, le/te radius, rotor67_reference.yaml "
+                                  "blade_count)",
+            "check": "pass" if hub >= ctx["r67"]["hub"] - SIGMA_TOL else "fail", "tag": "H"}
+
+
 def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -> dict:
     p = params or read_yaml(PARAMS)
     icd = icd or read_icd("M1 agent")
@@ -1226,8 +1293,11 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
            "f_split": (ann["r_split1"] - ann["r_hub1"]) / (ann["r_tip1"] - ann["r_hub1"]),
            "blend_start": v(bl["splitter_blend_start"]), "blend_width": v(bl["splitter_blend_width"]),
            "k2_direction": {"rising": 1.0, "falling": -1.0}[bl["kappa2_blend_direction"]["value"]],
-           "chord_law": bl["chord_law"]["value"]}
+           "chord_law": bl["chord_law"]["value"],
+           "r_hub_edges": (ann["r_hub1"], ann["r_hub2"]), "r_tip_edges": (ann["r_tip1"], ann["r_tip2"])}
     assert bl["chord_law"]["value"] == "quadratic"
+    assert bl["solidity_definition"]["value"] == "chord_count_over_2pi_r_mean"
+    assert bl["supersonic_floor_basis"]["value"] == SUPERSONIC_FLOOR_BASIS
     assert bl["root_chord_floor"]["value"] == "rotor67_hub_solidity"
     ctx["chord_floors"] = [root_chord_floor(ctx)]  # R-AM.18 (step 4i-b)
     assert bl["thickness_chord"]["value"] == "derived_from_area_law"
@@ -1260,7 +1330,10 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
         lim = df_limit(bl, t["span"])
         floor = r67_solidity(ctx["r67"], t["span"]) if sup else v(bl["solidity_min"])
         df_ok = r.diffusion_factor <= lim + DF_TOL
-        sol_ok = tube.solidity >= floor - SIGMA_TOL
+        p_mean = mean_pitch(t["r1"], tube.r2, ctx["blades"])  # step 4i-e: balanced-state tube mean radius
+        sol_paper = tube.endwall.chord / p_mean
+        sol_ok = tube.solidity >= floor - SIGMA_TOL  # step 4i-f: both zones on the inlet pitch
+        floor_paper = floor * pitch(t, ctx) / p_mean  # the same floor chord by the paper definition (info)
         rows.append({
             "name": t["name"], "stream": t["stream"], "span_fraction": round(t["span"], 4),
             "r1_m": round(t["r1"], 5), "r2_m": round(tube.r2, 5),
@@ -1273,7 +1346,11 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
             "Vm2_over_Vm1": round(r.Vm2 / r.V1, 4),
             "kappa1_deg": deg(tube.kappa1), "kappa2_deg": deg(tube.kappa2), "camber_deg": deg(tube.kappa1 - tube.kappa2),
             "incidence_deg": deg(r.incidence), "deviation_deg": deg(r.deviation),
-            "solidity": round(tube.solidity, 4), "pitch_m": round(pitch(t, ctx), 5), "chord_m": round(tube.endwall.chord, 5),
+            "solidity": round(sol_paper, 4), "pitch_m": round(p_mean, 5),
+            "solidity_definition": "chord x blade count / (2 pi r_mean), r_mean = (r1 + r2) / 2 of the tube on the "
+                                   "balanced state (step 4i-e) [H from KS]",
+            "solidity_inlet_pitch_info": round(tube.solidity, 4), "pitch_inlet_m_info": round(pitch(t, ctx), 5),
+            "chord_m": round(tube.endwall.chord, 5),
             "t_c": round(derived_tc(th, t["span"]), 5), "t_c_tag": "H (derived A / (k c^2), step 4i)",
             "front_camber_share": round(fam["front"], 4), "x_max": round(fam["x_max"], 4),
             "covered_fraction": round(tube.covered_fraction, 4), "ss_turn_deg": deg(tube.ss_turn),
@@ -1282,11 +1359,20 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
                       "DF_limit": round(lim, 4) if not sup else None,
                       "DF_limit_info": round(lim, 4),
                       "solidity_floor": round(floor, 4),
+                      "solidity_floor_basis": "inlet pitch" if sup else
+                      "inlet pitch (SP-36 DF search bound, meanline Tube solidity)",
+                      "solidity_floor_known_deviation": ("known conservative deviation (user-accepted, step 4i-f): "
+                                                         "Rotor 67 solidity applied with the tube inlet pitch, not "
+                                                         "the paper's mean-radius pitch; revisit with M0 v2 / "
+                                                         "off-design") if sup else None,
+                      "solidity_floor_paper_definition_info": round(floor_paper, 4),
+                      "solidity_floor_over_rotor67_paper_info": round(floor_paper / floor, 4) if sup else None,
                       "DF_check": ("pass" if df_ok else "fail") if not sup else "not applied",
                       "solidity_check": "pass" if sol_ok else "fail",
                       "rule": "pass" if (sol_ok if sup else df_ok) else "fail",
                       "need_basis": "balanced state (step 4h)",
                       "solidity_need_balanced": round(needs["solidity"][i], 4),
+                      "solidity_need_balanced_inlet_pitch_info": round(needs["solidity_inlet_pitch"][i], 4),
                       "chord_need_balanced_m": round(needs["chord_m"][i], 5),
                       "need_met_balanced": needs["met"][i],
                       "chord_need_design_target_m_info": design_needs["chord_needs_design_target_m"][i],
@@ -1327,7 +1413,7 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
     }
     checks = check_budget("M1", achieved)
     dfs = [r.diffusion_factor for r in res]
-    sols = [t.solidity for t in tubes]
+    sols = [row["solidity"] for row in rows]
     chords = [row["chord_m"] for row in rows]
     tip_mrel = tip_relative_mach(ann["r_tip1"], omega, res[-1], Tt, gas)
     rule_fail = [row["name"] for row in rows if row["R_AM9"]["rule"] == "fail"]
@@ -1337,6 +1423,7 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
     k2_total[0] += off["inner"]
     k2_total[4] += off["outer"] - off["inner"]
     work = [gas.cp * Tt * (r.Tt_ratio - 1) for r in res]
+    r_am18 = solidity_report(blade, ctx)
     r67_rough = bp.rotor67_chord_roughness()
     rough_limit = r67_rough["metric"]
     recorded = float(bl["chord_smoothness_limit"]["value"])
@@ -1485,6 +1572,11 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
                             f"{v(bl['df_limit_hub'])} (hub) to {v(bl['df_limit_tip'])} (tip), linear in span [T] "
                             "(NASA SP-36 PDF p. 286 [K]); above: solidity >= Rotor 67 solidity "
                             f"({ctx['r67']['hub']} hub to {ctx['r67']['tip']} tip, linear, Strazisar p. 2 [KS])",
+            "R_AM9_supersonic_floor_basis": "inlet pitch",
+            "R_AM9_supersonic_floor_known_deviation": "known conservative deviation (user-accepted, step 4i-f): "
+                                                      "Rotor 67 solidity x tube inlet pitch 2 pi r1 / z; by the "
+                                                      "paper definition the floor sits above Rotor 67 (one-sided); "
+                                                      "revisit with M0 v2 / off-design",
             "R_AM9_check": "pass" if not rule_fail else "fail", "R_AM9_failed_tubes": rule_fail,
             "R_AM9_pass_count": f"{len(rows) - len(rule_fail)}/{len(rows)}",
             "R_AM9_need_basis": "balanced state, iterated until no solidity need moves by more than "
@@ -1498,6 +1590,10 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
             "R_AM16_tc_known_deviations": mech_out["thickness_check"]["known_deviations"],
             "R_AM17_check": r_am17["check"],
             "solidity_min": round(min(sols), 4), "solidity_max": round(max(sols), 4),
+            "solidity_definition": "paper (step 4i-e): chord x blade count / (2 pi r_mean), tube r_mean = (r1 + r2) / 2 "
+                                   "on the balanced state; inlet-pitch values per tube as information",
+            "R_AM18_check": r_am18["check"], "hub_solidity_paper": r_am18["hub_solidity_paper"],
+            "tip_solidity_paper": r_am18["tip_solidity_paper"],
             "chord_min_m": min(chords), "chord_max_m": max(chords),
             "loading_coefficient": loading_coefficients(inp, omega, ann, gas),
             "outer": {k: round(x, 5) for k, x in streams["outer"].items()},
@@ -1513,6 +1609,7 @@ def run(params: dict | None = None, icd: dict | None = None, gas: Gas = Gas()) -
         },
         "smoothness": smoothness(rows, n_inner),
         "chord_smoothness_r_am17": r_am17,
+        "solidity_r_am18": r_am18,
         "tubes": rows,
         "kappa2_blend_check": kappa2_blend_check(blade, ctx, ann),
         "tip_region": tip,

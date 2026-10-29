@@ -63,6 +63,8 @@ an M0 engine agent coordinating M1-M9 module agents.
 ## Commits
 - Run the full test suite before every commit; never commit with failing tests.
 - Commit code before recording a revision: `create_revision` refuses uncommitted code (core/, tools/, engine/*/analysis/*.py).
+- Revision commits come in two steps: (1) code commit, where the full suite must pass except `test_<M>_active_record_verifies`
+  for the module being recorded (state it in the commit message); (2) create_revision, then full suite all green, then the record commit.
 
 ## Session status
 - Session start: read docs/status.md. Task end: update it (keep under 70 lines, newest first in 'Son yapılanlar').

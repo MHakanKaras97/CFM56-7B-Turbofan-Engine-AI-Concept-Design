@@ -19,6 +19,7 @@ CHORD = {"form": "quadratic", "degree": 2, "coefficients": [0.10, 0.4, -0.25]}
 def _ctx(taper=0.335, omega=553.1):
     return {"omega": omega, "taper_min": 0.3, "taper_max": 0.5, "area_taper": taper, "blades": 24,
             "r67": fd.rotor67_solidity_ends(),
+            "r_hub_edges": (0.2324, 0.2324 * 1.30), "r_tip_edges": (0.7747, 0.7747 * 0.95),
             "mech": {"rho": 4430.0, "r_hub": 0.2324, "span": 0.5423, "allowable": 733.3e6, "margin_min": 1.0}}
 
 
@@ -72,7 +73,7 @@ def test_root_chord_floor_r_am18_from_rotor67_yaml():
     assert sol_hub["tag"] == "KS" and ctx["r67"]["hub"] == sol_hub["value"]
     f0, c_min = fd.root_chord_floor(ctx)
     assert f0 == 0.0
-    assert math.isclose(c_min / (2 * math.pi * 0.2324 / 24), sol_hub["value"], rel_tol=1e-12)
+    assert math.isclose(c_min / (math.pi * (0.2324 + 0.2324 * 1.30) / 24), sol_hub["value"], rel_tol=1e-12)
     assert read_yaml(PARAMS)["blading"]["root_chord_floor"]["value"] == "rotor67_hub_solidity"
 
 
@@ -89,18 +90,19 @@ def test_chord_lp_with_root_floor_r_am18():
     assert len(fd.chord_constraints(FS, needs, law, ctx["chord_floors"])) == len(FS) + 1
 
 
-def test_rotor67_solidity_need_quadratic_meets_floor():
-    """Supersonic needs = Rotor 67 linear solidity x pitch (linear in r) lie on one quadratic whose root value is
-    exactly the R-AM.18 floor: with only those needs the LP chord is that quadratic."""
+def test_rotor67_inlet_pitch_needs_below_mean_radius_floor():
     ctx = dict(_ctx(), chord_law="quadratic")
     ctx["chord_floors"] = [fd.root_chord_floor(ctx)]
     r_h, L, z = ctx["mech"]["r_hub"], ctx["mech"]["span"], ctx["blades"]
     sup = FS[4:]
     needs = [fd.r67_solidity(ctx["r67"], f) * 2 * math.pi * (r_h + f * L) / z for f in sup]
+    free = fd.size_chord(sup, needs, {"chord_law": "quadratic"})
     law = fd.size_chord(sup, needs, ctx)
-    for f in (0.0, 0.3, 1.0):
-        assert math.isclose(fd.chord_value(law, f), fd.r67_solidity(ctx["r67"], f) * 2 * math.pi * (r_h + f * L) / z,
-                            rel_tol=1e-9)
+    c_floor = ctx["chord_floors"][0][1]
+    assert math.isclose(fd.chord_value(free, 0.0), ctx["r67"]["hub"] * 2 * math.pi * r_h / z, rel_tol=1e-9)
+    assert fd.chord_value(free, 0.0) < c_floor
+    assert math.isclose(fd.chord_value(law, 0.0), c_floor, rel_tol=1e-9)
+    assert all(fd.chord_value(law, f) >= n - 1e-9 for f, n in zip(sup, needs))
 
 
 # --- R-AM.16 area law, structural level (step 4i-b) -----------------------------------------------------------
