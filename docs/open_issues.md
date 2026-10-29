@@ -34,9 +34,19 @@ Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki 
 | # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
 |---|---|---|---|---|---|---|
 | 23 | M1 | Hücum ve firar kenarı yarıçapı 0 (keskin kenar); R-AM.11 profili kenar dairelerini yok sayıyor | [T] | Kayıttaki alan/kütle aynı varsayımla; CFM kenar yarıçapı kaynağı yok | Kuş çarpması/erozyon analizi veya kenar yarıçapı kaynağı | blade_solid.py |
-| 24 | M1 | Uç boşluğu kanattan kesilmedi: kanat r_tip1'e kadar (aero modelde çalışma boşluğu 3.0 mm [T], #16) | [T] | Kasa başlamadı; boşluk kasa tarafında tanımlanacak | Fan kasası (M1.2) tasarımı | blade_solid.py |
-| 25 | M1 | Kök köşe yuvarlatması, kanat-kök geçişi, platform ve kırlangıç kuyruğu yok; kanat r_hub1 düzleminde bitiyor, yükselen çıkış göbek hattı (#7) kesilmedi | [T] | Disk ve kök tasarımı başlamadı; kütle yalnız kanat profili (kayıtla aynı) | Disk/kırlangıç kuyruğu (M1.1.2, M1.1.4-6) tasarımı | blade_solid.py |
-| 26 | M1 | Düzlemsel kesitler sabit yarıçapta, kesit ağırlık merkezlerinden radyal yığma (eğim, ok açısı, silindire sarma yok); dönüş yönü (Y işareti) seçilmedi | [T] | Konsept seviyesi; kayıttaki kütle integraliyle tutarlı | Yapısal (FEM) veya 3B aero analizi | blade_solid.py |
+| 24 | M1 | Uç boşluğu kanattan kesilmedi: kanat r_tip1'e kadar (aero modelde çalışma boşluğu 3.0 mm [T], #16) | [T] | Kasa başlamadı; boşluk kasa tarafında tanımlanacak | Kısmen kapandı (5b): boşluk kasa tarafında, #28 | blade_solid.py |
+| 25 | M1 | Kök köşe yuvarlatması, kanat-kök geçişi, platform ve kırlangıç kuyruğu yok; kanat r_hub1 düzleminde bitiyor, yükselen çıkış göbek hattı (#7) kesilmedi | [T] | Disk ve kök tasarımı başlamadı; kütle yalnız kanat profili (kayıtla aynı) | Kısmen kapandı (5b): göbek hattı kırpıldı, #29-30; kök/disk 5c | blade_solid.py |
+| 26 | M1 | Düzlemsel kesitler sabit yarıçapta, kesit ağırlık merkezlerinden radyal yığma (eğim, ok açısı, silindire sarma yok); dönüş yönü (Y işareti) seçilmedi | [T] | Konsept seviyesi; kayıttaki kütle integraliyle tutarlı | Yapısal (FEM) veya 3B aero analizi; dönüş yönü seçildi (5b), #31 | blade_solid.py |
+
+## M1 konsept montajı (adım 5b-5g, `engine/M1_inlet_fan/geometry/`)
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 27 | M1 | Akış yolu eksenel konumları (splitter dudağı, OGV, istasyon 13) oran kuralıyla; göbek/uç hatları kenarlar arasında doğrusal, sonra sabit yarıçap | [T] | Kaynak yok; konsept seviyesi | OGV (5e), M7 kanalı veya kaynak bulunursa | geometry_params.yaml |
+| 28 | M1 | Kasa duvarı = kanat uç hattı + 3.0 mm; boşluk halkası kayıttaki akış alanının dışında (ist. 2: 1.7304 / 1.71577 m², +%0.85) | [T] | Uç boşluğu meanline'da yalnız kayıp; kanat uç yarıçapı kayda eşit kalır (#16, #24) | Kasa (5d) veya kayıp modeli değişirse | flowpath.py |
+| 29 | M1 | Kanat kayıt halkasına kırpıldı (uç köşeleri, daralan kasa, yükselen göbek): kütle 6.095 kg, kayıt 6.769 kg (-%10); kayıttaki kütle/gerilme integrali dikdörtgen meridyen varsayıyor (muhafazakâr) | [H] | Tasarım değerleri değişmedi; fark geometrik | Sonraki M1 tasarım revizyonu veya FEM (A-3) | fan_ring.py |
+| 30 | M1 | Kök saplaması: kök kesiti göbek hattına kadar prizmatik uzatıldı; platform/kırlangıç kuyruğu yok | [T] | Yapım yardımı; 5c'de kök ile değişecek | Adım 5c | fan_ring.py |
+| 31 | M1 | Dönüş yönü seçildi: +X etrafında pozitif (önden bakışta saat yönü) | [T] | 5a kanat yönüyle tutarlı; CFM yönü doğrulanamadı | Kaynak bulunursa | geometry_params.yaml |
 
 ## M0 Motor
 

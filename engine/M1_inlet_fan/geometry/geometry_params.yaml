@@ -1,0 +1,42 @@
+description: M1 geometry inputs that are not in the design record (hand-written, step 5b). Ratios only; lengths are
+  computed by code from the active record. No value here is a CFM56-7B dimension.
+flowpath:
+  splitter_gap_over_axial_chord:
+    value: 0.5
+    unit: '-'
+    tag: T
+    note: axial gap from the rotor trailing edge at the splitter radius to the splitter lip (station 21 plane), per
+      rotor axial chord at the splitter radius. Proportional rule, no source; CFM56-7B splitter position doğrulanmadı
+  rotor_ogv_gap_over_tip_axial_chord:
+    value: 1.5
+    unit: '-'
+    tag: T
+    note: axial gap from the rotor tip trailing edge to the OGV leading edge, per rotor tip axial chord. Proportional
+      rule, no source (large rotor-OGV spacing is usual for fan noise, value doğrulanmadı); OGV design is step 5e
+  ogv_axial_chord_over_tip_axial_chord:
+    value: 1.0
+    unit: '-'
+    tag: T
+    note: OGV axial chord per rotor tip axial chord, only to place station 13 (OGV exit) until step 5e sizes the OGV
+  bypass_walls:
+    value: constant_radius
+    unit: '-'
+    tag: T
+    note: downstream of the rotor trailing edge the casing stays at r_tip2, the hub at r_hub2 and the splitter wall at
+      the record's exit splitter radius up to stations 21 and 13 (no duct area change); revisit with OGV (5e) and M7
+rotor:
+  root_stub_depth_over_span:
+    value: 0.06
+    unit: '-'
+    tag: T
+    note: construction aid only. The root face of the 5a airfoil is extruded radially inward by this fraction of the
+      inlet span, then the airfoil is trimmed by the hub line; this closes the gap between the planar root section
+      (constant z, radius > r_hub1 off the y = 0 line) and the revolved hub. The stub part below the hub line is cut
+      away; the kept part is a prismatic extension of the root section
+  rotation_sense:
+    value: positive_about_plus_x
+    unit: '-'
+    tag: T
+    note: rotor turns positively about +X (aft, right-hand rule); clockwise seen from the front looking aft. At top
+      dead centre the blade moves towards -Y, so the relative inflow points towards +Y, which matches the 5a blade
+      (trailing edge at +Y of the leading edge). CFM56-7B sense of rotation not used (doğrulanmadı)
