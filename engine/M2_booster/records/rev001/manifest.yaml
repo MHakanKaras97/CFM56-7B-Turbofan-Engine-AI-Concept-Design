@@ -1,0 +1,21 @@
+revision: rev001
+parent_revision: null
+revision_type: design
+date: '2026-10-29T20:43:35Z'
+summary: 'M2 booster meanline step 4: 3 stages, rotor 74/78/74 [KS], stator 31/39/49
+  [T], spanwise normalisation (#68), constant tip radius (L2); budget 5/5 + 1 info,
+  integration pass; R-AM2.2 rotor tip D 2Rt 0.4820 / 3Rt 0.5550 known deviations (#69/#70);
+  no BOM parts yet (geometry stage)'
+reason: First M2 design record of the committed step 4 meanline; eta_booster from
+  the M0 budget (ADR-015)
+change_request: null
+code_commit: a3b3cf915cae44b024e01671472113a9f658b84d
+outputs:
+- file: analysis/booster_params.yaml
+  sha256: c79aad2f860624cc933c1c9caa0e7b7183bb8b70013684f1ca50ed7135ab1bcc
+- file: analysis/meanline_results.yaml
+  sha256: 7c9c345486d375d1ed9dcb0d69ffe4af1d039a5cfa51558fefda7cdda3c7b8d6
+- file: analysis/a1_validation.yaml
+  sha256: cdcd2fa8e9037b8db8e8380ff01f656c24283459ed76d7479e814dfbb25912f4
+- file: geometry/flowpath.yaml
+  sha256: 9adbf92f21af2a477661d5fa05ceb7754b921aebd44c504b22e5be1a4026f140
