@@ -1,0 +1,130 @@
+description: >-
+  NASA TP-1523 (Britsch, Osborn, Laessig 1979) reference data for M2, transcribed from the text conversion
+  (sources_text/aero/britsch_1979_tp1523.md, OCR quality). Pages are printed pages. Values checked by
+  tests/test_m2_sources.py (solidity, aspect ratio, hub/tip, diffusion factor). Repairs are listed with the
+  raw OCR string; every repaired value is reproduced by an identity in the test. M2 step 1.
+source: {id: 45, file: aero/britsch_1979_tp1523.md}
+rig:
+  tip_diameter: {value: 50.8, unit: cm, tag: K, note: constant through each stage, p. 2}
+  hub_tip_ratio: {value: 0.8, unit: '-', tag: K, note: constant through each stage, summary p. 1 and p. 2}
+  design_tip_speed: {value: 243.8, unit: m/s, tag: K, note: summary p. 1}
+  design_mass_flow: {value: 9.46, unit: kg/s, tag: K, note: six design stages, p. 3}
+  design_rpm_23B: {value: 9170.0, unit: rpm, tag: K, note: 'table 2(a) p. 20, OCR "917O.GOC"'}
+  solidity_definition: {value: tip_radius, unit: '-', tag: K, note: 'table 1 solidity is at the tip radius (p. 3; symbol list p. 12 "at maximum radius"); blade tables 8-17 give solidity per radius on the mean of the LE and TE radii (checked numerically)'}
+  aspect_ratio_definition: {value: span_over_mean_chord, unit: '-', tag: K, note: 'symbol list p. 11: blade height over mean chord length; span = r_tip - r_hub = 5.08 cm'}
+  diffusion_factor_equation_B4: {value: doğrulanamadı, unit: '-', tag: K, note: 'eq. B4 p. 13 is an image in the text conversion; settled numerically, see df_check'}
+coefficient_check:
+  description: >-
+    Table 2(a) stage 23B-20 (p. 20) head-rise and flow coefficients. The appendix B formulas (p. 14-15) are images
+    in the text; settled numerically by the test: head-rise = cp T1 (PR^((gamma-1)/gamma) - 1) / U_tip^2 (cp 1004,
+    gamma 1.40, p. 11), flow coefficient = inlet axial velocity / U_tip.
+  inlet_total_temperature: {value: 288.2, unit: K, tag: K, note: table 2(b) p. 21}
+  rotor_pressure_ratio: {value: 1.257, unit: '-', tag: K}
+  stage_pressure_ratio: {value: 1.252, unit: '-', tag: K}
+  rotor_head_rise_coefficient: {value: 0.329, unit: '-', tag: K, note: 'OCR "C.329"'}
+  stage_head_rise_coefficient: {value: 0.322, unit: '-', tag: K, note: 'OCR "3.322"'}
+  flow_coefficient: {value: 0.470, unit: '-', tag: K, note: 'OCR "C.L-,O" read as 0.470 = 114.6 / 243.9; repaired'}
+  inlet_axial_velocity_tip: {value: 114.6, unit: m/s, tag: K, note: table 2(b) p. 21}
+  tip_speed: {value: 243.9, unit: m/s, tag: K}
+table1:
+  page: 19
+  tag: K
+  columns: [stage, rotor, rotor_chord_cm, rotor_blades, rotor_df, rotor_ar, rotor_solidity, stator, stator_chord_cm, stator_blades, stator_df, stator_ar, stator_solidity, stall_margin_pct]
+  rows:
+  - [23B-20, 23B, 5.08, 50, 0.44, 1.00, 1.6, '20', 4.89, 52, 0.44, 1.04, 1.6, 22]
+  - [23D-20C, 23D, 5.08, 63, 0.44, 1.00, 2.0, 20C, 4.89, 66, 0.46, 1.04, 2.0, 20]
+  - [24A-20, 24A, 7.62, 34, 0.43, 0.67, 1.6, '20', 4.89, 52, 0.44, 1.04, 1.6, 22]
+  - [24B-20C, 24B, 7.62, 43, 0.45, 0.67, 2.0, 20C, 4.89, 66, 0.46, 1.04, 2.0, 19]
+  - [25A-20B, 25A, 2.54, 77, 0.43, 2.00, 1.2, 20B, 4.89, 40, 0.42, 1.04, 1.2, 15]
+  - [26B-21, 26B, 4.24, 68, 0.49, 1.20, 1.8, '21', 4.09, 70, 0.46, 1.24, 1.8, 13]
+  - [26D-21, 26D, 4.24, 34, 0.51, 1.20, 0.9, '21', 4.09, 70, 0.42, 1.24, 1.8, 21]
+  - [26D-21D, 26D, 4.24, 34, 0.49, 1.20, 0.9, 21D, 4.09, 35, 0.49, 1.24, 0.9, 19]
+  - [27A-21, 27A, 7.19, 40, 0.51, 0.70, 1.8, '21', 4.09, 70, 0.48, 1.24, 1.8, 18]
+  - [27C-21, 27C, 7.19, 30, 0.51, 0.70, 1.35, '21', 4.09, 70, 0.48, 1.24, 1.8, 21]
+  - [27D-21, 27D, 7.19, 20, 0.53, 0.70, 0.9, '21', 4.09, 70, 0.43, 1.24, 1.8, 15]
+  - [27D-21D, 27D, 7.19, 20, 0.50, 0.70, 0.9, 21D, 4.09, 35, 0.50, 1.24, 0.9, 22]
+  - [28B-22, 28B, 6.35, 45, 0.56, 0.80, 1.8, '22', 6.22, 46, 0.56, 0.82, 1.8, 13]
+  - [28D-22, 28D, 6.35, 34, 0.56, 0.80, 1.36, '22', 6.22, 46, 0.55, 0.82, 1.8, 17]
+  merged_cells: >-
+    Blank cells in the table repeat the parent rotor/stator (derived stages change only the blade count, p. 3):
+    rotor chord and AR of 26D/27C/27D, rotor ids 27C/27D, stator chord and AR of 20C/20B/21D. Filled with the parent value [K].
+  repairs:
+  - {cell: 24B-20C rotor/blades, raw: '"24B<br>43" in the blade-count column', value: 'rotor 24B, 43 blades', tag: K, note: layout only}
+  - {cell: 23D-20C stator chord, raw: '"2.0" (solidity shifted into the chord column)', value: 4.89, tag: K, note: parent stator 20}
+  - {cell: 28D-22 rotor_ar, raw: '". B O"', value: 0.80, tag: K, note: 'OCR B for 8; same rotor blades as 28B'}
+  - {cell: 28B-22 and 28D-22 rotor id and chord, raw: blank, value: 'rotor 28B/28D, chord 6.35 cm', tag: H, note: 'chord = span / AR = 5.08 / 0.80; table 13 aero chord 6.365-6.369 cm [K] agrees; solidity 45 x 6.35 / (2 pi 25.4) = 1.79 (table 1.8)'}
+blade_tables:
+  page_range: 38-47
+  tag: K
+  note: >-
+    Tip, mid-span (RP5, 50 % span) and hub rows only; the full tables are OCR-damaged and are not needed at
+    step 1. chord = aero chord (straight line LE-TE along the design streamline, p. 16). Solidity check:
+    chord x blades / (2 pi (r_LE + r_TE) / 2). status: trusted (read as printed), repaired (raw OCR given),
+    unresolved (not used).
+  columns: [row, blades, station, r_le_cm, r_te_cm, chord_cm, solidity, status, raw]
+  rows:
+  - [rotor 23B, 50, tip, 25.400, 25.400, 5.092, 1.595, trusted, '']
+  - [rotor 23B, 50, mid, 22.856, 22.860, 5.094, 1.773, trusted, '']
+  - [rotor 23B, 50, hub, 20.320, 20.320, 5.095, 1.995, trusted, '']
+  - [rotor 24A, 34, tip, 25.400, 25.400, 7.489, 1.596, trusted, '']
+  - [rotor 24A, 34, mid, 22.854, 22.860, 7.491, 1.773, trusted, 'solidity split by the converter "1.|9 773"']
+  - [rotor 24A, 34, hub, 20.320, 20.320, 7.493, 1.996, trusted, '']
+  - [rotor 25A, 77, tip, 25.400, 25.400, 2.479, 1.196, trusted, '']
+  - [rotor 25A, 77, mid, 22.857, 22.860, 2.481, 1.330, repaired, 'chord "2.C81"']
+  - [rotor 25A, 77, hub, 20.320, 20.320, null, null, unresolved, 'HUB row missing in the chord block of table 10']
+  - [rotor 26B, 68, tip, 25.400, 25.400, 4.212, 1.795, repaired, 'solidity "1.755" (9/5); radii "25.200 25.230" (tip = casing 25.400)']
+  - [rotor 26B, 68, mid, 22.851, 22.860, 4.214, 1.995, repaired, 'solidity "1.955" (9/5)']
+  - [rotor 26B, 68, hub, 20.320, 20.320, 4.215, 2.245, trusted, '']
+  - [rotor 27A, 40, tip, 25.400, 25.400, 7.161, 1.795, trusted, '']
+  - [rotor 27A, 40, mid, 22.852, 22.860, 7.164, 1.995, repaired, 'decimal point lost: "7164", "1995"']
+  - [rotor 27A, 40, hub, 20.320, 20.320, 7.165, 2.245, trusted, '']
+  - [rotor 28B, 45, tip, 25.400, 25.400, 6.365, 1.795, trusted, 'solidity split ".795"']
+  - [rotor 28B, 45, mid, 22.831, 22.860, 6.367, 1.996, trusted, '']
+  - [rotor 28B, 45, hub, 20.320, 20.320, 6.369, 2.245, trusted, 'solidity split "2. 22 245" read as 2.245']
+  - [stator 20, 52, tip, 25.400, 25.400, 4.891, null, unresolved, 'solidity "1.591," and TE radius "25.430"; identity gives 1.594 with r = 25.400']
+  - [stator 20, 52, mid, 22.858, 22.863, 4.891, 1.771, repaired, 'chord "4.691" (6/8)']
+  - [stator 20, 52, hub, 20.320, 20.320, 4.891, 1.992, repaired, 'TE radius "20.520" (5/3)']
+  - [stator 20B, 40, tip, 25.400, 25.400, 4.891, 1.226, trusted, '']
+  - [stator 20B, 40, mid, 22.858, 22.866, 4.891, 1.362, trusted, '']
+  - [stator 20B, 40, hub, 20.320, 20.320, 4.891, 1.532, trusted, '']
+  - [stator 21, 70, tip, 25.400, 25.400, 4.088, 1.793, trusted, '']
+  - [stator 21, 70, mid, 22.862, 22.883, 4.088, 1.991, repaired, 'chord "4.037" (constant 4.088 on every other row), LE radius "22.E62"']
+  - [stator 21, 70, hub, 20.320, 20.320, 4.088, 2.241, trusted, '']
+  - [stator 22, 46, tip, 25.400, 25.400, 6.224, 1.794, trusted, 'solidity split "1. 794"']
+  - [stator 22, 46, mid, 22.858, 23.034, 6.222, 1.985, trusted, 'TE radius differs from LE: only (r_LE + r_TE)/2 reproduces 1.985']
+  - [stator 22, 46, hub, 20.320, 20.320, 6.224, 2.242, trusted, '']
+  other_repairs:
+  - {cell: rotor 28B RP1 solidity, raw: '1.912', value: 1.812, tag: H, note: 'not monotonic (tip 1.795, RP2 1.830); 6.368 x 45 / (2 pi 25.1685) = 1.812 (9/8)'}
+df_check:
+  description: >-
+    Table 2(b) rotor 23B (p. 21) design velocities, m/s; D-FACT column vs Lieblein velocity form with the local
+    blade-table solidity (tools.meanline.diffusion_factor). Absolute inlet swirl 0. Relative tangential
+    velocity Wt = U - Vt.
+  tag: K
+  columns: [station, r1_cm, r2_cm, W1, W2, Vt1, Vt2, U1, U2, solidity, df_table]
+  rows:
+  - [tip, 25.400, 25.400, 269.5, 177.0, 0.0, 93.8, 243.9, 243.9, 1.595, 0.452]
+  - [mid, 22.856, 22.860, 247.6, 162.5, 0.0, 93.4, 219.5, 219.5, 1.773, 0.450]
+  - [hub, 20.320, 20.320, 226.2, 125.4, 0.0, 113.2, 195.1, 195.1, 1.995, 0.571]
+  repairs:
+  - {cell: tip D-FACT, raw: '"0A52"', value: 0.452, tag: K}
+  - {cell: mid D-FACT, raw: '"0.**_t50_**"', value: 0.450, tag: K}
+applicability:
+  description: >-
+    Booster vs the TP-1523 rig (hub/tip 0.8, U_tip 243.8 m/s, subsonic). Computed [H] by
+    tests/test_m2_sources.py from M1 flowpath.yaml station 21 (rev014, read-only), the ICD (read_icd: station 21,
+    station 24, pr_booster) and N1 = Girão nominal LP speed 5282 rpm [KS] (ICD shafts). Stage values assume a
+    constant hub radius (Lolis 2014 method assumption [KS]), constant axial Mach number equal to station 21,
+    equal stage pressure ratio and equal temperature rise [T]: a bracket, not a design.
+  station21_hub_tip: {value: 0.6970, unit: '-', tag: H}
+  station21_tip_speed: {value: 239.78, unit: m/s, tag: H}
+  station21_tip_speed_vs_rig: {value: -0.0165, unit: '-', tag: H}
+  station21_mach: {value: 0.3927, unit: '-', tag: H}
+  station21_tip_relative_mach: {value: 0.787, unit: '-', tag: H, note: 'no inlet swirl [T]; rig rotor 23B tip 0.801 [K] table 2(b)'}
+  stage_exit_hub_tip: {value: [0.7307, 0.7631, 0.7934], unit: '-', tag: T}
+  stage_exit_tip_speed: {value: [228.7, 219.0, 210.6], unit: m/s, tag: T}
+  lolis_mach_0p5_exit_hub_tip: {value: 0.8197, unit: '-', tag: T, note: 'same bracket with axial Mach 0.5 (Lolis table 4.10); needs a station 21 area change'}
+  verdict: >-
+    Subsonic like the rig. Tip speed within 2 % at the booster inlet, falling to about 14 % below the rig at the
+    stage 3 exit (constant hub). Hub/tip 0.697 at stage 1 inlet is 13 % below the rig 0.8 (outside); stage 3
+    exit 0.79 is inside. Stage 1 is an extrapolation -> open issue #57.

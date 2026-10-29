@@ -73,6 +73,16 @@ Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki 
 | 55 | M1 | Disk payları sınıra yakın: bore 1.007 (rev013) -> 1.140 (rev014), kulak çekmesi 1.107 (en düşük mod); ölçüt pay >= 1.0, gerilme yığılması ve ısıl yük yok | [H] | Konsept analitik kontrol; kural sağlanıyor | FEM (A-3/A-6), LCF veya yük değişikliği | rules/disk.md |
 | 56 | M1 | Disk kütlesinin kontrol değeri yok (98.47 kg [H]); kaynakta CFM56-7B fan diski kütlesi bulunamadı (doğrulanamadı) | — | Kütle bütçesi de yok (#50) | Kaynak veya M0 kütle bütçesi | assembly.py |
 
+## M2 Booster (adım 1: kaynaklar, tanımlar, rule book iskeleti)
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 57 | M2 | TP-1523 uygulanabilirliği: ist. 21 göbek/uç 0.697, test aralığı 0.8 (%13 altında, dışarıda); uç hızı 239.8 m/s (-%1.7), uç bağıl Mach 0.787 ses altı. Sabit göbek ve sabit eksenel Mach ile kademe çıkışları 0.731/0.763/0.793, uç hızı 228.7/219.0/210.6 m/s [T]; 1. kademe ekstrapolasyon | [H] | Adım 1 tasarım yok; ekstrapolasyon açıkça kaydedildi | M2 meanline (adım 2+): 1. kademe DF/katılık TP-1523 aralığı dışında kalırsa kural veya ikinci kaynak | learning/tp1523_reference.yaml applicability |
+| 58 | M2 | İst. 21 eksenel Mach 0.393 [H] (M1 rev014 alanı 0.30357 m²), Lolis yöntem varsayımı giriş Mach 0.5 [KS]; Mach 0.5 ile çıkış göbek/uç 0.820 olurdu, ama ist. 21 alanı M1'in | [H] | M1 kabul edildi, alan değişikliği CR ister; M2 ist. 21 Mach'ını kullanır [T] | Kullanıcı kararı veya M1 CR | rules/aero_method.md meanline planı adım 5 |
+| 59 | M2 | TP-1523 OCR: 30 kanat tablosu satırından 21 güvenilir, 7 onarıldı (ham dizgi yaml'da), 2 çözülemedi (rotor 25A göbek satırı yok; stator 20 uç katılığı "1.591," ve TE yarıçapı); Tablo 2(a) rotor verimi "0.9L3" doğrulanamadı; denklem B4 ve Ek B katsayı formülleri metinde görüntü | [K] | Çözülemeyenler kullanılmıyor; tanımlar sayısal olarak yerleşti | PDF sayfa görüntüsü (kullanıcı isterse) veya temiz sayısal kopya | learning/tp1523_reference.yaml |
+| 60 | M2 | Booster malzemeleri kaynak setinde yok (doğrulanamadı): dönen parçalar ti6al4v [T], stator/kasa/aşınır kaplama tbd; kanat bağlantı tipi ve BEGV varlığı doğrulanamadı | [T] | Konsept seviyesi; değer uydurulmadı | Kaynak bulunursa | rules/materials.md, joints.md, bom.md |
+| 61 | M2 | Kütle kontrol değeri zayıf: booster ≈ %7.5 x 2285.5 kg ≈ 171 kg (Lolis 2014 Tablo 4.3, yazar ATLAS tahmini; tambur/stator dahil mi belirsiz; yazar booster disklerinin büyük çıktığını söylüyor) | [KS] | Yalnız bilgi, ayar hedefi değil | M2 BOM kütlesi hesaplanınca karşılaştırma (A-5) | rules/analyses.md |
+
 ## M0 Motor
 
 | # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
