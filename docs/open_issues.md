@@ -45,8 +45,14 @@ Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki 
 | 27 | M1 | Akış yolu eksenel konumları (splitter dudağı, OGV, istasyon 13) oran kuralıyla; göbek/uç hatları kenarlar arasında doğrusal, sonra sabit yarıçap | [T] | Kaynak yok; konsept seviyesi | OGV (5e), M7 kanalı veya kaynak bulunursa | geometry_params.yaml |
 | 28 | M1 | Kasa duvarı = kanat uç hattı + 3.0 mm; boşluk halkası kayıttaki akış alanının dışında (ist. 2: 1.7304 / 1.71577 m², +%0.85) | [T] | Uç boşluğu meanline'da yalnız kayıp; kanat uç yarıçapı kayda eşit kalır (#16, #24) | Kasa (5d) veya kayıp modeli değişirse | flowpath.py |
 | 29 | M1 | Kanat kayıt halkasına kırpıldı (uç köşeleri, daralan kasa, yükselen göbek): kütle 6.095 kg, kayıt 6.769 kg (-%10); kayıttaki kütle/gerilme integrali dikdörtgen meridyen varsayıyor (muhafazakâr) | [H] | Tasarım değerleri değişmedi; fark geometrik | Sonraki M1 tasarım revizyonu veya FEM (A-3) | fan_ring.py |
-| 30 | M1 | Kök saplaması: kök kesiti göbek hattına kadar prizmatik uzatıldı; platform/kırlangıç kuyruğu yok | [T] | Yapım yardımı; 5c'de kök ile değişecek | Adım 5c | fan_ring.py |
+| 30 | M1 | Kök saplaması: kök kesiti göbek hattına kadar prizmatik uzatıldı; platform/kırlangıç kuyruğu yok | [T] | Yapım yardımı | Kapandı (5c): kırlangıç kuyruğu sapı | fan_ring.py |
 | 31 | M1 | Dönüş yönü seçildi: +X etrafında pozitif (önden bakışta saat yönü) | [T] | 5a kanat yönüyle tutarlı; CFM yönü doğrulanamadı | Kaynak bulunursa | geometry_params.yaml |
+| 32 | M1 | Disk göbek deliği (bore) payı 0.717 < 1.0 (R-AM.15 ile aynı izin): bore çevresel 427.0 MPa, izin 733.3 MPa (akma 1100 [KS] / 1.5); ortalama çevresel 295.8 MPa | [H] | Disk oranları [T]; hedefe ayar yapılmadı (ana konu, montajı engellemez) | Disk boyutlandırma kuralı veya FEM (A-3) | rotor_hardware.py; analysis/disk_stress.py |
+| 33 | M1 | Kulak (lug) genişliği 10.46 mm, ortalama gerilme 427.6 MPa (pay 0.715); boyun/taban 1.2'de komşu yuvalar kesişiyor, boyun = kanat taban genişliği (1.0) | [H] | 24 yuva, göbek r 0.232 m ve göbek t/c 0.134 (bilinen sapma #1) bağlıyor | Göbek t/c, göbek yarıçapı veya kırlangıç biçimi değişirse | dovetail.py |
+| 34 | M1 | Düz, düzlemsel yuva kök veter açısında (26.97°), silindire sarılmadı; omuzlar yuva uçlarında ~8 mm yükseliyor | [T] | Konsept seviyesi; platform temiz | Ayrıntılı kırlangıç tasarımı veya FEM | dovetail.py |
+| 35 | M1 | Kırlangıç, şim, ara parça, platform ve disk oranları boyun genişliğinin [T] katları; yuvarlatma, conta, elastomer yok | [T] | Kaynak yok | Kaynak veya ayrıntılı tasarım | rotor_params.yaml |
+| 36 | M1 | 718 ve Al yoğunlukları 8190 / 2800 kg/m³ [T]; tools/data/materials.yaml'da yok | [T] | Küçük kütle payı (~4.9 kg/takım) | Kaynaklı yoğunluk tools/data'ya eklenince | rotor_params.yaml |
+| 37 | M1 | Serbest bore (LP mil geçmesi yok, M8 arayüzü), ani kalınlık basamakları, ısıl gerilme yok | [G] | Analitik konsept kontrolü | M8 arayüz CR'si veya FEM | disk_stress.py |
 
 ## M0 Motor
 

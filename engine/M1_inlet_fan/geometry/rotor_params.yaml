@@ -1,0 +1,94 @@
+description: M1 step 5c geometry inputs for the blade root, disk, shim, spacer and platform (hand-written). Ratios to
+  the dovetail neck width b_n unless stated; lengths are computed by code. No value here is a CFM56-7B dimension.
+dovetail:
+  slot_axis:
+    value: root_chord_angle
+    unit: '-'
+    tag: T
+    note: straight slot along the root-section chord line in the x-y plane (through the stacking axis), broached
+      through the rim; slot cross-section planar (not wrapped onto the cylinder)
+  neck_width_over_footprint:
+    value: 1.0
+    unit: '-'
+    tag: T
+    note: b_n = this x width of the airfoil base (where the airfoil meets the hub line) normal to the slot axis, i.e.
+      the root thickness sets the neck (no ledge). A first choice of 1.2 gave no feasible slot ring (adjacent slots
+      overlap at the lobe level, lugs cut off; step 5c report), so the neck equals the airfoil base width
+  lobe_width_over_neck:
+    value: 1.4
+    unit: '-'
+    tag: T
+    note: single-lobe dovetail, largest width / neck width; no source (doğrulanmadı)
+  flank_angle_from_tangential:
+    value: 45.0
+    unit: deg
+    tag: T
+    note: inclination of the two contact flanks to the tangential direction
+  neck_height_over_neck:
+    value: 0.3
+    unit: '-'
+    tag: T
+    note: straight neck between the rim top and the start of the contact flanks
+  lobe_side_height_over_neck:
+    value: 0.25
+    unit: '-'
+    tag: T
+    note: straight lobe side below the flanks
+  shim_thickness_over_neck:
+    value: 0.015
+    unit: '-'
+    tag: T
+    note: Alloy 718 sheet wrapped round the dovetail below the neck (flanks, sides, bottom)
+  fit_clearance:
+    value: 0.2
+    unit: mm
+    tag: T
+    note: assembly clearance between neighbouring rotor parts (shim to disk, spacer, platform); concept value
+  spacer_thickness_over_neck:
+    value: 0.2
+    unit: '-'
+    tag: T
+    note: Ti-6Al-4V spacer plate under the dovetail bottom in a slot pocket (elastomer coating not modelled)
+platform:
+  plate_thickness_over_neck:
+    value: 0.2
+    unit: '-'
+    tag: T
+    note: aluminium plate under the hub line, plus front and rear walls of the same thickness down to the rim
+      (no ribs, seals or hooks); the rim top lies one plate thickness + clearance below r_hub1
+disk:
+  rim_depth_below_slot_over_neck:
+    value: 1.0
+    unit: '-'
+    tag: T
+    note: continuous (live) rim depth from the slot pocket bottom inward
+  web_thickness_over_rim_width:
+    value: 0.25
+    unit: '-'
+    tag: T
+  bore_width_over_rim_width:
+    value: 0.6
+    unit: '-'
+    tag: T
+  bore_height_over_bore_width:
+    value: 0.5
+    unit: '-'
+    tag: T
+  bore_inner_radius_over_rim_radius:
+    value: 0.3
+    unit: '-'
+    tag: T
+    note: LP shaft interface is M8's (CR via M0); no shaft fit, free bore in the stress check
+materials_fallback:
+  alloy718_density:
+    value: 8190
+    unit: kg/m3
+    tag: T
+    note: tools/data/materials.yaml alloy718 has no properties; handbook-level value used until M0 adds a sourced
+      density (request in the step 5c report); doğrulanamadı
+  aluminium_alloy_density:
+    value: 2800
+    unit: kg/m3
+    tag: T
+    note: tools/data/materials.yaml aluminium_alloy has no properties and no grade; typical wrought Al value until
+      M0 adds a sourced density; doğrulanamadı
