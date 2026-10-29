@@ -22,7 +22,11 @@ parts:
   function: Turn and accelerate the flow (stations 2-13 outer, 2-21 inner)
   material: ti6al4v
   process: forged, machined, shot peened; dovetail grit blasted, Cu-Ni-In plasma spray, MoS2 dry-film
-  status: draft
+  status: review
+  mass:
+    value: 7.8225
+    unit: kg
+    tag: H
   joints:
   - to: M1.1.2
     type: dovetail
@@ -46,7 +50,11 @@ parts:
   - A-6
   - A-7
   - A-9
-  notes: 'Count: Girão 2023 and Fox, Rossey, Raguet 2023, p. 1439. Process: Fox, Rossey, Raguet 2023, p. 1439. No midspan shroud (Girão 2023).'
+  geometry:
+    script: engine/M1_inlet_fan/geometry/dovetail.py
+    params:
+      revision: rev011
+  notes: 'Count: Girão 2023 and Fox, Rossey, Raguet 2023, p. 1439. Process: Fox, Rossey, Raguet 2023, p. 1439. No midspan shroud (Girão 2023). Geometry step 5a-5c: airfoil from the record, trimmed to the record annulus, shank and single-lobe dovetail [T] (open issues #29, #33-35).'
 - id: M1.1.2
   name: Fan Stage 1 Disk
   parent: M1.1
@@ -57,6 +65,10 @@ parts:
   function: Carry the blades and transmit LP shaft torque
   material: ti6al4v
   status: draft
+  mass:
+    value: 69.6648
+    unit: kg
+    tag: H
   loads:
   - centrifugal
   - blade pull
@@ -66,7 +78,11 @@ parts:
   analyses:
   - A-3
   - A-6
-  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Shaft interface owned by M8 (CR via M0).'
+  geometry:
+    script: engine/M1_inlet_fan/geometry/rotor_hardware.py
+    params:
+      revision: rev011
+  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Shaft interface owned by M8 (CR via M0). Geometry step 5c: rim/web/bore [T]; analytic bore margin 0.717 below the R-AM.13/15 rule (open issue #32).'
 - id: M1.1.3
   name: Fan Stage 1 Spinner
   parent: M1.1
@@ -75,12 +91,20 @@ parts:
     unit: ea
     tag: G
   function: Guide flow into the fan hub
-  material: tbd
-  status: draft
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 6.7842
+    unit: kg
+    tag: H
   joints:
   - to: M1.1.2
     type: bolted_flange
-  notes: Material aluminium or composite [T]; joint type [T].
+  geometry:
+    script: engine/M1_inlet_fan/geometry/spinner_case.py
+    params:
+      revision: rev011
+  notes: Material aluminium or composite [T]; joint type [T]. Material aluminium_alloy chosen [T] (rules/materials.md lists spinner, case, containment and OGV as aluminium or composite [T], no source); tangent ogive [T] (#41).
 - id: M1.1.4
   name: Fan Stage 1 Dovetail Shim
   parent: M1.1
@@ -91,13 +115,21 @@ parts:
   function: Wear interface between blade and disk contact faces
   material: alloy718
   process: MoS2 dry-film on disk-side faces
-  status: draft
+  status: review
+  mass:
+    value: 0.0517
+    unit: kg
+    tag: H
   joints:
   - to: M1.1.2
     type: other
   failure_modes:
   - FM-1
-  notes: 'Material and process: Fox, Rossey, Raguet 2023, p. 1439. Count one per slot [T].'
+  geometry:
+    script: engine/M1_inlet_fan/geometry/dovetail.py
+    params:
+      revision: rev011
+  notes: 'Material and process: Fox, Rossey, Raguet 2023, p. 1439. Count one per slot [T]. Density not in tools/data/materials.yaml; [T] 8190 kg/m3 fallback (#36).'
 - id: M1.1.5
   name: Fan Stage 1 Blade Spacer
   parent: M1.1
@@ -108,7 +140,15 @@ parts:
   function: Radial restraint of the blade in the slot
   material: ti6al4v
   process: elastomer coated
-  status: draft
+  status: review
+  mass:
+    value: 0.2137
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M1_inlet_fan/geometry/dovetail.py
+    params:
+      revision: rev011
   notes: 'One per slot: Fox, Rossey, Raguet 2023, p. 1439.'
 - id: M1.1.6
   name: Fan Stage 1 Blade Platform
@@ -120,8 +160,16 @@ parts:
   function: Inner flowpath between blades; circumferential restraint
   material: aluminium_alloy
   process: with elastomer seals
-  status: draft
-  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Count one per blade gap [T].'
+  status: review
+  mass:
+    value: 0.1528
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M1_inlet_fan/geometry/rotor_hardware.py
+    params:
+      revision: rev011
+  notes: 'Material: Fox, Rossey, Raguet 2023, p. 1439. Count one per blade gap [T]. Density not in tools/data/materials.yaml; [T] 2800 kg/m3 fallback (#36).'
 - id: M1.2
   name: Fan Stage 1 Case
   parent: null
@@ -131,7 +179,7 @@ parts:
     tag: G
   function: Outer flowpath over the fan and blade containment
   material: null
-  status: draft
+  status: review
 - id: M1.2.1
   name: Fan Stage 1 Case Shell
   parent: M1.2
@@ -140,13 +188,21 @@ parts:
     unit: ea
     tag: G
   function: Outer flowpath and tip clearance surface
-  material: tbd
-  status: draft
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 33.7177
+    unit: kg
+    tag: H
   failure_modes:
   - FM-6
   analyses:
   - A-9
-  notes: Material aluminium or composite [T].
+  geometry:
+    script: engine/M1_inlet_fan/geometry/spinner_case.py
+    params:
+      revision: rev011
+  notes: 'Material aluminium or composite [T]. Material aluminium_alloy chosen [T]; inner surface = casing wall (tip line + 3.0 mm [T], #16, #28).'
 - id: M1.2.2
   name: Fan Stage 1 Containment Ring
   parent: M1.2
@@ -155,24 +211,53 @@ parts:
     unit: ea
     tag: G
   function: Contain a released blade
-  material: tbd
-  status: draft
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 49.4281
+    unit: kg
+    tag: H
   failure_modes:
   - FM-4
   analyses:
   - A-8
-  notes: Material not selected.
+  geometry:
+    script: engine/M1_inlet_fan/geometry/spinner_case.py
+    params:
+      revision: rev011
+  notes: 'Material aluminium_alloy placeholder [T], doğrulanamadı; thickness proportional rule [T] (#39, #40).'
 - id: M1.3
-  name: Fan Stage 1 Outlet Guide Vane
+  name: Fan Stage 1 Outlet Guide Vane Row
   parent: null
   qty:
     value: 1
     unit: ea
-    tag: T
+    tag: G
   function: Remove swirl from the bypass flow (station 13)
-  material: tbd
-  status: draft
-  notes: Modelled as one vane row; vane count doğrulanmadı. Material aluminium or composite [T].
+  material: null
+  status: review
+  notes: One vane row (assembly); vanes M1.3.1.
+- id: M1.3.1
+  name: Fan Stage 1 Outlet Guide Vane
+  parent: M1.3
+  qty:
+    value: 51
+    unit: ea
+    tag: T
+  function: Remove the bypass swirl (station 13)
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 1.2552
+    unit: kg
+    tag: H
+  failure_modes:
+  - FM-2
+  geometry:
+    script: engine/M1_inlet_fan/geometry/ogv.py
+    params:
+      revision: rev011
+  notes: 'Count V = ceil(2.1 B) [T] (Tyler-Sofrin cut-off logic [G]); CFM56-7B count doğrulanmadı (#14, #42). Material aluminium [T] (BOM note aluminium or composite). Section MCA, Carter deviation [G/T] (#43).'
 - id: M1.4
   name: Fan Stage 1 Frame
   parent: null
@@ -181,6 +266,104 @@ parts:
     unit: ea
     tag: G
   function: Structural frame behind the fan; carries fan case and bearing loads
+  material: null
+  status: review
+  notes: 'Aluminium and VBVs inside the frame: Girão 2023 (docs/learning/cfm56_7b_module_facts.md). VBV owner to be set by M0. Assembly of M1.4.1-M1.4.5 (step 5f).'
+- id: M1.4.1
+  name: Fan Stage 1 Frame Hub Ring
+  parent: M1.4
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Core passage inner wall in the frame; bearing-support flange (M8 boundary)
   material: aluminium_alloy
-  status: draft
-  notes: 'Aluminium and VBVs inside the frame: Girão 2023 (docs/learning/cfm56_7b_module_facts.md). VBV owner to be set by M0.'
+  status: review
+  mass:
+    value: 14.3653
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M1_inlet_fan/geometry/fan_frame.py
+    params:
+      revision: rev011
+  notes: Bearing interface flange only; LP shaft and bearings 1-2 are M8 [T] (#47).
+- id: M1.4.2
+  name: Fan Stage 1 Frame Outer Ring
+  parent: M1.4
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Bypass outer wall over the OGV and frame; mates with the case rear flange
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 33.6714
+    unit: kg
+    tag: H
+  joints:
+  - to: M1.2.1
+    type: bolted_flange
+  geometry:
+    script: engine/M1_inlet_fan/geometry/fan_frame.py
+    params:
+      revision: rev011
+  notes: Sizes [T] (fan_frame_params.yaml).
+- id: M1.4.3
+  name: Fan Stage 1 Frame Splitter Ring
+  parent: M1.4
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Separate core and bypass flow from the station 21 lip; bypass inner wall; VBV openings
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 23.3591
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M1_inlet_fan/geometry/fan_frame.py
+    params:
+      revision: rev011
+  notes: 'Girão 2023 PDF p. 36-37 [KS]: frame separates primary and secondary flow and houses the VBVs; VBV owner not set by M0, openings placeholder [T] (#48).'
+- id: M1.4.4
+  name: Fan Stage 1 Frame Bypass Strut
+  parent: M1.4
+  qty:
+    value: 12
+    unit: ea
+    tag: T
+  function: Carry the case and OGV loads to the frame hub across the bypass duct
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 1.6161
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M1_inlet_fan/geometry/fan_frame.py
+    params:
+      revision: rev011
+  notes: Strut count 12 [T], doğrulanamadı; flat plate (#46).
+- id: M1.4.5
+  name: Fan Stage 1 Frame Core Strut
+  parent: M1.4
+  qty:
+    value: 12
+    unit: ea
+    tag: T
+  function: Carry the frame loads across the core passage to the hub ring
+  material: aluminium_alloy
+  status: review
+  mass:
+    value: 0.6491
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M1_inlet_fan/geometry/fan_frame.py
+    params:
+      revision: rev011
+  notes: Strut count 12 [T], doğrulanamadı; flat plate (#46).

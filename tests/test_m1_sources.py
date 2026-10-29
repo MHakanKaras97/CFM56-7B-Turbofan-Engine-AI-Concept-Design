@@ -87,7 +87,9 @@ def test_m1_bom_materials_known_and_blade_count():
     parts = load_bom(M1 / "bom" / "bom.yaml")["parts"]
     for part in parts:
         assert part["material"] in materials or part["material"] in (None, "tbd"), part["id"]
-        assert part["status"] == "draft" and "geometry" not in part, part["id"]
+        assert part["status"] in ("draft", "review"), part["id"]  # step 5g: concept-built parts in review, none approved
+        if "geometry" in part:
+            assert part["geometry"]["script"].startswith("engine/M1_inlet_fan/geometry/"), part["id"]
     blade = next(p for p in parts if p["id"] == "M1.1.1")
     assert blade["qty"] == {"value": 24, "unit": "ea", "tag": "KS"}
 
