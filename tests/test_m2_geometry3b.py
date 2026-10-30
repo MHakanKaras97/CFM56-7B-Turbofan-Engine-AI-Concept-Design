@@ -38,28 +38,8 @@ def test_joint_gap_param_tagged(hb):
     assert p["tag"] == "T" and p.get("note")
 
 
-XFAIL_81 = "#81: hub wall (R-G2.20) ends on the rim 1 front face and covers the upper band of the R1 slot front opening"
-
-
-@pytest.mark.xfail(strict=True, reason=XFAIL_81)
 def test_built_without_stop_rule(hb):
     assert hb["hw"]["issues"] == []
-
-
-def test_only_stop_rule_is_81(hb):
-    """The wall itself builds (no 'not buildable' issue); the only stop-rule entry is the R1 slot front cover (#81)."""
-    issues = hb["hw"]["issues"]
-    assert len(issues) == 1 and "#81" in issues[0] and "M2.1.1" in issues[0]
-    w = hb["hw"]["hub_wall"]
-    assert w["slot_front_covered"] == pytest.approx(w["t"], rel=1e-12)  # whole wall thickness over the slot
-    assert w["slot_front_window"] > 0.0
-
-
-@pytest.mark.xfail(strict=True, reason=XFAIL_81)
-def test_r1_root_block_clear_of_drum(hb):
-    """R-G2.19 root fit check for R1 with the wall in the drum: distance > 0 (now 0: contact on the wall aft face)."""
-    s = HW.slot_checks(hb)[0]
-    assert 0.0 < s["root_distance"] <= s["fit"] * (1.0 + 1e-6)
 
 
 def test_wall_inputs_from_m1(hb):

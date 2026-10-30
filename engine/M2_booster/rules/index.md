@@ -9,7 +9,7 @@
 | `joints.md` | Spool-to-fan-disk joint with M1, blade attachments, abradable, VBV boundary |
 | `analyses.md` | Analyses A-1..A-5: method, acceptance criterion, source |
 | `failure_modes.md` | FM2-1..FM2-5: FOD/ice/hail, stall/surge, tip rub, drum LCF, blade HCF |
-| `geometry.md` | Geometry step 1: frame (M1 convention), axial layout, section profile, trim, flow path, clearance, material for mass, checks (R-G2.1-8); step 2: drum, root slots, inner shrouds and seals, casing and vane grooves, M1 interface, drum ownership, checks (R-G2.9-17); step 3a: hardware boundary = M1 disk aft face, drum forward cone, sloped slot bottom (R-G2.18-19); step 3b: hub flow-path wall (R-G2.20, #79) |
+| `geometry.md` | Geometry step 1: frame (M1 convention), axial layout, section profile, trim, flow path, clearance, material for mass, checks (R-G2.1-8); step 2: drum, root slots, inner shrouds and seals, casing and vane grooves, M1 interface, drum ownership, checks (R-G2.9-17); step 3a: hardware boundary = M1 disk aft face, drum forward cone, sloped slot bottom (R-G2.18-19); step 3b: hub flow-path wall (R-G2.20, #79); step 3c: R1 root insertion, forward stop, assembly sequence (R-G2.21, #81, `geometry/insertion.py`), R-G2.19 amended to a straight slot along the slot axis, gate as exact swept solid per stage (clear) |
 | `known_values.md` | Source values: booster rotor counts 74/78/74 [KS] (#52); stator count rule R-KV2.1 [T] |
 | `open_items.md` | Pointer to the M2 rows in `docs/open_issues.md` |
 

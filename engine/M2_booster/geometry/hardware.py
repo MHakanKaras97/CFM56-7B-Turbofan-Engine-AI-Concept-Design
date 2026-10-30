@@ -1,5 +1,5 @@
-"""M2 geometry steps 2, 3a and 3b: rotor drum with forward cone and hub flow-path wall, blade root blocks in sloped
-slots, stator inner shrouds, casing and vane feet (rules/geometry.md R-G2.9-20).
+"""M2 geometry steps 2, 3a, 3b and 3c: rotor drum with forward cone and hub flow-path wall, blade root blocks in
+straight slots along the slot axis (R-G2.19 amended), stator inner shrouds, casing and vane feet (rules/geometry.md R-G2.9-21).
 
 Inputs: the step 1 model (layout.py / blades.py, active record rev001), the `hw_*` constants of
 geometry/geometry_params.yaml (one tag per field) and the M1 rev014 disk / M8 interface values read at run time from
@@ -45,18 +45,6 @@ def hub_points(hub: list, x0: float, x1: float) -> list[tuple[float, float]]:
 def under_hub(hub: list, x0: float, x1: float, r_in: float) -> cq.Solid:
     """Revolved region between radius r_in and the hub line over x0..x1."""
     return L.revolve_closed(_dedupe([(x0, r_in)] + hub_points(hub, x0, x1) + [(x1, r_in)]))
-
-
-def offset_hub_points(hub: list, x0: float, x1: float, dr: float) -> list[tuple[float, float]]:
-    """Hub line points from x0 to x1 shifted radially by dr (R-G2.19 sloped slot bottom: dr = -depth)."""
-    return [(x, r + dr) for x, r in hub_points(hub, x0, x1)]
-
-
-def between_lines(hub: list, x0: float, x1: float, dr_lo: float, r_top: float | None = None) -> cq.Solid:
-    """Revolved region between the hub line shifted by dr_lo and either the hub line (r_top None) or radius r_top."""
-    lo = offset_hub_points(hub, x0, x1, dr_lo)
-    hi = [(x1, r_top), (x0, r_top)] if r_top is not None else list(reversed(hub_points(hub, x0, x1)))
-    return L.revolve_closed(_dedupe(lo + hi))
 
 
 @lru_cache(maxsize=1)
@@ -119,12 +107,12 @@ def hw_layout(model: dict, m1: dict | None = None) -> dict:
         w = _p(gp, "hw_slot_width_over_normal_pitch") * pitch_n
         th = math.radians(hs["k1"] - hs["k2"])
         sag = 0.0 if abs(th) < 1e-9 else math.copysign(1.0, th) * 0.5 * r["chord"] * math.tan(abs(th) / 4.0)
-        rims.append({"row": r, "x_f": xf, "x_a": xa, "hub_min": hub_min, "slot_depth": d_s, "r_slot_bottom": r_sb,
-                     # R-G2.19: slot bottom parallel to the local hub line (front / aft face values)
-                     "hub": hub, "r_slot_bottom_front": L.r_at(hub, xf) - d_s, "r_slot_bottom_aft": L.r_at(hub, xa) - d_s,
-                     "r_inner_own": r_sb - _p(gp, "hw_rim_depth_over_slot_depth") * d_s, "stagger": gam,
-                     "pitch_normal": pitch_n, "slot_width": w, "sag": sag,
-                     "fit": _p(gp, "hw_fit_clearance_over_slot_width") * w})
+        rim = {"row": r, "x_f": xf, "x_a": xa, "hub_min": hub_min, "slot_depth": d_s, "r_slot_bottom": r_sb,
+               "hub": hub, "r_inner_own": r_sb - _p(gp, "hw_rim_depth_over_slot_depth") * d_s, "stagger": gam,
+               "pitch_normal": pitch_n, "slot_width": w, "sag": sag,
+               "fit": _p(gp, "hw_fit_clearance_over_slot_width") * w}
+        rim.update(place_slot_bottom(rim))  # R-G2.19 (amended, step 3c): straight slot bottom along the slot axis
+        rims.append(rim)
     for j, s in enumerate(stators):  # R-G2.11
         xf, xa = s["hw_x"]
         up = rotors[j]
@@ -152,8 +140,10 @@ def hw_layout(model: dict, m1: dict | None = None) -> dict:
     for i, rim in enumerate(rims):  # rim reaches down to the adjacent wall inner radii
         adj = [shrouds[k]["r_wall_in"] for k in (i - 1, i) if 0 <= k < len(shrouds)]
         rim["r_inner"] = min([rim["r_inner_own"]] + adj)
-        rim["live_rim"] = rim["r_slot_bottom"] - rim["r_inner"]
-    for i, rim in enumerate(rims):  # R-G2.10 / R-G2.19: slot open at both rim faces (sloped bottom)
+        # R-G2.19 (amended): the rim inner radius keeps the R-G2.10 reference; the live rim is measured below the
+        # smallest radius of the straight slot bottom (deeper than the reference by up to the extra depth)
+        rim["live_rim"] = rim["r_slot_bottom_min"] - rim["r_inner"]
+    for i, rim in enumerate(rims):  # R-G2.10 / R-G2.19: slot open at both rim faces (straight bottom)
         ahead = shrouds[i - 1]["r_wall_out"] if i > 0 else None  # rim 1: flange stays below the rim inner radius
         behind = shrouds[i]["r_wall_out"] if i < len(shrouds) else None
         rim["front_face_margin"] = None if ahead is None else rim["r_slot_bottom_front"] - ahead
@@ -219,14 +209,14 @@ def hw_layout(model: dict, m1: dict | None = None) -> dict:
             and ring_r[1] < wall["r_in"] and abs(wall["r_m1_hub_at_x0"] - r_w) <= 1e-9
             and abs(wall["r_m1_hub_at_x21"] - r_w) <= 1e-9):
         issues.append("hub flow-path wall not buildable within R-G2.20 (stop rule)")
-    # the wall ends on the rim 1 front face: radial band of the rim 1 slot front opening it covers (R-G2.10/R-G2.19)
+    # the wall ends on the rim 1 front face: radial band of the rim 1 slot front opening it covers (R-G2.10/R-G2.19).
+    # R-G2.21 applied (step 3c, aft insertion sweep clear at all stages, geometry/insertion.py): the R1 front opening
+    # need not be open, the wall aft face is the intended forward stop; recorded as information, not a stop rule (#81)
     r1 = rims[0]
     wall["slot_front_covered"] = max(0.0, r_w - max(wall["r_in"], r1["r_slot_bottom_front"]))
     wall["slot_front_window"] = max(0.0, wall["r_in"] - r1["r_slot_bottom_front"])  # open band below the wall
     if wall["slot_front_covered"] > 0.0:
         r1["slot_open_front"] = False
-        issues.append(f"slot of {r1['row']['part_id']} covered at the front face by the hub wall over "
-                      f"{wall['slot_front_covered'] * 1e3:.3f} mm (R-G2.20 vs R-G2.10/19, stop rule, #81)")
     return {"x21": x21, "x24": x24, "hub": hub, "r_casing": rc, "casing_thickness": t_c, "rims": rims,
             "shrouds": shrouds, "grooves": grooves, "flange": flange, "cone": cone, "hub_wall": wall, "m1": m1,
             "x_boundary": m1["x_aft_face"], "issues": issues}
@@ -297,29 +287,142 @@ def _slot_frame(rim: dict) -> dict:
     return {"e_c": e_c, "e_n": e_n, "centre": centre, "angle": sign * rim["stagger"]}
 
 
-def _prism(rim: dict, width: float, r_lo: float, r_hi: float) -> cq.Solid:
-    """Straight prism along the slot direction, rectangular section width x (r_lo..r_hi) in z (blade 0 at +Z)."""
+N_SLOT_X = 2001  # axial samples of the slot bottom face (R-G2.19 placement and depth records) [T]
+N_SLOT_T = 81  # samples across the slot width (R-G2.19 placement and depth records) [T]
+N_SLOT_REFINE = 3  # local refinements (201 x 201 samples) around the deepest point [T]
+
+
+def slot_axis_slope(hub: list, x_le: float, x_te: float) -> float:
+    """R-G2.19 (amended): radial rise of the slot axis per axial metre = hub-line slope over the rotor row
+    (x_le..x_te; the hub line is one straight segment there, R-G2.5; same value as the R-G2.21 insertion path)."""
+    return (L.r_at(hub, x_te) - L.r_at(hub, x_le)) / (x_te - x_le)
+
+
+def slot_axes(rim: dict) -> dict:
+    """Unit vectors of the straight slot of blade 0 (+Z) [H]: axis a = (e_c, slope x e_c,x) normalised (R-G2.10
+    direction rising slot_slope per axial metre); bottom-face normal b = (-slope, 0, 1) normalised (the bottom plane
+    contains the axis and is parallel to the rim-cone tangent plane on the blade-0 meridian); width direction
+    w = b x a (its horizontal part along e_n)."""
     f = _slot_frame(rim)
+    s = rim["slot_slope"]
+    a = np.array([f["e_c"][0], f["e_c"][1], s * f["e_c"][0]])
+    a /= np.linalg.norm(a)
+    b = np.array([-s, 0.0, 1.0]) / math.hypot(s, 1.0)
+    w = np.cross(b, a)
+    w /= np.linalg.norm(w)
+    if w[:2] @ f["e_n"] < 0.0:
+        w = -w
+    return {"a": a, "b": b, "w": w, "centre": f["centre"]}
+
+
+def slot_bottom_yz(rim: dict, x: np.ndarray, t: np.ndarray, z0: float) -> tuple[np.ndarray, np.ndarray]:
+    """(y, z) of the straight slot bottom face of blade 0 at axial position x and width offset t (along w, |t| <=
+    half width): the face is the plane z = z0 + slope x (x - x_centre) through the slot axis."""
+    ax = slot_axes(rim)
+    (cx, cy), a, w = ax["centre"], ax["a"], ax["w"]
+    s = (x - cx - t * w[0]) / a[0]  # distance along the slot axis
+    return cy + s * a[1] + t * w[1], z0 + rim["slot_slope"] * (x - cx)
+
+
+def slot_bottom_depth(rim: dict, x: np.ndarray, t: np.ndarray, z0: float | None = None) -> np.ndarray:
+    """Depth of the straight slot bottom face below the hub line, hub r(x) - radius of the face point [H]."""
+    y, z = slot_bottom_yz(rim, x, t, rim["z_slot_bottom"] if z0 is None else z0)
+    hx, hr = np.array([p[0] for p in rim["hub"]]), np.array([p[1] for p in rim["hub"]])
+    return np.interp(x, hx, hr) - np.hypot(y, z)
+
+
+def _depth_stats(rim: dict, x0: float, x1: float, n_x: int = N_SLOT_X, n_t: int = N_SLOT_T) -> dict:
+    half = 0.5 * rim["slot_width"]
+    hx = np.array([p[0] for p in rim["hub"]])
+    xs = np.unique(np.concatenate([np.linspace(x0, x1, n_x), hx[(hx > x0) & (hx < x1)]]))
+    X, T = np.meshgrid(xs, np.linspace(-half, half, n_t))
+    dep = slot_bottom_depth(rim, X, T)
+    y, z = slot_bottom_yz(rim, X, T, rim["z_slot_bottom"])
+    return {"min": float(dep.min()), "max": float(dep.max()), "r_min": float(np.hypot(y, z).min())}
+
+
+def place_slot_bottom(rim: dict) -> dict:
+    """R-G2.19 (amended, step 3c) [H]: straight slot bottom along the slot axis, placed so that every point of the
+    bottom face over the rotor row (x_le..x_te, full slot width) lies at least slot_depth below the hub line; the
+    deepest point of the former curved bottom (hub line - depth, revolved) touches it. z0 = Z of the bottom plane at
+    the slot centre = min over the face of (sqrt((hub(x) - d)^2 - y^2) - slope (x - x_centre)), sampled
+    (N_SLOT_X x N_SLOT_T) and refined locally around the minimum. Records: extra depth over the row (largest depth -
+    stated depth), depth range over the whole rim (x_f..x_a; the straight bottom continues into the running-gap
+    halves of the rim), smallest bottom-face radius on the rim faces and over the rim."""
+    row, hub, d = rim["row"], rim["hub"], rim["slot_depth"]
+    x0, x1 = row["x_le"], row["x_te"]
+    tmp = dict(rim, slot_slope=slot_axis_slope(hub, x0, x1))
+    hx, hr = np.array([p[0] for p in hub]), np.array([p[1] for p in hub])
+    half = 0.5 * rim["slot_width"]
+    cx = _slot_frame(rim)["centre"][0]
+
+    def g(x, t):
+        y, _ = slot_bottom_yz(tmp, x, t, 0.0)
+        return np.sqrt((np.interp(x, hx, hr) - d) ** 2 - y ** 2) - tmp["slot_slope"] * (x - cx)
+
+    X, T = np.meshgrid(np.linspace(x0, x1, N_SLOT_X), np.linspace(-half, half, N_SLOT_T))
+    G = g(X, T)
+    k = np.unravel_index(np.argmin(G), G.shape)
+    z0, x_c, t_c = G[k], X[k], T[k]
+    dx, dt = (x1 - x0) / (N_SLOT_X - 1), 2.0 * half / (N_SLOT_T - 1)
+    for _ in range(N_SLOT_REFINE):
+        X, T = np.meshgrid(np.linspace(max(x0, x_c - dx), min(x1, x_c + dx), 201),
+                           np.linspace(max(-half, t_c - dt), min(half, t_c + dt), 201))
+        G = g(X, T)
+        k = np.unravel_index(np.argmin(G), G.shape)
+        if G[k] < z0:
+            z0, x_c, t_c = G[k], X[k], T[k]
+        dx, dt = dx / 100.0, dt / 100.0
+    tmp["z_slot_bottom"] = float(z0)
+    in_row, in_rim = _depth_stats(tmp, x0, x1), _depth_stats(tmp, rim["x_f"], rim["x_a"])
+    tt = np.linspace(-half, half, 4 * N_SLOT_T + 1)
+
+    def r_face(x):  # smallest radius of the bottom face on the plane x (rim face)
+        y, z = slot_bottom_yz(tmp, np.full_like(tt, x), tt, z0)
+        return float(np.min(np.hypot(y, z)))
+
+    return {"slot_slope": tmp["slot_slope"], "z_slot_bottom": float(z0), "x_deepest": float(x_c),
+            "t_deepest": float(t_c), "slot_depth_min_row": in_row["min"], "slot_extra_depth": in_row["max"] - d,
+            "slot_depth_min_rim": in_rim["min"], "slot_depth_max_rim": in_rim["max"],
+            "r_slot_bottom_front": r_face(rim["x_f"]), "r_slot_bottom_aft": r_face(rim["x_a"]),
+            "r_slot_bottom_min": in_rim["r_min"]}
+
+
+def _prism(rim: dict, width: float, z_lo: float, z_hi: float) -> cq.Solid:
+    """Straight prism along the slot axis a (R-G2.19 amended), rectangular section width (along w) x height (along the
+    bottom normal b, from z_lo to z_hi above the slot bottom plane); the slot bottom plane passes through the slot
+    centre at Z = z_slot_bottom (blade 0 at +Z)."""
+    ax = slot_axes(rim)
     length = 4.0 * (rim["x_a"] - rim["x_f"]) / max(math.cos(math.radians(rim["stagger"])), 0.2)
-    box = cq.Solid.makeBox(length, width, r_hi - r_lo, pnt=cq.Vector(-0.5 * length, -0.5 * width, r_lo))
-    box = box.rotate(cq.Vector(0, 0, 0), cq.Vector(0, 0, 1), f["angle"])
-    return box.translate(cq.Vector(f["centre"][0], f["centre"][1], 0.0))
+    box = cq.Solid.makeBox(length, width, z_hi - z_lo, pnt=cq.Vector(-0.5 * length, -0.5 * width, z_lo))
+    pl = cq.Plane(origin=(ax["centre"][0], ax["centre"][1], rim["z_slot_bottom"]), xDir=tuple(ax["a"]),
+                  normal=tuple(ax["b"]))
+    return box.transformShape(pl.rG)
+
+
+def slot_axis_dir(rim: dict) -> tuple[float, float, float]:
+    """Slot axis displacement per axial metre (x, y, z) of blade 0 (R-G2.19 amended; R-G2.21 insertion path)."""
+    a = slot_axes(rim)["a"]
+    return 1.0, float(a[1] / a[0]), float(a[2] / a[0])
+
+
+def _rim_region(rim: dict, r_lo: float, r_hi: float) -> cq.Solid:
+    return L.revolve_closed([(rim["x_f"], r_lo), (rim["x_a"], r_lo), (rim["x_a"], r_hi), (rim["x_f"], r_hi)])
 
 
 def slot_cutter(rim: dict, r_top: float) -> cq.Solid:
-    """Slot cutter of one blade: prism along the slot direction, bottom parallel to the hub line (R-G2.19)."""
-    w, r_sb = rim["slot_width"], rim["r_slot_bottom"]
-    pr = _prism(rim, w, 0.8 * r_sb, r_top)
-    band = between_lines(rim["hub"], rim["x_f"], rim["x_a"], -rim["slot_depth"], r_top)
-    return pr.intersect(band).Solids()[0]
+    """Slot cutter of one blade (R-G2.10, R-G2.19 amended): straight prism along the slot axis, flat bottom, limited
+    axially to the rim (x_f..x_a)."""
+    pr = _prism(rim, rim["slot_width"], 0.0, r_top)
+    return pr.intersect(_rim_region(rim, 0.5 * rim["r_slot_bottom"], r_top)).Solids()[0]
 
 
 def root_block(rim: dict, hub: list) -> cq.Solid:
-    """Blade root block (R-G2.10, R-G2.19): slot section shrunk by the fit clearance (sides, bottom), bottom parallel
-    to the hub line, top on the hub line."""
+    """Blade root block (R-G2.10, R-G2.19 amended): slot section shrunk by the fit clearance on the sides and at the
+    bottom (normal to the faces), straight along the slot axis, top on the hub line, x_f..x_a."""
     c = rim["fit"]
-    pr = _prism(rim, rim["slot_width"] - 2.0 * c, 0.8 * rim["r_slot_bottom"], rim["hub_min"] + 0.1)
-    region = between_lines(hub, rim["x_f"], rim["x_a"], -rim["slot_depth"] + c)
+    pr = _prism(rim, rim["slot_width"] - 2.0 * c, c, rim["hub_min"])
+    region = under_hub(hub, rim["x_f"], rim["x_a"], 0.5 * rim["r_slot_bottom"])
     solids = pr.intersect(region).Solids()
     if len(solids) != 1 or not solids[0].isValid():
         raise ValueError(f"root block of {rim['row']['part_id']} is not one valid solid")

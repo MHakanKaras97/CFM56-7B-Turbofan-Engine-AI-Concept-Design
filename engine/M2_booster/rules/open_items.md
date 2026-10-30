@@ -101,3 +101,28 @@ Notes for M0:
 - Possible CR draft (not created, M0/user decide on #80): M1 `rotor_hardware.platform()` top edge following the M1
   hub line (`h(x)` at intermediate x, not the straight end-to-end line); impact: platform volume/mass, rim dead load
   (R-DISK.2), M1 tests; no M2 change needed (the wall already starts at the platform aft end + joint gap).
+
+## Geometry step 3c: R1 root insertion (#81), #80 known deviation, new draft #82 (M0 copies verbatim)
+
+Second pass (user decision option (2)): values from `geometry/hardware.py` (`place_slot_bottom`) and
+`geometry/insertion.py` (`sweep`, `r1_seated_fit`), rev001, M1 rev014 (read-only), rules R-G2.19 (amended) and R-G2.21
+(gate as exact swept solid). No constant added or tuned; slot geometry changed by the amended rule; gate clear, #81
+removed from `hw["issues"]`. Replacement rows #80 (unchanged), #81, new row #82:
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 80 | M1-M2 | Bilinen sapma (kullanıcı kararı, adım 3c): M1 rev014 platformunun (M1.1.6) üst yüzü kanat göbek firar kenarı x 0.109785 ile platform arka ucu x 0.140291 arasında M1 göbek çizgisinin (0.30213) altında, en çok 8.045 mm (firar kenarında), arka uçta 0; kaplanmamış aralık 0.030992 m > birleşim boşluğu 0.000485 m (R-G2.20 kontrolü, katı xfail kalıyor) [H]. CR açılmadı | [H] | Kullanıcı kararı: bilinen sapma olarak kabul; M1 kabul edilmiş ve salt okunur (ADR-016), M2 tarafında düzeltilemez; ayar yapılmadı | Bir sonraki M1 tasarım revizyonu veya son montaj | geometry/hardware.py hub_line_gaps; tests/test_m2_geometry3b.py; M1 geometry/rotor_hardware.py platform() |
+| 81 | M2 | Adım 3c (ikinci geçiş), kullanıcı kararı seçenek (2): R-G2.19 değiştirildi, yuva yuva ekseni boyunca düz prizma (broşlanan/frezelenen eksenel kırlangıç yuvaları gibi, G); eksen rotor sırası üzerindeki göbek eğimiyle yükseliyor (eksenel metre başına 0.42395 / 0.42155 / 0.41015), düz taban rotor sırasının her noktasında belirtilen derinliğin (0.25 x veter) en az o kadar altında, en derin noktada temas. Rotor sırası üzerinde ek derinlik R1/R2/R3 1.067 / 0.804 / 0.620 mm; jant boyunca derinlik 12.669-21.026 / 10.189-16.148 / 8.260-12.947 mm (belirtilenden sığ yalnız arka çalışma boşluğu yarısında); arka yüz payı 5.124 / 4.028 / 3.152 mm (adım 3a 3.622 / 2.956 / 2.415), ön yüz payı R2/R3 8.394 / 6.611 mm; canlı jant 9.149 / 13.246 / 11.793 mm [H]. R-G2.21 yol tanımı değişmedi (R1 eğimi aynı, yol artık düz yuva tabanını tam izliyor); 405 adımlı tarama yerine kademe başına tam süpürülmüş katı (blok 13091 / 7909 / 5606 mm3, süpürülen 30035 / 17842 / 12618 mm3): tambur (duvar ve dişler dahil), ön koni ve oturmuş komşu köklerle ortak hacim üç kademede de 0 (tolerans 1e-6 x blok hacmi): TEMİZ [H]. R-G2.21 uygulandı: #81 sistem sorunları listesinden çıkarıldı; R1 ön ağzı duvarla kapalı (4.852 mm, bilgi), duvar arka yüzü amaçlanan ileri dayanak (oturmuş: dayanak yüzünde mesafe 0, diğer yüzlerde 0.2138 mm = uyum açıklığı, ortak hacim 0) [H]. Bilgi: statorlar önce takılsaydı R1 süpürülmüş katısı S1 iç örtü halkasını (1590.5 mm3, eksenel 28.76 mm, radyal 8.78 mm) ve 3 S1 kanadını (983.0 mm3, eksenel 18.93 mm, radyal 23.87 mm) keserdi; conta yüzeyi, dişler, kanat ayakları kesilmiyor [H]. Seçenek (a) sayıları ilk geçiş değerleridir (yeniden hesaplanmadı) | [H] | Kural değişikliği gerekçesi geçitten bağımsız (talaşlı imalat, G); hiçbir ölçü ayarlanmadı, yeni sabit yok; BOM, revizyon, M1 dosyası değişmedi | Sonraki M2 revizyonu (tambur ve kök kütleleri kayda girer), J2-2 kırlangıç/tutucu kaynağı, yapısal aşama (A-4 kök/jant; arka boşluktaki sığ taban) | rules/geometry.md R-G2.19, R-G2.21; geometry/hardware.py place_slot_bottom; geometry/insertion.py; agent/proposed_test_geometry3c.py |
+| 82 | M2 | Kanat tutma modellenmedi: R1 arka tutucusu (tutucu halka; ileri dayanak R-G2.20 duvarı) ve R2/R3'ün ön/arka tutucuları (yuvalar iki yüzde açık, takma yönü kuralla sabitlenmedi) konsept geometride yok [T]; montaj sırası varsayımı: rotor kanatları, sonra statorlar, sonra kasa [G] (kaynak doğrulanamadı) | [T] | R-G2.21 kapsamı: geometri adımı tutma donanımını modellemiyor; kütle ve yük yolu yapısal aşamada | Yapısal aşama (A-4 kök/jant, tutucu boyutlandırması), J2-2 kırlangıç/tutucu kaynağı | rules/geometry.md R-G2.21; rules/joints.md J2-2 |
+
+Notes for M0:
+- Second pass, one process per file: `tests/test_m2_geometry1.py` 29 passed; `test_m2_geometry2.py` 12 passed, 1 xfail
+  (#77); `test_m2_geometry3a.py` 12 passed, 1 failed; `test_m2_geometry3b.py` 11 passed, 2 failed, 2 xfail;
+  `test_m2_geometry3c.py` (first pass) 3 passed, 7 failed, 1 error.
+- Replacements: 3a `test_slot_bottom_parallel_to_hub` (curved bottom superseded) -> proposed
+  `test_slot_axis_slope_and_path` + `test_slot_bottom_depth_every_row_point` (optionally assert
+  `r_slot_bottom == hub_min - d`); 3b `test_built_without_stop_rule` (strict XPASS) -> drop the xfail marker; 3b
+  `test_only_stop_rule_is_81` -> proposed `test_stop_rule_state`; 3b `test_r1_root_block_clear_of_drum` (still xfails,
+  reason text stale) -> proposed `test_seated_contact_on_forward_stop`; whole `tests/test_m2_geometry3c.py` -> proposed file.
+- Proposed tests: `agent/proposed_test_geometry3c.py` supersedes `tests/test_m2_geometry3c.py` (15 passed, ~1 min,
+  three swept solids; no xfail).

@@ -105,18 +105,6 @@ def test_cone_and_drum_mass_informational(cone, capsys):
     print(f"cone {cone['cone_mass']:.3f} kg, drum {cone['drum_mass']:.3f} kg (ti6al4v, information)")
 
 
-def test_slot_bottom_parallel_to_hub(hb):
-    H = hb["hw"]
-    ratio = float(L.v(hb["model"]["params"]["hw_slot_depth_over_rotor_chord"]))
-    for rim in H["rims"]:
-        d = ratio * rim["row"]["chord"]
-        assert rim["slot_depth"] == pytest.approx(d, rel=1e-12)
-        assert rim["r_slot_bottom_front"] == pytest.approx(L.r_at(H["hub"], rim["x_f"]) - d, abs=1e-12)
-        assert rim["r_slot_bottom_aft"] == pytest.approx(L.r_at(H["hub"], rim["x_a"]) - d, abs=1e-12)
-        assert rim["r_slot_bottom"] == pytest.approx(min(rim["r_slot_bottom_front"], rim["r_slot_bottom_aft"]),
-                                                     abs=1e-12)
-
-
 def test_slot_aft_face_margins(slots, hb):
     """#75 option 1: aft-face margin > 0 at all three stages (structural-stage check, not a pass)."""
     assert len(slots) == 3
@@ -129,8 +117,8 @@ def test_slot_aft_face_margins(slots, hb):
         assert rim["slot_open_aft"]
     for rim in rims[1:]:
         assert rim["slot_open_front"]
-    # R1 front: R-G2.20 hub wall covers the upper band of the opening (#81, test_m2_geometry3b)
-    assert not rims[0]["slot_open_front"]
+    # R1 front need not be open (R-G2.21: inserted from aft, R-G2.20 wall is the forward stop); the intended
+    # condition (aft insertion sweep clear) is the strict xfail test_m2_geometry3c::test_sweep_clear (#81)
 
 
 def test_root_block_fits_slot(slots, hb):
