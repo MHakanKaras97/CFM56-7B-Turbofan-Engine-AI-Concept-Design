@@ -1,5 +1,5 @@
 """Tests for M2 geometry step 2 (rules/geometry.md R-G2.9-17): drum, root blocks, inner shrouds, casing,
-vane feet; M1 interface (read-only) and the known M1 overlap (#77, strict xfail).
+vane feet; M1 interface (read-only) and no M1 overlap (#77, CR-002 a / CR-003).
 
 Imports from the repo root. All design values come from the active record via the
 step 1 model and from geometry_params.yaml; no literal design value here. Solids are built once (hardware.build is
@@ -112,6 +112,6 @@ def test_m1_interface_gap_reported(hb):
     assert fl["x"][0] == hb["hw"]["x21"] and fl["axial_gap_to_m1_disk"] > 0
 
 
-@pytest.mark.xfail(strict=True, reason="#77: M1 rev014 fan frame / splitter / OGV overlap the booster (M0 decision)")
 def test_no_overlap_with_m1(m1):
+    """#77 closed on the M1 side by CR-002 (a) and CR-003 (M1 rev015)."""
     assert m1["overlaps"] == []

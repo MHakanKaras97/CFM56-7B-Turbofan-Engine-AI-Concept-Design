@@ -11,6 +11,8 @@ starts at station 24 (M2 casing end); core passage radii = M2 station 24/25 annu
 ring (station 24 to the new frame end) replaces the removed splitter there. Evaluated on top of CR-A option (a).
 
 Run: .venv/Scripts/python -m engine.M0_engine.analysis.cr_impact_77
+Snapshot: written against the M1 rev014 geometry code; after CR-002 (a) / CR-003 (M1 rev015) it no longer runs on
+HEAD (the splitter ring is gone). Reproduce at commit 0fb452f; the results are kept in CR-002/CR-003 impact.metrics.
 """
 
 import math

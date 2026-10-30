@@ -9,6 +9,7 @@ import cadquery as cq
 import pytest
 
 from engine.M1_inlet_fan.geometry import fan_frame as ff
+from engine.M1_inlet_fan.geometry import m2_boundary as m2b
 from engine.M1_inlet_fan.geometry import rotor_hardware as rh
 
 VOL_ZERO = 1e-12  # m3 [T]
@@ -33,23 +34,26 @@ def test_parts_valid(model, part):
 def test_layout_follows_flowpath(model):
     L, st = model["layout"], model["flowpath"]["stations"]
     assert L["x0"] == st["13"]["x_m"] and L["x1"] > L["x0"]
-    assert L["x21"] == st["21"]["x_m"] and L["r_hub"] == st["21"]["r_hub_m"]
-    assert L["r_split"] == st["21"]["r_tip_m"] == st["13"]["r_inner_m"]
+    assert L["x21"] == st["21"]["x_m"] and L["r_split"] == st["21"]["r_tip_m"]
+    assert L["r_root"] == st["13"]["r_inner_m"]  # CR-002 (a), R-G1.3
+    m2 = m2b.m2_boundary()
+    assert L["xc0"] == m2["x24"]  # CR-003, R-G1.1
+    assert (L["r_hub"], L["r_core_out"]) == (m2["r_core_hub"], m2["r_core_tip"])  # R-G1.7
     assert L["r_wall"] == st["13"]["r_casing_wall_m"]
-    assert L["r_bearing"] < L["r_hub"] - L["t_hub"] < L["r_hub"] < L["r_core_out"] < L["r_split"] < L["r_wall"]
+    assert L["r_bearing"] < L["r_hub"] - L["t_hub"] < L["r_hub"] < L["r_core_out"] <= L["r_root"] < L["r_wall"]
 
 
 def test_no_interference(chk):
     bad = {k: r["common_volume_m3"] for k, r in chk.items() if r["common_volume_m3"] > VOL_ZERO}
     assert not bad
-    for key in ("outer_ring-ogv0", "splitter_ring-ogv0", "outer_ring-case", "bypass_strut-outer_ring",
+    for key in ("outer_ring-ogv0", "wall_ring-ogv0", "core_strut-wall_ring", "outer_ring-case", "bypass_strut-outer_ring",
                 "core_strut-hub_ring", "struts-ogv_row"):
         assert key in chk
 
 
-def test_ogv_mates_with_frame_walls(chk):
+def test_ogv_mates_with_frame_walls(chk, model):
     assert chk["outer_ring-ogv0"]["distance_m"] <= 1e-5
-    assert chk["splitter_ring-ogv0"]["distance_m"] <= 1e-5
+    assert ff.root_radii(model)["ogv_root"] == pytest.approx(model["layout"]["r_root"], abs=1e-9)  # R-G1.4
     assert chk["outer_ring-case"]["distance_m"] <= 1e-5
 
 
@@ -71,5 +75,5 @@ def test_step_exports(model):
     paths = ff.export(model)
     for p in paths.values():
         assert p.exists() and p.stat().st_size > 0
-    back = cq.importers.importStep(str(paths["splitter_ring"])).val()
-    assert back.Volume() == pytest.approx(model["parts"]["splitter_ring"].Volume(), rel=1e-3)
+    back = cq.importers.importStep(str(paths["wall_ring"])).val()
+    assert back.Volume() == pytest.approx(model["parts"]["wall_ring"].Volume(), rel=1e-3)

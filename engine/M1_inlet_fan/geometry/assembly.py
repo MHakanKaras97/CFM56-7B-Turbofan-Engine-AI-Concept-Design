@@ -2,7 +2,8 @@
 the M1 total, and the ICD comparison of the totals.
 
 Parts come from the stage builders (cached): rotor (rotor_hardware: blade with root, disk, shim, spacer, platform),
-spinner_case (spinner, case shell, containment ring), ogv (vane row), fan_frame (rings and struts). Repeated parts are
+spinner_case (spinner, case shell, containment ring), ogv (vane row), fan_frame (rings and struts; no splitter ring,
+the divider wall is M2.0.2, CR-002; core-side frame behind M2 station 24 with wall ring M1.4.6, CR-003). Repeated parts are
 one shape placed by rotation about the engine axis (frame.export_assembly). Part ids follow the proposed BOM of
 bom_update.py.
 """
@@ -50,9 +51,9 @@ def build(rev: str | None = None, root: Path = records.ROOT) -> dict:
         "M1.3.1": ("Fan Stage 1 Outlet Guide Vane", og["vane"], fr.v(ogvm.ogv_params()["material"]), angles(V)),
         "M1.4.1": ("Fan Stage 1 Frame Hub Ring", frm["parts"]["hub_ring"], mat_frame, [0.0]),
         "M1.4.2": ("Fan Stage 1 Frame Outer Ring", frm["parts"]["outer_ring"], mat_frame, [0.0]),
-        "M1.4.3": ("Fan Stage 1 Frame Splitter Ring", frm["parts"]["splitter_ring"], mat_frame, [0.0]),
         "M1.4.4": ("Fan Stage 1 Frame Bypass Strut", frm["parts"]["bypass_strut"], mat_frame, angles(S)),
         "M1.4.5": ("Fan Stage 1 Frame Core Strut", frm["parts"]["core_strut"], mat_frame, angles(S)),
+        "M1.4.6": ("Fan Stage 1 Frame Core Wall Ring", frm["parts"]["wall_ring"], mat_frame, [0.0]),
     }
     return {"revision": rot["flowpath"]["revision"], "frame": frm, "ogv": og,
             "parts": {pid: {"name": nm, "shape": s, "material": m, "angles": a, "qty": len(a)}
@@ -81,7 +82,8 @@ def extent(model: dict) -> dict:
     """Axial and radial extent of the assembly [H] (from the axisymmetric parts and the stations)."""
     sp = model["frame"]["spinner_case"]
     x0 = sp["info"]["spinner"]["x_nose_m"]
-    x1 = model["frame"]["layout"]["x1"]
+    lay = model["frame"]["layout"]
+    x1 = max(lay["x1"], lay["xc1"])  # core zone end behind M2 station 24 (CR-003)
     bb = [model["parts"][k]["shape"].BoundingBox() for k in ("M1.2.1", "M1.2.2", "M1.4.2")]
     r_max = max(max(b.zmax, -b.zmin, b.ymax, -b.ymin) for b in bb)
     return {"x_nose_m": x0, "x_rear_m": x1, "length_m": x1 - x0, "r_max_m": r_max}
@@ -102,8 +104,8 @@ def interference_summary(model: dict) -> dict:
     """Common volumes of the cross-stage neighbours not already covered by the stage checks [H]."""
     p = model["parts"]
     pairs = {"spinner-case": ("M1.1.3", "M1.2.1"), "ogv-containment": ("M1.3.1", "M1.2.2"),
-             "frame_outer-case": ("M1.4.2", "M1.2.1"), "frame_splitter-blade": ("M1.4.3", "M1.1.1"),
-             "frame_splitter-disk": ("M1.4.3", "M1.1.2"), "frame_hub-disk": ("M1.4.1", "M1.1.2")}
+             "frame_outer-case": ("M1.4.2", "M1.2.1"), "frame_hub-disk": ("M1.4.1", "M1.1.2"),
+             "frame_wall-disk": ("M1.4.6", "M1.1.2"), "frame_core_strut-disk": ("M1.4.5", "M1.1.2")}
     out = {}
     for name, (a, b) in pairs.items():
         sa, sb = p[a]["shape"], p[b]["shape"]

@@ -25,25 +25,26 @@ stations:
     area_m2: 0.30357
   '13':
     x_m: 0.478059
-    r_inner_m: 0.433488
+    r_inner_m: 0.442158
     r_outer_m: 0.73596
-    area_m2: 1.111261
+    area_m2: 1.087411
     r_casing_wall_m: 0.73896
-    area_inside_casing_wall_m2: 1.125161
+    area_inside_casing_wall_m2: 1.101312
 interfaces:
   M2_station_21:
     x_m: 0.235369
     r_hub_m: 0.30213
     r_tip_m: 0.433488
     area_m2: 0.30357
-    note: core annulus at the splitter lip plane; zero splitter thickness until step
-      5d
+    note: core annulus at the splitter lip plane (dividing streamline end); behind
+      it the divider wall is the M2 casing M2.0.2 (inner face r_tip_m), CR-002
   M7_station_13:
     x_m: 0.478059
-    r_inner_m: 0.433488
+    r_inner_m: 0.442158
     r_outer_m: 0.73596
-    area_m2: 1.111261
-    note: bypass annulus at the OGV exit plane (placeholder until step 5e)
+    area_m2: 1.087411
+    note: bypass annulus at the OGV exit plane; inner radius = M2.0.2 casing outer
+      face (r_split2 + M2 casing thickness, CR-002)
 rotor_edges_x_r_m:
   le_hub:
   - -0.093592
@@ -72,6 +73,8 @@ splitter:
   r_split2_m: 0.433488
   r_split2_initial_m_info: 0.42586
   x_lip_m: 0.235369
+  m2_casing_thickness_m: 0.00867
+  m2_revision: rev001
 x_ogv_le_m: 0.32121
 tip_clearance_m: 0.003
 curves_x_r_m:
@@ -93,11 +96,13 @@ curves_x_r_m:
     - 0.433488
   - - 0.235369
     - 0.433488
-  splitter_wall:
+  bypass_inner_wall:
   - - 0.235369
     - 0.433488
+  - - 0.235369
+    - 0.442158
   - - 0.478059
-    - 0.433488
+    - 0.442158
   tip:
   - - -0.109373
     - 0.7747

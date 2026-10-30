@@ -1,6 +1,6 @@
 """Tests for M2 geometry step 3a (rules/geometry.md R-G2.18-19, step 3a changes of R-G2.9/13/17):
 drum forward cone (#76) and sloped rotor slot bottom (#75). Replace the old-rule tests removed from
-tests/test_m2_geometry2.py; the strict xfail test_no_overlap_with_m1 (#77) stays there.
+tests/test_m2_geometry2.py; test_no_overlap_with_m1 (#77) is a normal test there since CR-002 (a) / CR-003.
 
 Imports from the repo root. No literal design value: everything comes from the active record,
 geometry_params.yaml and the M1 code. M1 code is imported read-only; slow (~2 min, M1 rotor build).

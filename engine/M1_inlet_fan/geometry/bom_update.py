@@ -2,7 +2,10 @@
 
 Changes: materials for the tbd parts (all [T], aluminium per rules/materials.md), unit mass from the assembly mass
 table [H], geometry script per part, notes with tags and sources, and the parts missing from the BOM: M1.3 becomes
-the OGV row assembly with M1.3.1 the vane (qty 51 [T]); M1.4 becomes the frame assembly with M1.4.1-M1.4.5.
+the OGV row assembly with M1.3.1 the vane (qty 51 [T]); M1.4 becomes the frame assembly with M1.4.1, M1.4.2,
+M1.4.4-M1.4.6. CR-002 option a / CR-003 (rules/geometry.md R-G1): M1.4.3 splitter ring removed (divider wall = M2.0.2),
+M1.4.6 core wall ring added (status draft as approved in CR-003); the CR note sentences of M1.3.1, M1.4.1, M1.4.4,
+M1.4.5 and M1.4.6 are generated from the frame layout (numbers from code, CR_MARKS).
 Status: "review" for the parts built at concept level in steps 5a-5i; the disk M1.1.2 and the rotor assembly M1.1
 are "review" only if the disk bore (R-DISK.1) and every dovetail / lug mode (R-DISK.2) meet the margin rule, else
 "draft" (computed from rotor_hardware.stress). Never "approved". The M1.1.1 / M1.1.2 geometry notes are generated
@@ -25,23 +28,29 @@ BOM = fr.HERE.parent / "bom" / "bom.yaml"
 GEOMETRY_REVISION = "rev011"  # record whose params/results the geometry inputs were built from (fixed, not ACTIVE)
 GEN_MARK = " Geometry step 5"  # generated note text starts here (M1.1.1, M1.1.2)
 ASSEMBLIES = ("M1.2", "M1.3", "M1.4")
-M14_NOTE = "Assembly of M1.4.1-M1.4.5 (step 5f)."
+M14_NOTE = ("Assembly of M1.4.1, M1.4.2, M1.4.4-M1.4.6 (step 5f, CR-003); divider wall is M2.0.2 (#77). VBV openings "
+            "not modelled since M1.4.3 was removed; they would cut the divider wall (M2.0.2 or M1.4.6), owner open (#48) [T].")
+M14_OLD_NOTES = ("Assembly of M1.4.1-M1.4.5 (step 5f).",)
+REMOVED_PARTS = ("M1.4.3",)  # CR-002 option a: splitter ring removed, the divider wall is M2.0.2 (owned by M2)
+DRAFT_PARTS = ("M1.4.6",)  # CR-003: new part, status draft (load path bypass strut -> M2 casing / wall ring not analysed)
+CR_MARKS = {"M1.3.1": " Root at r ", "M1.4.1": " Frame zone x ", "M1.4.4": " Root on the M2.0.2",
+            "M1.4.5": " Leading edge x ", "M1.4.6": " CR-003 (#77): "}  # generated CR note sentences start here
 SCRIPTS = {
     "M1.1.1": "engine/M1_inlet_fan/geometry/dovetail.py", "M1.1.2": "engine/M1_inlet_fan/geometry/rotor_hardware.py",
     "M1.1.3": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.1.4": "engine/M1_inlet_fan/geometry/dovetail.py",
     "M1.1.5": "engine/M1_inlet_fan/geometry/dovetail.py", "M1.1.6": "engine/M1_inlet_fan/geometry/rotor_hardware.py",
     "M1.2.1": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.2.2": "engine/M1_inlet_fan/geometry/spinner_case.py",
     "M1.3.1": "engine/M1_inlet_fan/geometry/ogv.py", "M1.4.1": "engine/M1_inlet_fan/geometry/fan_frame.py",
-    "M1.4.2": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.3": "engine/M1_inlet_fan/geometry/fan_frame.py",
-    "M1.4.4": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.5": "engine/M1_inlet_fan/geometry/fan_frame.py",
+    "M1.4.2": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.4": "engine/M1_inlet_fan/geometry/fan_frame.py",
+    "M1.4.5": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.6": "engine/M1_inlet_fan/geometry/fan_frame.py",
 }
 EXTRA_NOTES = {
     "M1.1.3": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.1.4": "engine/M1_inlet_fan/geometry/dovetail.py",
     "M1.1.5": "engine/M1_inlet_fan/geometry/dovetail.py", "M1.1.6": "engine/M1_inlet_fan/geometry/rotor_hardware.py",
     "M1.2.1": "engine/M1_inlet_fan/geometry/spinner_case.py", "M1.2.2": "engine/M1_inlet_fan/geometry/spinner_case.py",
     "M1.3.1": "engine/M1_inlet_fan/geometry/ogv.py", "M1.4.1": "engine/M1_inlet_fan/geometry/fan_frame.py",
-    "M1.4.2": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.3": "engine/M1_inlet_fan/geometry/fan_frame.py",
-    "M1.4.4": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.5": "engine/M1_inlet_fan/geometry/fan_frame.py",
+    "M1.4.2": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.4": "engine/M1_inlet_fan/geometry/fan_frame.py",
+    "M1.4.5": "engine/M1_inlet_fan/geometry/fan_frame.py", "M1.4.6": "engine/M1_inlet_fan/geometry/fan_frame.py",
 }
 EXTRA_NOTES = {
     "M1.1.1": "Geometry step 5a-5c: airfoil from the record, trimmed to the record annulus, shank and single-lobe dovetail [T] (open issues #29, #33-35).",
@@ -69,18 +78,33 @@ NEW_PARTS = [
     {"id": "M1.4.2", "name": "Fan Stage 1 Frame Outer Ring", "parent": "M1.4", "qty": {"value": 1, "unit": "ea", "tag": "G"},
      "function": "Bypass outer wall over the OGV and frame; mates with the case rear flange", "material": "aluminium_alloy",
      "status": "draft", "joints": [{"to": "M1.2.1", "type": "bolted_flange"}], "notes": "Sizes [T] (fan_frame_params.yaml)."},
-    {"id": "M1.4.3", "name": "Fan Stage 1 Frame Splitter Ring", "parent": "M1.4", "qty": {"value": 1, "unit": "ea", "tag": "G"},
-     "function": "Separate core and bypass flow from the station 21 lip; bypass inner wall; VBV openings",
-     "material": "aluminium_alloy", "status": "draft",
-     "notes": "Girão 2023 PDF p. 36-37 [KS]: frame separates primary and secondary flow and houses the VBVs; VBV owner "
-              "not set by M0, openings placeholder [T] (#48)."},
     {"id": "M1.4.4", "name": "Fan Stage 1 Frame Bypass Strut", "parent": "M1.4", "qty": {"value": 12, "unit": "ea", "tag": "T"},
      "function": "Carry the case and OGV loads to the frame hub across the bypass duct", "material": "aluminium_alloy",
      "status": "draft", "notes": "Strut count 12 [T], doğrulanamadı; flat plate (#46)."},
     {"id": "M1.4.5", "name": "Fan Stage 1 Frame Core Strut", "parent": "M1.4", "qty": {"value": 12, "unit": "ea", "tag": "T"},
      "function": "Carry the frame loads across the core passage to the hub ring", "material": "aluminium_alloy",
      "status": "draft", "notes": "Strut count 12 [T], doğrulanamadı; flat plate (#46)."},
+    {"id": "M1.4.6", "name": "Fan Stage 1 Frame Core Wall Ring", "parent": "M1.4", "qty": {"value": 1, "unit": "ea", "tag": "G"},
+     "function": "Core/bypass divider wall in the frame zone behind station 24 (continues M2.0.2); carries strut loads",
+     "material": "aluminium_alloy", "status": "draft", "notes": ""},
 ]
+
+
+def cr_notes(L: dict) -> dict:
+    """CR-002 / CR-003 note sentences with the numbers of the current frame layout [H] (each starts with CR_MARKS)."""
+    m = CR_MARKS
+    return {
+        "M1.3.1": f"{m['M1.3.1']}{L['r_root']:.6f} m = r_split2 + M2.0.2 casing thickness (#77) [H].",
+        "M1.4.1": f"{m['M1.4.1']}{L['xc0']:.6f}-{L['xc1']:.6f} m behind station 24, core inner wall r {L['r_hub']:.6f} m "
+                  f"(M2 station 24/25); M8 flange face x {L['xc1'] - L['t_bearing']:.6f}-{L['xc1']:.6f} m, inner radius "
+                  f"{L['r_bearing']:.6f} m kept, M8 reviews it when M8 starts (#77) [H].",
+        "M1.4.4": f"{m['M1.4.4']} casing outer face, r {L['r_root']:.6f} m (#77) [H].",
+        "M1.4.5": f"{m['M1.4.5']}{L['core_strut_x0']:.6f} m behind station 24; core passage r {L['r_hub']:.6f}-"
+                  f"{L['r_core_out']:.6f} m (#77) [H].",
+        "M1.4.6": f"{m['M1.4.6']}r {L['r_split']:.6f}-{L['r_root']:.6f} m (r_split2 to r_split2 + M2 casing thickness), "
+                  f"x {L['xc0']:.6f}-{L['xc1']:.6f} m (station 24 to the frame end) [H]; rules/geometry.md R-G1.2; load "
+                  f"path not analysed [T].",
+    }
 
 
 def proposed(model: dict | None = None, path: Path = BOM) -> dict:
@@ -90,6 +114,8 @@ def proposed(model: dict | None = None, path: Path = BOM) -> dict:
     data = copy.deepcopy(core_bom.load(path))
     parts = data["parts"]
     by_id = {p["id"]: p for p in parts}
+    parts[:] = [p for p in parts if p["id"] not in REMOVED_PARTS]
+    by_id = {p["id"]: p for p in parts}
     for p in NEW_PARTS:
         if p["id"] not in by_id:
             parts.append(copy.deepcopy(p))
@@ -97,6 +123,8 @@ def proposed(model: dict | None = None, path: Path = BOM) -> dict:
     by_id["M1.3"].update(material=None, name="Fan Stage 1 Outlet Guide Vane Row", qty={"value": 1, "unit": "ea", "tag": "G"},
                          notes="One vane row (assembly); vanes M1.3.1.")
     note = by_id["M1.4"].get("notes", "")
+    for old in M14_OLD_NOTES:
+        note = " ".join(note.replace(old, "").split())
     by_id["M1.4"].update(material=None, notes=note if M14_NOTE in note else (note + " " + M14_NOTE).strip())
     for pid, row in masses.items():
         p = by_id[pid]
@@ -123,9 +151,12 @@ def proposed(model: dict | None = None, path: Path = BOM) -> dict:
     for pid, text in gen.items():
         base = by_id[pid].get("notes", "").split(GEN_MARK)[0]
         by_id[pid]["notes"] = (base + " " + text).strip()
+    for pid, text in cr_notes(model["frame"]["layout"]).items():
+        base = by_id[pid].get("notes", "").split(CR_MARKS[pid].strip())[0].rstrip()
+        by_id[pid]["notes"] = (base + text).strip()
     status = {"M1.1": "review" if ok else "draft", "M1.1.2": "review" if ok else "draft"}
     for pid in ("M1.1", *ASSEMBLIES, *SCRIPTS):
-        by_id[pid]["status"] = status.get(pid, "review")
+        by_id[pid]["status"] = status.get(pid, "draft" if pid in DRAFT_PARTS else "review")
     parts.sort(key=lambda q: tuple(int(x) for x in q["id"].split(".")[1:]))  # children after their parent
     return data
 

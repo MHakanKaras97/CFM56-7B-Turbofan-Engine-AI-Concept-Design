@@ -1,13 +1,14 @@
 """M1 outlet guide vane row (M1.3), step 5e. CadQuery, frame.py axes.
 
 Inputs: rev011 outer (bypass) tubes at the rotor exit (r2, Vt2, Vm2), the 5b flowpath (OGV placeholder x_ogv_le,
-station 13, splitter radius, casing wall), ogv_params.yaml rules [T]/[G].
+station 13 and its inner radius, casing wall), ogv_params.yaml rules [T]/[G].
 Per section (radius r): inlet flow angle alpha1 = atan(Vt2 / Vm2) at r (record tubes, interpolated in r2) [H];
 metal kappa1 = alpha1 - incidence; exit metal kappa2 from Carter's rule for an axial exit [G]; chord from the axial
 extent and the stagger; profile = R-AM.11 MCA family (blade_solid.section_points, front 0.5) [T].
 The rotor turns positively about +X, so its exit swirl points to -Y at top dead centre: the vane sections are the
 blade_solid construction mirrored in Y. Planar sections at constant z, leading edge stacked on x_ogv_le, y = 0
-(radial leading edge) [T], lofted, trimmed to the bypass annulus (splitter wall to casing wall).
+(radial leading edge) [T], lofted, trimmed to the bypass annulus (station 13 inner radius = M2.0.2 casing outer
+face r_split2 + M2 casing thickness, rules/geometry.md R-G1.4, to the casing wall).
 Row: V = ceil(rule x blade count) copies about +X [T] (open issue #14, count not verified).
 """
 
@@ -100,7 +101,7 @@ def build(rev: str | None = None, root: Path = records.ROOT) -> dict:
     V = math.ceil(_p("vane_count_rule") * fp["blade"]["inputs"]["blades"])
     x_le, x13 = fp["x_ogv_le_m"], fp["stations"]["13"]["x_m"]
     L_ax = x13 - x_le
-    r_in = fp["r_split2_m"]
+    r_in = fp["stations"]["13"]["r_inner_m"]  # R-G1.4: root on the M2.0.2 casing outer face
     r_out = fr.r_at(fp["curves"]["casing_wall"], x_le)
     if abs(fr.r_at(fp["curves"]["casing_wall"], x13) - r_out) > 1e-12:
         raise ValueError("casing wall is not constant over the OGV")

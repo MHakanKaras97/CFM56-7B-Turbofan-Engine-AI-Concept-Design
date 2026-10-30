@@ -13,7 +13,10 @@ Construction:
 - Splitter: dividing streamline r_split1 -> r_split2 through the rotor; r_split2 = exit radius that holds the
   record's inner-tube exit area (sum of tube A2, stream inner) [H]; the record's r_split2_initial is only the
   radial-equilibrium start value. Splitter lip (station 21 plane) at a gap [T] behind the rotor trailing edge at the
-  splitter radius; the splitter wall then runs at r_split2 to station 13 [T].
+  splitter radius [T]. Behind station 21 the core/bypass divider wall is the M2 casing M2.0.2 (CR-002 option a,
+  rules/geometry.md R-G1.2, R-G1.3): its inner face is r_split2, its outer face r_root = r_split2 + M2 casing
+  thickness (read at run time from the M2 code, m2_boundary.py) is the bypass inner wall to station 13 and the
+  station 13 inner radius [H]. M1 has no splitter ring.
 - Station 2 plane: the most forward point of the blade [H]. Station 13 plane: OGV exit placed by [T] ratios (5e).
 - Casing wall = gas-path tip line + running tip clearance, radially (case side of the clearance, open issue #24).
   The clearance annulus is outside the record's flow area (the meanline treats clearance only as a loss).
@@ -30,6 +33,7 @@ from core.budgets import read_icd
 from core.util import write_yaml
 from engine.M1_inlet_fan.geometry import blade_solid as bs
 from engine.M1_inlet_fan.geometry import frame as fr
+from engine.M1_inlet_fan.geometry import m2_boundary as m2b
 
 OUT_YAML = fr.HERE / "flowpath.yaml"
 
@@ -99,11 +103,12 @@ def build(rev: str | None = None, root: Path = records.ROOT) -> dict:
     x13 = x_ogv_le + fr.v(gp["ogv_axial_chord_over_tip_axial_chord"]) * chord_ax["tip"]
     if not (x21 > pt["te_hub"][0] and x13 > x21 and x13 > bb.xmax):
         raise ValueError("station planes out of order (21 behind the hub trailing edge, 13 behind 21 and the blade)")
+    r_root = m2b.root_radius(r_split2)  # R-G1.3: r_split2 + M2 casing thickness [H]
 
     curves = {
         "hub": _dedupe([(x2, r_hub1), pt["le_hub"], pt["te_hub"], (x21, r_hub2)]),
         "dividing_streamline": _dedupe([(x2, r_split1), pt["le_split"], pt["te_split"], (x21, r_split2)]),
-        "splitter_wall": [(x21, r_split2), (x13, r_split2)],
+        "bypass_inner_wall": [(x21, r_split2), (x21, r_root), (x13, r_root)],  # M2.0.2 front face and outer face
         "tip": _dedupe([(x2, r_tip1), pt["le_tip"], pt["te_tip"], (x13, r_tip2)]),
     }
     curves["casing_wall"] = [(x, r + clearance) for x, r in curves["tip"]]
@@ -118,11 +123,12 @@ def build(rev: str | None = None, root: Path = records.ROOT) -> dict:
               "area_bypass_m2": ring(r_tip1, r_split1), "area_inside_casing_wall_m2": ring(r_tip1 + clearance, r_hub1),
               "icd_fan_face_area_m2": fan_face, "fan_face_area_deviation": ring(r_tip1, r_hub1) / fan_face - 1},
         "21": {"x_m": x21, "r_hub_m": r_hub2, "r_tip_m": r_split2, "area_m2": ring(r_split2, r_hub2)},
-        "13": {"x_m": x13, "r_inner_m": r_split2, "r_outer_m": r_tip2, "area_m2": ring(r_tip2, r_split2),
-               "r_casing_wall_m": r_tip2 + clearance, "area_inside_casing_wall_m2": ring(r_tip2 + clearance, r_split2)},
+        "13": {"x_m": x13, "r_inner_m": r_root, "r_outer_m": r_tip2, "area_m2": ring(r_tip2, r_root),
+               "r_casing_wall_m": r_tip2 + clearance, "area_inside_casing_wall_m2": ring(r_tip2 + clearance, r_root)},
     }
     return {"revision": rev, "curves": curves, "stations": stations, "rotor_edges": pt, "axial_chord_m": chord_ax,
             "x_ogv_le_m": x_ogv_le, "tip_clearance_m": clearance, "r_split2_m": r_split2,
+            "m2_casing_thickness_m": r_root - r_split2, "m2_revision": m2b.m2_boundary()["revision"],
             "r_split2_initial_m_info": ann["r_split2_initial_m"],
             "blade_x_range_m": (bb.xmin, bb.xmax), "blade": blade}
 
@@ -131,7 +137,7 @@ def solids(fp: dict) -> dict:
     """Gas-path volumes (core 2 -> 21, bypass 2 -> 13) and the casing wall surface."""
     c = fp["curves"]
     core = fr.revolve_closed(c["hub"] + c["dividing_streamline"][::-1])
-    bypass = fr.revolve_closed(c["dividing_streamline"] + c["splitter_wall"][1:] + c["tip"][::-1])
+    bypass = fr.revolve_closed(c["dividing_streamline"] + c["bypass_inner_wall"][1:] + c["tip"][::-1])
     return {"flowpath_core": core, "flowpath_bypass": bypass, "casing_wall_surface": fr.revolve_open(c["casing_wall"])}
 
 
@@ -168,16 +174,19 @@ def write_interface(fp: dict, path: Path = OUT_YAML) -> Path:
         "interfaces": {
             "M2_station_21": {"x_m": fp["stations"]["21"]["x_m"], "r_hub_m": fp["stations"]["21"]["r_hub_m"],
                               "r_tip_m": fp["stations"]["21"]["r_tip_m"], "area_m2": fp["stations"]["21"]["area_m2"],
-                              "note": "core annulus at the splitter lip plane; zero splitter thickness until step 5d"},
+                              "note": "core annulus at the splitter lip plane (dividing streamline end); behind it the "
+                                      "divider wall is the M2 casing M2.0.2 (inner face r_tip_m), CR-002"},
             "M7_station_13": {"x_m": fp["stations"]["13"]["x_m"], "r_inner_m": fp["stations"]["13"]["r_inner_m"],
                               "r_outer_m": fp["stations"]["13"]["r_outer_m"],
                               "area_m2": fp["stations"]["13"]["area_m2"],
-                              "note": "bypass annulus at the OGV exit plane (placeholder until step 5e)"},
+                              "note": "bypass annulus at the OGV exit plane; inner radius = M2.0.2 casing outer face "
+                                      "(r_split2 + M2 casing thickness, CR-002)"},
         },
         "rotor_edges_x_r_m": fp["rotor_edges"],
         "rotor_axial_chord_m": fp["axial_chord_m"],
         "splitter": {"r_split1_m": fp["stations"]["2"]["r_split_m"], "r_split2_m": fp["r_split2_m"],
-                     "r_split2_initial_m_info": fp["r_split2_initial_m_info"], "x_lip_m": fp["stations"]["21"]["x_m"]},
+                     "r_split2_initial_m_info": fp["r_split2_initial_m_info"], "x_lip_m": fp["stations"]["21"]["x_m"],
+                     "m2_casing_thickness_m": fp["m2_casing_thickness_m"], "m2_revision": fp["m2_revision"]},
         "x_ogv_le_m": fp["x_ogv_le_m"],
         "tip_clearance_m": fp["tip_clearance_m"],
         "curves_x_r_m": fp["curves"],

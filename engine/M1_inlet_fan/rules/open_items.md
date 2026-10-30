@@ -1,0 +1,13 @@
+# M1 Open Items (CR-002 option a / CR-003 state)
+
+The list is kept in one place: `docs/open_issues.md`. M1 cannot write there; the rows below are drafts for M0 (Turkish,
+as in `docs/open_issues.md`). Rules: `geometry.md` R-G1.1-R-G1.11. State: working tree after CR-002 (a) and CR-003,
+not yet recorded (new M1 revision and re-acceptance needed, ADR-012 / ADR-016).
+
+Suggested replacement rows:
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 48 | M1-M2 | VBV açıklıkları modellenmedi: M1.4.3 ayırıcı halka CR-002 (a) ile kaldırıldı, eski 12 yer tutucu açıklık onunla gitti. VBV'ler çekirdek/baypas ayırıcı duvarı keser: ist. 21-24 arası M2.0.2 kasası (M2) veya ist. 24'ten çerçeve sonuna M1.4.6 duvar halkası (M1); r_split2 - r_root aralığı (`fan_frame.interfaces` VBV) [H]. VBV sahibi atanmadı | [T] | Girão 2023 (s. 36-37) [KS] VBV'nin çerçevede olduğunu söylüyor; konum ve sahip kaynakta yok; ayar yapılmadı | M0 sahiplik kararı (M1, M2 veya ayrı parça); sonra sahibin kuralı ile açıklıklar | rules/geometry.md R-G1.10; geometry/fan_frame.py interfaces |
+| 49 | M1 | Kapandı (CR-003): çerçeve içi çekirdek kanalı artık M2 ist. 24/25 halkası (r 0.366240-0.433488 m, M2 flowpath.yaml M3_station_25, çalışma anında okunur) ve çekirdek bölgesi M2 ist. 24'ten başlıyor; ayırıcı duvar M2.0.2 + M1.4.6 [H]. Kalan: 24 -> 25 geçiş kanalı modellenmedi (daha fazla uzunluk gerektirebilir), ist. 25 konumu M2 rev002'de (#73) | [T] | Kullanıcı onayı CR-002 (a), CR-003 | M2 rev002 (ist. 25 konumu, geçiş kanalı) | rules/geometry.md R-G1.7; geometry/fan_frame.py layout |
+| 77 | M1-M2 | M1 tarafı uygulandı (CR-002 a + CR-003, kayıt yok): M1.4.3 kaldırıldı; OGV ve baypas dikmesi kökü r_root = r_split2 + M2 kasa kalınlığı = 0.442158 m (kodda M2'den hesaplanır); ist. 13 alanı 1.087411 m2 (-%2.15), OGV açıklığı 0.296802 m; çekirdek çerçevesi 0.163497 m geride, ist. 24 x 0.641557'den 0.798406'ya; yeni M1.4.6 10.4743 kg; M1 kütlesi 550.3573 kg, boyu 1.294560 m; M8 flanş arka yüzü x 0.798406, iç yarıçap 0.151065 sabit [H]. M1-M2 ortak hacmi 0 (M2 `hardware.m1_overlap` boş; `test_no_overlap_with_m1` artık XPASS(strict) -> xfail kaldırılmalı) [H]. Açık: baypas dikmesi yükleri M2.0.2 kasasına iniyor, yük yolu analiz edilmedi [T]; M2.0.2 ön yüzü ist. 21'de küt (r_split2 - r_root), dudak biçimi M2'nin [T] | [H] | Kullanıcı kararı CR-002 seçenek (a), CR-003 onay (2026-10-30); hiçbir değer ayarlanmadı, hedefler cr_impact_77.py ile yuvarlama içinde | Yeni M1 revizyonu ve yeniden kabul (ADR-012/016); M7 ist. 13 iç yarıçapı; M8 başlangıcı (flanş); yapısal aşama (yük yolu) | rules/geometry.md R-G1.1-R-G1.11; engine/M0_engine/requests/CR-002.yaml, CR-003.yaml |

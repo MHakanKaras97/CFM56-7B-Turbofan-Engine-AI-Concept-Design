@@ -12,6 +12,8 @@
 | `bird_strike.md` | Bird models, speeds, methods; certification numbers status |
 | `aero_method.md` | Meanline method steps and loss models (diffusion factor, profile, shock, endwall) |
 | `cs_e_800_birds.yaml` | CS-E 800 bird tables by inlet throat area (data for `analysis/bird_class.py`) |
+| `geometry.md` | R-G1.1-R-G1.11 frame zones, divider wall (M2.0.2 + M1.4.6), OGV / strut root radius, core passage, VBV (CR-002 a, CR-003) |
+| `open_items.md` | M1 open items #48, #49, #77 after CR-002/CR-003 (drafts for `docs/open_issues.md`) |
 
 Reference data: `learning/rotor67_reference.yaml` (NASA Rotor 67, validation case for A-1).
 
@@ -24,6 +26,10 @@ Workflow (M1 agent):
 Acceptance (ADR-016): **M1 module concept-accepted at rev014** (user decision 2026-10-29; `records/ACCEPTED` = rev014, set via
 `core.records.mark_accepted`; from now on a design revision needs an approved CR, ADR-012). Known gaps in `docs/open_issues.md`,
 incl. #53 disk may be oversized (R-DISK.2 slab length), #54 dovetail friction/contact pressure not analysed, #36 aluminium density [T].
+Design change (ADR-012): CR-002 option a and CR-003 (user-approved 2026-10-30, #77) applied to the geometry code, BOM and
+`geometry/flowpath.yaml` per `geometry.md` R-G1.1-R-G1.11 (M1.4.3 removed, M1.4.6 added, core-side frame behind M2
+station 24); fan blade, `analysis/fan_params.yaml` and `analysis/results.yaml` unchanged; not yet recorded (new revision
+and re-acceptance by M0/user).
 Earlier: fan rotor blade M1.1.1 concept-accepted at rev011 (step 4j: reproducible active record, budget
 9/9 + 2 info, R-AM.13/15 stress pass, known deviations in `docs/open_issues.md` #1-#18). Step 5 (5a-5g): all other M1
 parts concept-built from the rev011 params/results, to be recorded as rev012 (same params/results, new BOM); status per part

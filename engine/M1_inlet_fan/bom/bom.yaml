@@ -248,7 +248,7 @@ parts:
   material: aluminium_alloy
   status: review
   mass:
-    value: 1.2552
+    value: 1.2198
     unit: kg
     tag: H
   failure_modes:
@@ -257,7 +257,7 @@ parts:
     script: engine/M1_inlet_fan/geometry/ogv.py
     params:
       revision: rev011
-  notes: 'Count V = ceil(2.1 B) [T] (Tyler-Sofrin cut-off logic [G]); CFM56-7B count doğrulanmadı (#14, #42). Material aluminium [T] (BOM note aluminium or composite). Section MCA, Carter deviation [G/T] (#43).'
+  notes: 'Count V = ceil(2.1 B) [T] (Tyler-Sofrin cut-off logic [G]); CFM56-7B count doğrulanmadı (#14, #42). Material aluminium [T] (BOM note aluminium or composite). Section MCA, Carter deviation [G/T] (#43). Root at r 0.442158 m = r_split2 + M2.0.2 casing thickness (#77) [H].'
 - id: M1.4
   name: Fan Stage 1 Frame
   parent: null
@@ -268,7 +268,7 @@ parts:
   function: Structural frame behind the fan; carries fan case and bearing loads
   material: null
   status: review
-  notes: 'Aluminium and VBVs inside the frame: Girão 2023 (docs/learning/cfm56_7b_module_facts.md). VBV owner to be set by M0. Assembly of M1.4.1-M1.4.5 (step 5f).'
+  notes: 'Aluminium and VBVs inside the frame: Girão 2023 (docs/learning/cfm56_7b_module_facts.md). VBV owner to be set by M0. Assembly of M1.4.1, M1.4.2, M1.4.4-M1.4.6 (step 5f, CR-003); divider wall is M2.0.2 (#77). VBV openings not modelled since M1.4.3 was removed; they would cut the divider wall (M2.0.2 or M1.4.6), owner open (#48) [T].'
 - id: M1.4.1
   name: Fan Stage 1 Frame Hub Ring
   parent: M1.4
@@ -280,14 +280,14 @@ parts:
   material: aluminium_alloy
   status: review
   mass:
-    value: 14.3653
+    value: 20.6736
     unit: kg
     tag: H
   geometry:
     script: engine/M1_inlet_fan/geometry/fan_frame.py
     params:
       revision: rev011
-  notes: Bearing interface flange only; LP shaft and bearings 1-2 are M8 [T] (#47).
+  notes: Bearing interface flange only; LP shaft and bearings 1-2 are M8 [T] (#47). Frame zone x 0.641557-0.798406 m behind station 24, core inner wall r 0.366240 m (M2 station 24/25); M8 flange face x 0.785401-0.798406 m, inner radius 0.151065 m kept, M8 reviews it when M8 starts (#77) [H].
 - id: M1.4.2
   name: Fan Stage 1 Frame Outer Ring
   parent: M1.4
@@ -310,25 +310,6 @@ parts:
     params:
       revision: rev011
   notes: Sizes [T] (fan_frame_params.yaml).
-- id: M1.4.3
-  name: Fan Stage 1 Frame Splitter Ring
-  parent: M1.4
-  qty:
-    value: 1
-    unit: ea
-    tag: G
-  function: Separate core and bypass flow from the station 21 lip; bypass inner wall; VBV openings
-  material: aluminium_alloy
-  status: review
-  mass:
-    value: 23.3591
-    unit: kg
-    tag: H
-  geometry:
-    script: engine/M1_inlet_fan/geometry/fan_frame.py
-    params:
-      revision: rev011
-  notes: 'Girão 2023 PDF p. 36-37 [KS]: frame separates primary and secondary flow and houses the VBVs; VBV owner not set by M0, openings placeholder [T] (#48).'
 - id: M1.4.4
   name: Fan Stage 1 Frame Bypass Strut
   parent: M1.4
@@ -340,14 +321,14 @@ parts:
   material: aluminium_alloy
   status: review
   mass:
-    value: 1.6161
+    value: 1.5702
     unit: kg
     tag: H
   geometry:
     script: engine/M1_inlet_fan/geometry/fan_frame.py
     params:
       revision: rev011
-  notes: Strut count 12 [T], doğrulanamadı; flat plate (#46).
+  notes: Strut count 12 [T], doğrulanamadı; flat plate (#46). Root on the M2.0.2 casing outer face, r 0.442158 m (#77) [H].
 - id: M1.4.5
   name: Fan Stage 1 Frame Core Strut
   parent: M1.4
@@ -359,11 +340,30 @@ parts:
   material: aluminium_alloy
   status: review
   mass:
-    value: 0.6491
+    value: 0.3558
     unit: kg
     tag: H
   geometry:
     script: engine/M1_inlet_fan/geometry/fan_frame.py
     params:
       revision: rev011
-  notes: Strut count 12 [T], doğrulanamadı; flat plate (#46).
+  notes: Strut count 12 [T], doğrulanamadı; flat plate (#46). Leading edge x 0.657241 m behind station 24; core passage r 0.366240-0.433488 m (#77) [H].
+- id: M1.4.6
+  name: Fan Stage 1 Frame Core Wall Ring
+  parent: M1.4
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Core/bypass divider wall in the frame zone behind station 24 (continues M2.0.2); carries strut loads
+  material: aluminium_alloy
+  status: draft
+  mass:
+    value: 10.4743
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M1_inlet_fan/geometry/fan_frame.py
+    params:
+      revision: rev011
+  notes: 'CR-003 (#77): r 0.433488-0.442158 m (r_split2 to r_split2 + M2 casing thickness), x 0.641557-0.798406 m (station 24 to the frame end) [H]; rules/geometry.md R-G1.2; load path not analysed [T].'

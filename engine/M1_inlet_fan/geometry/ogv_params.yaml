@@ -49,11 +49,12 @@ axial_extent:
   note: vane leading edge at the 5b OGV placeholder x_ogv_le, trailing edge at the station 13 plane; chord = axial
     length / cos(stagger), so solidity is a result
 span:
-  value: splitter_to_casing_wall
+  value: divider_wall_to_casing_wall
   unit: '-'
   tag: T
-  note: vane from the splitter wall r_split2 to the casing wall (r_tip2 + tip clearance), no gap (fixed at both
-    ends); outer duct wall and splitter over the OGV are frame / splitter parts (step 5f)
+  note: vane from the station 13 inner radius r_root = r_split2 + M2 casing thickness (M2.0.2 outer face, CR-002,
+    rules/geometry.md R-G1.4) to the casing wall (r_tip2 + tip clearance), no gap (fixed at both ends); outer duct
+    wall over the OGV is the frame outer ring M1.4.2, the inner wall is the M2 casing M2.0.2
 n_sections:
   value: 11
   unit: '-'

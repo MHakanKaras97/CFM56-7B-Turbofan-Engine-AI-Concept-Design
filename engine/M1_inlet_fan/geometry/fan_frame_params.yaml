@@ -1,7 +1,8 @@
 description: M1 step 5f inputs for the fan frame (M1.4) (hand-written). Ratios only; lengths computed by code. No
   value here is a CFM56-7B dimension. Function and material of the frame from Girão 2023 (PDF p. 36-37) [KS]
   (forward support of both rotors, separates primary and secondary flow, OGV attach points, houses the VBVs,
-  aluminium); every size below is [T].
+  aluminium); every size below is [T]. CR-002 option a / CR-003 (rules/geometry.md R-G1.1-R-G1.11), no splitter
+  ring (divider wall = M2 casing M2.0.2), core-side frame zone behind M2 station 24, core wall ring M1.4.6.
 material:
   value: aluminium_alloy
   unit: '-'
@@ -11,18 +12,19 @@ length_over_tip_axial_chord:
   value: 1.0
   unit: '-'
   tag: T
-  note: frame axial length behind the station 13 plane (OGV trailing edge)
+  note: axial length L of both frame zones (R-G1.1); bypass zone station 13 (OGV trailing edge) to station 13 + L,
+    core zone M2 station 24 to station 24 + L
 strut_count:
   value: 12
   unit: '-'
   tag: T
-  note: bypass and core struts at the same angles, strut 0 at top dead centre; CFM56-7B strut count not found in
-    the M1/M0 sources (doğrulanamadı)
+  note: bypass and core struts at the same angles, strut 0 at top dead centre (axially in different zones, R-G1.1);
+    CFM56-7B strut count not found in the M1/M0 sources (doğrulanamadı)
 strut_chord_over_length:
   value: 0.8
   unit: '-'
   tag: T
-  note: axial strut chord per frame length, centred in the frame
+  note: axial strut chord per frame zone length, centred in its zone
 strut_thickness_over_chord:
   value: 0.12
   unit: '-'
@@ -33,33 +35,32 @@ outer_ring_thickness_over_tip_radius:
   unit: '-'
   tag: T
   note: outer ring = bypass outer wall from the OGV leading edge (mates with the case rear flange) to the frame end
-splitter_thickness_over_split_radius:
+reference_wall_thickness_over_split_radius:
   value: 0.02
   unit: '-'
   tag: T
-  note: splitter / mid ring from the station 21 lip to the frame end; outer face = bypass inner wall at r_split2,
-    inner face drops linearly to r_split2 - thickness over the lip length
-splitter_lip_length_over_thickness:
-  value: 4.0
-  unit: '-'
-  tag: T
+  note: reference wall thickness t_ref = ratio x r_split2 for the hub ring and bearing flange (R-G1.8; the value of
+    the former splitter thickness ratio, kept so the CR-003 sizes hold); the divider wall thickness is the M2
+    casing thickness, not this ratio
 hub_ring_thickness_over_split_thickness:
   value: 1.0
   unit: '-'
   tag: T
-  note: hub ring below the core passage inside the frame, inner face of the core passage at r_hub2
+  note: hub ring thickness / t_ref, below the core passage in the core zone, outer face at the M2 station 24/25 hub
+    radius (R-G1.8)
 core_passage:
-  value: station_21_radii
+  value: m2_station_24_25_annulus
   unit: '-'
   tag: T
-  note: core passage through the frame kept at the station 21 hub radius and the splitter inner face; the booster
-    and transition duct are M2 (station 21 -> 25), so these radii are a placeholder boundary
+  note: core passage through the frame zone = M2 station 24/25 annulus (M2 flowpath.yaml interfaces.M3_station_25
+    r_hub_m / r_tip_m, read at run time, R-G1.7); transition duct 24 -> 25 not modelled
 bearing_flange_inner_over_hub_radius:
   value: 0.5
   unit: '-'
   tag: T
-  note: inward bearing-support flange at the rear of the hub ring; its inner rim is the M8 boundary (LP shaft and
-    bearings 1-2 are M8, not designed here)
+  note: inward bearing-support flange at the rear of the hub ring; inner rim = ratio x station 21 hub radius (kept
+    by CR-003, M8 reviews it when M8 starts); its inner rim is the M8 boundary (LP shaft and bearings 1-2 are M8,
+    not designed here)
 bearing_flange_thickness_over_split_thickness:
   value: 1.5
   unit: '-'
@@ -69,18 +70,3 @@ flange_height_over_outer_ring:
   unit: '-'
   tag: T
   note: front flange of the outer ring, same axial thickness as the case rear flange (mating faces)
-vbv_count:
-  value: 12
-  unit: '-'
-  tag: T
-  note: placeholder VBV openings (core to bypass) through the splitter ring between the struts; VBV owner not set
-    by M0 (rules/bom.md), cut-outs only
-vbv_axial_over_length:
-  value: 0.4
-  unit: '-'
-  tag: T
-vbv_tangential_over_gap:
-  value: 0.4
-  unit: '-'
-  tag: T
-  note: tangential opening width per strut gap at the splitter radius
