@@ -32,11 +32,17 @@ def result(model):
 
 
 def test_rules_linked_and_tagged():
+    """Every table row whose id cell names R-G2.n: plain id (not bold), numbering 1..n without gaps, one tag."""
     assert "`geometry.md`" in (M2 / "rules" / "index.md").read_text(encoding="utf-8")
-    rows = [l for l in RULES.read_text(encoding="utf-8").splitlines() if l.startswith("| R-G2.")]
-    assert len(rows) == 17
+    rows = [l for l in RULES.read_text(encoding="utf-8").splitlines() if re.match(r"\|\s*\**R-G2\.\d", l)]
+    assert rows
+    ids = []
     for row in rows:
+        m = re.match(r"\| R-G2\.(\d+) \|", row)
+        assert m, row
+        ids.append(int(m.group(1)))
         assert len(re.findall(r"\[(K|KS|H|G|T)\]", row.split("|")[-2])) == 1, row
+    assert ids == list(range(1, len(ids) + 1))
 
 
 def test_geometry_params_one_tag_per_field():

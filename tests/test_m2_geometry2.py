@@ -29,8 +29,9 @@ def res(hb):
 def test_step2_rules_written_and_tagged():
     rows = [l for l in RULES.read_text(encoding="utf-8").splitlines() if l.startswith("| R-G2.")]
     ids = [int(re.search(r"R-G2\.(\d+)", r).group(1)) for r in rows]
-    assert ids == list(range(1, 18))
-    rows = rows[8:]
+    assert set(range(1, 18)) <= set(ids)
+    rows = [r for r, i in zip(rows, ids) if 9 <= i <= 17]
+    assert len(rows) == 9
     for row in rows:
         assert len(re.findall(r"\[(K|KS|H|G|T)\]", row.split("|")[-2])) == 1, row
 

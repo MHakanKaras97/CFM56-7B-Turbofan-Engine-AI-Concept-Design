@@ -35,7 +35,7 @@ def slots(hb):
 def test_step3a_rules_written_and_tagged():
     text = (L.M2_DIR / "rules" / "geometry.md").read_text(encoding="utf-8")
     for rid in ("R-G2.18", "R-G2.19"):
-        row = next(line for line in text.splitlines() if line.startswith(f"| **{rid}**"))
+        row = next(line for line in text.splitlines() if line.startswith(f"| {rid} |"))
         assert row.split("|")[-2].strip() == "[T]", rid
     assert "This removes \"nothing ahead of station 21\" as a hardware rule" in text
     assert "no M2 part crosses station 21\" no longer applies" in text
