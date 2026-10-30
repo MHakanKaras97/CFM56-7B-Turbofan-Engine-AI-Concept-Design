@@ -25,3 +25,12 @@ No source value (#52 gives rotor blades only; open item #62 in `docs/open_issues
   The value comes from code, never from this file.
 - Current stator counts 31/39/49 [T] (stages 1-3) belong to M2 rev001 (step 4 meanline, R-KV2.1 output). A different
   count is a design change and needs a new M2 revision; it is never changed in geometry or BOM alone.
+
+## LLP lives
+
+| Part | Life (EFC) | Tag | Source |
+|---|---|---|---|
+| Booster spool | 22,900 | [KS] | #49 (ISSUE58), p. 19-20, body text |
+
+- Booster spool: the body text gives 22,900 EFC for the -7B27 (23,600 for the other variants); the p. 20 table
+  cell for the -7B27 reads 23,600. The text value is used; the conflict stays open.

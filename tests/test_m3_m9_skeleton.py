@@ -16,7 +16,7 @@ MODULES = {"M3": ("M3_hp_compressor", "m3-hp-compressor"), "M4": ("M4_combustor"
 KNOWN = {"M3": ["| 38 |", "| 53 |", "| 60 |", "| 68 |", "| 75 |", "| 82 |", "| 80 |", "| 76 |", "stages 1-3"],
          "M4": ["| 20 |"], "M5": ["| 80 |", "| 17,300 |", "| 19,200 |", "ISSUE39"],
          "M6": ["| 162 |", "| 150 |", "| 134 |", "| 23,900 |", "| 16,300 |", "ISSUE39"],
-         "M7": ["bypass duct 13-18", "turbine frames", "fan nozzle"], "M8": ["| 30,000 |", "| 22,900 |"],
+         "M7": ["bypass duct 13-18", "turbine frames", "fan nozzle"], "M8": ["| 30,000 |", "M2_booster/rules/known_values.md"],
          "M9": ["gearbox", "oil"]}
 
 
@@ -62,3 +62,11 @@ def test_rejected_source_not_used():
         for path in (ROOT / "engine" / folder).rglob("*.md"):
             text = path.read_text(encoding="utf-8")
             assert "CFM56_Answers" not in text or "rejected" in text, path
+
+
+def test_booster_spool_life_owned_by_m2():
+    m2 = (ROOT / "engine" / "M2_booster" / "rules" / "known_values.md").read_text(encoding="utf-8")
+    m8 = (ROOT / "engine" / "M8_shaft_bearing" / "rules" / "known_values.md").read_text(encoding="utf-8")
+    assert "| Booster spool | 22,900 | [KS] | #49 (ISSUE58), p. 19-20, body text |" in m2
+    assert "23,600" in m2 and "conflict stays open" in m2
+    assert "| Booster spool |" not in m8

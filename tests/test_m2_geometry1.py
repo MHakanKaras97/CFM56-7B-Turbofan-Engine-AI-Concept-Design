@@ -34,7 +34,7 @@ def result(model):
 def test_rules_linked_and_tagged():
     assert "`geometry.md`" in (M2 / "rules" / "index.md").read_text(encoding="utf-8")
     rows = [l for l in RULES.read_text(encoding="utf-8").splitlines() if l.startswith("| R-G2.")]
-    assert len(rows) == 8
+    assert len(rows) == 17
     for row in rows:
         assert len(re.findall(r"\[(K|KS|H|G|T)\]", row.split("|")[-2])) == 1, row
 
