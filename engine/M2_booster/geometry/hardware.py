@@ -1,5 +1,5 @@
-"""M2 geometry step 2 and 3a: rotor drum with forward cone, blade root blocks in sloped slots, stator inner shrouds,
-casing and vane feet (rules/geometry.md R-G2.9-19).
+"""M2 geometry steps 2, 3a and 3b: rotor drum with forward cone and hub flow-path wall, blade root blocks in sloped
+slots, stator inner shrouds, casing and vane feet (rules/geometry.md R-G2.9-20).
 
 Inputs: the step 1 model (layout.py / blades.py, active record rev001), the `hw_*` constants of
 geometry/geometry_params.yaml (one tag per field) and the M1 rev014 disk / M8 interface values read at run time from
@@ -69,9 +69,14 @@ def m1_interface() -> dict:
     ff = fan_frame.build()
     lay, prof = rot["layout"], rot["disk_profile"]
     m8 = fan_frame.interfaces(ff)["M8_bearing_support"]
+    fp = L.read_yaml(L.M1_FLOWPATH)  # M1 flow path file, read-only (R-G2.20)
     return {"x_aft_face": lay["x_b"], "r_live_rim_inner": prof["r_rim_inner"], "r_slot_bottom": lay["r_slot_bottom"],
             "r_rim": lay["r_rim"], "r_bolt_circle": 0.5 * (prof["r_rim_inner"] + lay["r_slot_bottom"]),
-            "r_m8_boundary": m8["r_inner_m"], "x_m8_face": tuple(m8["x_face_m"])}
+            "r_m8_boundary": m8["r_inner_m"], "x_m8_face": tuple(m8["x_face_m"]),
+            # R-G2.20: M1 platform aft end (solid), M1 hub line and blade hub trailing edge (flowpath.yaml)
+            "x_platform_aft": rot["platform"].BoundingBox().xmax,
+            "hub_curve": [tuple(map(float, p)) for p in fp["curves_x_r_m"]["hub"]],
+            "x_blade_te_hub": float(fp["rotor_edges_x_r_m"]["te_hub"][0])}
 
 
 def rotate(s: cq.Shape, angle_deg: float) -> cq.Shape:
@@ -203,8 +208,27 @@ def hw_layout(model: dict, m1: dict | None = None) -> dict:
     if not (x0 + t_fl < x21 and ring_r[0] <= rb - 0.5 * t_sh and rb + 0.5 * t_sh <= ring_r[1]
             and cone["m8_clearance"] > 0.0):
         issues.append("forward cone not buildable within R-G2.18 (stop rule)")
+    # hub flow-path wall (R-G2.20): forward extension of the drum outer skin, M1 platform aft end + joint gap -> st. 21
+    r_w = L.r_at(hub, x21)  # M2 hub line at station 21 = record plane = M1 interface hub radius (layout check)
+    gap_j = _p(gp, "hw_wall_joint_gap_over_wall") * t_sh
+    wall = {"x0": m1["x_platform_aft"] + gap_j, "x1": x21, "r_out": r_w, "t": t_sh, "r_in": r_w - t_sh,
+            "joint_gap": gap_j, "x_platform_aft": m1["x_platform_aft"],
+            "r_m1_hub_at_x0": L.r_at(m1["hub_curve"], m1["x_platform_aft"]),
+            "r_m1_hub_at_x21": L.r_at(m1["hub_curve"], x21)}
+    if not (wall["x0"] < wall["x1"] and t_sh >= t_min and rims[0]["r_inner"] < wall["r_in"]
+            and ring_r[1] < wall["r_in"] and abs(wall["r_m1_hub_at_x0"] - r_w) <= 1e-9
+            and abs(wall["r_m1_hub_at_x21"] - r_w) <= 1e-9):
+        issues.append("hub flow-path wall not buildable within R-G2.20 (stop rule)")
+    # the wall ends on the rim 1 front face: radial band of the rim 1 slot front opening it covers (R-G2.10/R-G2.19)
+    r1 = rims[0]
+    wall["slot_front_covered"] = max(0.0, r_w - max(wall["r_in"], r1["r_slot_bottom_front"]))
+    wall["slot_front_window"] = max(0.0, wall["r_in"] - r1["r_slot_bottom_front"])  # open band below the wall
+    if wall["slot_front_covered"] > 0.0:
+        r1["slot_open_front"] = False
+        issues.append(f"slot of {r1['row']['part_id']} covered at the front face by the hub wall over "
+                      f"{wall['slot_front_covered'] * 1e3:.3f} mm (R-G2.20 vs R-G2.10/19, stop rule, #81)")
     return {"x21": x21, "x24": x24, "hub": hub, "r_casing": rc, "casing_thickness": t_c, "rims": rims,
-            "shrouds": shrouds, "grooves": grooves, "flange": flange, "cone": cone, "m1": m1,
+            "shrouds": shrouds, "grooves": grooves, "flange": flange, "cone": cone, "hub_wall": wall, "m1": m1,
             "x_boundary": m1["x_aft_face"], "issues": issues}
 
 
@@ -222,6 +246,13 @@ def forward_cone(H: dict) -> cq.Solid:
     if len(out) != 1 or not out[0].isValid():
         raise ValueError("forward cone is not one valid solid")
     return out[0]
+
+
+def hub_wall(H: dict) -> cq.Solid:
+    """R-G2.20: hub flow-path wall, cylindrical shell (outer = hub flow-path radius, stage-1 drum wall thickness) from
+    the M1 platform aft end + joint gap to station 21, where it meets the rim 1 front face."""
+    w = H["hub_wall"]
+    return L.revolve_closed([(w["x0"], w["r_in"]), (w["x1"], w["r_in"]), (w["x1"], w["r_out"]), (w["x0"], w["r_out"])])
 
 
 def drum_unslotted(H: dict) -> cq.Solid:
@@ -248,10 +279,11 @@ def drum_unslotted(H: dict) -> cq.Solid:
             x0, x1 = xc - 0.5 * s["tooth_width"], xc + 0.5 * s["tooth_width"]
             r0 = s["r_wall_out"] - 0.5 * s["wall"]  # overlap into the wall for a clean fuse
             teeth.append(L.revolve_closed([(x0, r0), (x1, r0), (x1, s["r_tooth_tip"]), (x0, s["r_tooth_tip"])]))
-    fused = body.fuse(*teeth, forward_cone(H)).clean()  # R-G2.18: the cone is part of the drum solid
+    # R-G2.18 / R-G2.20: the forward cone and the hub flow-path wall are part of the drum solid
+    fused = body.fuse(*teeth, forward_cone(H), hub_wall(H)).clean()
     solids = fused.Solids()
     if len(solids) != 1 or not solids[0].isValid():
-        raise ValueError("drum with teeth and forward cone is not one valid solid")
+        raise ValueError("drum with teeth, forward cone and hub wall is not one valid solid")
     return solids[0]
 
 
@@ -546,6 +578,91 @@ def cone_checks(hb: dict) -> dict:
             "cone_mass": cone.Volume() * rho, "drum_mass": P["drum"].Volume() * rho}
 
 
+def _covered_x(solid: cq.Shape, p0: cq.Vector, p1: cq.Vector) -> list[tuple[float, float]]:
+    """x intervals of the straight line p0 -> p1 that lie inside the solid."""
+    com = solid.intersect(cq.Edge.makeLine(p0, p1))
+    out = []
+    for e in com.Edges():
+        xs = [e.positionAt(0.0).x, e.positionAt(1.0).x]
+        out.append((min(xs), max(xs)))
+    return out
+
+
+def _gaps(iv: list[tuple[float, float]], x0: float, x1: float) -> list[tuple[float, float]]:
+    """Uncovered sub-intervals of x0..x1 for a list of covered x intervals."""
+    gaps, x = [], x0
+    for a0, a1 in sorted(iv):
+        if a0 > x + 1e-12:
+            gaps.append((x, min(a0, x1)))
+        x = max(x, a1)
+    if x < x1 - 1e-12:
+        gaps.append((x, x1))
+    return [g for g in gaps if g[1] > g[0]]
+
+
+N_PLATFORM_PLANES = 25  # planar cuts of the M1 platform between the blade TE and its aft end [T]
+
+
+def hub_line_gaps(hb: dict, m1_platform: cq.Shape) -> dict:
+    """R-G2.20 checks of the hub line from the M1 blade hub trailing edge to station 21 [H]:
+    - probe line just below the hub radius (radius_tolerance_m) at the angle of the M1 platform centroid (mid blade
+      gap): x intervals inside the M1 platform or the M2 drum, largest uncovered interval (literal hub-line check);
+    - axial joint gap measured on the solids: start of the drum on the probe line - M1 platform aft end (bounding box);
+      drum coverage from there to station 21 without a gap;
+    - radial drop of the M1 platform top below the M1 hub line (M1 flowpath.yaml) at planar cuts from the blade TE
+      to the platform aft end (largest radius of the cut; M1 part, report only)."""
+    H, P = hb["hw"], hb["parts"]
+    w, m1 = H["hub_wall"], H["m1"]
+    eps = float(L.v(hb["model"]["params"]["radius_tolerance_m"]))
+    c = m1_platform.Center()
+    a = math.atan2(c.z, c.y)
+    r = w["r_out"] - eps
+    x0, x1 = m1["x_blade_te_hub"], H["x21"]
+    p0 = cq.Vector(x0, r * math.cos(a), r * math.sin(a))
+    p1 = cq.Vector(x1, r * math.cos(a), r * math.sin(a))
+    iv_pl, iv_dr = _covered_x(m1_platform, p0, p1), _covered_x(P["drum"], p0, p1)
+    gaps = _gaps(iv_pl + iv_dr, x0, x1)
+    x_pl = m1_platform.BoundingBox().xmax
+    x_dr = min(e[0] for e in iv_dr) if iv_dr else math.inf
+    drop = []
+    for k in range(N_PLATFORM_PLANES):
+        x = x0 + (x_pl - x0) * k / N_PLATFORM_PLANES  # aft end itself excluded (cut on the end face)
+        drop.append({"x": x, "r_hub_m1": L.r_at(m1["hub_curve"], x), "r_platform_max": radii_at(m1_platform, x)[1]})
+    for d in drop:
+        d["drop"] = d["r_hub_m1"] - d["r_platform_max"]
+    return {"x_from": x0, "x_to": x1, "r_probe": r, "covered_platform": iv_pl, "covered_drum": iv_dr, "gaps": gaps,
+            "max_gap": max([g[1] - g[0] for g in gaps], default=0.0), "joint_gap": w["joint_gap"],
+            "x_platform_aft": x_pl, "x_drum_start": x_dr, "joint_gap_measured": x_dr - x_pl,
+            "drum_gaps": _gaps(iv_dr, x_dr, x1) if iv_dr else [(x_pl, x1)], "platform_drop": drop,
+            "platform_drop_max": max(d["drop"] for d in drop)}
+
+
+def hub_wall_checks(hb: dict) -> dict:
+    """R-G2.20 checks: wall outer radius vs the M1 station 21 hub radius (on the drum solid), common volume of the
+    wall region with the M1 rotor parts, the forward cone, M2 airfoils and root blocks, hub line gaps; wall and drum
+    mass (information, R-G2.16 density)."""
+    H, P, rows = hb["hw"], hb["parts"], hb["model"]["rows"]
+    w = H["hub_wall"]
+    tol = _p(hb["model"]["params"], "hw_common_volume_tolerance")
+    wall = hub_wall(H)
+    m1 = m1_rotor_parts()
+    others = dict(m1)
+    others["M2.0.1 forward cone"] = forward_cone(H)
+    for r in rows:
+        others[f"{r['part_id']} {'airfoil' if r['kind'] == 'rotor' else 'vane'}"] = r["solid"]
+    for rim, s in zip(H["rims"], P["roots"]):
+        others[f"{rim['row']['part_id']} root"] = s
+    inter = []
+    for n, s in others.items():
+        f = common_fraction(wall, s)
+        inter.append({"part": n, "common_fraction": f, "pass": f <= tol})
+    r_meas = [radii_at(P["drum"], x)[1] for x in _planes(w["x0"], w["x1"])]
+    rho = B.density("ti6al4v")
+    return {"wall": w, "r_station_21_hub_m1": L.station_21()["r_hub"], "r_out_measured": r_meas,
+            "interference": inter, "hub_line": hub_line_gaps(hb, m1["M1.1.6 platform"]),
+            "wall_volume": wall.Volume(), "wall_mass": wall.Volume() * rho, "drum_mass": P["drum"].Volume() * rho}
+
+
 def slot_checks(hb: dict) -> list[dict]:
     """R-G2.19 records per rotor: front/aft face margins (structural-stage checks, not a pass) and the root block
     fit in its slot (common volume with the slotted drum, distance vs the fit clearance)."""
@@ -664,6 +781,13 @@ def main() -> None:
     print("cone", H["cone"])
     for s in slot_checks(hb):
         print("slot", s)
+    hw = hub_wall_checks(hb)
+    print("hub wall", hw["wall"])
+    print("hub wall r_out measured", hw["r_out_measured"], "M1 st21 hub", hw["r_station_21_hub_m1"])
+    print("hub wall interference fail", [r for r in hw["interference"] if not r["pass"]] or "none")
+    print("hub line", {k: v for k, v in hw["hub_line"].items() if k != "platform_drop"})
+    print("platform drop", [(round(d["x"], 5), round(d["drop"] * 1e3, 3)) for d in hw["hub_line"]["platform_drop"]])
+    print(f"hub wall mass {hw['wall_mass']:.3f} kg, drum {hw['drum_mass']:.3f} kg")
     cc = cone_checks(hb)
     for r in cc["m1"]:
         print("cone vs", r)

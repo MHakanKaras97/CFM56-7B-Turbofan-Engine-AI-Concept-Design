@@ -36,8 +36,8 @@ def test_step2_rules_written_and_tagged():
         assert len(re.findall(r"\[(K|KS|H|G|T)\]", row.split("|")[-2])) == 1, row
 
 
-def test_built_without_stop_rule(hb, res):
-    assert res["issues"] == []
+def test_parts_built_valid(hb):
+    """Stop-rule list check moved to test_m2_geometry3b (R-G2.20 wall covers the R1 slot front, #81)."""
     P = hb["parts"]
     for s in [P["drum"], P["casing"], *P["roots"], *P["shrouds"], *P["feet"]]:
         assert s.isValid() and s.Volume() > 0

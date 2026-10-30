@@ -77,3 +77,27 @@ Notes for M0:
 - Step 3a ids R-G2.18-19 are in bold so that the R-G2.1-17 row count of the M0 tests holds (step 2 precedent).
 - `analysis/conflicts_75_77.py` stays the step 2 analysis record; after step 3a its temporary cone coincides with the
   drum cone (common volume = cone volume), as expected.
+
+## Geometry step 3b: hub flow-path wall (#79) and new draft #80 (M0 copies verbatim)
+
+Values from `geometry/hardware.py` (`hub_wall_checks`, `hub_line_gaps`), rev001, M1 rev014 (read-only), rule R-G2.20.
+No constant tuned; stop rule triggered twice: literal hub-line check (M1 platform shape) -> #80; R1 slot front face
+covered by the wall -> #81 (wall kept as the rule gives it, placeholder). Replacement row #79, new rows #80, #81:
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 79 | M2 | Adım 3b: R-G2.20 göbek akış yolu duvarı uygulandı (M2.0.1 tamburunun parçası, koni ve tamburla tek katı, kütle bir kez). Duvar x 0.140777-0.235369 m, r 0.297278-0.30213 m; kalınlık 4.852 mm (kademe 1 tambur duvarı kuralı); M1 platform arka ucuna eksenel birleşim boşluğu 0.1 x duvar kalınlığı = 0.000485 m (katılarda ölçülen aynı) [H]. Dış yarıçap katıda 0.30213 (1e-5 içinde, M1 ist. 21 göbeği); M1 rotor parçaları, ön koni, M2 kanatları ve kök bloklarıyla ortak hacim 0; tambur duvar başlangıcından ist. 21'e boşluksuz. Duvar 3.829 kg, tambur toplam 66.935 kg (adım 3a 63.106; Ti-6Al-4V yoğunluğu, bilgi) [H]. Kalan: göbek çizgisi kanat firar kenarı - platform arka ucu arasında #80; duvar R1 yuva ön ağzını kapatıyor #81 | [T] | Kullanıcı kararı (sahibi M2, tambur kabuğunun öne uzantısı); oran [T] kaynaksız, ayarlanmadı; BOM, revizyon, M1 dosyası değişmedi | Sonraki M2 revizyonu (tambur kütlesi kayda girer), J2-1 / yapısal aşama (A-4), #80 kararı | rules/geometry.md R-G2.20; geometry/geometry_params.yaml hw_wall_joint_gap_over_wall; geometry/hardware.py hub_wall, hub_wall_checks |
+| 80 | M1-M2 | M1 rev014 platformunun (M1.1.6) üst yüzü göbek akış yolu çizgisini izlemiyor: uçları arasında düz koni (disk ön yüzünde r 0.23241, arka yüzde 0.30213); kanat göbek firar kenarı x 0.109785 ile platform arka ucu x 0.140291 arasında M1 göbek çizgisinin (sabit 0.30213) altında, firar kenarında 8.045 mm, arka uçta 0 [H]. Göbek çizgisinin 10 µm altından yapılan sonda bu aralığı kaplanmamış görüyor: en büyük boşluk 0.030992 m > birleşim boşluğu 0.000485 m (R-G2.20 kontrolü, katı xfail). Eksenel birleşim (platform arka ucu - M2 duvarı) kural değerinde; radyal basamak yok (ikisi de x 0.140291'de r 0.30213) [H] | [H] | M1 kabul edilmiş ve salt okunur (ADR-016); M2 tarafında düzeltilemez (duvar platform bölgesine uzatılamaz, M1 parçasıyla çakışır); ayar yapılmadı | M0/kullanıcı kararı: M1 platform üst yüzünü göbek çizgisine oturtan CR (M1 platform() üst kenarı) veya sapmanın bilinen sapma olarak kabulü; M1 platform/kırlangıç ayrıntılı tasarımı (#25, #35) | geometry/hardware.py hub_line_gaps; agent/proposed_test_geometry3b.py; M1 geometry/rotor_hardware.py platform(), geometry/flowpath.yaml curves_x_r_m.hub |
+| 81 | M2 | R-G2.20 duvarı ist. 21'de rim 1 ön yüzüne bağlanıyor ve R1 yuvalarının ön ağzının üst 4.852 mm'sini (duvar kalınlığının tamamı, r 0.297278-0.30213) kapatıyor; altında 10.236 mm pencere kalıyor (yuva tabanı ön yüzde r 0.287043). Kök bloğu (yükseklik ~ yuva derinliği) pencereden geçmez -> R1 kökleri önden takılamaz; R1 kök bloğu - tambur mesafesi 0 (temas duvarın arka yüzünde; R-G2.19 > 0 ve <= uyum açıklığı 0.214 mm ister), ortak hacim 0. Yuva arka yüzde açık (pay 3.622 mm) [H]. Seçenekler (kullanıcı/M0, kural düzeyinde) [T]: (a) yuvaları duvar boyunca kesmek (duvar ön ucu yarıklı dudak olur, akış yolunda 74 yarık); (b) duvar ile rim 1 arasında eksenel birleşim boşluğu (ayrı tutucu halka gibi; duvar koniye/flanşa ayrı bağlanmalı); (c) R1 köklerini arkadan takmak (montaj sırası S1 örtüsünden önce); (d) duvar R1 için kanat tutucusu sayılır (gerçek boosterlarda ön tutucu halka yaygın [G], kaynak doğrulanamadı) | [H] | Dur kuralı: duvar kuralın verdiği gibi bırakıldı (yer tutucu), oran ayarlanmadı; sistem sorunları listesinde tek kayıt | Kullanıcı kararı (a-d), J2-2 kırlangıç/tutucu tasarımı, yapısal aşama (A-4) | rules/geometry.md R-G2.10, R-G2.19, R-G2.20; geometry/hardware.py hw_layout (hub_wall slot_front_covered), slot_checks; agent/proposed_test_geometry3b.py |
+
+Notes for M0:
+- New constant `hw_wall_joint_gap_over_wall` (0.1 [T]) -> `tests/test_m2_geometry3a.py::test_hw_params_tagged_step3a`
+  counts 20 `hw_*` keys and now sees 21 (expected failure, superseded; suggest 21 or an explicit key list).
+- #81 makes `issues` non-empty: `test_built_without_stop_rule` in `tests/test_m2_geometry2.py` and
+  `tests/test_m2_geometry3a.py` fail, `test_m2_geometry3a.py::test_slot_aft_face_margins` fails (asserts R1
+  `slot_open_front`) and `test_m2_geometry3a.py::test_root_block_fits_slot` fails for R1 (distance 0);
+  suggest strict xfail on #81 until the user decides (a)-(d).
+- Proposed tests: `agent/proposed_test_geometry3b.py` (literal hub-line test is a strict xfail on #80).
+- Possible CR draft (not created, M0/user decide on #80): M1 `rotor_hardware.platform()` top edge following the M1
+  hub line (`h(x)` at intermediate x, not the straight end-to-end line); impact: platform volume/mass, rim dead load
+  (R-DISK.2), M1 tests; no M2 change needed (the wall already starts at the platform aft end + joint gap).

@@ -32,3 +32,15 @@ Her sıralar arası boşluk ortadan bölünür; ortasına eksenel çalışma bo�
 - Fan diski ile tambur arasında 95 mm eksenel boşluk var (#76); köprünün hangi modülde olacağı bir sahiplik kararı.
 - M1 fan çerçevesi booster'ın kademe 2-3'ünün üstüne düşüyor (#77): M1 çerçeveyi M2 akış yolu bilinmeden yer tutucu
   olarak yerleştirmişti (#49). Modüller arası hacim kontrolü bu yüzden önemli.
+
+## Adım 3b: göbek akış yolu duvarı (#79)
+- Fan platformunun arka ucu ile ist. 21 arasında (yaklaşık 95 mm) akışın iç sınırını oluşturan bir parça yoktu.
+  Kullanıcı kararıyla bu duvar M2'nin: tambur dış kabuğunun öne uzantısı (M2.0.1, tek katı, kütle bir kez).
+- Duvar silindiriktir: dış yarıçap = ist. 21 göbek yarıçapı (M1 flowpath.yaml), kalınlık = kademe 1 tambur duvarı
+  kuralı. Önde M1 platformuna küçük bir eksenel montaj boşluğu bırakılır (oran [T], kaynak yok); iki yüz aynı
+  makarada döndüğü için çalışma açıklığı gerekmez.
+- Öğrenilen: arayüz yalnız "x ve r eşit mi" ile kontrol edilmez; komşu parçanın yüzeyi akış çizgisini gerçekten
+  izliyor mu, ona da bakmak gerekir. M1 platformunun üst yüzü göbek çizgisini izlemiyor, uçları arasında düz bir koni:
+  kanat firar kenarında göbek çizgisinin 8.045 mm [H] altında, arka uçta sıfır (#80 taslağı, M1 salt okunur).
+- İkinci bulgu (#81): duvar rim 1 ön yüzüne kaynaşınca R1 yuvalarının ön ağzının üst bandı kapanıyor; kökler artık
+  önden takılamaz. Bir parçayı "uzatmak" komşu parçaların montaj yolunu da değiştirebilir; karar kullanıcıda.

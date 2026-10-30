@@ -176,3 +176,10 @@ hw_min_wall_m:
   tag: T
   note: R-G2.17; smallest wall (live rim, drum wall, casing behind the groove) for a buildable part, not a structural
     criterion
+hw_wall_joint_gap_over_wall:
+  value: 0.1
+  unit: '-'
+  tag: T
+  note: R-G2.20 (step 3b, issue 79); axial joint gap between the M1 platform aft end and the forward end of the M2 hub
+    flow-path wall / hub wall thickness (= stage-1 drum wall, R-G2.10); assembly gap between co-rotating faces of
+    the same spool, no running clearance; no booster source (doğrulanamadı)
