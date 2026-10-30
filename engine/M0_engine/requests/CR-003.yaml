@@ -1,0 +1,167 @@
+id: CR-003
+date: '2026-10-30T09:18:28Z'
+from_module: M2
+to_modules:
+- M1
+reason: '#77 (c): the M1 core struts M1.4.5 (x 0.4937-0.6192 m) and the core-side
+  frame cross the rotating M2 booster drum and rotor/stator rows; the hub ring and
+  bearing flange inside the drum can only be tied to the splitter through the drum.
+  No M2-side fix exists: the booster rows need 0.325786 m from station 21, 0.067411
+  m more than the space to the strut leading edge; the axial gap ratio that would
+  end S3 at the strut is -0.2096 (frame start -0.2584), negative [H]. Proposal: move
+  the core-side frame (hub ring M1.4.1 with the M8 bearing flange, core struts M1.4.5)
+  aft by 0.163497 m so the frame starts at station 24 x 0.641557 m (strut leading
+  edge at least 0.147812 m aft; with the frame start at station 24 the LE is at x
+  0.657241) and fit the core passage to the M2 station 24/25 annulus r 0.366240-0.433488
+  m [T]. The M8 bearing flange moves with the hub ring, inner radius kept at 0.151065
+  m. Bypass struts M1.4.4, outer ring, OGV and station 13 stay. Depends on CR-A option
+  a: with M1.4.3 removed, a frame-zone core/bypass wall ring (station 24 to the new
+  frame end, r_split2 to r_split2 + wall) is added as M1.4.6. Not expressible as BOM
+  changes: fan_frame.py layout (frame zone behind station 24, core passage radii from
+  M2), load path bypass strut -> M2 casing / wall ring -> core strut [T], transition
+  duct 24 -> 25 not modelled (may need more length). New M1 design revision (ADR-012).
+  Source: engine/M2_booster/learning/geometri_celiskileri.md (#77); impact engine/M0_engine/analysis/cr_impact_77.py.'
+changes:
+- type: bom
+  module: M1
+  path: parts[M1.4.1].mass
+  old:
+    value: 14.3653
+    unit: kg
+    tag: H
+  new:
+    value: 20.6736
+    unit: kg
+    tag: H
+- type: bom
+  module: M1
+  path: parts[M1.4.5].mass
+  old:
+    value: 0.6491
+    unit: kg
+    tag: H
+  new:
+    value: 0.3558
+    unit: kg
+    tag: H
+- type: bom
+  module: M1
+  path: parts[M1.4.1].notes
+  old: Bearing interface flange only; LP shaft and bearings 1-2 are M8 [T] (#47).
+  new: Bearing interface flange only; LP shaft and bearings 1-2 are M8 [T] (#47).
+    Frame zone x 0.641557-0.798406 m behind station 24, core inner wall r 0.366240
+    m (M2 station 24/25); M8 flange face x 0.785401-0.798406 m (#77) [H].
+- type: bom
+  module: M1
+  path: parts[M1.4.5].notes
+  old: Strut count 12 [T], doğrulanamadı; flat plate (#46).
+  new: Strut count 12 [T], doğrulanamadı; flat plate (#46). Leading edge x 0.657241
+    m behind station 24; core passage r 0.366240-0.433488 m (#77) [H].
+- type: bom
+  module: M1
+  path: parts[M1.4.6]
+  old: null
+  new:
+    id: M1.4.6
+    name: Fan Stage 1 Frame Core Wall Ring
+    parent: M1.4
+    qty:
+      value: 1
+      unit: ea
+      tag: G
+    function: Core/bypass divider wall in the frame zone behind station 24 (continues
+      M2.0.2); carries strut loads
+    material: aluminium_alloy
+    status: draft
+    mass:
+      value: 10.4743
+      unit: kg
+      tag: H
+    notes: '#77 CR: r_split2 to r_split2 + M2 casing thickness, station 24 to the
+      frame end [T]; sizes from engine/M0_engine/analysis/cr_impact_77.py.'
+impact:
+  affected_modules:
+  - M1
+  - M2
+  - M3
+  - M8
+  notes: 'engine/M0_engine/analysis/cr_impact_77.py (read-only), evaluated on top
+    of CR-A option a. Mass change = new hub ring + 12 core struts + wall ring M1.4.6
+    - old hub ring and core struts (Al [T]). Station 13 (OGV exit) and the M7 bypass
+    duct interface stay; M8 bearing flange moves aft by the frame shift, radius kept.
+    Common volume = hub ring, core strut 0 (and wall ring) against M2 parts and row
+    bands. ICD: no mass or length item for M1 (not compared); M1 cycle budget passes
+    11/11 unchanged. M2 gap ratio from conflicts_75_77.frame_numbers.'
+  by: M0 set_impact
+  metrics:
+    frame_shift:
+      value: 0.163497
+      unit: m
+      tag: H
+    strut_shift_min:
+      value: 0.147812
+      unit: m
+      tag: H
+    M1_length_before:
+      value: 1.131063
+      unit: m
+      tag: H
+    M1_length_after:
+      value: 1.29456
+      unit: m
+      tag: H
+    x13_before:
+      value: 0.478059
+      unit: m
+      tag: H
+    x13_after:
+      value: 0.478059
+      unit: m
+      tag: H
+    M8_flange_x_aft_before:
+      value: 0.634908
+      unit: m
+      tag: H
+    M8_flange_x_aft_after:
+      value: 0.798406
+      unit: m
+      tag: H
+    M8_flange_r_inner:
+      value: 0.151065
+      unit: m
+      tag: H
+    dM1_mass:
+      value: 13.2627
+      unit: kg
+      tag: H
+    M1_mass_after_A_and_B:
+      value: 550.3573
+      unit: kg
+      tag: H
+    M2_common_volume_before:
+      value: 0.000162014
+      unit: m3
+      tag: H
+    M2_common_volume_after:
+      value: 0.0
+      unit: m3
+      tag: H
+    M2_gap_ratio_needed:
+      value: -0.2096
+      unit: '-'
+      tag: H
+    M1_icd_rows_pass:
+      value: 11
+      unit: '-'
+      tag: H
+    M1_icd_rows_total:
+      value: 11
+      unit: '-'
+      tag: H
+status: open
+decision: null
+applied_revisions: null
+history:
+- date: '2026-10-30T09:18:28Z'
+  from: null
+  to: open

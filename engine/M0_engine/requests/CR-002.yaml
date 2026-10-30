@@ -1,0 +1,200 @@
+id: CR-002
+date: '2026-10-30T09:18:28Z'
+from_module: M2
+to_modules:
+- M1
+reason: '#77 (a)/(b): the core/bypass divider wall is modelled twice and the M1 splitter
+  ring M1.4.3 lies inside the M2 booster flow path. M1 put the splitter thickness
+  inward (inner face 0.424818 m), M2 put its casing M2.0.2 outward (0.433488-0.442158
+  m), same wall over x 0.270-0.635 m; OGV M1.3.1 and bypass struts M1.4.4 cross the
+  M2 casing and vane feet. No M2-side fix exists (casing inner face = rev001 tip radius).
+  Proposal (option a): remove M1.4.3 from M1, the divider wall is owned by M2 as M2.0.2
+  from station 21 aft; raise the root radius of M1.3.1 and M1.4.4 to 0.442158 m =
+  r_split2 0.433488 + M2 casing thickness 0.008670 [H]; M7 station 13 inner radius
+  becomes 0.442158 m. Not expressible as BOM changes and part of the M1 work: M1 geometry
+  rule/code (fan_frame.py splitter removed, ogv.py and strut root at r_split2 + wall),
+  VBV openings move out of M1.4.3 (owner open, #48), bypass strut loads land on the
+  M2 casing [T]; M1 is accepted (rev014), so a new M1 design revision is needed (ADR-012).
+  Option b: keep M1.4.3 and move it outward (two walls), OGV/strut root 0.451001 m
+  [H]. Source: engine/M2_booster/learning/geometri_celiskileri.md (#77); impact engine/M0_engine/analysis/cr_impact_77.py.'
+changes:
+- type: bom
+  module: M1
+  path: parts[M1.4.3]
+  old:
+    id: M1.4.3
+    name: Fan Stage 1 Frame Splitter Ring
+    parent: M1.4
+    qty:
+      value: 1
+      unit: ea
+      tag: G
+    function: Separate core and bypass flow from the station 21 lip; bypass inner
+      wall; VBV openings
+    material: aluminium_alloy
+    status: review
+    mass:
+      value: 23.3591
+      unit: kg
+      tag: H
+    geometry:
+      script: engine/M1_inlet_fan/geometry/fan_frame.py
+      params:
+        revision: rev011
+    notes: 'Girão 2023 PDF p. 36-37 [KS]: frame separates primary and secondary flow
+      and houses the VBVs; VBV owner not set by M0, openings placeholder [T] (#48).'
+  new: null
+- type: bom
+  module: M1
+  path: parts[M1.3.1].mass
+  old:
+    value: 1.2552
+    unit: kg
+    tag: H
+  new:
+    value: 1.2198
+    unit: kg
+    tag: H
+- type: bom
+  module: M1
+  path: parts[M1.4.4].mass
+  old:
+    value: 1.6161
+    unit: kg
+    tag: H
+  new:
+    value: 1.5702
+    unit: kg
+    tag: H
+- type: bom
+  module: M1
+  path: parts[M1.3.1].notes
+  old: 'Count V = ceil(2.1 B) [T] (Tyler-Sofrin cut-off logic [G]); CFM56-7B count
+    doğrulanmadı (#14, #42). Material aluminium [T] (BOM note aluminium or composite).
+    Section MCA, Carter deviation [G/T] (#43).'
+  new: 'Count V = ceil(2.1 B) [T] (Tyler-Sofrin cut-off logic [G]); CFM56-7B count
+    doğrulanmadı (#14, #42). Material aluminium [T] (BOM note aluminium or composite).
+    Section MCA, Carter deviation [G/T] (#43). Root at r 0.442158 m = r_split2 + M2.0.2
+    casing thickness (#77) [H].'
+- type: bom
+  module: M1
+  path: parts[M1.4.4].notes
+  old: Strut count 12 [T], doğrulanamadı; flat plate (#46).
+  new: Strut count 12 [T], doğrulanamadı; flat plate (#46). Root on the M2.0.2 casing
+    outer face, r 0.442158 m (#77) [H].
+- type: bom
+  module: M1
+  path: parts[M1.4].notes
+  old: 'Aluminium and VBVs inside the frame: Girão 2023 (docs/learning/cfm56_7b_module_facts.md).
+    VBV owner to be set by M0. Assembly of M1.4.1-M1.4.5 (step 5f).'
+  new: 'Aluminium and VBVs inside the frame: Girão 2023 (docs/learning/cfm56_7b_module_facts.md).
+    VBV owner to be set by M0. Assembly of M1.4.1, M1.4.2, M1.4.4, M1.4.5 (step 5f);
+    divider wall is M2.0.2 (#77).'
+impact:
+  affected_modules:
+  - M1
+  - M2
+  - M7
+  notes: 'engine/M0_engine/analysis/cr_impact_77.py (read-only, M1 rev014 + M2 rev001
+    geometry). Station 13 area at the OGV exit plane; M13 from the ICD station 13
+    Tt/Pt/W (cold air [G]). M1 mass change = -M1.4.3 + 51 x OGV + 12 x bypass strut
+    deltas (Al density [T], #36). Common volume = OGV vane 0 + bypass strut 0 against
+    M2 parts and row bands. ICD: M1 budget items are cycle items from the meanline
+    record; the CR does not change the record, recorded check passes 11/11; station
+    13 area is not an ICD item, M7 sees the lower area (higher M13). Option b masses
+    not computed.'
+  by: M0 set_impact
+  metrics:
+    A13_before:
+      value: 1.111261
+      unit: m2
+      tag: H
+    A13_after:
+      value: 1.087411
+      unit: m2
+      tag: H
+    A13_opt_b:
+      value: 1.062597
+      unit: m2
+      tag: H
+    dA13:
+      value: -2.146197
+      unit: '%'
+      tag: H
+    M13_before:
+      value: 0.434743
+      unit: '-'
+      tag: H
+    M13_after:
+      value: 0.447078
+      unit: '-'
+      tag: H
+    M13_opt_b:
+      value: 0.460818
+      unit: '-'
+      tag: H
+    ogv_span_before:
+      value: 0.305472
+      unit: m
+      tag: H
+    ogv_span_after:
+      value: 0.296802
+      unit: m
+      tag: H
+    ogv_span_opt_b:
+      value: 0.287959
+      unit: m
+      tag: H
+    M7_r13_inner_before:
+      value: 0.433488
+      unit: m
+      tag: H
+    M7_r13_inner_after:
+      value: 0.442158
+      unit: m
+      tag: H
+    dM1_mass:
+      value: -25.7158
+      unit: kg
+      tag: H
+    M1_mass_before:
+      value: 562.8104
+      unit: kg
+      tag: H
+    M1_mass_after:
+      value: 537.0946
+      unit: kg
+      tag: H
+    M2_common_volume_before:
+      value: 3.6302e-05
+      unit: m3
+      tag: H
+    M2_common_volume_after:
+      value: 0.0
+      unit: m3
+      tag: H
+    M1_icd_rows_pass:
+      value: 11
+      unit: '-'
+      tag: H
+    M1_icd_rows_total:
+      value: 11
+      unit: '-'
+      tag: H
+status: open
+decision: null
+applied_revisions: null
+history:
+- date: '2026-10-30T09:18:28Z'
+  from: null
+  to: open
+options:
+- id: a
+  applies_changes: true
+  description: 'Single wall owned by M2 (M2.0.2): remove M1.4.3, OGV and bypass strut
+    roots at 0.442158 m'
+- id: b
+  applies_changes: false
+  description: 'Two walls: keep M1.4.3 outside the M2 casing (inner face 0.442158
+    m, thickness 0.02 r [T]), OGV/strut roots at 0.451001 m; not applied by this CR,
+    M1 raises its own CR'
