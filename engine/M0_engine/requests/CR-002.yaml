@@ -181,13 +181,22 @@ impact:
       value: 11
       unit: '-'
       tag: H
-status: open
-decision: null
+status: approved
+decision:
+  date: '2026-10-30T09:41:22Z'
+  note: tek duvar, M2.0.2 sahibi M2. M1.4.3 çıkarılır, OGV ve baypas dikmesi kökü
+    0.442158 m. Baypas alanı ist. 13'te −%2.15, M7 ist. 13 iç yarıçapı 0.442158 m.
+    Yeni M1 tasarım revizyonu ve yeniden kabul gerekir (ADR-012, ADR-016)
+  option: a
+  decided_by: user (UI)
 applied_revisions: null
 history:
 - date: '2026-10-30T09:18:28Z'
   from: null
   to: open
+- date: '2026-10-30T09:41:22Z'
+  from: open
+  to: approved
 options:
 - id: a
   applies_changes: true

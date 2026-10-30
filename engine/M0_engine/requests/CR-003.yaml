@@ -158,10 +158,18 @@ impact:
       value: 11
       unit: '-'
       tag: H
-status: open
-decision: null
+status: approved
+decision:
+  date: '2026-10-30T09:42:10Z'
+  note: Onaylandı, CR-002 (a)’ya bağlı. Çerçeve 0.163497 m geriye kayar, yeni parça
+    M1.4.6 (10.47 kg) dahil. M8 flanş yarıçapı 0.151065 m sabit, M8 başlangıcında
+    yeniden bakılacak. İst. 25 konumu (#73) M2 rev002'de belirlenir
+  decided_by: user (UI)
 applied_revisions: null
 history:
 - date: '2026-10-30T09:18:28Z'
   from: null
   to: open
+- date: '2026-10-30T09:42:10Z'
+  from: open
+  to: approved
