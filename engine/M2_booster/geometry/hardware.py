@@ -1,9 +1,10 @@
-"""M2 geometry step 2: rotor drum, blade root blocks, stator inner shrouds, casing and vane feet
-(rules/geometry.md R-G2.9-17).
+"""M2 geometry step 2 and 3a: rotor drum with forward cone, blade root blocks in sloped slots, stator inner shrouds,
+casing and vane feet (rules/geometry.md R-G2.9-19).
 
-Inputs: the step 1 model (layout.py / blades.py, active record rev001) and the `hw_*` / `m1_disk_*` constants of
-geometry/geometry_params.yaml (one tag per field). No value is tuned to pass a check; a part that cannot be built
-within the rules gets the stop rule (issue string, placeholder) and the geometry continues.
+Inputs: the step 1 model (layout.py / blades.py, active record rev001), the `hw_*` constants of
+geometry/geometry_params.yaml (one tag per field) and the M1 rev014 disk / M8 interface values read at run time from
+the M1 geometry code (read-only import, never typed; R-G2.13). No value is tuned to pass a check; a part that cannot
+be built within the rules gets the stop rule (issue string, placeholder) and the geometry continues.
 
 Run: python -m engine.M2_booster.geometry.hardware  (prints the checks and writes one STEP per part to
 .cache/geometry/M2_booster/<rev>/)
@@ -46,13 +47,41 @@ def under_hub(hub: list, x0: float, x1: float, r_in: float) -> cq.Solid:
     return L.revolve_closed(_dedupe([(x0, r_in)] + hub_points(hub, x0, x1) + [(x1, r_in)]))
 
 
+def offset_hub_points(hub: list, x0: float, x1: float, dr: float) -> list[tuple[float, float]]:
+    """Hub line points from x0 to x1 shifted radially by dr (R-G2.19 sloped slot bottom: dr = -depth)."""
+    return [(x, r + dr) for x, r in hub_points(hub, x0, x1)]
+
+
+def between_lines(hub: list, x0: float, x1: float, dr_lo: float, r_top: float | None = None) -> cq.Solid:
+    """Revolved region between the hub line shifted by dr_lo and either the hub line (r_top None) or radius r_top."""
+    lo = offset_hub_points(hub, x0, x1, dr_lo)
+    hi = [(x1, r_top), (x0, r_top)] if r_top is not None else list(reversed(hub_points(hub, x0, x1)))
+    return L.revolve_closed(_dedupe(lo + hi))
+
+
+@lru_cache(maxsize=1)
+def m1_interface() -> dict:
+    """M1 rev014 values at the M2 hardware boundary (R-G2.13, R-G2.18), read at run time from the M1 geometry code
+    (read-only import; no M1 file is written): fan disk aft face, live-rim inner and slot-bottom radii, rim radius,
+    bolt circle (info) and the M8 bearing-flange inner radius [H]."""
+    from engine.M1_inlet_fan.geometry import fan_frame, rotor_hardware
+    rot = rotor_hardware.build()
+    ff = fan_frame.build()
+    lay, prof = rot["layout"], rot["disk_profile"]
+    m8 = fan_frame.interfaces(ff)["M8_bearing_support"]
+    return {"x_aft_face": lay["x_b"], "r_live_rim_inner": prof["r_rim_inner"], "r_slot_bottom": lay["r_slot_bottom"],
+            "r_rim": lay["r_rim"], "r_bolt_circle": 0.5 * (prof["r_rim_inner"] + lay["r_slot_bottom"]),
+            "r_m8_boundary": m8["r_inner_m"], "x_m8_face": tuple(m8["x_face_m"])}
+
+
 def rotate(s: cq.Shape, angle_deg: float) -> cq.Shape:
     return s.rotate(cq.Vector(*L.AXIS_ORIGIN), cq.Vector(*L.AXIS_DIR), L.ROTATION_SIGN * angle_deg)
 
 
 # --- layout of the hardware (R-G2.9 - R-G2.13) ------------------------------------
 
-def hw_layout(model: dict) -> dict:
+def hw_layout(model: dict, m1: dict | None = None) -> dict:
+    m1 = m1 or m1_interface()
     lay, gp = model["layout"], model["params"]
     rows = model["rows"]
     x21, x24, hub = lay["station_21"]["x"], lay["x24"], lay["hub_line"]
@@ -86,6 +115,8 @@ def hw_layout(model: dict) -> dict:
         th = math.radians(hs["k1"] - hs["k2"])
         sag = 0.0 if abs(th) < 1e-9 else math.copysign(1.0, th) * 0.5 * r["chord"] * math.tan(abs(th) / 4.0)
         rims.append({"row": r, "x_f": xf, "x_a": xa, "hub_min": hub_min, "slot_depth": d_s, "r_slot_bottom": r_sb,
+                     # R-G2.19: slot bottom parallel to the local hub line (front / aft face values)
+                     "hub": hub, "r_slot_bottom_front": L.r_at(hub, xf) - d_s, "r_slot_bottom_aft": L.r_at(hub, xa) - d_s,
                      "r_inner_own": r_sb - _p(gp, "hw_rim_depth_over_slot_depth") * d_s, "stagger": gam,
                      "pitch_normal": pitch_n, "slot_width": w, "sag": sag,
                      "fit": _p(gp, "hw_fit_clearance_over_slot_width") * w})
@@ -117,12 +148,16 @@ def hw_layout(model: dict) -> dict:
         adj = [shrouds[k]["r_wall_in"] for k in (i - 1, i) if 0 <= k < len(shrouds)]
         rim["r_inner"] = min([rim["r_inner_own"]] + adj)
         rim["live_rim"] = rim["r_slot_bottom"] - rim["r_inner"]
-    for i, rim in enumerate(rims):  # R-G2.10 slot open at both rim faces: material ahead / behind below r_slot_bottom
+    for i, rim in enumerate(rims):  # R-G2.10 / R-G2.19: slot open at both rim faces (sloped bottom)
         ahead = shrouds[i - 1]["r_wall_out"] if i > 0 else None  # rim 1: flange stays below the rim inner radius
         behind = shrouds[i]["r_wall_out"] if i < len(shrouds) else None
-        rim["slot_open_front"] = ahead is None or ahead <= rim["r_slot_bottom"]
-        rim["slot_open_aft"] = behind is None or behind <= rim["r_slot_bottom"]
-        rim["slot_closed_height_aft"] = 0.0 if rim["slot_open_aft"] else behind - rim["r_slot_bottom"]
+        rim["front_face_margin"] = None if ahead is None else rim["r_slot_bottom_front"] - ahead
+        rim["aft_face_margin"] = None if behind is None else rim["r_slot_bottom_aft"] - behind
+        rim["slot_open_front"] = ahead is None or rim["front_face_margin"] >= 0.0
+        rim["slot_open_aft"] = behind is None or rim["aft_face_margin"] >= 0.0
+        rim["slot_closed_height_aft"] = 0.0 if rim["slot_open_aft"] else -rim["aft_face_margin"]
+        if not (rim["slot_open_front"] and rim["slot_open_aft"]):
+            issues.append(f"slot of {rim['row']['part_id']} closed at a rim face (R-G2.19 check, stop rule)")
     t_min = _p(gp, "hw_min_wall_m")
     for k, sh in enumerate(shrouds):
         # the wall meets the rim faces below the hub line (rim k aft face, rim k+1 front face)
@@ -149,19 +184,45 @@ def hw_layout(model: dict) -> dict:
                         "wall_behind": t_c - d_g})
         if t_c - d_g < t_min:
             issues.append(f"casing wall behind the {s['part_id']} groove below hw_min_wall_m (stop rule)")
-    # forward flange (R-G2.13)
+    # stage-1 drum flange on the station 21 plane (R-G2.13); M1 values from the M1 code (m1_interface)
     t_fl = _p(gp, "hw_flange_thickness_over_drum_wall") * shrouds[0]["wall"]
-    r_fl_in = _p(gp, "m1_disk_live_rim_inner_m")
+    r_fl_in = m1["r_live_rim_inner"]
     if not (x21 + t_fl < rims[0]["x_a"] and r_fl_in < rims[0]["r_inner"]):
         issues.append("forward flange not buildable (stop rule)")
-    flange = {"x": (x21, x21 + t_fl), "r_inner": r_fl_in, "r_bolt_circle":
-              0.5 * (r_fl_in + _p(gp, "m1_disk_slot_bottom_m")),
-              "axial_gap_to_m1_disk": x21 - _p(gp, "m1_disk_aft_face_x_m")}
+    flange = {"x": (x21, x21 + t_fl), "r_inner": r_fl_in, "r_bolt_circle": m1["r_bolt_circle"],
+              # axial span from the M1 disk aft face to the station 21 flange, bridged by the forward cone (R-G2.18)
+              "axial_gap_to_m1_disk": x21 - m1["x_aft_face"]}
+    # forward cone (R-G2.18): ring on the M1 disk aft face + conical shell of the stage-1 drum wall
+    x0, t_sh = m1["x_aft_face"], shrouds[0]["wall"]
+    ring_r = (m1["r_live_rim_inner"], m1["r_slot_bottom"])
+    rb = m1["r_bolt_circle"]
+    cone = {"x0": x0, "x_ring": (x0, x0 + t_fl), "ring_r": ring_r, "r_bolt_circle": rb, "t_shell": t_sh,
+            "x1": x21, "r_shell_end": r_fl_in,
+            "r_min": min(ring_r[0], r_fl_in, rb - 0.5 * t_sh), "r_m8_boundary": m1["r_m8_boundary"]}
+    cone["m8_clearance"] = cone["r_min"] - m1["r_m8_boundary"]
+    if not (x0 + t_fl < x21 and ring_r[0] <= rb - 0.5 * t_sh and rb + 0.5 * t_sh <= ring_r[1]
+            and cone["m8_clearance"] > 0.0):
+        issues.append("forward cone not buildable within R-G2.18 (stop rule)")
     return {"x21": x21, "x24": x24, "hub": hub, "r_casing": rc, "casing_thickness": t_c, "rims": rims,
-            "shrouds": shrouds, "grooves": grooves, "flange": flange, "issues": issues}
+            "shrouds": shrouds, "grooves": grooves, "flange": flange, "cone": cone, "m1": m1,
+            "x_boundary": m1["x_aft_face"], "issues": issues}
 
 
 # --- solids ------------------------------------------------------------------------
+
+def forward_cone(H: dict) -> cq.Solid:
+    """R-G2.18: flange ring on the M1 disk aft face and a conical shell to the stage-1 drum flange at station 21."""
+    c = H["cone"]
+    (xa, xb), (r0, r1) = c["x_ring"], c["ring_r"]
+    ring = L.revolve_closed([(xa, r0), (xb, r0), (xb, r1), (xa, r1)])
+    rb, t = c["r_bolt_circle"], c["t_shell"]
+    shell = L.revolve_closed([(xb, rb - 0.5 * t), (c["x1"], c["r_shell_end"]), (c["x1"], c["r_shell_end"] + t),
+                              (xb, rb + 0.5 * t)])
+    out = ring.fuse(shell).clean().Solids()
+    if len(out) != 1 or not out[0].isValid():
+        raise ValueError("forward cone is not one valid solid")
+    return out[0]
+
 
 def drum_unslotted(H: dict) -> cq.Solid:
     """Drum meridional polygon (R-G2.10, R-G2.13, R-G2.14) revolved, with the seal teeth (R-G2.11) fused."""
@@ -187,10 +248,10 @@ def drum_unslotted(H: dict) -> cq.Solid:
             x0, x1 = xc - 0.5 * s["tooth_width"], xc + 0.5 * s["tooth_width"]
             r0 = s["r_wall_out"] - 0.5 * s["wall"]  # overlap into the wall for a clean fuse
             teeth.append(L.revolve_closed([(x0, r0), (x1, r0), (x1, s["r_tooth_tip"]), (x0, s["r_tooth_tip"])]))
-    fused = body.fuse(*teeth).clean()
+    fused = body.fuse(*teeth, forward_cone(H)).clean()  # R-G2.18: the cone is part of the drum solid
     solids = fused.Solids()
     if len(solids) != 1 or not solids[0].isValid():
-        raise ValueError("drum with teeth is not one valid solid")
+        raise ValueError("drum with teeth and forward cone is not one valid solid")
     return solids[0]
 
 
@@ -214,17 +275,19 @@ def _prism(rim: dict, width: float, r_lo: float, r_hi: float) -> cq.Solid:
 
 
 def slot_cutter(rim: dict, r_top: float) -> cq.Solid:
+    """Slot cutter of one blade: prism along the slot direction, bottom parallel to the hub line (R-G2.19)."""
     w, r_sb = rim["slot_width"], rim["r_slot_bottom"]
     pr = _prism(rim, w, 0.8 * r_sb, r_top)
-    band = L.revolve_closed([(rim["x_f"], r_sb), (rim["x_a"], r_sb), (rim["x_a"], r_top), (rim["x_f"], r_top)])
+    band = between_lines(rim["hub"], rim["x_f"], rim["x_a"], -rim["slot_depth"], r_top)
     return pr.intersect(band).Solids()[0]
 
 
 def root_block(rim: dict, hub: list) -> cq.Solid:
-    """Blade root block (R-G2.10): slot section shrunk by the fit clearance, top on the hub line."""
+    """Blade root block (R-G2.10, R-G2.19): slot section shrunk by the fit clearance (sides, bottom), bottom parallel
+    to the hub line, top on the hub line."""
     c = rim["fit"]
     pr = _prism(rim, rim["slot_width"] - 2.0 * c, 0.8 * rim["r_slot_bottom"], rim["hub_min"] + 0.1)
-    region = under_hub(hub, rim["x_f"], rim["x_a"], rim["r_slot_bottom"] + c)
+    region = between_lines(hub, rim["x_f"], rim["x_a"], -rim["slot_depth"] + c)
     solids = pr.intersect(region).Solids()
     if len(solids) != 1 or not solids[0].isValid():
         raise ValueError(f"root block of {rim['row']['part_id']} is not one valid solid")
@@ -436,10 +499,64 @@ def footprint_checks(hb: dict) -> list[dict]:
     return out
 
 
-def station21_check(hb: dict) -> list[dict]:
-    x21 = hb["hw"]["x21"]
-    return [{"part": n, "x_min": s.BoundingBox().xmin, "pass": s.BoundingBox().xmin >= x21 - 1e-7}
+def boundary_check(hb: dict) -> list[dict]:
+    """R-G2.17 (step 3a): no M2 part ahead of the M1 disk aft face (hardware boundary); station 21 is not a limit."""
+    xb = hb["hw"]["x_boundary"]
+    return [{"part": n, "x_min": s.BoundingBox().xmin, "x_boundary": xb, "pass": s.BoundingBox().xmin >= xb - 1e-7}
             for n, _, s in part_list(hb)]
+
+
+def _min_radius(solid: cq.Shape) -> float:
+    rs = [math.hypot(v.Y, v.Z) for v in solid.Vertices()]
+    for e in solid.Edges():
+        for t in np.linspace(0.0, 1.0, N_EDGE_SAMPLES):
+            p = e.positionAt(float(t))
+            rs.append(math.hypot(p.y, p.z))
+    return min(rs)
+
+
+def m1_rotor_parts() -> dict:
+    """M1 rev014 rotor parts next to the cone (instance 0), read-only import."""
+    from engine.M1_inlet_fan.geometry import fan_frame, rotor_hardware
+    rot = rotor_hardware.build()
+    sp = fan_frame.build()["spinner_case"]
+    return {"M1.1.1 fan blade (with root)": rot["blade"], "M1.1.2 fan disk": rot["disk"],
+            "M1.1.3 spinner": sp["spinner"], "M1.1.4 shim": rot["shim"], "M1.1.5 spacer": rot["spacer"],
+            "M1.1.6 platform": rot["platform"]}
+
+
+def cone_checks(hb: dict) -> dict:
+    """R-G2.18 checks: common volume with M1 rotor parts (cone and whole drum), cone-to-disk contact, M8 clearance
+    (smallest radius of the unslotted drum; slots only remove material at the rim), cone mass (information)."""
+    H, P = hb["hw"], hb["parts"]
+    tol = _p(hb["model"]["params"], "hw_common_volume_tolerance")
+    cone = forward_cone(H)
+    m1 = m1_rotor_parts()
+    rows = []
+    for n1, s1 in m1.items():
+        fc, fd = common_fraction(cone, s1), common_fraction(P["drum"], s1)
+        rows.append({"m1": n1, "cone_common_fraction": fc, "drum_common_fraction": fd,
+                     "cone_distance": cone.distance(s1), "pass": fc <= tol and fd <= tol})
+    r_min = _min_radius(P["drum_unslotted"])
+    rho = B.density("ti6al4v")
+    return {"m1": rows, "disk_distance": cone.distance(m1["M1.1.2 fan disk"]),
+            "cone_x_min": cone.BoundingBox().xmin, "x_disk_aft_face": H["m1"]["x_aft_face"],
+            "drum_r_min": r_min, "r_m8_boundary": H["m1"]["r_m8_boundary"],
+            "m8_clearance": r_min - H["m1"]["r_m8_boundary"], "cone_volume": cone.Volume(),
+            "cone_mass": cone.Volume() * rho, "drum_mass": P["drum"].Volume() * rho}
+
+
+def slot_checks(hb: dict) -> list[dict]:
+    """R-G2.19 records per rotor: front/aft face margins (structural-stage checks, not a pass) and the root block
+    fit in its slot (common volume with the slotted drum, distance vs the fit clearance)."""
+    H, P = hb["hw"], hb["parts"]
+    out = []
+    for rim, s in zip(H["rims"], P["roots"]):
+        out.append({"row": rim["row"]["part_id"], "r_slot_bottom_front": rim["r_slot_bottom_front"],
+                    "r_slot_bottom_aft": rim["r_slot_bottom_aft"], "front_face_margin": rim["front_face_margin"],
+                    "aft_face_margin": rim["aft_face_margin"], "fit": rim["fit"],
+                    "root_common_fraction": common_fraction(s, P["drum"]), "root_distance": s.distance(P["drum"])})
+    return out
 
 
 def masses(hb: dict) -> list[dict]:
@@ -477,7 +594,7 @@ def checks(hb: dict | None = None) -> dict:
     tol_r = float(L.v(gp["radius_tolerance_m"]))
     return {"issues": hb["hw"]["issues"], "radii": flowpath_radius_checks(hb, tol_r),
             "interference": interference_checks(hb, _p(gp, "hw_common_volume_tolerance")),
-            "running": running_clearances(hb), "footprints": footprint_checks(hb), "station_21": station21_check(hb),
+            "running": running_clearances(hb), "footprints": footprint_checks(hb), "boundary": boundary_check(hb),
             "walls": walls(hb), "masses": masses(hb)}
 
 
@@ -499,9 +616,8 @@ def m1_overlap(hb: dict | None = None) -> dict:
             f = common_fraction(s2, s1)
             if f > 0.0:
                 rows.append({"m2": n2, "m1": n1, "common_fraction_of_smaller": f})
-    lay = rot["layout"]
-    disk = {"x_aft_face": lay["x_b"], "r_rim": lay["r_rim"], "r_slot_bottom": lay["r_slot_bottom"],
-            "r_live_rim_inner": rot["disk_profile"]["r_rim_inner"]}
+    m1i = m1_interface()
+    disk = {k: m1i[k] for k in ("x_aft_face", "r_rim", "r_slot_bottom", "r_live_rim_inner")}
     return {"overlaps": rows, "m1_disk": disk, "m1_frame_x": (ff["layout"]["x0"], ff["layout"]["x1"])}
 
 
@@ -545,13 +661,20 @@ def main() -> None:
         print(f"groove {g['row']['part_id']} x {g['x0']:.5f}-{g['x1']:.5f} d {g['depth'] * 1e3:.2f} mm "
               f"wall behind {g['wall_behind'] * 1e3:.2f} mm span {g['span_deg']:.3f} deg")
     print("flange", H["flange"], "casing t", H["casing_thickness"])
+    print("cone", H["cone"])
+    for s in slot_checks(hb):
+        print("slot", s)
+    cc = cone_checks(hb)
+    for r in cc["m1"]:
+        print("cone vs", r)
+    print({k: v for k, v in cc.items() if k != "m1"})
     print("radii fail", [r for r in res["radii"] if not r["pass"]] or "none")
     print("interference fail", [r for r in res["interference"] if not r["pass"]] or "none")
     for r in res["running"]:
         print("running", r)
     for r in res["footprints"]:
         print("footprint", r)
-    print("station 21 fail", [r for r in res["station_21"] if not r["pass"]] or "none")
+    print("boundary fail", [r for r in res["boundary"] if not r["pass"]] or "none")
     for w in res["walls"]:
         print("wall", w)
     for m in res["masses"]:

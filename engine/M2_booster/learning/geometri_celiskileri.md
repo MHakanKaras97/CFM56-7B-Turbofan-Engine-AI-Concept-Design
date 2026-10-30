@@ -150,3 +150,12 @@ Kural seçenekleri (hiçbiri rev001 meanline'ına dokunmaz: yarıçap, kiriş, s
 
 Öneri (karar M0/kullanıcıda): 1 veya 2; ikisi de yapısal aşamada (A-4) kök/jant boyutlandırmasıyla birlikte seçilmeli,
 "R-G2.10 geçsin" gerekçesiyle değil.
+
+## 4. Adım 3a uygulaması (#75 seçenek 1, #76 ön koni)
+
+Kurallar: R-G2.9/13/17 değişti (donanım sınırı M1 disk arka yüzü, ist. 21 yalnız akış düzlemi), yeni R-G2.18 (ön koni)
+ve R-G2.19 (eğik yuva tabanı). M1 disk değerleri artık `hardware.m1_interface` ile M1 kodundan okunuyor; yazılmış kopya
+yok. Sonuçlar `hardware.slot_checks` ve `hardware.cone_checks` çıktısıdır [H]: arka yüz payı 3.622/2.956/2.415 mm
+(bölüm 3'teki tahminle aynı), koni 3.456 kg, M8 sınırına 0.021887 m, M1 rotor parçalarıyla ortak hacim 0. Kök blokları
+eğik tabanla hafifledi (4.081/2.632/1.771 kg), tambur 63.106 kg (koni dahil). Paylar küçük; yapısal aşamada (A-4) kök
+ve jant boyutlandırmasıyla birlikte yeniden bakılacak. Kasa (M2.0.2) ve #77 CR-002/CR-003 kararını bekliyor.

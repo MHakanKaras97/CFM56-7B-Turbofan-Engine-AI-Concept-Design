@@ -58,3 +58,22 @@ Notes for M0 (no open issue, no CR):
   M1 part inside the rotating drum is part of #77.
 - `tests/test_m2_geometry1.py::test_rules_linked_and_tagged` counts lines starting with `| R-G2.` and expects 8; the
   step 2 ids are written in bold (`| **R-G2.9** |`) so that the step 1 count holds. Suggest counting R-G2.1-8 explicitly.
+
+## Geometry step 3a updates for #75 and #76 (M0 copies verbatim; #77 unchanged, test stays strict xfail)
+
+Values from `geometry/hardware.py` (`checks`, `slot_checks`, `cone_checks`), rev001, rules R-G2.9/13/17 (step 3a
+text) and R-G2.18-19. No constant tuned; no new open issue (stop rule not triggered, next free number stays #78).
+Replacement rows (same columns):
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 75 | M2 | Adım 3a: R-G2.19 (seçenek 1) uygulandı: rotor yuva tabanı yerel göbek çizgisine paralel, derinlik 0.25 x rotor kirişi değişmedi; yuvalar iki jant yüzünde açık. Arka yüz payı (arka yüzde yuva tabanı - sonraki statorun tambur duvarı dış yarıçapı) kademe 1/2/3 3.622/2.956/2.415 mm, ön yüz payı kademe 2/3 12.526/9.906 mm [H]. Kök bloğu: tamburla ortak hacim 0, tambura mesafe 0.197/0.195/0.216 mm (uyum açıklığı 0.214/0.212/0.234 mm; konik tabanda normal mesafe radyal açıklıktan küçük) [H]; kütle 4.081/2.632/1.771 kg (adım 2: 6.68/4.27/2.83) [H]. Paylar yapısal aşama için kontrol, geçiş değil | [T] | Kural [G] gerekçeyle seçildi (konik jantta eksenel kırlangıç jant konisini izler, kök taşıma derinliği kök boyunca aynı), "R-G2.10 geçsin" diye değil; oran ayarlanmadı | Yapısal aşama (A-4 kök/jant boyutlandırması, paylar 2.4-3.6 mm küçük), J2-2 kırlangıç tipi kaynağı (eksenel/çevresel doğrulanamadı) | rules/geometry.md R-G2.10, R-G2.19; geometry/hardware.py slot_checks; learning/geometri_celiskileri.md |
+| 76 | M2 | Adım 3a: R-G2.9/13/17 değişti, R-G2.18 ön koni uygulandı. Donanım sınırı M1 disk arka yüzü x 0.140291 m, M1 rev014 geometri kodundan çalışma anında okunuyor (yazılmış kopya yok; `m1_disk_*` kaldırıldı); ist. 21 yalnız akış düzlemi. Koni (M2.0.1 tamburunun parçası, tek katı): disk arka yüzünde flanş halkası r 0.172952-0.200138, eksenel 9.704 mm; cıvata dairesi 0.186545'ten ist. 21 tambur flanşının iç kenarına (r 0.172952) 4.852 mm konik kabuk [H]. M1 rotor parçalarıyla (disk, kanat+kök, şim, aralayıcı, platform, spinner) ortak hacim 0 (koni ve tüm tambur), diske temas (mesafe 0), en yakın diğer parça aralayıcı 6.350 mm; M8 yatak flanşı sınırına (r 0.151065, M1 fan_frame arayüzü) radyal pay 0.021887 m; koni 3.456 kg, tambur toplam 63.106 kg (Ti-6Al-4V yoğunluğu, bilgi; kütle bir kez M2.0.1'de) [H]. Kalan: cıvata delikleri M1 diskinde modellenmedi (M1 spinner emsali; M1 parçasına delik eklemek arayüz CR ister); x 0.140291-0.235369 aralığında göbek akış yolu duvarı (M1 platformu ile ist. 21 arası) yok, bu adımda ele alınmadı | [T] | Kullanıcı görevi (adım 3a) M2 kural değişikliğini istedi; M1 dosyası değişmedi, CR yok | Son montaj, J2-1 cıvata/flanş tasarımı (M1 disk deliği CR), M8 mil/yatak tasarımı (r 0.151065 sınırı [T]), göbek duvarı boşluğunun sahibi (M0) | rules/geometry.md R-G2.9, R-G2.13, R-G2.17, R-G2.18; rules/joints.md J2-1; geometry/hardware.py m1_interface, cone_checks; M1 geometry/rotor_hardware.py, fan_frame.py |
+
+Notes for M0:
+- Superseded tests in `tests/test_m2_geometry2.py` (old rules): `test_hw_params_tagged` (24 -> 20 keys),
+  `test_m1_disk_copy_matches_m1_code`, `test_nothing_ahead_of_station_21`, `test_slot_aft_face_known_deviation`;
+  replacements and the step 3a acceptance tests in `agent/proposed_test_geometry3a.py`.
+- Step 3a ids R-G2.18-19 are in bold so that the R-G2.1-17 row count of the M0 tests holds (step 2 precedent).
+- `analysis/conflicts_75_77.py` stays the step 2 analysis record; after step 3a its temporary cone coincides with the
+  drum cone (common volume = cone volume), as expected.

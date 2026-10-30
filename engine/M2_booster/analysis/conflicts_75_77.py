@@ -1,7 +1,8 @@
 """Read-only analysis of the M2 geometry step 2 conflicts #75-#77 (rules/open_items.md).
 
-Imports the M2 step 1/2 geometry (layout, blades, hardware) and the M1 rev014 geometry code read-only; writes no
-file, changes no parameter. Every value printed is [H] from the [T] rules of geometry_params.yaml and the active
+Step 2 analysis record (after step 3a the drum carries the forward cone R-G2.18 and sloped slots R-G2.19, so the
+temporary cone below coincides with the drum cone). Imports the M2 step 1/2 geometry (layout, blades, hardware)
+and the M1 rev014 geometry code read-only; writes no file, changes no parameter. Every value printed is [H] from the [T] rules of geometry_params.yaml and the active
 records (M2 rev001, M1 rev014). Temporary solids (row bands, the #76 forward cone) exist only inside this script.
 
 Run: .venv/Scripts/python -m engine.M2_booster.analysis.conflicts_75_77

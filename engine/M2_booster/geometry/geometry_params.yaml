@@ -176,24 +176,3 @@ hw_min_wall_m:
   tag: T
   note: R-G2.17; smallest wall (live rim, drum wall, casing behind the groove) for a buildable part, not a structural
     criterion
-m1_disk_aft_face_x_m:
-  value: 0.140291
-  unit: m
-  tag: H
-  note: R-G2.13; M1 rev014 fan disk rim aft face x_b (engine/M1_inlet_fan/geometry/rotor_hardware.py build layout),
-    read-only copy; test recomputes it
-m1_disk_live_rim_inner_m:
-  value: 0.172952
-  unit: m
-  tag: H
-  note: R-G2.13; M1 rev014 disk_profile r_rim_inner, read-only copy; test recomputes it
-m1_disk_slot_bottom_m:
-  value: 0.200138
-  unit: m
-  tag: H
-  note: R-G2.13; M1 rev014 layout r_slot_bottom, read-only copy; test recomputes it
-m1_disk_rim_m:
-  value: 0.226773
-  unit: m
-  tag: H
-  note: R-G2.13; M1 rev014 layout r_rim (disk outer radius at the rim), read-only copy; test recomputes it
