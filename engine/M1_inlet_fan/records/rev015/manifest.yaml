@@ -1,0 +1,19 @@
+revision: rev015
+parent_revision: rev014
+revision_type: design
+date: '2026-10-30T20:51:45Z'
+summary: 'CR-002 (a) + CR-003 (#77): M1.4.3 removed, OGV/bypass strut root 0.442158
+  m = r_split2 + M2.0.2 wall, station 13 area 1.087411 m2, OGV span 0.296802 m; core
+  frame from M2 station 24 (x 0.641557-0.798406), core passage = M2 station 24/25
+  annulus, new M1.4.6 wall ring; M1 550.3573 kg, length 1.294560 m [H]; params/results
+  identical to rev014'
+reason: 'User-approved CR-002 option (a) and CR-003 (2026-10-30), open issue #77;
+  one design revision for both CRs (manifest change_request holds one id: CR-002;
+  CR-003 depends on it); rules R-G1.1-R-G1.11'
+change_request: CR-002
+code_commit: 9e0ff21618f2078923a553c1afa79271435bac64
+outputs:
+- file: analysis/fan_params.yaml
+  sha256: 02a4e8b11a39cd3d0852f6124a3a0b891747b11cf4f6eba3bea00b1d780da569
+- file: analysis/results.yaml
+  sha256: 7ac7cb350c0bc8adbd80ae17762f260b4abc85e4e0c2f7ef97869e4c97abf6ba
