@@ -1,16 +1,9 @@
-"""Proposed tests for M2 geometry step 3a (rules/geometry.md R-G2.18-19, step 3a changes of R-G2.9/13/17):
-drum forward cone (#76) and sloped rotor slot bottom (#75). For M0 to move to tests/ (M2 cannot write there).
+"""Tests for M2 geometry step 3a (rules/geometry.md R-G2.18-19, step 3a changes of R-G2.9/13/17):
+drum forward cone (#76) and sloped rotor slot bottom (#75). Replace the old-rule tests removed from
+tests/test_m2_geometry2.py; the strict xfail test_no_overlap_with_m1 (#77) stays there.
 
-Superseded tests in tests/test_m2_geometry2.py (old rules; replace with the ones below):
-- test_hw_params_tagged: the 4 `m1_disk_*` typed copies are removed (R-G2.13: read from M1 code, never typed);
-  expected keys 24 -> 20, all `hw_*` [T] -> test_hw_params_tagged_step3a.
-- test_m1_disk_copy_matches_m1_code: no copy left -> test_m1_interface_read_from_m1_code.
-- test_nothing_ahead_of_station_21: R-G2.17 boundary is the M1 disk aft face -> test_nothing_ahead_of_m1_disk_aft_face.
-- test_slot_aft_face_known_deviation (#75 deviation): slots now open at both faces -> test_slot_aft_face_margins.
-Unchanged and still valid there: all other tests, including the strict xfail test_no_overlap_with_m1 (#77).
-
-No literal design value: everything comes from the active record, geometry_params.yaml and the M1 code.
-M1 code is imported read-only; slow (~2 min, M1 rotor build).
+Imports from the repo root. No literal design value: everything comes from the active record,
+geometry_params.yaml and the M1 code. M1 code is imported read-only; slow (~2 min, M1 rotor build).
 """
 
 import pytest

@@ -35,14 +35,6 @@ def test_step2_rules_written_and_tagged():
         assert len(re.findall(r"\[(K|KS|H|G|T)\]", row.split("|")[-2])) == 1, row
 
 
-def test_hw_params_tagged():
-    gp = L.geometry_params()
-    keys = [k for k in gp if k.startswith(("hw_", "m1_disk_"))]
-    assert len(keys) == 24
-    for k in keys:
-        assert gp[k]["tag"] in ({"H"} if k.startswith("m1_disk_") else {"T"}) and gp[k].get("note"), k
-
-
 def test_built_without_stop_rule(hb, res):
     assert res["issues"] == []
     P = hb["parts"]
@@ -90,21 +82,9 @@ def test_blade_and_vane_footprints_fit(res):
         assert r["pass"], r
 
 
-def test_nothing_ahead_of_station_21(res):
-    for r in res["station_21"]:
-        assert r["pass"], r
-
-
 def test_walls(res):
     for w in res["walls"]:
         assert w["pass_"], w
-
-
-def test_slot_aft_face_known_deviation(hb):
-    """#75: slots open at the front face; aft face partly closed by the next drum wall (reported, not tuned)."""
-    for rim in hb["hw"]["rims"]:
-        assert rim["slot_open_front"]
-        assert not rim["slot_open_aft"] and rim["slot_closed_height_aft"] > 0
 
 
 def test_masses_informational(res, capsys):
@@ -123,14 +103,6 @@ def test_step_export(hb):
 @pytest.fixture(scope="module")
 def m1(hb):
     return HW.m1_overlap(hb)
-
-
-def test_m1_disk_copy_matches_m1_code(m1):
-    gp = L.geometry_params()
-    d = m1["m1_disk"]
-    for key, val in (("m1_disk_aft_face_x_m", d["x_aft_face"]), ("m1_disk_live_rim_inner_m", d["r_live_rim_inner"]),
-                     ("m1_disk_slot_bottom_m", d["r_slot_bottom"]), ("m1_disk_rim_m", d["r_rim"])):
-        assert L.v(gp[key]) == pytest.approx(val, abs=5e-7), key
 
 
 def test_m1_interface_gap_reported(hb):
