@@ -1,6 +1,6 @@
 module_id: M4
 module_name: Combustor
-revision: rev000
+revision: rev001
 parts:
 - id: M4.0.1
   name: Combustor Diffuser

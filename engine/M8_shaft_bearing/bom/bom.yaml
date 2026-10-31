@@ -1,6 +1,6 @@
 module_id: M8
 module_name: Shaft and Bearing
-revision: rev000
+revision: rev001
 parts:
 - id: M8.0.1
   name: Fan Shaft

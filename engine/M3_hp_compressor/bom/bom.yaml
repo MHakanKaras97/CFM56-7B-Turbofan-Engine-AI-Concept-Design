@@ -1,6 +1,6 @@
 module_id: M3
 module_name: HP Compressor
-revision: rev000
+revision: rev001
 parts:
 - id: M3.0.1
   name: HP Compressor Inlet Duct

@@ -1,6 +1,6 @@
 module_id: M7
 module_name: Nozzle
-revision: rev000
+revision: rev001
 parts:
 - id: M7.0.1
   name: Bypass Duct Outer Wall

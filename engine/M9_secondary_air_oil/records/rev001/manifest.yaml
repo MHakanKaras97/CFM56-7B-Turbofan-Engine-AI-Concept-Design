@@ -1,0 +1,14 @@
+revision: rev001
+parent_revision: null
+revision_type: design
+date: '2026-10-31T20:22:42Z'
+summary: 'M9 concept design rev001: BOM, system sizing, part and assembly STEP (docs/m3_m9_plan.md)'
+reason: 'User decision 2026-10-31: M3-M9 planned and executed by M0 (BOM -> system
+  -> STEP), tests after'
+change_request: null
+code_commit: d0ac037a3417834b9e33eb8e2df741b2e1b19b95
+outputs:
+- file: geometry/flowpath.yaml
+  sha256: 14addb2e686e618c034956c1a487df4a4c9d99818109bc9625101544ecefffca
+- file: analysis/air_oil_results.yaml
+  sha256: c283523bec087598a338c0bbebc82edf97d3645f85a3ba1badaa00ceedceac10

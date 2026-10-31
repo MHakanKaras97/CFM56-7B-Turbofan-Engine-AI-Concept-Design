@@ -1,0 +1,78 @@
+clearance_over_ring:
+  value: 0.013
+  unit: m
+  tag: T
+  note: gap between the M1 frame outer ring and the externals
+igb:
+  value:
+    x0: 0.69
+    x1: 0.75
+    half_width: 0.04
+    r0: 0.2
+    r1: 0.26
+    angle: 180.0
+  unit: m, deg
+  tag: T
+tgb:
+  value:
+    x0: 0.48
+    x1: 0.6
+    half_width: 0.06
+    height: 0.085
+    angle: 180.0
+  unit: m, deg
+  tag: T
+agb:
+  value:
+    x0: 0.34
+    x1: 0.6
+    half_width: 0.21
+    height: 0.1
+    angle: 230.0
+  unit: m, deg
+  tag: T
+oil_tank:
+  value:
+    x0: 0.36
+    x1: 0.58
+    half_width: 0.13
+    height: 0.145
+    angle: 120.0
+  unit: m, deg
+  tag: T
+drive_shaft:
+  value:
+    r_out: 0.022
+    thickness: 0.004
+    hds_x: 0.54
+  unit: m
+  tag: T
+oil_line:
+  value:
+    r_out: 0.006
+    thickness: 0.0012
+    aft_r: 0.43
+    aft_angle: 9.0
+    aft_x0: 0.9
+    fwd_angle: 176.0
+    fwd_end_r: 0.3
+    aft_end_r: 0.12
+    aft_rise_r: 0.5
+  unit: m, deg
+  tag: T
+bleed_duct:
+  value:
+    mach: 0.3
+    thickness: 0.002
+    r_route: 0.41
+    angle: 189.0
+  unit: -, m, deg
+  tag: T
+materials:
+  value:
+    gearbox: al_c355
+    drive_shaft: aisi9310
+    tank: al_2219
+    tube: ss321
+  unit: '-'
+  tag: T

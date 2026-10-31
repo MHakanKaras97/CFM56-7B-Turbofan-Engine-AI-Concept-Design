@@ -1,6 +1,6 @@
 module_id: M6
 module_name: LP Turbine
-revision: rev000
+revision: rev001
 parts:
 - id: M6.0.1
   name: LPT Shaft

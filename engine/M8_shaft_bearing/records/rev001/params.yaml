@@ -1,0 +1,70 @@
+fan_shaft:
+  value:
+    r_out: 0.068
+    thickness: 0.01
+    flange_r_in: 0.075
+    flange_r_out: 0.14
+    flange_length: 0.01
+    aft_end_x: 0.95
+  unit: m
+  tag: T
+  note: R-D8.2
+lp_shaft:
+  value:
+    fwd_end_x: 0.9
+  unit: m
+  tag: T
+  note: R-D8.3, radii from the M6 coupling
+bearing_1:
+  value:
+    x_mid: 0.3
+    width: 0.03
+    section: 0.03
+  unit: m
+  tag: T
+bearing_2:
+  value:
+    x_mid: 0.55
+    width: 0.025
+    section: 0.025
+  unit: m
+  tag: T
+bearing_3:
+  value:
+    section: 0.024
+  unit: m
+  tag: T
+  note: width = M3 journal length
+bearing_5:
+  value:
+    section: 0.025
+  unit: m
+  tag: T
+  note: width = M6 journal length
+housing_thickness:
+  value: 0.008
+  unit: m
+  tag: T
+support_5_width:
+  value: 0.012
+  unit: m
+  tag: T
+yield_strength:
+  value:
+    maraging_c250: 1700.0
+  unit: MPa
+  tag: G
+margin_target:
+  value: 1.0
+  unit: '-'
+  tag: T
+  note: M1 margin definition (allowable/1.5)/stress - 1
+materials:
+  value:
+    fan_shaft: maraging_c250
+    lp_shaft: maraging_c250
+    bearing: steel_m50
+    support_fwd: ti6al4v
+    support_aft: inconel718
+  unit: '-'
+  tag: T

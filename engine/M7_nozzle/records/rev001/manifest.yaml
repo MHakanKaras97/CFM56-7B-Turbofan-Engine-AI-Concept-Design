@@ -1,0 +1,14 @@
+revision: rev001
+parent_revision: null
+revision_type: design
+date: '2026-10-31T20:22:41Z'
+summary: 'M7 concept design rev001: BOM, system sizing, part and assembly STEP (docs/m3_m9_plan.md)'
+reason: 'User decision 2026-10-31: M3-M9 planned and executed by M0 (BOM -> system
+  -> STEP), tests after'
+change_request: null
+code_commit: d0ac037a3417834b9e33eb8e2df741b2e1b19b95
+outputs:
+- file: geometry/flowpath.yaml
+  sha256: 998206912196b1a58dfad5c0ecb5685bf5939bbdc1996e4221d0bf3b8ad178e8
+- file: analysis/nozzle_results.yaml
+  sha256: a1bc9091f673b01eaa88a6a4f1e8ac862ff6ec2fb8531eebcc3f0797b89d1a05
