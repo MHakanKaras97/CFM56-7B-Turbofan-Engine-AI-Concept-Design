@@ -1,0 +1,21 @@
+revision: rev002
+parent_revision: rev001
+revision_type: design
+date: '2026-10-31T08:54:20Z'
+summary: 'M2 geometry step 4: assembly + BOM (11 parts, 160.745 kg [H], Ti-6Al-4V
+  [T] #71); station 25 x 0.798406 m from M1 rev015 frame (R-G2.22, #73 closed), hub
+  0.36624 m; casing M2.0.2 station 21-24, M1.4.6 from 24; common volume 0 (M2-M2,
+  M2-M1 rev015); params/results identical to rev001'
+reason: Geometry step 4 (R-G2.22-27) on code 6d04a7c; M1 rev015 accepted; design revision,
+  not accepted
+change_request: null
+code_commit: 6d04a7c791ce3eb22710e009ca4a8d56d855c13e
+outputs:
+- file: analysis/booster_params.yaml
+  sha256: c79aad2f860624cc933c1c9caa0e7b7183bb8b70013684f1ca50ed7135ab1bcc
+- file: analysis/meanline_results.yaml
+  sha256: 7c9c345486d375d1ed9dcb0d69ffe4af1d039a5cfa51558fefda7cdda3c7b8d6
+- file: analysis/a1_validation.yaml
+  sha256: cdcd2fa8e9037b8db8e8380ff01f656c24283459ed76d7479e814dfbb25912f4
+- file: geometry/flowpath.yaml
+  sha256: d098c628524cbfb48d4a44fe52b3ddead0cfa6df9f057f4bd01ce60b80225450

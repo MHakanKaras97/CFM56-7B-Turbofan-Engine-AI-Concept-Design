@@ -74,7 +74,7 @@ splitter:
   r_split2_initial_m_info: 0.42586
   x_lip_m: 0.235369
   m2_casing_thickness_m: 0.00867
-  m2_revision: rev001
+  m2_revision: rev002
 x_ogv_le_m: 0.32121
 tip_clearance_m: 0.003
 curves_x_r_m:

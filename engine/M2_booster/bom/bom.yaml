@@ -1,6 +1,6 @@
 module_id: M2
 module_name: Booster
-revision: rev001
+revision: rev002
 parts:
 - id: M2.0.1
   name: Booster Drum

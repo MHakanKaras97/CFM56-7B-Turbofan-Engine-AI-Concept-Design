@@ -1,0 +1,291 @@
+module_id: M2
+module_name: Booster
+revision: rev002
+parts:
+- id: M2.0.1
+  name: Booster Drum
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Booster rotor spool: carries the rotor blades, the hub flow-path wall and the interstage seal teeth; bolted to the fan disk aft face and driven through it (J2-1)'
+  material: ti6al4v
+  status: draft
+  mass:
+    value: 66.5338
+    unit: kg
+    tag: H
+  joints:
+  - to: M1.1.2
+    type: bolted_flange
+  failure_modes:
+  - FM2-4
+  analyses:
+  - A-4
+  geometry:
+    script: engine/M2_booster/geometry/hardware.py
+    params:
+      revision: rev001
+  notes: 'Unit mass 66.5338 kg [H] = solid volume x density (drum 66.5338 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material ti6al4v [T] (rules/materials.md, analogy with the M1 fan blade). One solid with the forward cone (R-G2.18), the hub flow-path wall (R-G2.20), the stage 1 flange and the seal teeth (R-G2.11); straight slots along the slot axis (R-G2.19). Booster spool LLP 23,600 EFC, 22,900 EFC for -7B27 (Owner''s Guide mtce s. 19-20) [KS], conflict open (#49). Bolts and bolt holes not modelled (J2-1, #76).'
+- id: M2.0.2
+  name: Booster Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Core/bypass divider wall from station 21 to station 24; outer flow-path wall; carries the stator vanes
+  material: tbd
+  status: draft
+  mass:
+    value: 31.8164
+    unit: kg
+    tag: H
+  failure_modes:
+  - FM2-3
+  geometry:
+    script: engine/M2_booster/geometry/hardware.py
+    params:
+      revision: rev001
+  notes: Unit mass 31.8164 kg [H] = solid volume x density (casing 31.8164 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material tbd (rules/materials.md); mass with the ti6al4v density placeholder [T] (#71). Revolved shell station 21 -> 24 with one vane groove per stator row (R-G2.12); ends at station 24, where M1.4.6 (M1) continues the divider wall (R-G2.23). Abradable liners M2.n.3 not modelled (R-G2.12).
+- id: M2.1.1
+  name: Booster Stage 1 Rotor Blade
+  parent: null
+  qty:
+    value: 74
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 1 rotor row)
+  material: ti6al4v
+  status: draft
+  mass:
+    value: 0.1236
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.0.1
+    type: dovetail
+  failure_modes:
+  - FM2-1
+  - FM2-2
+  - FM2-3
+  - FM2-5
+  analyses:
+  - A-1
+  - A-3
+  - A-4
+  geometry:
+    script: engine/M2_booster/geometry/blades.py
+    params:
+      revision: rev001
+  notes: 'Count 74 [KS] (known_values.md, #52). Unit mass 0.1236 kg [H] = solid volume x density (airfoil 0.0656 kg + root block 0.0580 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material ti6al4v [T] (rules/materials.md, analogy with the M1 fan blade). Root block in a straight axial slot (R-G2.19); R1 inserted from aft against the hub wall (R-G2.21); retention not modelled (#82).'
+- id: M2.1.2
+  name: Booster Stage 1 Stator Vane
+  parent: null
+  qty:
+    value: 31
+    unit: ea
+    tag: T
+  function: Remove the swirl of the stage 1 rotor and carry the outer flow path at the vane tips (stage 1 stator row)
+  material: tbd
+  status: draft
+  mass:
+    value: 0.3057
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.0.2
+    type: other
+  failure_modes:
+  - FM2-2
+  - FM2-5
+  analyses:
+  - A-3
+  geometry:
+    script: engine/M2_booster/geometry/blades.py
+    params:
+      revision: rev001
+  notes: 'Count 31 [T] (R-KV2.1 proportional rule, #65). Unit mass 0.3057 kg [H] = solid volume x density (vane 0.1409 kg + foot 0.1647 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material tbd (rules/materials.md); mass with the ti6al4v density placeholder [T] (#71). Vane foot in the casing groove (R-G2.12); inner end on the M2.1.4 shroud, no attachment modelled (J2-3).'
+- id: M2.1.4
+  name: Booster Stage 1 Inner Shroud
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flow-path wall under the stage 1 stator vanes; seal land facing the drum seal teeth
+  material: tbd
+  status: draft
+  mass:
+    value: 12.13
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.1.2
+    type: other
+  geometry:
+    script: engine/M2_booster/geometry/hardware.py
+    params:
+      revision: rev001
+  notes: Unit mass 12.1300 kg [H] = solid volume x density (inner shroud 12.1300 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material tbd (rules/materials.md); mass with the ti6al4v density placeholder [T] (#71). Full ring at concept level (R-G2.11), seal land underneath.
+- id: M2.2.1
+  name: Booster Stage 2 Rotor Blade
+  parent: null
+  qty:
+    value: 78
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 2 rotor row)
+  material: ti6al4v
+  status: draft
+  mass:
+    value: 0.0682
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.0.1
+    type: dovetail
+  failure_modes:
+  - FM2-1
+  - FM2-2
+  - FM2-3
+  - FM2-5
+  analyses:
+  - A-1
+  - A-3
+  - A-4
+  geometry:
+    script: engine/M2_booster/geometry/blades.py
+    params:
+      revision: rev001
+  notes: 'Count 78 [KS] (known_values.md, #52). Unit mass 0.0682 kg [H] = solid volume x density (airfoil 0.0331 kg + root block 0.0350 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material ti6al4v [T] (rules/materials.md, analogy with the M1 fan blade). Root block in a straight axial slot (R-G2.19); R1 inserted from aft against the hub wall (R-G2.21); retention not modelled (#82).'
+- id: M2.2.2
+  name: Booster Stage 2 Stator Vane
+  parent: null
+  qty:
+    value: 39
+    unit: ea
+    tag: T
+  function: Remove the swirl of the stage 2 rotor and carry the outer flow path at the vane tips (stage 2 stator row)
+  material: tbd
+  status: draft
+  mass:
+    value: 0.156
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.0.2
+    type: other
+  failure_modes:
+  - FM2-2
+  - FM2-5
+  analyses:
+  - A-3
+  geometry:
+    script: engine/M2_booster/geometry/blades.py
+    params:
+      revision: rev001
+  notes: 'Count 39 [T] (R-KV2.1 proportional rule, #65). Unit mass 0.1560 kg [H] = solid volume x density (vane 0.0722 kg + foot 0.0837 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material tbd (rules/materials.md); mass with the ti6al4v density placeholder [T] (#71). Vane foot in the casing groove (R-G2.12); inner end on the M2.2.4 shroud, no attachment modelled (J2-3).'
+- id: M2.2.4
+  name: Booster Stage 2 Inner Shroud
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flow-path wall under the stage 2 stator vanes; seal land facing the drum seal teeth
+  material: tbd
+  status: draft
+  mass:
+    value: 8.2726
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.2.2
+    type: other
+  geometry:
+    script: engine/M2_booster/geometry/hardware.py
+    params:
+      revision: rev001
+  notes: Unit mass 8.2726 kg [H] = solid volume x density (inner shroud 8.2726 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material tbd (rules/materials.md); mass with the ti6al4v density placeholder [T] (#71). Full ring at concept level (R-G2.11), seal land underneath.
+- id: M2.3.1
+  name: Booster Stage 3 Rotor Blade
+  parent: null
+  qty:
+    value: 74
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 3 rotor row)
+  material: ti6al4v
+  status: draft
+  mass:
+    value: 0.042
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.0.1
+    type: dovetail
+  failure_modes:
+  - FM2-1
+  - FM2-2
+  - FM2-3
+  - FM2-5
+  analyses:
+  - A-1
+  - A-3
+  - A-4
+  geometry:
+    script: engine/M2_booster/geometry/blades.py
+    params:
+      revision: rev001
+  notes: 'Count 74 [KS] (known_values.md, #52). Unit mass 0.0420 kg [H] = solid volume x density (airfoil 0.0172 kg + root block 0.0248 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material ti6al4v [T] (rules/materials.md, analogy with the M1 fan blade). Root block in a straight axial slot (R-G2.19); R1 inserted from aft against the hub wall (R-G2.21); retention not modelled (#82).'
+- id: M2.3.2
+  name: Booster Stage 3 Stator Vane
+  parent: null
+  qty:
+    value: 49
+    unit: ea
+    tag: T
+  function: Remove the swirl of the stage 3 rotor and carry the outer flow path at the vane tips (stage 3 stator row)
+  material: tbd
+  status: draft
+  mass:
+    value: 0.0775
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.0.2
+    type: other
+  failure_modes:
+  - FM2-2
+  - FM2-5
+  analyses:
+  - A-3
+  geometry:
+    script: engine/M2_booster/geometry/blades.py
+    params:
+      revision: rev001
+  notes: 'Count 49 [T] (R-KV2.1 proportional rule, #65). Unit mass 0.0775 kg [H] = solid volume x density (vane 0.0378 kg + foot 0.0396 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material tbd (rules/materials.md); mass with the ti6al4v density placeholder [T] (#71). Vane foot in the casing groove (R-G2.12); inner end on the M2.3.4 shroud, no attachment modelled (J2-3).'
+- id: M2.3.4
+  name: Booster Stage 3 Inner Shroud
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flow-path wall under the stage 3 stator vanes; seal land facing the drum seal teeth
+  material: tbd
+  status: draft
+  mass:
+    value: 5.0664
+    unit: kg
+    tag: H
+  joints:
+  - to: M2.3.2
+    type: other
+  geometry:
+    script: engine/M2_booster/geometry/hardware.py
+    params:
+      revision: rev001
+  notes: Unit mass 5.0664 kg [H] = solid volume x density (inner shroud 5.0664 kg); information only (A-5, check value Lolis about 171 kg [KS weak]). Material tbd (rules/materials.md); mass with the ti6al4v density placeholder [T] (#71). Full ring at concept level (R-G2.11), seal land underneath.
