@@ -1,0 +1,220 @@
+app:
+  title: {tr: CFM56-7B27 Concept Design, en: CFM56-7B27 Concept Design}
+  subtitle: {tr: Turbofan motor konsept tasarımı – yayın prototipi, en: Turbofan engine concept design – public prototype}
+  language: {tr: Dil, en: Language}
+  baseline: {tr: "yayın sürümü", en: "published baseline"}
+nav:
+  overview: {tr: Genel bakış, en: Overview}
+  engine: {tr: M0 motor, en: M0 engine}
+  modules: {tr: Modüller, en: Modules}
+  requests: {tr: Talepler, en: Requests}
+  revisions: {tr: Revizyonlar, en: Revisions}
+  learning: {tr: Öğrenme, en: Learning}
+common:
+  open: {tr: Aç, en: Open}
+  back: {tr: Modüller, en: Modules}
+  view_3d: {tr: 3B görünüm, en: 3D view}
+  view_cutaway: {tr: Çeyrek kesit, en: Cutaway}
+  view_section: {tr: Ortadan kesit, en: Half section}
+  no_image: {tr: "Görsel henüz üretilmedi (python -m ui_public.assets.build_assets).", en: "Image not generated yet (python -m ui_public.assets.build_assets)."}
+  parts: {tr: parça, en: parts}
+  mass_info: {tr: "kütle bilgi amaçlıdır (hacim x yoğunluk)", en: "mass is for information (volume x density)"}
+overview:
+  strip: {tr: Motor şeridi (gaz yolu sırası), en: Engine strip (gas-path order)}
+  strip_hint: {tr: "kutuya tıklayınca modül sayfası açılır", en: "click a box to open the module page"}
+  engine_views: {tr: Motor, en: Engine}
+  engine_caption: {tr: "Tüm modüller bir arada: fan ve giriş (M1), booster (M2), yüksek basınç kompresörü (M3), yanma odası (M4), yüksek ve alçak basınç türbinleri (M5, M6), lüleler (M7), miller ve yataklar (M8), dişli kutusu ve yağ sistemi (M9).", en: "All modules together: fan and inlet (M1), booster (M2), high-pressure compressor (M3), combustor (M4), high- and low-pressure turbines (M5, M6), nozzles (M7), shafts and bearings (M8), gearbox and oil system (M9)."}
+  modules: {tr: Modüller, en: Modules}
+engine:
+  title: {tr: M0 motor, en: M0 engine}
+  intro: {tr: "M0 motorun tamamını tek bir termodinamik çevrim olarak hesaplar ve her modüle bir bütçe (basınç oranı, verim, debi, sıcaklık) verir. Modüller bu bütçeye uyacak şekilde tasarlanır.", en: "M0 computes the whole engine as one thermodynamic cycle and gives each module a budget (pressure ratio, efficiency, flow, temperature). The modules are designed to meet that budget."}
+  stations: {tr: İstasyon tablosu, en: Station table}
+  stations_hint: {tr: "İstasyon numaraları SAE AS755 standardındaki gaz yolu noktalarıdır.", en: "Station numbers are the gas-path points of the SAE AS755 standard."}
+  all_stations: {tr: Tüm istasyonlar, en: All stations}
+  checks: {tr: Kontroller, en: Checks}
+  budgets: {tr: Modül bütçeleri (ICD), en: Module budgets (ICD)}
+  budgets_hint: {tr: "ICD (arayüz kontrol dokümanı): her modülün tutturması gereken değerler ve izin verilen sapmalar.", en: "ICD (interface control document): the values each module has to meet and the allowed deviations."}
+  all_items: {tr: Tüm kalemler, en: All items}
+  pass: {tr: geçti, en: passed}
+  fail: {tr: kaldı, en: failed}
+  info: {tr: bilgi, en: info}
+  hard: {tr: sert, en: hard}
+cols:
+  station: {tr: İst., en: Stn.}
+  owner: {tr: Sahip, en: Owner}
+  item: {tr: Kalem, en: Item}
+  value: {tr: Değer, en: Value}
+  unit: {tr: Birim, en: Unit}
+  meaning: {tr: Anlamı, en: Meaning}
+  tolerance: {tr: İzin, en: Allowed}
+  part: {tr: Parça, en: Part}
+  qty: {tr: Adet, en: Qty}
+  material: {tr: Malzeme, en: Material}
+  mass: {tr: "Birim kütle [kg]", en: "Unit mass [kg]"}
+  function: {tr: Görevi, en: Function}
+modules:
+  title: {tr: Modüller, en: Modules}
+  bom: {tr: Parça listesi (BOM), en: Bill of materials (BOM)}
+  budget: {tr: ICD bütçesi, en: ICD budget}
+  no_budget: {tr: Bu modül için ICD bütçesi yok., en: No ICD budget for this module.}
+  total_mass: {tr: Toplam kütle, en: Total mass}
+  learn_more: {tr: "Bu modülün parçaları ve görevleri: Öğrenme sayfası", en: "Parts and functions of this module: Learning page"}
+requests:
+  title: {tr: Talepler, en: Requests}
+  empty: {tr: "Henüz değişiklik talebi yok. Bir modülde değişiklik gerektiğinde talepler burada listelenir ve onaylanır.", en: "No change requests yet. When a module needs a change, the requests are listed and approved here."}
+revisions:
+  title: {tr: Revizyonlar, en: Revisions}
+  empty: {tr: "Yayın sürümü rev01 tüm modüller için başlangıç noktasıdır. Yeni revizyonlar oluşturdukça burada karşılaştırabilirsiniz.", en: "The published baseline rev01 is the starting point for every module. As you create new revisions you can compare them here."}
+learning:
+  title: {tr: Öğrenme, en: Learning}
+  topic: {tr: Konu, en: Topic}
+module_names:
+  M0: {tr: Motor, en: Engine}
+  M1: {tr: Giriş ve fan, en: Inlet and fan}
+  M2: {tr: Booster (alçak basınç kompresörü), en: Booster (low-pressure compressor)}
+  M3: {tr: Yüksek basınç kompresörü, en: High-pressure compressor}
+  M4: {tr: Yanma odası, en: Combustor}
+  M5: {tr: Yüksek basınç türbini, en: High-pressure turbine}
+  M6: {tr: Alçak basınç türbini, en: Low-pressure turbine}
+  M7: {tr: Lüleler ve türbin arka çerçevesi, en: Nozzles and turbine rear frame}
+  M8: {tr: Miller ve yataklar, en: Shafts and bearings}
+  M9: {tr: İkincil hava, yağ ve dişli kutusu, en: Secondary air, oil and gearbox}
+metrics:
+  thrust: {tr: "İtki: motorun uçağı ileri iten kuvveti. Fan ve çekirdek lülelerinden çıkan havanın momentum artışından gelir; deniz seviyesi, kalkış koşulunda.", en: "Thrust: the force that pushes the aircraft forward. It comes from the momentum gain of the air leaving the fan and core nozzles; sea level, take-off."}
+  sfc: {tr: "Özgül yakıt tüketimi (SFC): bir kilonewton itki için saniyede yakılan yakıt (gram). Küçük olması daha verimli motor demektir.", en: "Specific fuel consumption (SFC): grams of fuel burned per second for each kilonewton of thrust. Lower means a more efficient engine."}
+  egt_margin: {tr: "EGT payı: gösterilen egzoz gazı sıcaklığı ile sertifika sınırı arasındaki fark. Motor yaşlandıkça azalır; bakım planlamasının temel göstergesidir.", en: "EGT margin: the gap between the indicated exhaust gas temperature and the certified limit. It shrinks as the engine ages; a key indicator for maintenance planning."}
+  w2: {tr: "W2: fan yüzünden saniyede geçen toplam hava kütlesi. Bunun büyük kısmı baypastan, küçük kısmı çekirdekten geçer.", en: "W2: the total air mass per second through the fan face. Most of it goes through the bypass, a small part through the core."}
+  bpr: {tr: "Baypas oranı: fanın baypastan geçirdiği havanın çekirdeğe giren havaya oranı. Yüksek olması yakıt verimini artırır.", en: "Bypass ratio: air through the bypass divided by air through the core. Higher means better fuel efficiency."}
+  opr: {tr: "Toplam basınç oranı: kompresör çıkışı ile fan girişi arasındaki basınç oranı. Çevrim veriminin ana belirleyicisidir.", en: "Overall pressure ratio: compressor exit pressure divided by fan inlet pressure. The main driver of cycle efficiency."}
+  label_bpr: {tr: Baypas oranı, en: Bypass ratio}
+  label_opr: {tr: Toplam basınç oranı, en: Overall pressure ratio}
+  label_thrust: {tr: İtki, en: Thrust}
+  label_sfc: {tr: SFC, en: SFC}
+  label_egt_margin: {tr: EGT payı, en: EGT margin}
+  label_w2: {tr: W2 hava debisi, en: W2 airflow}
+checks:
+  Fan choke (HARD): {tr: "Fan tıkanması: fan yüzündeki özgül debi, havanın ses hızında tıkandığı sınırın altında olmalı. Aşılırsa fan daha fazla hava geçiremez; bu yüzden sert kontroldür.", en: "Fan choke: the specific flow at the fan face must stay below the choking limit (sonic flow). Above it the fan cannot pass more air, so this is a hard check."}
+  Fan specific flow W2/A: {tr: "Fan özgül debisi: birim fan alanından geçen hava. Modern fanlar için tipik bant içinde olması, fan çapının ve debinin tutarlı olduğunu gösterir.", en: "Fan specific flow: air per unit fan area. Being inside the typical band of modern fans shows that fan diameter and airflow are consistent."}
+  W2 vs estimate: {tr: "Toplam hava debisinin bağımsız tahminle karşılaştırması; kalibrasyonun makul olduğunu doğrular.", en: "Total airflow compared with an independent estimate; confirms the calibration is reasonable."}
+  Total secondary air fraction: {tr: "Soğutma ve sızdırmazlık için kompresörden alınan havanın oranı. Bu hava itki üretmez ama türbinin dayanması için şarttır.", en: "Share of compressor air taken for cooling and sealing. This air makes no thrust but is essential for turbine life."}
+  SFC vs ICAO/TCDS: {tr: "Hesaplanan özgül yakıt tüketiminin yayınlanmış sertifika/emisyon verisiyle uyumu; modelin doğruluğunun ana testi.", en: "Computed fuel consumption against published certification/emissions data; the main accuracy test of the model."}
+  EGT displayed vs TCDS limit: {tr: "Kokpitte gösterilecek egzoz sıcaklığının sertifika sınırının altında kalması. Sıcak bölüm ömrünü korur.", en: "The exhaust temperature shown in the cockpit must stay below the certified limit. Protects the hot-section life."}
+  EGT model vs Girão: {tr: "Model egzoz sıcaklığının bir yayındaki değerle karşılaştırması (yalnız bilgi).", en: "Model exhaust temperature compared with a published value (information only)."}
+  Combustor air W31 vs references: {tr: "Yanma odasına giren havanın kaynak değerlerle karşılaştırması (yalnız bilgi).", en: "Combustor inlet air compared with reference values (information only)."}
+  V18/V8 ideal: {tr: "Fan ve çekirdek lüle çıkış hızlarının oranı. İkisi dengeli olduğunda itki verimi yüksek olur (yalnız bilgi).", en: "Ratio of fan and core nozzle exit velocities. Well-balanced jets give high propulsive efficiency (information only)."}
+  T4 vs references: {tr: "Türbin giriş sıcaklığı: motorun en sıcak noktası. Malzeme ve soğutma teknolojisinin sınırını belirler (yalnız bilgi).", en: "Turbine inlet temperature: the hottest point of the engine. It sets the limit of materials and cooling technology (information only)."}
+  T3 vs test cell: {tr: "Kompresör çıkış sıcaklığının test hücresi verisiyle karşılaştırması (yalnız bilgi).", en: "Compressor exit temperature compared with test-cell data (information only)."}
+station_cols:
+  Tt: {tr: "Toplam sıcaklık (K): durgun hal sıcaklığı; kompresörde artar, yanma odasında en yükseğe çıkar, türbinde düşer.", en: "Total temperature (K): stagnation temperature; rises in the compressors, peaks in the combustor, falls in the turbines."}
+  Pt: {tr: "Toplam basınç (kPa): kompresörlerle artar, türbinler ve lülelerde işe ve hıza dönüşür.", en: "Total pressure (kPa): raised by the compressors, turned into work and velocity in turbines and nozzles."}
+  W: {tr: "Kütle debisi (kg/s): o noktadan saniyede geçen gaz.", en: "Mass flow (kg/s): gas passing that point per second."}
+  FAR: {tr: "Yakıt/hava oranı: yanma odasından sonra sıfırdan büyüktür.", en: "Fuel/air ratio: greater than zero after the combustor."}
+stations:
+  '0': {tr: Ortam havası, en: Ambient air}
+  '2': {tr: Fan yüzü (giriş çıkışı), en: Fan face (inlet exit)}
+  '13': {tr: Fan çıkışı, baypas tarafı, en: Fan exit, bypass side}
+  '18': {tr: Fan lülesi çıkışı, en: Fan nozzle exit}
+  '21': {tr: Fan çıkışı, çekirdek tarafı (booster girişi), en: Fan exit, core side (booster inlet)}
+  '24': {tr: Booster çıkışı, en: Booster exit}
+  '25': {tr: Yüksek basınç kompresörü girişi, en: High-pressure compressor inlet}
+  '3': {tr: Yüksek basınç kompresörü çıkışı, en: High-pressure compressor exit}
+  '31': {tr: Yanma odası girişi (soğutma havası alındıktan sonra), en: Combustor inlet (after cooling air extraction)}
+  '4': {tr: Yanma odası çıkışı (türbin girişi), en: Combustor exit (turbine inlet)}
+  '41': {tr: HPT rotor girişi (NGV soğutma havası karıştıktan sonra), en: HPT rotor inlet (after NGV cooling air mixes in)}
+  '43': {tr: HPT rotor çıkışı, en: HPT rotor exit}
+  '44': {tr: HPT çıkışı (rotor soğutma havası karıştıktan sonra), en: HPT exit (after rotor cooling air mixes in)}
+  '45': {tr: Alçak basınç türbini girişi, en: Low-pressure turbine inlet}
+  '5': {tr: Alçak basınç türbini çıkışı, en: Low-pressure turbine exit}
+  '8': {tr: Çekirdek lülesi çıkışı, en: Core nozzle exit}
+budget:
+  FPR: {tr: "Fan basınç oranı (baypas tarafı): fanın dış havayı ne kadar sıkıştırdığı; baypas itkisinin kaynağı.", en: "Fan pressure ratio (bypass side): how much the fan compresses the outer air; source of bypass thrust."}
+  eta_fan_outer: {tr: "Fan dış bölge verimi: harcanan gücün ne kadarının basınca dönüştüğü.", en: "Fan outer efficiency: how much of the power becomes pressure rise."}
+  pr_fan_inner: {tr: "Fanın çekirdeğe giden iç bölgesindeki basınç oranı.", en: "Pressure ratio of the fan inner region feeding the core."}
+  eta_fan_inner: {tr: "Fan iç bölge verimi.", en: "Fan inner-region efficiency."}
+  inlet_recovery: {tr: "Giriş basınç geri kazanımı: giriş kanalında kaybedilen basıncın ölçüsü (1'e yakın iyi).", en: "Inlet pressure recovery: measure of pressure lost in the intake (close to 1 is good)."}
+  W2: {tr: "Fan yüzünden geçen toplam hava.", en: "Total air through the fan face."}
+  W13: {tr: "Baypastan geçen hava.", en: "Air through the bypass."}
+  W21: {tr: "Çekirdeğe giren hava.", en: "Air entering the core."}
+  T13: {tr: "Fan çıkışı baypas sıcaklığı.", en: "Fan exit bypass temperature."}
+  T21: {tr: "Fan çıkışı çekirdek sıcaklığı.", en: "Fan exit core temperature."}
+  power_outer_fan: {tr: "Fanın dış bölgesine verilen güç.", en: "Power absorbed by the fan outer region."}
+  power_inner_fan: {tr: "Fanın iç bölgesine verilen güç.", en: "Power absorbed by the fan inner region."}
+  pr_booster: {tr: "Booster basınç oranı: çekirdek havasının ilk sıkıştırması.", en: "Booster pressure ratio: first compression of the core air."}
+  eta_booster: {tr: "Booster verimi.", en: "Booster efficiency."}
+  duct_25_24: {tr: "Booster ile HP kompresör arasındaki geçiş kanalının basınç oranı (kayıp).", en: "Pressure ratio (loss) of the duct between booster and HP compressor."}
+  W25: {tr: "HP kompresörüne giren hava.", en: "Air entering the HP compressor."}
+  T25: {tr: "HP kompresörü giriş sıcaklığı.", en: "HP compressor inlet temperature."}
+  power: {tr: "Modülün çektiği veya ürettiği mil gücü.", en: "Shaft power absorbed or produced by the module."}
+  hpc_pr: {tr: "HP kompresör basınç oranı: motorun toplam basınç oranının en büyük payı.", en: "HP compressor pressure ratio: the largest share of the engine's overall pressure ratio."}
+  eta_hpc: {tr: "HP kompresör verimi; yakıt tüketimini doğrudan etkiler.", en: "HP compressor efficiency; directly affects fuel burn."}
+  leak_bleed_point: {tr: "Ara kademe hava alma noktası (sıkıştırma işinin hangi oranında).", en: "Interstage bleed point (at which fraction of the compression work)."}
+  W3: {tr: "HP kompresörden çıkan hava.", en: "Air leaving the HP compressor."}
+  T3: {tr: "Kompresör çıkış sıcaklığı: disk malzemesi ve yanma için önemli.", en: "Compressor exit temperature: important for disk material and combustion."}
+  burner_eta: {tr: "Yanma verimi: yakıtın ne kadarının tam yandığı.", en: "Combustion efficiency: how completely the fuel burns."}
+  burner_pr: {tr: "Yanma odası basınç oranı (karışma ve soğutma için harcanan basınç).", en: "Combustor pressure ratio (pressure spent on mixing and cooling)."}
+  W31: {tr: "Yanma odasına giren hava.", en: "Air entering the combustor."}
+  T4: {tr: "Türbin giriş sıcaklığı: motorun en sıcak noktası.", en: "Turbine inlet temperature: the hottest point of the engine."}
+  fuel_flow: {tr: "Saniyede yakılan yakıt.", en: "Fuel burned per second."}
+  FAR: {tr: "Yakıt/hava oranı.", en: "Fuel/air ratio."}
+  eta_hpt: {tr: "HP türbin verimi.", en: "HP turbine efficiency."}
+  hpt_pr: {tr: "HP türbin genişleme oranı.", en: "HP turbine expansion ratio."}
+  T41: {tr: "HPT rotor giriş sıcaklığı.", en: "HPT rotor inlet temperature."}
+  T44: {tr: "HPT çıkış sıcaklığı.", en: "HPT exit temperature."}
+  W44: {tr: "HPT çıkış debisi (soğutma havası dahil).", en: "HPT exit flow (including cooling air)."}
+  eta_lpt: {tr: "LP türbin verimi.", en: "LP turbine efficiency."}
+  lpt_pr: {tr: "LP türbin genişleme oranı.", en: "LP turbine expansion ratio."}
+  duct_45_44: {tr: "Türbinler arası geçiş kanalı basınç oranı.", en: "Pressure ratio of the inter-turbine duct."}
+  T45: {tr: "LPT giriş sıcaklığı.", en: "LPT inlet temperature."}
+  T5: {tr: "LPT çıkış sıcaklığı (egzoz sıcaklığıyla ilişkili).", en: "LPT exit temperature (related to the exhaust gas temperature)."}
+  W5: {tr: "LPT çıkış debisi.", en: "LPT exit flow."}
+  cfg_18: {tr: "Fan lülesi itki katsayısı.", en: "Fan nozzle thrust coefficient."}
+  cfg_8: {tr: "Çekirdek lülesi itki katsayısı.", en: "Core nozzle thrust coefficient."}
+  cd_18: {tr: "Fan lülesi debi katsayısı.", en: "Fan nozzle discharge coefficient."}
+  cd_8: {tr: "Çekirdek lülesi debi katsayısı.", en: "Core nozzle discharge coefficient."}
+  duct_6_5: {tr: "Türbin arka çerçevesi basınç oranı.", en: "Turbine rear frame pressure ratio."}
+  bypass_duct: {tr: "Baypas kanalı basınç oranı.", en: "Bypass duct pressure ratio."}
+  A18: {tr: "Fan lülesi çıkış alanı.", en: "Fan nozzle exit area."}
+  A8: {tr: "Çekirdek lülesi çıkış alanı.", en: "Core nozzle exit area."}
+  V18_V8_ideal: {tr: "Fan/çekirdek jet hız oranı.", en: "Fan/core jet velocity ratio."}
+  mech_eff: {tr: "Mekanik verim: yatak ve dişli kayıplarından sonra kalan güç oranı.", en: "Mechanical efficiency: power left after bearing and gear losses."}
+  hp_power_offtake: {tr: "Uçak sistemleri için HP milinden alınan güç.", en: "Power taken from the HP shaft for aircraft systems."}
+  ngv: {tr: "HPT yönlendirici kanat soğutma havası payı.", en: "HPT nozzle guide vane cooling air share."}
+  hpt_rotor: {tr: "HPT rotor kanadı soğutma havası payı.", en: "HPT rotor blade cooling air share."}
+  leak: {tr: "Ara kademe sızıntı/hava alma payı.", en: "Interstage leakage/bleed share."}
+  customer_bleed: {tr: "Uçağa verilen hava (kabin basınçlandırma).", en: "Air delivered to the aircraft (cabin pressurisation)."}
+materials:
+  ti6al4v: {tr: Titanyum alaşımı (Ti-6Al-4V), en: Titanium alloy (Ti-6Al-4V)}
+  ti6242: {tr: Titanyum alaşımı (Ti-6242), en: Titanium alloy (Ti-6242)}
+  inconel718: {tr: Nikel süperalaşım (Inconel 718), en: Nickel superalloy (Inconel 718)}
+  inconel625: {tr: Nikel süperalaşım (Inconel 625), en: Nickel superalloy (Inconel 625)}
+  waspaloy: {tr: Nikel süperalaşım (Waspaloy), en: Nickel superalloy (Waspaloy)}
+  rene88dt: {tr: Toz metal nikel süperalaşım (René 88DT), en: Powder-metal nickel superalloy (René 88DT)}
+  cmsx4: {tr: Tek kristal nikel süperalaşım (CMSX-4), en: Single-crystal nickel superalloy (CMSX-4)}
+  rene_n5: {tr: Tek kristal nikel süperalaşım (René N5), en: Single-crystal nickel superalloy (René N5)}
+  rene77: {tr: Döküm nikel süperalaşım (René 77), en: Cast nickel superalloy (René 77)}
+  hastelloy_x: {tr: Nikel sac alaşımı (Hastelloy X), en: Nickel sheet alloy (Hastelloy X)}
+  haynes188: {tr: Kobalt sac alaşımı (Haynes 188), en: Cobalt sheet alloy (Haynes 188)}
+  mar_m247: {tr: Döküm nikel süperalaşım (MAR-M247), en: Cast nickel superalloy (MAR-M247)}
+  steel_m50: {tr: Rulman çeliği (M50), en: Bearing steel (M50)}
+  maraging_c250: {tr: Maraging çeliği (C250), en: Maraging steel (C250)}
+  aisi9310: {tr: Dişli çeliği (AISI 9310), en: Gear steel (AISI 9310)}
+  ss321: {tr: Paslanmaz çelik (321), en: Stainless steel (321)}
+  al_2219: {tr: Alüminyum alaşımı (2219), en: Aluminium alloy (2219)}
+  al_c355: {tr: Döküm alüminyum (C355), en: Cast aluminium (C355)}
+  mg_ze41: {tr: Magnezyum alaşımı (ZE41), en: Magnesium alloy (ZE41)}
+  composite_cfrp: {tr: Karbon fiber kompozit, en: Carbon-fibre composite}
+  alloy718: {tr: Nikel süperalaşım (718), en: Nickel superalloy (718)}
+  aluminium_alloy: {tr: Alüminyum alaşımı, en: Aluminium alloy}
+  tbd: {tr: Belirlenecek, en: To be defined}
+check_labels:
+  Fan choke (HARD): {tr: "Fan tıkanması (sert)", en: "Fan choke (hard)"}
+  Fan specific flow W2/A: {tr: "Fan özgül debisi W2/A", en: "Fan specific flow W2/A"}
+  W2 vs estimate: {tr: "W2 ile tahmin", en: "W2 vs estimate"}
+  Total secondary air fraction: {tr: "Toplam ikincil hava oranı", en: "Total secondary air fraction"}
+  SFC vs ICAO/TCDS: {tr: "SFC ile ICAO/TCDS", en: "SFC vs ICAO/TCDS"}
+  EGT displayed vs TCDS limit: {tr: "Gösterilen EGT ile TCDS sınırı", en: "Displayed EGT vs TCDS limit"}
+  EGT model vs Girão: {tr: "Model EGT ile yayın değeri", en: "Model EGT vs published value"}
+  Combustor air W31 vs references: {tr: "Yanma odası havası W31 ile kaynaklar", en: "Combustor air W31 vs references"}
+  V18/V8 ideal: {tr: "İdeal V18/V8 jet hız oranı", en: "Ideal V18/V8 jet velocity ratio"}
+  T4 vs references: {tr: "T4 ile kaynaklar", en: "T4 vs references"}
+  T3 vs test cell: {tr: "T3 ile test hücresi", en: "T3 vs test cell"}
