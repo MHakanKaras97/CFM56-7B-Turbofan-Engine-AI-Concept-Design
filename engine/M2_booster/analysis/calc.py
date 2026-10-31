@@ -42,9 +42,28 @@ def write_outputs(root: Path, out: dict) -> None:
     write_yaml(_analysis(root) / RESULTS_FILE, out["results"])
 
 
+def _clear_geometry_caches() -> None:
+    """Drop the cached record inputs and the M1 frame layout that read geometry/flowpath.yaml (R-G2.26)."""
+    from engine.M1_inlet_fan.geometry import fan_frame, m2_boundary
+    from engine.M2_booster.geometry import layout
+    layout._record_cached.cache_clear()
+    m2_boundary.m2_boundary.cache_clear()
+    fan_frame.build.cache_clear()
+
+
 def regenerate(root: Path, revision: str) -> None:
-    """geometry/flowpath.yaml from the current params file."""
-    write_yaml(module_dir("M2", root) / "geometry" / flowpath.OUT_FILE.name, flowpath.build())
+    """geometry/flowpath.yaml from the current params file, in two passes (R-G2.22, R-G2.26): the radii first (the
+    station 25 fields of a stale file are kept, they are not read by the M1 frame layout), then the station 25 x
+    from the M1 frame code, which reads the M2 station 24 x and radii through layout.record."""
+    path = module_dir("M2", root) / "geometry" / flowpath.OUT_FILE.name
+    res = bm.run()
+    old = read_yaml(path) if path.exists() else {}
+    x_old = (old.get("interfaces") or {}).get("M3_station_25", {}).get("x_m")
+    first = flowpath.build(res, st25={"x25": x_old if x_old is not None else float("nan"), "m1_revision": "-"})
+    write_yaml(path, first)
+    _clear_geometry_caches()
+    write_yaml(path, flowpath.build(res))
+    _clear_geometry_caches()
 
 
 def rerun(root: Path, params: dict) -> dict:

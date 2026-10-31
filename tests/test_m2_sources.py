@@ -194,9 +194,21 @@ def test_rule_book_skeleton():
         assert name in lesson, name
 
 
-def test_m2_bom_has_no_parts_yet():
-    bom = load_bom(M2 / "bom" / "bom.yaml")
-    assert bom["module_id"] == "M2" and bom["parts"] == []  # step 1: parts listed in rules/bom.md only
+def test_m2_bom_parts_from_geometry():
+    """Geometry step 4 (R-G2.24): drum, case, per stage rotor blade / stator vane / inner shroud; no liners (#84)."""
+    from core.bom import validate
+    path = M2 / "bom" / "bom.yaml"
+    assert validate(path) == []
+    bom = load_bom(path)
+    res = read_revision("M2", "rev001", "results.yaml")
+    n = len(res["stages"])
+    parts = {p["id"]: p for p in bom["parts"]}
+    assert list(parts) == ["M2.0.1", "M2.0.2"] + [f"M2.{s}.{k}" for s in range(1, n + 1) for k in (1, 2, 4)]
+    val = lambda x: x["value"] if isinstance(x, dict) else x
+    for s, st in enumerate(res["stages"], 1):
+        assert parts[f"M2.{s}.1"]["qty"]["value"] == int(val(st["rotor_blades"]))
+        assert parts[f"M2.{s}.2"]["qty"]["value"] == int(val(st["stator_vanes"]))
+    assert bom["module_id"] == "M2" and all(p["mass"]["tag"] == "H" for p in bom["parts"])
 
 
 def test_m2_active_record_verifies():

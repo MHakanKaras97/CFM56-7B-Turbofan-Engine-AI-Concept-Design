@@ -5,6 +5,7 @@ import pytest
 
 from core.diff import diff_concepts, diff_revisions, flatten, is_empty
 from core.records import RecordError, create_concept, create_revision
+from core.bom import load as load_bom, write as write_bom
 from core.util import read_yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,6 +63,9 @@ FIXTURE = Path(__file__).parent / "fixtures" / "bom_valid.yaml"
 def repo(tmp_path) -> Path:
     shutil.copytree(ROOT / "engine", tmp_path / "engine", ignore=NO_RECORDS)
     shutil.copyfile(FIXTURE, tmp_path / "engine" / "M1_inlet_fan" / "bom" / "bom.yaml")
+    for bom in (tmp_path / "engine").glob("M*/bom/bom.yaml"):  # no records copied: other modules unstarted
+        if bom.parts[-3] != "M1_inlet_fan":
+            write_bom(bom, dict(load_bom(bom), parts=[]))
     return tmp_path
 
 

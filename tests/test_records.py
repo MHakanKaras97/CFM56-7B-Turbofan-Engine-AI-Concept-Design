@@ -6,7 +6,7 @@ import pytest
 import yaml
 
 from core import records
-from core.bom import write as write_bom
+from core.bom import load as load_bom, write as write_bom
 from core.records import (
     RecordError,
     active_concept,
@@ -32,6 +32,9 @@ def repo(tmp_path) -> Path:
     """Temp copy of engine/ without records or CRs; tests never touch the real module folders."""
     shutil.copytree(ROOT / "engine", tmp_path / "engine", ignore=NO_RECORDS)
     shutil.copyfile(FIXTURE, tmp_path / "engine" / "M1_inlet_fan" / "bom" / "bom.yaml")
+    for bom in (tmp_path / "engine").glob("M*/bom/bom.yaml"):  # no records copied: other modules unstarted
+        if bom.parts[-3] != "M1_inlet_fan":
+            write_bom(bom, dict(load_bom(bom), parts=[]))
     return tmp_path
 
 

@@ -126,3 +126,20 @@ Notes for M0:
   reason text stale) -> proposed `test_seated_contact_on_forward_stop`; whole `tests/test_m2_geometry3c.py` -> proposed file.
 - Proposed tests: `agent/proposed_test_geometry3c.py` supersedes `tests/test_m2_geometry3c.py` (15 passed, ~1 min,
   three swept solids; no xfail).
+
+## Geometry step 4: assembly, station 25, BOM (#73 closed; new draft #84; M0 copies verbatim)
+
+Values from `geometry/flowpath.py` (`station_25`) and `geometry/assembly.py` (`station_25_checks`, `casing_boundary`,
+`mass_table`, `common_volume_checks`, `record_checks`), rev001 inputs, M1 rev015 (read-only), rules R-G2.22-27. No
+constant added or tuned. Replacement row #73, new row #84, suggested updates of #61 and #82:
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 73 | M2 | Kapandı (geometri adımı 4, R-G2.22): ist. 25 x = M1 rev015 çerçeve çekirdek bölgesinin arka ucu, çalışma anında M1 kodundan okunuyor (`fan_frame.py` `layout` xc1, `build` ile), 0.798406 m [H]; göbek halkası M1.4.1 ve duvar halkası M1.4.6 aynı x'te bitiyor, çekirdek dikmesi firar kenarı 0.782721 m (önde). Geçiş kanalı 24 -> 25 = M1 çerçeve çekirdek geçidi (x 0.641557-0.798406 m, boy 0.156849 m), duvarları ist. 24 yarıçaplarında: ist. 25 anülüsü = ist. 24 anülüsü (göbek 0.36624, uç 0.433488 m, alan 0.168954 m2); M2 kanal parçası eklemiyor; x `geometry/flowpath.yaml` interfaces.M3_station_25.x_m'de (M3 için). Kanal kaybı yalnız ICD kalemi duct_25_24 | [H] | Kullanıcı görevi (adım 4); x elle yazılmadı, M1 dosyası değişmedi; `calc.regenerate` dosyayı iki geçişte yeniden üretiyor (bayat dosyadan da aynı bayt) | M1 çerçeve uzunluğu veya yerleşimi değişirse (M1 revizyonu), M3 kanal şekli/kaybı isterse, M2 x24 değişirse | rules/geometry.md R-G2.22, R-G2.26; geometry/flowpath.py station_25; M1 geometry/fan_frame.py layout |
+| 84 | M2 | Planlanan BOM'dan iki kalem geometri olmadığı için çıkarıldı (rules/bom.md adım 4 ek kuralı): aşınabilir astarlar M2.1.3-M2.3.3 (R-G2.12, modellenmedi; FM2-3 bunlara dayanıyor) ve M2.0.3 fan diski bağlantı seti (flanş ve koni M2.0.1 içinde, cıvatalar modellenmedi, J2-1). Kök blokları M2.n.1, kanat ayakları M2.n.2 içinde (kütle birim kütleye eklendi, ayrım notlarda); M2.n.4 iç örtüler eklendi | [T] | BOM tek doğruluk kaynağı ve geometriden üretiliyor; geometrisi olmayan parçaya kütle yazılamaz | Astar malzemesi/kalınlığı (J2-4) veya J2-1 cıvata/flanş tasarımı modellenince; yapısal aşama (A-4) | rules/bom.md; rules/geometry.md R-G2.24; geometry/bom_update.py |
+
+Suggested updates of existing rows (wording for M0):
+- #61: geometri adımı 4 kütle tablosu (bilgi, ayar yok): M2 toplamı 160.745 kg [H] (Ti-6Al-4V yoğunluğu kasa, stator ve
+  örtülerde yer tutucu, #71), Lolis kontrol değeri 171.41 kg [KS zayıf] (2285.5 x 0.075), oran 0.938.
+- #82: S3 kanat ayağının arka tutulması da modellenmedi: S3 oluğu kasanın arka yüzünde açık, ayak bir uyum açıklığı
+  önde bitiyor; arka yüzü M1.4.6 halkasının ön yüzü kapatıyor (R-G2.23).

@@ -47,16 +47,71 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _results_planes(results: dict) -> list[tuple[float, float]]:
+    """(r_hub, r_tip) of the record planes in flowpath.yaml order: station 21, then rotor TE / stator TE per stage."""
+    s21 = results["station_21"]
+    out = [(float(s21["r_hub"]), float(s21["r_tip"]))]
+    for st in results["stages"]:
+        for key in ("rotor_te", "stator_te"):
+            pl = st["planes"][key]
+            out.append((float(pl["r_hub"]), float(pl["r_tip"])))
+    return out
+
+
+def _decimals(x: float) -> int:
+    text = repr(float(x))
+    return len(text.split(".")[1]) if "." in text and "e" not in text else 6
+
+
+def flowpath_radii_deviation(fp: dict, results: dict) -> float:
+    """Largest |flowpath.yaml radius - record results radius| over the planes and the M3 station 25 interface vs the
+    record station 24, each relative to half a unit of the last record digit (<= 1: same radii at record precision)
+    (R-G2.26) [H]."""
+    rec = _results_planes(results)
+    s24 = results["station_24"]
+    rec.append((float(s24["r_hub"]), float(s24["r_tip"])))
+    st25 = fp["interfaces"]["M3_station_25"]
+    mine = [(float(p["r_hub_m"]), float(p["r_tip_m"])) for p in fp["planes"]]
+    mine.append((float(st25["r_hub_m"]), float(st25["r_tip_m"])))
+    if len(mine) != len(rec):
+        return math.inf
+    dev = 0.0
+    for a, b in zip(mine, rec):
+        for x, y in zip(a, b):
+            dev = max(dev, abs(x - y) / (0.5 * 10.0 ** -_decimals(y) + 1e-12))
+    return dev
+
+
+# Records whose geometry/flowpath.yaml gained a field after they were recorded (station 25 x_m, R-G2.22). Only these
+# may pass the relaxed check; every later record needs the exact sha256 (R-G2.26, ADR-013).
+RELAXED_RECORDS = ("rev001",)
+
+
+def flowpath_input_check(rev: str, path: Path, manifest: dict, results: dict) -> str:
+    """"sha256" if the file matches the record manifest; "radii" only for a RELAXED_RECORDS record whose plane and
+    station 25 radii and station 25 area equal the record results at record precision (x_m not compared); else
+    ValueError (R-G2.26)."""
+    sha = {o["file"]: o["sha256"] for o in manifest["outputs"]}
+    if _sha256(path) == sha.get("geometry/flowpath.yaml"):
+        return "sha256"
+    if rev in RELAXED_RECORDS:
+        fp = read_yaml(path)
+        a_rec = float(results["station_24"]["area"])
+        a_dev = abs(float(fp["interfaces"]["M3_station_25"]["area_m2"]) - a_rec) / (0.5 * 10.0 ** -_decimals(a_rec))
+        if flowpath_radii_deviation(fp, results) <= 1.0 and a_dev <= 1.0:
+            return "radii"
+    raise ValueError(f"geometry/flowpath.yaml does not match record {rev}")
+
+
 @lru_cache(maxsize=4)
 def _record_cached(rev: str) -> dict:
+    """Record inputs; geometry/flowpath.yaml must pass flowpath_input_check against the record (R-G2.26)."""
     manifest = records.read_revision("M2", rev, "manifest.yaml")
     results = records.read_revision("M2", rev, "results.yaml")
     params = records.read_revision("M2", rev, "params.yaml")
-    sha = {o["file"]: o["sha256"] for o in manifest["outputs"]}
-    if _sha256(M2_FLOWPATH) != sha.get("geometry/flowpath.yaml"):
-        raise ValueError(f"geometry/flowpath.yaml does not match record {rev}")
+    check = flowpath_input_check(rev, M2_FLOWPATH, manifest, results)
     return {"revision": rev, "manifest": manifest, "results": results, "params": params,
-            "flowpath": read_yaml(M2_FLOWPATH)}
+            "flowpath": read_yaml(M2_FLOWPATH), "flowpath_check": check}
 
 
 def record(rev: str | None = None) -> dict:

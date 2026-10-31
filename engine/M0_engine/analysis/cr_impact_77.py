@@ -1,4 +1,5 @@
 """M0 impact analysis of the two M1 change requests from open issue #77 (M2 learning note geometri_celiskileri.md).
+Historical snapshot: rev014 only, fails on HEAD by design.
 
 Read-only: imports the M1 rev014 and M2 rev001 geometry code, builds modified M1 solids only inside this script,
 writes no file and changes no parameter. Every value is [H] from the [T] geometry rules of both modules and the

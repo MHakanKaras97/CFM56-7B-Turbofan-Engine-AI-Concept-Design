@@ -55,7 +55,7 @@ def test_rule_r_g2_21_row_and_numbering():
     assert len(re.findall(TAG, row)) == 1 and row.split("|")[-2].strip() == "[T]"
     assert "swept solid" in row and "hw_common_volume_tolerance" in row and "R-G2.20" in row
     ids = [int(m.group(1)) for m in re.finditer(r"^\| R-G2\.(\d+) \|", text, re.M)]
-    assert ids == list(range(1, 22))
+    assert ids[:21] == list(range(1, 22))  # step 4 continues at R-G2.22
 
 
 def test_no_new_constant():
