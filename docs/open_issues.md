@@ -115,3 +115,15 @@ Kaynaklı değeri olmayan geometri ayrıntıları; ayar yapılmadı. Kayıttaki 
 | 20 | M0 | Δη = +0.017 sınanmamış varsayım; tolerans ve entegrasyon sınırları | [T] | Konsept seviyesi bütçe | M0 v2 | status.md M0 v1 özeti |
 | 21 | M0 | .step dosya ilişkilendirmesi kullanıcıda bekliyor | — | UI işlevi, tasarımı etkilemez | Kullanıcı Fusion ilişkilendirmesini yapınca | docs/design/ui_spec.md |
 | 22 | M0 | Bennett künyesi doğrulanmadı; Indriyati HPC havası tanım farkı | doğrulanmadı | Kontrol/karşılaştırma kaynakları, bütçe girdisi değil | Kaynak doğrulaması | docs/sources.md |
+
+## M3-M9 konsept geometri (rev001, M0 ana oturumu, kullanıcı yetkisiyle 2026-10-31)
+
+| # | Modül | Konu | Etiket | Neden kabul edildi | Yeniden bakma tetikleyicisi | Kaynak |
+|---|---|---|---|---|---|---|
+| 86 | M3/M5/M6 | Ayrıntılı aero yok: eşit kademe işi, sabit ortalama yarıçap, serbest girdap, Carter sapması; DF/kayıp ve marj kontrolü yok; verimler M0 bütçesinden (ADR-015 emsali) | [T] | Kullanıcı kararı: M3-M9 hızlı konsept (BOM -> sistem -> STEP); M1/M2 düzeyinde aero ayrı tur ister | Modül aero aşaması (M1/M2 yöntemiyle) | rules/design.md R-D3.4/R-D5.1/R-D6.1 |
+| 87 | M3-M9 | Yapısal analiz yok (disk, kanat kökü, kasa basıncı); kütleler hacim x yoğunluk bilgi [H]; kök (kırlangıç/çam ağacı), platform, soğutma kanalları modellenmedi | [T] | Konsept geometri; ADR-016 kabulü yapısal aşama ister | Her modülün yapısal aşaması (A-4 emsali) | rules/design.md |
+| 88 | M3/M5/M6 | Statör/NGV sayıları kural [T] (R-KV3.1/5.1/6.1 katılık kuralı), kaynak değeri yok | [T] | #62 ile aynı: kaynak yalnız rotor sayılarını veriyor | Kaynak bulunursa | rules/known_values.md |
+| 89 | M9 | Servis geçişleri kesilmedi: radyal tahrik mili ve ön hazne yağ hattı M1 çerçeve dikmeleri/halkalarından ve M2 kasası M2.0.2'nin arka ucundan, arka hazne yağ hattı M7 TRF dikmesi ve halkalarından geçiyor (ortak hacim, R-D9.4). Diğer modülün parçası düzenlenmez | [T] | Delik/oyuk açmak M1/M7 parçasını değiştirir (CR ister); konseptte geçiş yeri gösterildi | Son montaj ayrıntısı veya M1/M7 tasarım revizyonu (CR) | engine/M0_engine/geometry/final_assembly.py KNOWN_PASSAGES |
+| 90 | M8 | Rotor dinamiği (kritik hızlar) analiz edilmedi (ROSS planlı); yalnız LP/fan mili burulma marjı [H] | [T] | Konsept; M1 marj tanımı burulmada sağlanıyor | M8 yapısal/dinamik aşaması | engine/M8_shaft_bearing/rules/design.md R-D8.6 |
+| 91 | M4/M5 | Akış yolu basamakları: M4 astar çıkışı ile M5 NGV bantları arasında ve M5 örtüsü ile M6 geçiş kanalı arasında konsept düzeyinde radyal basamaklar (kanat kesitleri sabit yarıçapta) | [T] | Konsept geometri; ortak hacim yok | Modül aero/geometri aşaması | M4/M5/M6 geometry/build.py |
+| 92 | M3-M9 | Yanma modeli, soğutma akışları, iç hava yolları (3 -> 41, 3 -> 44) modellenmedi; ICD akışları verildiği gibi | [T] | Konsept kapsamı | M9 ikincil hava aşaması | engine/M9_secondary_air_oil/rules/design.md R-D9.3 |

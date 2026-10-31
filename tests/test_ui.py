@@ -79,7 +79,9 @@ def test_module_card_and_template():
     at = run()
     at.button(key="card_M3").click().run()
     assert [t.value for t in at.subheader] == ["M3 HP kompresör"]
-    assert "BOM boş" in " ".join(c.value for c in at.caption)
+    md = " ".join(m.value for m in at.markdown)
+    assert "`M3.1.1` HP Compressor Stage 1 Rotor Blade ×38" in md  # M3 BOM rev001 (concept design)
+    assert "BOM boş" not in " ".join(c.value for c in at.caption)
     assert {"btn_section", "btn_3d", "btn_fusion"} <= {b.key for b in at.button}
     assert {"mod_rev_a", "mod_rev_b"} <= {s.key for s in at.selectbox}
 

@@ -1,0 +1,137 @@
+rotor_blades:
+  value: [38, 53, 60, 68, 75, 82, 82, 80, 76]
+  unit: ea
+  tag: KS
+  note: rules/known_values.md, source #52 p. 159
+tip_speed_rotor1:
+  value: 470.0
+  unit: m/s
+  tag: T
+  note: R-D3.1, HPC stage 1 tip speed range 430-500 m/s [G]
+inlet_duct_length:
+  value: 0.16
+  unit: m
+  tag: T
+  note: R-D3.1, S-duct station 25 -> IGV leading edge
+mach_inlet:
+  value: 0.50
+  unit: '-'
+  tag: T
+  note: R-D3.1, axial Mach at the rotor 1 inlet
+mach_exit:
+  value: 0.30
+  unit: '-'
+  tag: T
+  note: R-D3.1, axial Mach at station 3
+bleed_after_stage:
+  value: 5
+  unit: '-'
+  tag: T
+  note: R-D3.3
+reaction:
+  value: 0.5
+  unit: '-'
+  tag: T
+  note: R-D3.4
+carter_m:
+  value: 0.26
+  unit: '-'
+  tag: G
+  note: R-D3.4
+rotor_solidity:
+  value: 1.3
+  unit: '-'
+  tag: T
+  note: R-D3.5
+stator_solidity:
+  value: 1.2
+  unit: '-'
+  tag: T
+  note: R-D3.5
+stator_aspect_ratio:
+  value: [1.8, 1.0]
+  unit: '-'
+  tag: T
+  note: R-D3.5, first and last stator, linear between
+min_chord:
+  value: 0.018
+  unit: m
+  tag: T
+  note: R-D3.5
+igv_count:
+  value: 42
+  unit: ea
+  tag: T
+  note: R-KV3.1, differs from the rotor 1 count
+axial_gap_over_chord:
+  value: 0.25
+  unit: '-'
+  tag: T
+  note: R-D3.6
+rotor_tc:
+  value: [0.07, 0.035]
+  unit: '-'
+  tag: T
+  note: hub, tip thickness/chord
+stator_tc:
+  value: 0.07
+  unit: '-'
+  tag: T
+tip_clearance:
+  value: 0.0005
+  unit: m
+  tag: T
+seal_gap:
+  value: 0.002
+  unit: m
+  tag: T
+  note: stator hub to spool drum
+case_thickness:
+  value: 0.006
+  unit: m
+  tag: T
+duct_wall_thickness:
+  value: 0.005
+  unit: m
+  tag: T
+disk:
+  value:
+    rim_depth_over_width: 0.6
+    rim_width_over_rotor_width: 1.1
+    web_over_rim_width: 0.25
+    bore_width_over_rim_width: 0.8
+    bore_height_over_rim_width: 0.6
+    bore_inner_radius: 0.085
+    drum_thickness: 0.004
+  unit: '-, m'
+  tag: T
+  note: R-D3.6
+forward_shaft:
+  value:
+    x_ahead_of_rotor1: 0.12
+    r_journal: 0.095
+    thickness: 0.006
+    journal_length: 0.04
+  unit: m
+  tag: T
+  note: R-D3.6, journal for bearing #3 (M8)
+cdp_seal:
+  value:
+    length: 0.04
+    r_in: 0.17
+    thickness: 0.008
+  unit: m
+  tag: T
+materials:
+  value:
+    rotor_front: ti6al4v
+    rotor_rear: inconel718
+    stator_front: ti6al4v
+    stator_rear: inconel718
+    disk_front: ti6al4v
+    disk_rear: inconel718
+    case: inconel718
+    duct: ti6al4v
+  unit: '-'
+  tag: T
+  note: titanium for stages 1-4, nickel alloy 5-9 (temperature) [G]

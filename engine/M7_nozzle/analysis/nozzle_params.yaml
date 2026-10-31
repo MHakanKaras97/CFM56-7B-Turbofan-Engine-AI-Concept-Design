@@ -1,0 +1,71 @@
+fan_nozzle_exit_x:
+  value: 1.75
+  unit: m
+  tag: T
+  note: R-D7.2, fan nozzle exit plane (around the combustor end) in the M1 frame
+fan_nozzle_inner_radius:
+  value: 0.47
+  unit: m
+  tag: T
+  note: R-D7.2, bypass inner wall radius at the exit (clears the core casings)
+fan_nozzle_length:
+  value: 0.30
+  unit: m
+  tag: T
+outer_wall_thickness:
+  value: 0.006
+  unit: m
+  tag: T
+inner_wall_thickness:
+  value: 0.0035
+  unit: m
+  tag: T
+trf_length:
+  value: 0.12
+  unit: m
+  tag: T
+trf_gap:
+  value: 0.003
+  unit: m
+  tag: T
+  note: R-D7.3, axial gap behind the LPT stage 4 disk rim
+trf_struts:
+  value: 16
+  unit: ea
+  tag: T
+trf_strut_chord_over_length:
+  value: 0.8
+  unit: '-'
+  tag: T
+trf_strut_tc:
+  value: 0.14
+  unit: '-'
+  tag: T
+trf_wall_thickness:
+  value: 0.006
+  unit: m
+  tag: T
+core_nozzle_length:
+  value: 0.32
+  unit: m
+  tag: T
+plug_exit_radius_over_hub:
+  value: 0.6
+  unit: '-'
+  tag: T
+plug_tail_length:
+  value: 0.25
+  unit: m
+  tag: T
+nozzle_wall_thickness:
+  value: 0.004
+  unit: m
+  tag: T
+materials:
+  value:
+    bypass_duct: composite_cfrp
+    fan_nozzle: al_2219
+    trf: inconel718
+    nozzle: inconel625
+  unit: '-'
+  tag: T

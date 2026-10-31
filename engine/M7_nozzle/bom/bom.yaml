@@ -1,4 +1,181 @@
 module_id: M7
 module_name: Nozzle
 revision: rev000
-parts: []
+parts:
+- id: M7.0.1
+  name: Bypass Duct Outer Wall
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer bypass flow-path wall from the M1 fan frame outer ring to the fan nozzle (R-D7.1)
+  material: composite_cfrp
+  process: composite layup
+  status: draft
+  mass:
+    value: 35.4833
+    unit: kg
+    tag: H
+  joints:
+  - to: M7.0.3
+    type: bolted_flange
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 35.4833 kg [H] = solid volume x density (composite_cfrp 1600 kg/m3 [G]); information only. Thrust reverser and nacelle out of scope (architecture.md).
+- id: M7.0.2
+  name: Bypass Duct Inner Wall
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner bypass flow-path wall (core fairing) from the M1 wall ring M1.4.6 to the fan nozzle exit plane
+  material: composite_cfrp
+  process: composite layup
+  status: draft
+  mass:
+    value: 15.2121
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 15.2121 kg [H] = solid volume x density (composite_cfrp 1600 kg/m3 [G]); information only. Access panels and core compartment ventilation not modelled.
+- id: M7.0.3
+  name: Fan Nozzle
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Convergent fan nozzle; exit annulus area = A18 of the ICD (R-D7.2)
+  material: al_2219
+  process: machined forging
+  status: draft
+  mass:
+    value: 22.2917
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 22.2917 kg [H] = solid volume x density (al_2219 2840 kg/m3 [G]); information only.
+- id: M7.0.4
+  name: Turbine Rear Frame Hub
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Inner flow-path ring of the TRF; carries the bearing #5 support (M8)'
+  material: inconel718
+  process: casting
+  status: draft
+  mass:
+    value: 10.1837
+    unit: kg
+    tag: H
+  joints:
+  - to: M7.0.6
+    type: weld
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 10.1837 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only.
+- id: M7.0.5
+  name: Turbine Rear Frame Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer ring of the TRF; rear engine mount plane
+  material: inconel718
+  process: casting
+  status: draft
+  mass:
+    value: 17.8794
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.0.3
+    type: bolted_flange
+  - to: M7.0.6
+    type: weld
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 17.8794 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Mount lugs not modelled.
+- id: M7.0.6
+  name: Turbine Rear Frame Strut
+  parent: null
+  qty:
+    value: 16
+    unit: ea
+    tag: T
+  function: 'Radial strut hub -> case; turns the LPT exit swirl to axial (R-D7.3); oil lines to bearing #5 inside'
+  material: inconel718
+  process: casting
+  status: draft
+  mass:
+    value: 1.4106
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 1.4106 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only.
+- id: M7.0.7
+  name: Core Nozzle Sleeve
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer wall of the convergent core nozzle; exit area A8 with the plug (R-D7.4)
+  material: inconel625
+  process: sheet
+  status: draft
+  mass:
+    value: 27.5391
+    unit: kg
+    tag: H
+  joints:
+  - to: M7.0.5
+    type: bolted_flange
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 27.5391 kg [H] = solid volume x density (inconel625 8440 kg/m3 [G]); information only.
+- id: M7.0.8
+  name: Exhaust Plug
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Centre body of the core nozzle (R-D7.4)
+  material: inconel625
+  process: sheet
+  status: draft
+  mass:
+    value: 21.6084
+    unit: kg
+    tag: H
+  joints:
+  - to: M7.0.4
+    type: bolted_flange
+  geometry:
+    script: engine/M7_nozzle/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 21.6084 kg [H] = solid volume x density (inconel625 8440 kg/m3 [G]); information only.

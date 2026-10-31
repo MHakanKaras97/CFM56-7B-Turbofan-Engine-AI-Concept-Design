@@ -1,4 +1,236 @@
 module_id: M8
 module_name: Shaft and Bearing
 revision: rev000
-parts: []
+parts:
+- id: M8.0.1
+  name: Fan Shaft
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Torque path LP shaft -> fan disk; carries bearings #1 and #2 (R-D8.2)'
+  material: maraging_c250
+  process: forging
+  status: draft
+  mass:
+    value: 29.4051
+    unit: kg
+    tag: H
+  joints:
+  - to: M1.1.2
+    type: bolted_flange
+  - to: M8.0.2
+    type: spline
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 29.4051 kg [H] = solid volume x density (maraging_c250 8000 kg/m3 [G]); information only. LLP 30,000 EFC [KS]. Torsion margin 2.701 [H] (R-D8.3).
+- id: M8.0.2
+  name: LP Shaft
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Torque path LPT shaft (M6) -> fan shaft; inner race of the intershaft bearing #4 (R-D8.3)'
+  material: maraging_c250
+  process: forging
+  status: draft
+  mass:
+    value: 32.8477
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.0.1
+    type: spline
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 32.8477 kg [H] = solid volume x density (maraging_c250 8000 kg/m3 [G]); information only. Torsion margin 1.606 [H] (R-D8.3, target 1.0).
+- id: M8.1.1
+  name: No. 1 Ball Bearing
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Fan thrust bearing on the fan shaft (forward sump)
+  material: steel_m50
+  process: through-hardened bearing steel
+  status: draft
+  mass:
+    value: 3.675
+    unit: kg
+    tag: H
+  joints:
+  - to: M8.0.1
+    type: shrink_fit
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 3.6750 kg [H] = solid volume x density (steel_m50 7830 kg/m3 [G]); information only. Envelope ring (R-D8.4); rolling elements, cage and races not modelled.
+- id: M8.1.2
+  name: Forward Bearing Support
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Cone from the M1 fan frame flange to the #2 and #1 bearing housings (forward sump, R-D8.5)'
+  material: ti6al4v
+  process: machined forging
+  status: draft
+  mass:
+    value: 12.6341
+    unit: kg
+    tag: H
+  joints:
+  - to: M1.4.1
+    type: bolted_flange
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 12.6341 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Sump wall, seals and oil jets not modelled.
+- id: M8.2.1
+  name: No. 2 Roller Bearing
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Fan shaft radial bearing (forward sump)
+  material: steel_m50
+  process: through-hardened bearing steel
+  status: draft
+  mass:
+    value: 2.4752
+    unit: kg
+    tag: H
+  joints:
+  - to: M8.0.1
+    type: shrink_fit
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 2.4752 kg [H] = solid volume x density (steel_m50 7830 kg/m3 [G]); information only. Envelope ring (R-D8.4); rolling elements, cage and races not modelled.
+- id: M8.3.1
+  name: No. 3 Ball Bearing
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: HP rotor thrust bearing on the HPC forward shaft journal
+  material: steel_m50
+  process: through-hardened bearing steel
+  status: draft
+  mass:
+    value: 5.3369
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.5
+    type: shrink_fit
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 5.3369 kg [H] = solid volume x density (steel_m50 7830 kg/m3 [G]); information only. Envelope ring (R-D8.4); rolling elements, cage and races not modelled.
+- id: M8.3.2
+  name: No. 3 Bearing Support
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Housing of bearing #3 hung from the aft face of the M1 fan frame flange (R-D8.5)'
+  material: ti6al4v
+  process: machined forging
+  status: draft
+  mass:
+    value: 2.8798
+    unit: kg
+    tag: H
+  joints:
+  - to: M1.4.1
+    type: bolted_flange
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 2.8798 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only.
+- id: M8.4.1
+  name: No. 4 Roller Bearing
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Intershaft bearing: HPT rear shaft on the LP shaft'
+  material: steel_m50
+  process: through-hardened bearing steel
+  status: draft
+  mass:
+    value: 1.8588
+    unit: kg
+    tag: H
+  joints:
+  - to: M8.0.2
+    type: shrink_fit
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 1.8588 kg [H] = solid volume x density (steel_m50 7830 kg/m3 [G]); information only. Envelope ring (R-D8.4); rolling elements, cage and races not modelled.
+- id: M8.5.1
+  name: No. 5 Roller Bearing
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: LPT shaft aft radial bearing under the turbine rear frame
+  material: steel_m50
+  process: through-hardened bearing steel
+  status: draft
+  mass:
+    value: 4.9812
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.0.1
+    type: shrink_fit
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 4.9812 kg [H] = solid volume x density (steel_m50 7830 kg/m3 [G]); information only. Envelope ring (R-D8.4); rolling elements, cage and races not modelled.
+- id: M8.5.2
+  name: No. 5 Bearing Support
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Housing of bearing #5 hung from the M7 turbine rear frame hub (aft sump, R-D8.5)'
+  material: inconel718
+  process: machined forging
+  status: draft
+  mass:
+    value: 22.503
+    unit: kg
+    tag: H
+  joints:
+  - to: M7.0.4
+    type: bolted_flange
+  geometry:
+    script: engine/M8_shaft_bearing/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 22.5030 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only.

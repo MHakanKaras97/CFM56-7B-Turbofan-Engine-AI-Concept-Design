@@ -1,4 +1,434 @@
 module_id: M6
 module_name: LP Turbine
 revision: rev000
-parts: []
+parts:
+- id: M6.0.1
+  name: LPT Shaft
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'LPT torque to the M8 LP shaft (spline at the forward end); bearing #5 journal at the aft end'
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 12.6822
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.0.2
+    type: bolted_flange
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 12.6822 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. LLP 25,000 EFC [KS].
+- id: M6.0.2
+  name: LPT Conical Support
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Cone from the stage 4 disk to the LPT shaft
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 2.5146
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.4.3
+    type: bolted_flange
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 2.5146 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. LLP 16,300 EFC [KS] (ISSUE39 25,000 doğrulanamadı).
+- id: M6.0.3
+  name: LPT Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer flow-path wall from the HPT shroud through the transition duct and the 4 stages; carries the NGVs
+  material: inconel718
+  process: machined ring forging
+  status: draft
+  mass:
+    value: 43.6281
+    unit: kg
+    tag: H
+  joints:
+  - to: M5.0.4
+    type: bolted_flange
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 43.6281 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only.
+- id: M6.0.4
+  name: LPT Transition Duct Inner Wall
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner wall of the inter-turbine duct 44 -> 45 (R-D6.4)
+  material: inconel718
+  process: sheet
+  status: draft
+  mass:
+    value: 7.2773
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 7.2773 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Support to the stage 1 NGV inner shroud not modelled.
+- id: M6.1.1
+  name: LPT Stage 1 Rotor Blade
+  parent: null
+  qty:
+    value: 162
+    unit: ea
+    tag: KS
+  function: Extract work for the LP spool (stage 1 rotor)
+  material: rene77
+  process: casting
+  status: draft
+  mass:
+    value: 0.0132
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.1.3
+    type: dovetail
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0132 kg [H] = solid volume x density (rene77 7910 kg/m3 [G]); information only. Count [KS] (#52 p. 159); tip shroud and dovetail not modelled.
+- id: M6.1.2
+  name: LPT Stage 1 Nozzle Guide Vane
+  parent: null
+  qty:
+    value: 92
+    unit: ea
+    tag: T
+  function: Turn the flow onto the stage 1 rotor
+  material: mar_m247
+  process: casting
+  status: draft
+  mass:
+    value: 0.0425
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0425 kg [H] = solid volume x density (mar_m247 8540 kg/m3 [G]); information only. Count [T] (R-KV6.1 solidity rule).
+- id: M6.1.3
+  name: LPT Stage 1 Disk
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Carries the stage 1 rotor blades
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 32.6218
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 32.6218 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. LLP 25,000 EFC [KS].
+- id: M6.1.4
+  name: LPT Stage 1 NGV Inner Shroud
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flow-path platform of the stage 1 NGV; seal land over the drum
+  material: inconel718
+  process: casting
+  status: draft
+  mass:
+    value: 1.7453
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 1.7453 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Seal honeycomb not modelled.
+- id: M6.2.1
+  name: LPT Stage 2 Rotor Blade
+  parent: null
+  qty:
+    value: 150
+    unit: ea
+    tag: KS
+  function: Extract work for the LP spool (stage 2 rotor)
+  material: rene77
+  process: casting
+  status: draft
+  mass:
+    value: 0.0198
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.2.3
+    type: dovetail
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0198 kg [H] = solid volume x density (rene77 7910 kg/m3 [G]); information only. Count [KS] (#52 p. 159); tip shroud and dovetail not modelled.
+- id: M6.2.2
+  name: LPT Stage 2 Nozzle Guide Vane
+  parent: null
+  qty:
+    value: 72
+    unit: ea
+    tag: T
+  function: Turn the flow onto the stage 2 rotor
+  material: mar_m247
+  process: casting
+  status: draft
+  mass:
+    value: 0.0892
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0892 kg [H] = solid volume x density (mar_m247 8540 kg/m3 [G]); information only. Count [T] (R-KV6.1 solidity rule).
+- id: M6.2.3
+  name: LPT Stage 2 Disk
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Carries the stage 2 rotor blades; forward drum to the stage 1 disk
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 34.3491
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.1.3
+    type: bolted_flange
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 34.3491 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. LLP 25,000 EFC [KS].
+- id: M6.2.4
+  name: LPT Stage 2 NGV Inner Shroud
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flow-path platform of the stage 2 NGV; seal land over the drum
+  material: inconel718
+  process: casting
+  status: draft
+  mass:
+    value: 2.1832
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 2.1832 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Seal honeycomb not modelled.
+- id: M6.3.1
+  name: LPT Stage 3 Rotor Blade
+  parent: null
+  qty:
+    value: 150
+    unit: ea
+    tag: KS
+  function: Extract work for the LP spool (stage 3 rotor)
+  material: rene77
+  process: casting
+  status: draft
+  mass:
+    value: 0.026
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.3.3
+    type: dovetail
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0260 kg [H] = solid volume x density (rene77 7910 kg/m3 [G]); information only. Count [KS] (#52 p. 159); tip shroud and dovetail not modelled.
+- id: M6.3.2
+  name: LPT Stage 3 Nozzle Guide Vane
+  parent: null
+  qty:
+    value: 55
+    unit: ea
+    tag: T
+  function: Turn the flow onto the stage 3 rotor
+  material: mar_m247
+  process: casting
+  status: draft
+  mass:
+    value: 0.1981
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.1981 kg [H] = solid volume x density (mar_m247 8540 kg/m3 [G]); information only. Count [T] (R-KV6.1 solidity rule).
+- id: M6.3.3
+  name: LPT Stage 3 Disk
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Carries the stage 3 rotor blades; forward drum to the stage 2 disk
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 32.6996
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.2.3
+    type: bolted_flange
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 32.6996 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. LLP 25,000 EFC [KS].
+- id: M6.3.4
+  name: LPT Stage 3 NGV Inner Shroud
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flow-path platform of the stage 3 NGV; seal land over the drum
+  material: inconel718
+  process: casting
+  status: draft
+  mass:
+    value: 2.7531
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 2.7531 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Seal honeycomb not modelled.
+- id: M6.4.1
+  name: LPT Stage 4 Rotor Blade
+  parent: null
+  qty:
+    value: 134
+    unit: ea
+    tag: KS
+  function: Extract work for the LP spool (stage 4 rotor)
+  material: rene77
+  process: casting
+  status: draft
+  mass:
+    value: 0.0436
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.4.3
+    type: dovetail
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0436 kg [H] = solid volume x density (rene77 7910 kg/m3 [G]); information only. Count [KS] (#52 p. 159); tip shroud and dovetail not modelled.
+- id: M6.4.2
+  name: LPT Stage 4 Nozzle Guide Vane
+  parent: null
+  qty:
+    value: 41
+    unit: ea
+    tag: T
+  function: Turn the flow onto the stage 4 rotor
+  material: mar_m247
+  process: casting
+  status: draft
+  mass:
+    value: 0.4698
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.4698 kg [H] = solid volume x density (mar_m247 8540 kg/m3 [G]); information only. Count [T] (R-KV6.1 solidity rule).
+- id: M6.4.3
+  name: LPT Stage 4 Disk
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Carries the stage 4 rotor blades; forward drum to the stage 3 disk
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 31.03
+    unit: kg
+    tag: H
+  joints:
+  - to: M6.3.3
+    type: bolted_flange
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 31.0300 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. LLP 23,900 EFC [KS].
+- id: M6.4.4
+  name: LPT Stage 4 NGV Inner Shroud
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flow-path platform of the stage 4 NGV; seal land over the drum
+  material: inconel718
+  process: casting
+  status: draft
+  mass:
+    value: 3.4854
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M6_lp_turbine/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 3.4854 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Seal honeycomb not modelled.

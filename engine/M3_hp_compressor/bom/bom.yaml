@@ -1,4 +1,583 @@
 module_id: M3
 module_name: HP Compressor
 revision: rev000
-parts: []
+parts:
+- id: M3.0.1
+  name: HP Compressor Inlet Duct
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: S-duct from station 25 (M1 frame core passage) down to the HPC rotor 1 radius (R-D3.1)
+  material: ti6al4v
+  process: machined forging
+  status: draft
+  mass:
+    value: 14.8664
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 14.8664 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Outer and inner walls in one part entry.
+- id: M3.0.2
+  name: HP Compressor Stage 0 Inlet Guide Vane
+  parent: null
+  qty:
+    value: 42
+    unit: ea
+    tag: T
+  function: 'Variable inlet guide vane: sets the rotor 1 inlet swirl (R-D3.4)'
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0391
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0391 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Variable pivot and actuation not modelled.
+- id: M3.0.3
+  name: HP Compressor Front Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer flow-path wall IGV to stage 4; carries the IGV and the variable stator vanes 1-3 [KS]
+  material: inconel718
+  process: machined ring forging
+  status: draft
+  mass:
+    value: 32.4363
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 32.4363 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only.
+- id: M3.0.4
+  name: HP Compressor Rear Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer flow-path wall stages 5-9; stage 5 bleed port (M9) and station 3 flange to M4
+  material: inconel718
+  process: machined ring forging
+  status: draft
+  mass:
+    value: 20.3445
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 20.3445 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Bleed port opening not modelled.
+- id: M3.0.5
+  name: HP Compressor Forward Shaft
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: 'Carries the HP rotor forward end on bearing #3 (M8); torque path to the inlet gearbox (M9)'
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 3.676
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.6
+    type: bolted_flange
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 3.6760 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. LLP 20,000 EFC [KS] (rules/known_values.md).
+- id: M3.0.6
+  name: HP Compressor Stage 1-2 Spool
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Stage 1 and 2 disks with the interstage drum
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 35.6068
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.3.3
+    type: bolted_flange
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 35.6068 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. LLP 20,000 EFC [KS].
+- id: M3.0.7
+  name: HP Compressor Stage 4-9 Spool
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Stage 4 to 9 disks with the interstage drums (welded spool [G])
+  material: inconel718
+  process: forging, inertia welded
+  status: draft
+  mass:
+    value: 89.1076
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.8
+    type: bolted_flange
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 89.1076 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. LLP 20,000 EFC [KS].
+- id: M3.0.8
+  name: HP Compressor CDP Seal
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Compressor discharge pressure seal; flange to the HPT front shaft (M5)
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 2.8653
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 2.8653 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Seal teeth not modelled. LLP 20,000 EFC [KS].
+- id: M3.1.1
+  name: HP Compressor Stage 1 Rotor Blade
+  parent: null
+  qty:
+    value: 38
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 1 rotor row)
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0318
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.6
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0318 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.1.2
+  name: HP Compressor Stage 1 Stator Vane
+  parent: null
+  qty:
+    value: 57
+    unit: ea
+    tag: T
+  function: Stage 1 stator row, variable [KS]
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0164
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0164 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.2.1
+  name: HP Compressor Stage 2 Rotor Blade
+  parent: null
+  qty:
+    value: 53
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 2 rotor row)
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0129
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.6
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0129 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.2.2
+  name: HP Compressor Stage 2 Stator Vane
+  parent: null
+  qty:
+    value: 69
+    unit: ea
+    tag: T
+  function: Stage 2 stator row, variable [KS]
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0088
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0088 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.3.1
+  name: HP Compressor Stage 3 Rotor Blade
+  parent: null
+  qty:
+    value: 60
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 3 rotor row)
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0081
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.3.3
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0081 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.3.2
+  name: HP Compressor Stage 3 Stator Vane
+  parent: null
+  qty:
+    value: 80
+    unit: ea
+    tag: T
+  function: Stage 3 stator row, variable [KS]
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0052
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0052 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.3.3
+  name: HP Compressor Stage 3 Disk
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Stage 3 disk
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 10.5523
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.7
+    type: bolted_flange
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 10.5523 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. LLP 20,000 EFC [KS].
+- id: M3.4.1
+  name: HP Compressor Stage 4 Rotor Blade
+  parent: null
+  qty:
+    value: 68
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 4 rotor row)
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0052
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.7
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0052 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.4.2
+  name: HP Compressor Stage 4 Stator Vane
+  parent: null
+  qty:
+    value: 91
+    unit: ea
+    tag: T
+  function: Stage 4 stator row
+  material: ti6al4v
+  process: forging
+  status: draft
+  mass:
+    value: 0.0034
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0034 kg [H] = solid volume x density (ti6al4v 4430 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.5.1
+  name: HP Compressor Stage 5 Rotor Blade
+  parent: null
+  qty:
+    value: 75
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 5 rotor row)
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0067
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.7
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0067 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.5.2
+  name: HP Compressor Stage 5 Stator Vane
+  parent: null
+  qty:
+    value: 101
+    unit: ea
+    tag: T
+  function: Stage 5 stator row
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0042
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0042 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.6.1
+  name: HP Compressor Stage 6 Rotor Blade
+  parent: null
+  qty:
+    value: 82
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 6 rotor row)
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0047
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.7
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0047 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.6.2
+  name: HP Compressor Stage 6 Stator Vane
+  parent: null
+  qty:
+    value: 110
+    unit: ea
+    tag: T
+  function: Stage 6 stator row
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.003
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0030 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.7.1
+  name: HP Compressor Stage 7 Rotor Blade
+  parent: null
+  qty:
+    value: 82
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 7 rotor row)
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0041
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.7
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0041 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.7.2
+  name: HP Compressor Stage 7 Stator Vane
+  parent: null
+  qty:
+    value: 112
+    unit: ea
+    tag: T
+  function: Stage 7 stator row
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0025
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0025 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.8.1
+  name: HP Compressor Stage 8 Rotor Blade
+  parent: null
+  qty:
+    value: 80
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 8 rotor row)
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0038
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.7
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0038 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.8.2
+  name: HP Compressor Stage 8 Stator Vane
+  parent: null
+  qty:
+    value: 112
+    unit: ea
+    tag: T
+  function: Stage 8 stator row
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0023
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0023 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.
+- id: M3.9.1
+  name: HP Compressor Stage 9 Rotor Blade
+  parent: null
+  qty:
+    value: 76
+    unit: ea
+    tag: KS
+  function: Add work to the core flow (stage 9 rotor row)
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.0038
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.7
+    type: dovetail
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0038 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [KS] (#52 p. 159); dovetail root not modelled (blade on the rim).
+- id: M3.9.2
+  name: HP Compressor Stage 9 Stator Vane
+  parent: null
+  qty:
+    value: 112
+    unit: ea
+    tag: T
+  function: Stage 9 stator row, outlet guide vane (axial exit)
+  material: inconel718
+  process: forging
+  status: draft
+  mass:
+    value: 0.002
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M3_hp_compressor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.0020 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Count [T] (R-KV3.1 solidity rule); inner shroud and seal not modelled.

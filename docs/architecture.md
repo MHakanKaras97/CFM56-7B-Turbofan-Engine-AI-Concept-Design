@@ -17,7 +17,7 @@
 
 ## 4. Sahiplik
 - Her parçanın tek bir sahip modülü vardır.
-- Fan çerçevesi M1, yanma odası kasası M4, türbin çerçevesi M6, yatak destekleri ve hazneleri M8'e aittir.
+- Fan çerçevesi M1, yanma odası kasası M4, türbin arka çerçevesi M7 (2026-10-29 kararı), yatak destekleri ve hazneleri M8'e aittir.
 - M9 bütçe ve gereksinim verir, parça çizmez; yalnızca kendi boru ve conta parçaları istisnadır.
 - Bir modül başka modülün dosyasını düzenlemez; değişiklik talebi (CR) açar.
 

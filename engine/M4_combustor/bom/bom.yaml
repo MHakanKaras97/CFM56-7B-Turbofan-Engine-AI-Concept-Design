@@ -1,4 +1,155 @@
 module_id: M4
 module_name: Combustor
 revision: rev000
-parts: []
+parts:
+- id: M4.0.1
+  name: Combustor Diffuser
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Prediffuser from station 3 to the dump region; turns the flow out to the liner radius (R-D4.1)
+  material: inconel718
+  process: machined casting
+  status: draft
+  mass:
+    value: 10.7661
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M4_combustor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 10.7661 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. Diffuser struts not modelled; walls in one part entry.
+- id: M4.0.2
+  name: Combustor Outer Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Pressure vessel around the combustor from the HPC rear case to the HPT case; injector bosses
+  material: inconel718
+  process: machined forging
+  status: draft
+  mass:
+    value: 31.0176
+    unit: kg
+    tag: H
+  joints:
+  - to: M3.0.4
+    type: bolted_flange
+  geometry:
+    script: engine/M4_combustor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 31.0176 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only. 20 injector holes cut (R-D4.5).
+- id: M4.0.3
+  name: Combustor Inner Case
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner pressure wall under the liner; carries the diffuser inner wall and the NGV inner support
+  material: inconel718
+  process: machined forging
+  status: draft
+  mass:
+    value: 20.7659
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M4_combustor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 20.7659 kg [H] = solid volume x density (inconel718 8190 kg/m3 [G]); information only.
+- id: M4.0.4
+  name: Combustor Outer Liner
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Outer flame tube wall, converging to the station 4 tip radius (R-D4.3)
+  material: hastelloy_x
+  process: sheet, laser drilled
+  status: draft
+  mass:
+    value: 6.2946
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M4_combustor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 6.2946 kg [H] = solid volume x density (hastelloy_x 8220 kg/m3 [G]); information only. Dilution and cooling holes not modelled.
+- id: M4.0.5
+  name: Combustor Inner Liner
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Inner flame tube wall, converging to the station 4 hub radius (R-D4.3)
+  material: hastelloy_x
+  process: sheet, laser drilled
+  status: draft
+  mass:
+    value: 5.1802
+    unit: kg
+    tag: H
+  geometry:
+    script: engine/M4_combustor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 5.1802 kg [H] = solid volume x density (hastelloy_x 8220 kg/m3 [G]); information only. Dilution and cooling holes not modelled.
+- id: M4.0.6
+  name: Combustor Dome
+  parent: null
+  qty:
+    value: 1
+    unit: ea
+    tag: G
+  function: Annular dome bulkhead with one swirler opening per injector (R-D4.5)
+  material: haynes188
+  process: sheet
+  status: draft
+  mass:
+    value: 4.3875
+    unit: kg
+    tag: H
+  joints:
+  - to: M4.0.4
+    type: weld
+  - to: M4.0.5
+    type: weld
+  geometry:
+    script: engine/M4_combustor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 4.3875 kg [H] = solid volume x density (haynes188 8980 kg/m3 [G]); information only. Swirlers and heat shields not modelled.
+- id: M4.0.7
+  name: Combustor Fuel Injector
+  parent: null
+  qty:
+    value: 20
+    unit: ea
+    tag: KS
+  function: 'Twin-tip fuel injector: stem through the outer case, tip in the dome swirler (R-D4.5)'
+  material: inconel625
+  process: machined, brazed
+  status: draft
+  mass:
+    value: 0.2325
+    unit: kg
+    tag: H
+  joints:
+  - to: M4.0.2
+    type: bolted_flange
+  geometry:
+    script: engine/M4_combustor/geometry/build.py
+    params:
+      revision: rev001
+  notes: Unit mass 0.2325 kg [H] = solid volume x density (inconel625 8440 kg/m3 [G]); information only. Count [KS] (#52 manual text). Fuel manifold out of scope (architecture.md).
