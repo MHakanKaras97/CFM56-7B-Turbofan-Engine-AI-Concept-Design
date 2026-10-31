@@ -54,16 +54,21 @@ def _clear_geometry_caches() -> None:
 def regenerate(root: Path, revision: str) -> None:
     """geometry/flowpath.yaml from the current params file, in two passes (R-G2.22, R-G2.26): the radii first (the
     station 25 fields of a stale file are kept, they are not read by the M1 frame layout), then the station 25 x
-    from the M1 frame code, which reads the M2 station 24 x and radii through layout.record."""
+    from the M1 frame code, which reads the M2 station 24 x and radii through layout.record. The file being rewritten
+    is not checked against the record (layout.regenerating); the radii it holds come from the params of this pass."""
+    from engine.M2_booster.geometry import layout
     path = module_dir("M2", root) / "geometry" / flowpath.OUT_FILE.name
     res = bm.run()
     old = read_yaml(path) if path.exists() else {}
     x_old = (old.get("interfaces") or {}).get("M3_station_25", {}).get("x_m")
     first = flowpath.build(res, st25={"x25": x_old if x_old is not None else float("nan"), "m1_revision": "-"})
-    write_yaml(path, first)
-    _clear_geometry_caches()
-    write_yaml(path, flowpath.build(res))
-    _clear_geometry_caches()
+    try:
+        with layout.regenerating():
+            write_yaml(path, first)
+            _clear_geometry_caches()
+            write_yaml(path, flowpath.build(res))
+    finally:
+        _clear_geometry_caches()
 
 
 def rerun(root: Path, params: dict) -> dict:

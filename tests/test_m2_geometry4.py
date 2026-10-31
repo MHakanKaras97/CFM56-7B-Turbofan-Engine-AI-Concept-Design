@@ -85,6 +85,34 @@ def test_regenerate_reproduces_file_from_stale_state(tmp_path):
         calc._clear_geometry_caches()
 
 
+def test_stale_file_refused_then_regenerated_passes_strict_check():
+    """R-G2.26/ADR-013: outside regenerate a stale file is refused; calc.regenerate rewrites it without checking it,
+    and afterwards the strict check passes again (sha256 for every record after rev001)."""
+    path = FP.OUT_FILE
+    good = path.read_bytes()
+    rev = records.active_revision("M2")
+    stale = read_yaml(path)
+    stale["interfaces"]["M3_station_25"]["x_m"] = 0.5
+    stale["planes"][-1]["r_hub_m"] += 0.01
+    try:
+        from core.util import write_yaml
+        write_yaml(path, stale)
+        calc._clear_geometry_caches()
+        with pytest.raises(ValueError):
+            L.record(rev)
+        calc.regenerate(records.ROOT, rev)
+        assert not L._REGENERATING
+        rec = L.record(rev)
+        assert rec["flowpath_check"] in ("sha256", "radii")
+        assert rec["flowpath_check"] == "sha256" or rev in L.RELAXED_RECORDS
+        manifest = records.read_revision("M2", rev, "manifest.yaml")
+        results = records.read_revision("M2", rev, "results.yaml")
+        assert L.flowpath_input_check(rev, path, manifest, results) in ("sha256", "radii")
+    finally:
+        path.write_bytes(good)
+        calc._clear_geometry_caches()
+
+
 def test_record_input_check():
     """R-G2.26: radii agree with the record at record precision; sha256 or radii check accepted."""
     rec = L.record()

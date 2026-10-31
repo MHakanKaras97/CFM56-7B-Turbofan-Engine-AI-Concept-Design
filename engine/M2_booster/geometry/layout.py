@@ -12,6 +12,7 @@ positive about +X (at +Z a rotor blade moves towards -Y).
 
 import hashlib
 import math
+from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 
@@ -103,19 +104,39 @@ def flowpath_input_check(rev: str, path: Path, manifest: dict, results: dict) ->
     raise ValueError(f"geometry/flowpath.yaml does not match record {rev}")
 
 
+# Set only by regenerating() (analysis/calc.regenerate and the M1 frame call chain it triggers): the file being
+# rewritten is not checked against the record; every other reader keeps the strict check (R-G2.26, ADR-013).
+_REGENERATING = False
+
+
+@contextmanager
+def regenerating():
+    """Skip flowpath_input_check while calc.regenerate rewrites geometry/flowpath.yaml from the record params; the
+    cached record inputs are dropped on entry and exit so no unchecked entry outlives the block."""
+    global _REGENERATING
+    _record_cached.cache_clear()
+    _REGENERATING = True
+    try:
+        yield
+    finally:
+        _REGENERATING = False
+        _record_cached.cache_clear()
+
+
 @lru_cache(maxsize=4)
-def _record_cached(rev: str) -> dict:
-    """Record inputs; geometry/flowpath.yaml must pass flowpath_input_check against the record (R-G2.26)."""
+def _record_cached(rev: str, check_input: bool) -> dict:
+    """Record inputs; geometry/flowpath.yaml must pass flowpath_input_check against the record (R-G2.26), except
+    inside regenerating() (check "regenerate")."""
     manifest = records.read_revision("M2", rev, "manifest.yaml")
     results = records.read_revision("M2", rev, "results.yaml")
     params = records.read_revision("M2", rev, "params.yaml")
-    check = flowpath_input_check(rev, M2_FLOWPATH, manifest, results)
+    check = flowpath_input_check(rev, M2_FLOWPATH, manifest, results) if check_input else "regenerate"
     return {"revision": rev, "manifest": manifest, "results": results, "params": params,
             "flowpath": read_yaml(M2_FLOWPATH), "flowpath_check": check}
 
 
 def record(rev: str | None = None) -> dict:
-    return _record_cached(rev or records.active_revision("M2"))
+    return _record_cached(rev or records.active_revision("M2"), not _REGENERATING)
 
 
 def station_21() -> dict:
