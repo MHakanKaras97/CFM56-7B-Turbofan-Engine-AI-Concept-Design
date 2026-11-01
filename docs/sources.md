@@ -1,7 +1,7 @@
 # Kaynaklar
 
 Kural: alıntı veya şekil kopyalanmaz; yalnızca faktler kullanılır, kendi cümlelerimizle özetlenir.
-İndirilen dosyalar depo dışındaki kaynak arşivinde tutulur (`config/tools.local.yaml` -> `sources_archive`, modül alt klasörleriyle) ve git'e girmez; depoda yalnızca `engine/*/learning/sources/INDEX.md` ve `sources_text/` metinleri var.
+İndirilen dosyalar depo dışındaki kaynak arşivinde tutulur (`config/tools.local.yaml` -> `sources_archive`, modül alt klasörleriyle) ve git'e girmez; depoda yalnızca `engine/*/learning/sources/INDEX.md` var. `sources_text/` metinleri arşivden yerelde üretilir (`python -m tools.pdf_text`) ve git'e girmez. Kaynakların bağlantıları aşağıdaki tablolarda.
 
 | # | Kaynak | Kullanım | Lisans |
 |---|---|---|---|
